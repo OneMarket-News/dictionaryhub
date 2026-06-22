@@ -1,32 +1,163 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>DictionaryHub</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DictionaryHub | Powered by SourceRoot</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
 
-<h1>DictionaryHub</h1>
+  <header class="nav">
+    <div class="brand">
+      <div class="logo">⌬</div>
+      <div>
+        <h1>SourceRoot</h1>
+        <p>DictionaryHub</p>
+      </div>
+    </div>
 
-<p>
-A knowledge platform powered by the SourceRoot Protocol.
-</p>
+    <nav class="nav-links">
+      <a href="index.html" class="active">Home</a>
+      <a href="#">Explore</a>
+      <a href="#">Graph</a>
+      <a href="#">Sources</a>
+      <a href="#">Revisions</a>
+      <a href="#">About</a>
+    </nav>
 
-<input
-type="text"
-placeholder="Search concepts..."
->
+    <button class="icon-button">⌕</button>
+  </header>
 
-<h2>Popular Concepts</h2>
+  <main>
 
-<ul>
-<li><a href="truth.html">Truth</a></li>
-<li>Knowledge</li>
-<li>Trust</li>
-<li>Evidence</li>
-<li>Language</li>
-</ul>
+    <section class="hero">
+      <div class="hero-content">
+        <h2>
+          Explore Knowledge.<br>
+          Understand Origins.<br>
+          See Everything <span>Connected.</span>
+        </h2>
+
+        <p>
+          SourceRoot DictionaryHub is a living knowledge graph that shows the
+          origin, meaning, relationships, sources, and evolution of ideas.
+        </p>
+
+        <div class="search-box">
+          <input type="text" placeholder="Search for a concept, word, person, event, or source..." />
+          <button>Search</button>
+        </div>
+
+        <div class="popular">
+          <span>Popular searches:</span>
+          <a href="truth.html">Truth</a>
+          <a href="#">Trust</a>
+          <a href="#">Knowledge</a>
+          <a href="#">Faith</a>
+          <a href="#">Roman Empire</a>
+          <a href="#">Theory of Relativity</a>
+        </div>
+      </div>
+
+      <div class="hero-graph">
+        <div class="node center">Truth</div>
+        <div class="node n1">Provenance</div>
+        <div class="node n2">Reality</div>
+        <div class="node n3">Knowledge</div>
+        <div class="node n4">Evidence</div>
+        <div class="node n5">Verification</div>
+        <div class="node n6">Language</div>
+        <div class="node n7">Trust</div>
+        <div class="node n8">Meaning</div>
+
+        <div class="line l1"></div>
+        <div class="line l2"></div>
+        <div class="line l3"></div>
+        <div class="line l4"></div>
+        <div class="line l5"></div>
+        <div class="line l6"></div>
+        <div class="line l7"></div>
+        <div class="line l8"></div>
+
+        <a href="#" class="graph-button">Explore Graph</a>
+      </div>
+    </section>
+
+    <section class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon blue">📖</div>
+        <h3>Explore Concepts</h3>
+        <p>Discover definitions, origins, and detailed information about core concepts and ideas.</p>
+        <a href="#">Start Exploring →</a>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon green">🔗</div>
+        <h3>View Relationships</h3>
+        <p>See how concepts, people, events, and sources are connected.</p>
+        <a href="#">Explore Graph →</a>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon purple">📄</div>
+        <h3>Check Sources</h3>
+        <p>Verify information with original sources, citations, and references.</p>
+        <a href="#">Browse Sources →</a>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon gold">🕘</div>
+        <h3>Review History</h3>
+        <p>View revision history and the evolution of knowledge over time.</p>
+        <a href="#">View Revisions →</a>
+      </div>
+    </section>
+
+    <section class="stats">
+      <div class="stat">
+        <div class="stat-icon blue">⌘</div>
+        <div>
+          <strong>990+</strong>
+          <p>Concepts<br>and growing</p>
+        </div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-icon green">🔗</div>
+        <div>
+          <strong>4,355+</strong>
+          <p>Relationships<br>and growing</p>
+        </div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-icon purple">📄</div>
+        <div>
+          <strong>50+</strong>
+          <p>Sources<br>and counting</p>
+        </div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-icon gold">🕘</div>
+        <div>
+          <strong>1,490+</strong>
+          <p>Revisions<br>tracked</p>
+        </div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-icon blue">👥</div>
+        <div>
+          <strong>1</strong>
+          <p>Mission<br>Universal Knowledge</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
 
 </body>
 </html>
