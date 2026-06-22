@@ -1,163 +1,784 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DictionaryHub | Powered by SourceRoot</title>
-  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f7f9fc;
+      color: #0d1b2a;
+    }
+
+    .site-header {
+      height: 86px;
+      padding: 0 48px;
+      background: #061a33;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: white;
+    }
+
+    .logo {
+      width: 46px;
+      height: 46px;
+      border: 2px solid white;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 24px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-family: Georgia, serif;
+      font-size: 28px;
+      line-height: 1;
+      color: white;
+    }
+
+    .brand p {
+      margin: 3px 0 0;
+      font-size: 14px;
+      opacity: 0.85;
+      color: white;
+    }
+
+    nav {
+      display: flex;
+      gap: 30px;
+      align-items: center;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-size: 15px;
+      opacity: 0.9;
+      padding-bottom: 8px;
+    }
+
+    nav a:hover {
+      color: #9fd2ff;
+    }
+
+    nav a.active {
+      border-bottom: 2px solid #5aa9ff;
+    }
+
+    .icon-button {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      border: none;
+      color: white;
+      background: #102b4c;
+      font-size: 22px;
+      cursor: pointer;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #061a33, #0c3d78);
+      color: white;
+      min-height: 650px;
+      padding: 76px 48px 70px;
+    }
+
+    .hero-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 58px;
+      align-items: center;
+    }
+
+    .hero-label {
+      display: inline-block;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.18);
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 22px;
+    }
+
+    .hero h2 {
+      margin: 0;
+      font-family: Georgia, serif;
+      font-size: 68px;
+      line-height: 1.02;
+      letter-spacing: -1.5px;
+    }
+
+    .hero p {
+      margin: 24px 0 0;
+      color: #dbeafe;
+      font-size: 19px;
+      line-height: 1.75;
+      max-width: 680px;
+    }
+
+    .search-box {
+      margin-top: 34px;
+      background: white;
+      border-radius: 18px;
+      padding: 10px;
+      display: flex;
+      gap: 10px;
+      box-shadow: 0 22px 50px rgba(0,0,0,0.2);
+      max-width: 680px;
+    }
+
+    .search-box input {
+      flex: 1;
+      border: none;
+      outline: none;
+      padding: 18px 18px;
+      border-radius: 12px;
+      font-size: 16px;
+      color: #0d1b2a;
+    }
+
+    .search-box button {
+      border: none;
+      background: #1f6ed4;
+      color: white;
+      border-radius: 12px;
+      padding: 0 24px;
+      font-weight: 900;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .popular {
+      margin-top: 22px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .popular span {
+      color: #bfdbfe;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .popular a {
+      color: white;
+      text-decoration: none;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: rgba(255,255,255,0.08);
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .popular a:hover {
+      background: rgba(255,255,255,0.15);
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 30px;
+    }
+
+    .hero-actions a {
+      text-decoration: none;
+      font-weight: 900;
+      border-radius: 12px;
+      padding: 14px 18px;
+    }
+
+    .primary-link {
+      background: white;
+      color: #0c3d78;
+    }
+
+    .secondary-link {
+      color: white;
+      border: 1px solid rgba(255,255,255,0.28);
+      background: rgba(255,255,255,0.08);
+    }
+
+    .graph-preview {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 26px;
+      min-height: 480px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.22);
+    }
+
+    .graph-preview::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at center, rgba(255,255,255,0.18), transparent 30%),
+        linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
+      background-size: auto, 36px 36px, 36px 36px;
+    }
+
+    .graph-node {
+      position: absolute;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      font-weight: 900;
+      color: #0d1b2a;
+      background: white;
+      border: 2px solid #bfdbfe;
+      box-shadow: 0 18px 45px rgba(0,0,0,0.22);
+      z-index: 2;
+      text-decoration: none;
+    }
+
+    .graph-node.center {
+      width: 130px;
+      height: 130px;
+      background: #ffffff;
+      color: #0c3d78;
+      font-family: Georgia, serif;
+      font-size: 28px;
+      top: 175px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .graph-node.small {
+      width: 96px;
+      height: 96px;
+      font-size: 13px;
+      padding: 10px;
+    }
+
+    .n1 { top: 50px; left: 42%; }
+    .n2 { top: 135px; right: 48px; }
+    .n3 { bottom: 70px; right: 86px; }
+    .n4 { bottom: 70px; left: 86px; }
+    .n5 { top: 135px; left: 48px; }
+
+    .line {
+      position: absolute;
+      height: 2px;
+      background: rgba(255,255,255,0.32);
+      transform-origin: left center;
+      z-index: 1;
+    }
+
+    .line.l1 { width: 130px; top: 159px; left: 245px; transform: rotate(-58deg); }
+    .line.l2 { width: 130px; top: 223px; left: 335px; transform: rotate(-16deg); }
+    .line.l3 { width: 140px; top: 314px; left: 330px; transform: rotate(35deg); }
+    .line.l4 { width: 140px; top: 314px; left: 152px; transform: rotate(145deg); }
+    .line.l5 { width: 130px; top: 223px; left: 145px; transform: rotate(196deg); }
+
+    .page-section {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 58px 24px;
+    }
+
+    .section-header {
+      text-align: center;
+      max-width: 760px;
+      margin: 0 auto 34px;
+    }
+
+    .section-header h2 {
+      margin: 0;
+      font-family: Georgia, serif;
+      font-size: 42px;
+      color: #0d1b2a;
+    }
+
+    .section-header p {
+      color: #64748b;
+      font-size: 17px;
+      line-height: 1.7;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+
+    .feature-card {
+      background: white;
+      border: 1px solid #e5eaf1;
+      border-radius: 18px;
+      padding: 26px;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+      text-decoration: none;
+      color: #0d1b2a;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-4px);
+      border-color: #93c5fd;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.1);
+    }
+
+    .feature-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: #e2efff;
+      color: #0f63c9;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      margin-bottom: 16px;
+    }
+
+    .feature-card h3 {
+      margin: 0 0 10px;
+      font-family: Georgia, serif;
+      font-size: 24px;
+    }
+
+    .feature-card p {
+      color: #64748b;
+      line-height: 1.6;
+      margin: 0;
+      font-size: 15px;
+    }
+
+    .stats {
+      background: #061a33;
+      color: white;
+      padding: 48px 24px;
+    }
+
+    .stats-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+
+    .stat-card {
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.07);
+      border-radius: 18px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .stat-card strong {
+      display: block;
+      font-family: Georgia, serif;
+      font-size: 40px;
+      color: white;
+    }
+
+    .stat-card span {
+      color: #bfdbfe;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .callout {
+      max-width: 1180px;
+      margin: 58px auto;
+      padding: 0 24px;
+    }
+
+    .callout-inner {
+      background: #f0f7ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 22px;
+      padding: 34px;
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      align-items: center;
+    }
+
+    .callout h2 {
+      margin: 0 0 8px;
+      font-family: Georgia, serif;
+      font-size: 34px;
+    }
+
+    .callout p {
+      margin: 0;
+      color: #475569;
+      line-height: 1.6;
+    }
+
+    .callout a {
+      white-space: nowrap;
+      text-decoration: none;
+      background: #1f6ed4;
+      color: white;
+      border-radius: 12px;
+      padding: 14px 18px;
+      font-weight: 900;
+    }
+
+    footer {
+      border-top: 1px solid #e5eaf1;
+      padding: 28px 24px;
+      text-align: center;
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    @media (max-width: 980px) {
+      .site-header {
+        padding: 20px;
+        height: auto;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      nav {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 18px;
+      }
+
+      .hero {
+        padding: 42px 24px;
+      }
+
+      .hero-inner {
+        grid-template-columns: 1fr;
+      }
+
+      .hero h2 {
+        font-size: 46px;
+      }
+
+      .graph-preview {
+        min-height: 420px;
+      }
+
+      .feature-grid,
+      .stats-inner {
+        grid-template-columns: 1fr;
+      }
+
+      .callout-inner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .search-box {
+        flex-direction: column;
+      }
+
+      .search-box button {
+        padding: 16px;
+      }
+    }
+  </style>
+
 </head>
 
 <body>
-
-  <header class="nav">
-    <div class="brand">
-      <div class="logo">⌬</div>
+  <header class="site-header">
+    <a class="brand" href="index.html">
+      <div class="logo">☼</div>
       <div>
         <h1>SourceRoot</h1>
         <p>DictionaryHub</p>
       </div>
-    </div>
+    </a>
 
-    <nav class="nav-links">
-      <a href="index.html" class="active">Home</a>
-      <a href="#">Explore</a>
-      <a href="#">Graph</a>
-      <a href="#">Sources</a>
-      <a href="#">Revisions</a>
-      <a href="#">About</a>
-    </nav>
+```
+<nav>
+  <a href="index.html" class="active">Home</a>
+  <a href="explore.html">Explore</a>
+  <a href="graph.html">Graph</a>
+  <a href="sources.html">Sources</a>
+  <a href="revisions.html">Revisions</a>
+  <a href="about.html">About</a>
+</nav>
 
-    <button class="icon-button">⌕</button>
+<button class="icon-button" onclick="focusSearch()">⌕</button>
+```
+
   </header>
 
-  <main>
+  <section class="hero">
+    <div class="hero-inner">
+      <div>
+        <div class="hero-label">Powered by the SourceRoot Protocol</div>
 
-    <section class="hero">
-      <div class="hero-content">
-        <h2>
-          Explore Knowledge.<br>
-          Understand Origins.<br>
-          See Everything <span>Connected.</span>
-        </h2>
+```
+    <h2>Explore Knowledge. Understand Origins. See Everything Connected.</h2>
 
+    <p>
+      DictionaryHub is a living knowledge graph that shows the origin, meaning, relationships, sources, and revision history behind concepts.
+    </p>
+
+    <div class="search-box">
+      <input
+        id="home-search"
+        type="text"
+        placeholder="Search for a concept, word, person, event, or source..."
+        onkeydown="handleSearchKey(event)"
+      />
+      <button onclick="searchConcept()">Search</button>
+    </div>
+
+    <div class="popular">
+      <span>Popular:</span>
+      <a href="concept.html?id=truth">Truth</a>
+      <a href="concept.html?id=knowledge">Knowledge</a>
+      <a href="concept.html?id=trust">Trust</a>
+      <a href="concept.html?id=evidence">Evidence</a>
+      <a href="concept.html?id=verification">Verification</a>
+      <a href="explore.html?q=language">Language</a>
+    </div>
+
+    <div class="hero-actions">
+      <a class="primary-link" href="explore.html">Start Exploring</a>
+      <a class="secondary-link" href="graph.html?center=truth">View Truth Graph</a>
+    </div>
+  </div>
+
+  <div class="graph-preview">
+    <div class="line l1"></div>
+    <div class="line l2"></div>
+    <div class="line l3"></div>
+    <div class="line l4"></div>
+    <div class="line l5"></div>
+
+    <a class="graph-node center" href="concept.html?id=truth">Truth</a>
+    <a class="graph-node small n1" href="concept.html?id=knowledge">Knowledge</a>
+    <a class="graph-node small n2" href="concept.html?id=evidence">Evidence</a>
+    <a class="graph-node small n3" href="concept.html?id=verification">Verification</a>
+    <a class="graph-node small n4" href="concept.html?id=trust">Trust</a>
+    <a class="graph-node small n5" href="concept.html?id=reality">Reality</a>
+  </div>
+</div>
+```
+
+  </section>
+
+  <section class="page-section">
+    <div class="section-header">
+      <h2>A dictionary that shows the source trail.</h2>
+      <p>
+        Instead of stopping at a definition, DictionaryHub connects every concept to its relationships, references, and revision history.
+      </p>
+    </div>
+
+```
+<div class="feature-grid">
+  <a class="feature-card" href="explore.html">
+    <div class="feature-icon">1</div>
+    <h3>Explore Concepts</h3>
+    <p>Browse the seed graph and open reusable concept pages powered by data.</p>
+  </a>
+
+  <a class="feature-card" href="graph.html?center=truth">
+    <div class="feature-icon">2</div>
+    <h3>View Relationships</h3>
+    <p>See how ideas like Truth, Evidence, Verification, Trust, and Knowledge connect.</p>
+  </a>
+
+  <a class="feature-card" href="sources.html">
+    <div class="feature-icon">3</div>
+    <h3>Check Sources</h3>
+    <p>Trace concepts back to the references that support them.</p>
+  </a>
+
+  <a class="feature-card" href="revisions.html">
+    <div class="feature-icon">4</div>
+    <h3>Review History</h3>
+    <p>Track how entries are created, sourced, connected, and revised over time.</p>
+  </a>
+</div>
+```
+
+  </section>
+
+  <section class="stats">
+    <div class="stats-inner">
+      <div class="stat-card">
+        <strong id="stat-concepts">0</strong>
+        <span>Concepts</span>
+      </div>
+
+```
+  <div class="stat-card">
+    <strong id="stat-relationships">0</strong>
+    <span>Relationships</span>
+  </div>
+
+  <div class="stat-card">
+    <strong id="stat-sources">0</strong>
+    <span>Sources</span>
+  </div>
+
+  <div class="stat-card">
+    <strong id="stat-revisions">0</strong>
+    <span>Revisions</span>
+  </div>
+</div>
+```
+
+  </section>
+
+  <section class="callout">
+    <div class="callout-inner">
+      <div>
+        <h2>Start with Truth.</h2>
         <p>
-          SourceRoot DictionaryHub is a living knowledge graph that shows the
-          origin, meaning, relationships, sources, and evolution of ideas.
+          The first SourceRoot concept shows the larger system: definition, origin, relationships, sources, and revision history in one traceable entry.
         </p>
-
-        <div class="search-box">
-          <input type="text" placeholder="Search for a concept, word, person, event, or source..." />
-          <button>Search</button>
-        </div>
-
-        <div class="popular">
-          <span>Popular searches:</span>
-          <a href="truth.html">Truth</a>
-          <a href="#">Trust</a>
-          <a href="#">Knowledge</a>
-          <a href="#">Faith</a>
-          <a href="#">Roman Empire</a>
-          <a href="#">Theory of Relativity</a>
-        </div>
       </div>
 
-      <div class="hero-graph">
-        <div class="node center">Truth</div>
-        <div class="node n1">Provenance</div>
-        <div class="node n2">Reality</div>
-        <div class="node n3">Knowledge</div>
-        <div class="node n4">Evidence</div>
-        <div class="node n5">Verification</div>
-        <div class="node n6">Language</div>
-        <div class="node n7">Trust</div>
-        <div class="node n8">Meaning</div>
+```
+  <a href="concept.html?id=truth">Open Truth</a>
+</div>
+```
 
-        <div class="line l1"></div>
-        <div class="line l2"></div>
-        <div class="line l3"></div>
-        <div class="line l4"></div>
-        <div class="line l5"></div>
-        <div class="line l6"></div>
-        <div class="line l7"></div>
-        <div class="line l8"></div>
+  </section>
 
-        <a href="#" class="graph-button">Explore Graph</a>
-      </div>
-    </section>
+  <footer>
+    DictionaryHub is a SourceRoot prototype for traceable, connected, and source-backed knowledge.
+  </footer>
 
-    <section class="feature-grid">
-      <div class="feature-card">
-        <div class="feature-icon blue">📖</div>
-        <h3>Explore Concepts</h3>
-        <p>Discover definitions, origins, and detailed information about core concepts and ideas.</p>
-        <a href="#">Start Exploring →</a>
-      </div>
+  <script>
+    const fallbackNodes = [
+      {
+        id: "truth",
+        name: "Truth",
+        related: [{ id: "evidence" }, { id: "verification" }, { id: "knowledge" }],
+        sources: [{ name: "Stanford Encyclopedia of Philosophy" }],
+        revisions: [{ version: "v1.0" }]
+      }
+    ];
 
-      <div class="feature-card">
-        <div class="feature-icon green">🔗</div>
-        <h3>View Relationships</h3>
-        <p>See how concepts, people, events, and sources are connected.</p>
-        <a href="#">Explore Graph →</a>
-      </div>
+    let allNodes = [];
 
-      <div class="feature-card">
-        <div class="feature-icon purple">📄</div>
-        <h3>Check Sources</h3>
-        <p>Verify information with original sources, citations, and references.</p>
-        <a href="#">Browse Sources →</a>
-      </div>
+    async function loadNodes() {
+      try {
+        const response = await fetch("data/nodes.json");
+        if (!response.ok) {
+          throw new Error("nodes.json not found");
+        }
+        return await response.json();
+      } catch (error) {
+        return fallbackNodes;
+      }
+    }
 
-      <div class="feature-card">
-        <div class="feature-icon gold">🕘</div>
-        <h3>Review History</h3>
-        <p>View revision history and the evolution of knowledge over time.</p>
-        <a href="#">View Revisions →</a>
-      </div>
-    </section>
+    function normalizeSearch(value) {
+      return value.toLowerCase().trim();
+    }
 
-    <section class="stats">
-      <div class="stat">
-        <div class="stat-icon blue">⌘</div>
-        <div>
-          <strong>990+</strong>
-          <p>Concepts<br>and growing</p>
-        </div>
-      </div>
+    function slugify(value) {
+      return value
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+    }
 
-      <div class="stat">
-        <div class="stat-icon green">🔗</div>
-        <div>
-          <strong>4,355+</strong>
-          <p>Relationships<br>and growing</p>
-        </div>
-      </div>
+    function uniqueSources(nodes) {
+      const names = new Set();
 
-      <div class="stat">
-        <div class="stat-icon purple">📄</div>
-        <div>
-          <strong>50+</strong>
-          <p>Sources<br>and counting</p>
-        </div>
-      </div>
+      nodes.forEach(node => {
+        (node.sources || []).forEach(source => {
+          if (source.name) {
+            names.add(source.name.toLowerCase());
+          }
+        });
+      });
 
-      <div class="stat">
-        <div class="stat-icon gold">🕘</div>
-        <div>
-          <strong>1,490+</strong>
-          <p>Revisions<br>tracked</p>
-        </div>
-      </div>
+      return names.size;
+    }
 
-      <div class="stat">
-        <div class="stat-icon blue">👥</div>
-        <div>
-          <strong>1</strong>
-          <p>Mission<br>Universal Knowledge</p>
-        </div>
-      </div>
-    </section>
+    function searchConcept() {
+      const input = document.getElementById("home-search");
+      const query = normalizeSearch(input.value);
 
-  </main>
+      if (!query) {
+        window.location.href = "explore.html";
+        return;
+      }
+
+      const exactMatch = allNodes.find(node => {
+        return normalizeSearch(node.name || "") === query || normalizeSearch(node.id || "") === query;
+      });
+
+      if (exactMatch) {
+        window.location.href = `concept.html?id=${exactMatch.id}`;
+        return;
+      }
+
+      const slugMatch = allNodes.find(node => {
+        return slugify(node.name || "") === slugify(query);
+      });
+
+      if (slugMatch) {
+        window.location.href = `concept.html?id=${slugMatch.id}`;
+        return;
+      }
+
+      window.location.href = `explore.html?q=${encodeURIComponent(query)}`;
+    }
+
+    function handleSearchKey(event) {
+      if (event.key === "Enter") {
+        searchConcept();
+      }
+    }
+
+    function focusSearch() {
+      document.getElementById("home-search").focus();
+    }
+
+    async function init() {
+      allNodes = await loadNodes();
+
+      const relationshipCount = allNodes.reduce((sum, node) => sum + ((node.related || []).length), 0);
+      const sourceCount = uniqueSources(allNodes);
+      const revisionCount = allNodes.reduce((sum, node) => sum + ((node.revisions || []).length), 0);
+
+      document.getElementById("stat-concepts").textContent = allNodes.length;
+      document.getElementById("stat-relationships").textContent = relationshipCount;
+      document.getElementById("stat-sources").textContent = sourceCount;
+      document.getElementById("stat-revisions").textContent = revisionCount;
+    }
+
+    init();
+  </script>
 
 </body>
 </html>
