@@ -1,0 +1,461 @@
+[
+{
+"id": "truth",
+"entryId": "SRC-NODE-00001",
+"name": "Truth",
+"type": "Core Concept",
+"domain": "Knowledge",
+"confidence": "High Confidence",
+"version": "v3.0 Curated Seed",
+"definition": "Truth is the quality of being in accordance with fact, reality, evidence, or verified understanding.",
+"sourceRootNote": "Truth is not just what is said. In SourceRoot, truth is what can be traced, sourced, revised, and understood through its relationships.",
+"originWord": "trēowþ",
+"originLanguage": "Old English: faithfulness, loyalty, firmness, or trustworthiness.",
+"conceptualOrigin": "The modern concept of truth connects factual accuracy, trust, reality, verification, and knowledge.",
+"timeline": [
+{
+"period": "Old English",
+"title": "Faithfulness and loyalty",
+"description": "Truth was closely tied to trust, promise-keeping, fidelity, and reliability."
+},
+{
+"period": "Middle English",
+"title": "Honesty and sincerity",
+"description": "The meaning expanded toward truthful speech and personal integrity."
+},
+{
+"period": "Modern English",
+"title": "Conformity with reality or fact",
+"description": "Truth became closely connected to evidence, verification, logic, and objective reality."
+}
+],
+"related": [
+{
+"id": "evidence",
+"name": "Evidence",
+"description": "Truth is supported by evidence."
+},
+{
+"id": "verification",
+"name": "Verification",
+"description": "Truth is confirmed through verification."
+},
+{
+"id": "knowledge",
+"name": "Knowledge",
+"description": "Truth is foundational to knowledge."
+},
+{
+"id": "trust",
+"name": "Trust",
+"description": "Truth and trust share historical and conceptual roots."
+},
+{
+"id": "reality",
+"name": "Reality",
+"description": "Truth corresponds to what is real or actual."
+},
+{
+"id": "belief",
+"name": "Belief",
+"description": "Belief may align with, diverge from, or seek truth."
+}
+],
+"sources": [
+{
+"name": "Stanford Encyclopedia of Philosophy",
+"description": "Philosophy reference"
+},
+{
+"name": "Merriam-Webster Dictionary",
+"description": "Definition reference"
+},
+{
+"name": "Online Etymology Dictionary",
+"description": "Etymology reference"
+},
+{
+"name": "Encyclopaedia Britannica",
+"description": "General reference"
+}
+],
+"revisions": [
+{
+"version": "v1.0 — Initial Entry",
+"description": "Created Truth concept node."
+},
+{
+"version": "v1.1 — Sources Added",
+"description": "Added dictionary and philosophy references."
+},
+{
+"version": "v1.2 — Relationships Added",
+"description": "Connected Truth to Evidence, Verification, Knowledge, Trust, and Reality."
+}
+]
+},
+{
+"id": "knowledge",
+"entryId": "SRC-NODE-00003",
+"name": "Knowledge",
+"type": "Core Concept",
+"domain": "Knowledge",
+"confidence": "High Confidence",
+"version": "v3.0 Curated Seed",
+"definition": "Knowledge is understanding, awareness, or familiarity gained through experience, study, evidence, or reasoning.",
+"sourceRootNote": "Knowledge becomes stronger when its sources, relationships, and revisions can be traced.",
+"originWord": "cnāwan",
+"originLanguage": "Old English: to know, perceive, recognize, or understand.",
+"conceptualOrigin": "Knowledge connects belief, truth, evidence, learning, memory, and verification.",
+"timeline": [
+{
+"period": "Ancient Philosophy",
+"title": "Knowledge as justified understanding",
+"description": "Knowledge was often examined through truth, belief, reason, and justification."
+},
+{
+"period": "Scientific Era",
+"title": "Knowledge through observation and evidence",
+"description": "Knowledge became increasingly tied to repeatable methods, evidence, and verification."
+},
+{
+"period": "AI Era",
+"title": "Knowledge as sourced and traceable information",
+"description": "In a digital world, knowledge requires provenance, context, and source history."
+}
+],
+"related": [
+{
+"id": "truth",
+"name": "Truth",
+"description": "Knowledge depends on truth."
+},
+{
+"id": "evidence",
+"name": "Evidence",
+"description": "Knowledge is strengthened by evidence."
+},
+{
+"id": "belief",
+"name": "Belief",
+"description": "Knowledge is often distinguished from belief."
+},
+{
+"id": "verification",
+"name": "Verification",
+"description": "Knowledge can be tested and confirmed."
+}
+],
+"sources": [
+{
+"name": "Stanford Encyclopedia of Philosophy",
+"description": "Epistemology reference"
+},
+{
+"name": "Encyclopaedia Britannica",
+"description": "General reference"
+}
+],
+"revisions": [
+{
+"version": "v1.0 — Initial Entry",
+"description": "Created Knowledge concept node."
+}
+]
+},
+{
+"id": "trust",
+"entryId": "SRC-NODE-00002",
+"name": "Trust",
+"type": "Core Concept",
+"domain": "Knowledge",
+"confidence": "High Confidence",
+"version": "v3.0 Curated Seed",
+"definition": "Trust is confidence in the reliability, truth, ability, or integrity of a person, source, system, or claim.",
+"sourceRootNote": "Trust is not blind belief. In SourceRoot, trust is strengthened by transparent sources, revision history, and contributor identity.",
+"originWord": "trēowe",
+"originLanguage": "Old English: faithful, loyal, firm, or trustworthy.",
+"conceptualOrigin": "Trust connects truth, reliability, reputation, verification, and relationship history.",
+"timeline": [
+{
+"period": "Old English",
+"title": "Faithfulness and loyalty",
+"description": "Trust was rooted in reliability, promise-keeping, and faithfulness."
+},
+{
+"period": "Modern Usage",
+"title": "Confidence in reliability",
+"description": "Trust expanded to include confidence in people, institutions, sources, and systems."
+}
+],
+"related": [
+{
+"id": "truth",
+"name": "Truth",
+"description": "Trust and truth share historical and conceptual roots."
+},
+{
+"id": "verification",
+"name": "Verification",
+"description": "Verification can increase trust."
+},
+{
+"id": "source",
+"name": "Source",
+"description": "Trust depends on source quality and transparency."
+}
+],
+"sources": [
+{
+"name": "Merriam-Webster Dictionary",
+"description": "Definition reference"
+},
+{
+"name": "Online Etymology Dictionary",
+"description": "Etymology reference"
+}
+],
+"revisions": [
+{
+"version": "v1.0 — Initial Entry",
+"description": "Created Trust concept node."
+}
+]
+},
+{
+"id": "evidence",
+"entryId": "SRC-NODE-00004",
+"name": "Evidence",
+"type": "Core Concept",
+"domain": "Knowledge",
+"confidence": "High Confidence",
+"version": "v3.0 Curated Seed",
+"definition": "Evidence is information, observation, testimony, data, or material that supports or challenges a claim.",
+"sourceRootNote": "Evidence is one of the core bridges between a claim and its confidence.",
+"originWord": "evidentia",
+"originLanguage": "Latin: obviousness, clearness, or visibility.",
+"conceptualOrigin": "Evidence connects claims, sources, observations, verification, and conclusions.",
+"timeline": [
+{
+"period": "Classical Roots",
+"title": "That which is clear or visible",
+"description": "Evidence originally connected to what could be seen, shown, or made clear."
+},
+{
+"period": "Scientific and Legal Usage",
+"title": "Support for claims",
+"description": "Evidence became central in science, law, research, and argumentation."
+}
+],
+"related": [
+{
+"id": "truth",
+"name": "Truth",
+"description": "Evidence supports claims about truth."
+},
+{
+"id": "verification",
+"name": "Verification",
+"description": "Evidence is tested through verification."
+},
+{
+"id": "knowledge",
+"name": "Knowledge",
+"description": "Evidence strengthens knowledge."
+}
+],
+"sources": [
+{
+"name": "Encyclopaedia Britannica",
+"description": "General reference"
+},
+{
+"name": "Stanford Encyclopedia of Philosophy",
+"description": "Philosophy reference"
+}
+],
+"revisions": [
+{
+"version": "v1.0 — Initial Entry",
+"description": "Created Evidence concept node."
+}
+]
+},
+{
+"id": "verification",
+"entryId": "SRC-NODE-00005",
+"name": "Verification",
+"type": "Core Concept",
+"domain": "Knowledge",
+"confidence": "High Confidence",
+"version": "v3.0 Curated Seed",
+"definition": "Verification is the process of checking, confirming, or proving that something is accurate, authentic, or true.",
+"sourceRootNote": "Verification turns a claim from isolated information into something that can be evaluated and trusted.",
+"originWord": "verus",
+"originLanguage": "Latin: true.",
+"conceptualOrigin": "Verification connects truth, evidence, method, source quality, and confidence.",
+"timeline": [
+{
+"period": "Latin Root",
+"title": "To make true or confirm",
+"description": "Verification developed from roots connected to truth and confirmation."
+},
+{
+"period": "Modern Usage",
+"title": "Checking accuracy and authenticity",
+"description": "Verification is now used across science, identity, media, software, and records."
+}
+],
+"related": [
+{
+"id": "truth",
+"name": "Truth",
+"description": "Verification confirms truth claims."
+},
+{
+"id": "evidence",
+"name": "Evidence",
+"description": "Verification tests evidence."
+},
+{
+"id": "trust",
+"name": "Trust",
+"description": "Verification increases trust."
+}
+],
+"sources": [
+{
+"name": "Merriam-Webster Dictionary",
+"description": "Definition reference"
+},
+{
+"name": "Encyclopaedia Britannica",
+"description": "General reference"
+}
+],
+"revisions": [
+{
+"version": "v1.0 — Initial Entry",
+"description": "Created Verification concept node."
+}
+]
+},
+{
+"id": "reality",
+"entryId": "SRC-NODE-00006",
+"name": "Reality",
+"type": "Core Concept",
+"domain": "Knowledge",
+"confidence": "High Confidence",
+"version": "v3.0 Curated Seed",
+"definition": "Reality is the state of things as they actually exist, independent of appearance, belief, or interpretation.",
+"sourceRootNote": "Reality is the anchor that truth claims attempt to describe.",
+"originWord": "realis",
+"originLanguage": "Latin: relating to things.",
+"conceptualOrigin": "Reality connects existence, truth, perception, evidence, and interpretation.",
+"timeline": [
+{
+"period": "Philosophical Tradition",
+"title": "Being and existence",
+"description": "Reality has long been studied through questions of what exists and how it can be known."
+},
+{
+"period": "Modern Usage",
+"title": "Actual existence",
+"description": "Reality is commonly contrasted with illusion, belief, fiction, or appearance."
+}
+],
+"related": [
+{
+"id": "truth",
+"name": "Truth",
+"description": "Truth corresponds to reality."
+},
+{
+"id": "belief",
+"name": "Belief",
+"description": "Belief may or may not match reality."
+},
+{
+"id": "knowledge",
+"name": "Knowledge",
+"description": "Knowledge attempts to understand reality."
+}
+],
+"sources": [
+{
+"name": "Stanford Encyclopedia of Philosophy",
+"description": "Philosophy reference"
+},
+{
+"name": "Encyclopaedia Britannica",
+"description": "General reference"
+}
+],
+"revisions": [
+{
+"version": "v1.0 — Initial Entry",
+"description": "Created Reality concept node."
+}
+]
+},
+{
+"id": "belief",
+"entryId": "SRC-NODE-00007",
+"name": "Belief",
+"type": "Core Concept",
+"domain": "Knowledge",
+"confidence": "High Confidence",
+"version": "v3.0 Curated Seed",
+"definition": "Belief is acceptance that something is true, real, or meaningful, with or without complete proof.",
+"sourceRootNote": "Belief is important because it can align with truth, conflict with truth, or motivate the search for truth.",
+"originWord": "gelēafa",
+"originLanguage": "Old English: belief, faith, trust, or confidence.",
+"conceptualOrigin": "Belief connects trust, faith, knowledge, evidence, and interpretation.",
+"timeline": [
+{
+"period": "Old English",
+"title": "Faith and trust",
+"description": "Belief was closely connected to faith, loyalty, and confidence."
+},
+{
+"period": "Modern Usage",
+"title": "Acceptance of a claim",
+"description": "Belief came to mean accepting something as true or real."
+}
+],
+"related": [
+{
+"id": "truth",
+"name": "Truth",
+"description": "Belief may seek or claim truth."
+},
+{
+"id": "knowledge",
+"name": "Knowledge",
+"description": "Knowledge is often distinguished from belief."
+},
+{
+"id": "trust",
+"name": "Trust",
+"description": "Belief can be shaped by trust."
+}
+],
+"sources": [
+{
+"name": "Merriam-Webster Dictionary",
+"description": "Definition reference"
+},
+{
+"name": "Online Etymology Dictionary",
+"description": "Etymology reference"
+}
+],
+"revisions": [
+{
+"version": "v1.0 — Initial Entry",
+"description": "Created Belief concept node."
+}
+]
+}
+]
