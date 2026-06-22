@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sources | DictionaryHub</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f7f9fc;
+      color: #0d1b2a;
+    }
+
+    .site-header {
+      height: 86px;
+      padding: 0 48px;
+      background: #061a33;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: white;
+    }
+
+    .logo {
+      width: 46px;
+      height: 46px;
+      border: 2px solid white;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 24px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-family: Georgia, serif;
+      font-size: 28px;
+      line-height: 1;
+      color: white;
+    }
+
+    .brand p {
+      margin: 3px 0 0;
+      font-size: 14px;
+      opacity: 0.85;
+      color: white;
+    }
+
+    nav {
+      display: flex;
+      gap: 30px;
+      align-items: center;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-size: 15px;
+      opacity: 0.9;
+      padding-bottom: 8px;
+    }
+
+    nav a:hover {
+      color: #9fd2ff;
+    }
+
+    nav a.active {
+      border-bottom: 2px solid #5aa9ff;
+    }
+
+    .icon-button {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      border: none;
+      color: white;
+      background: #102b4c;
+      font-size: 22px;
+      cursor: pointer;
+    }
+
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 42px 24px 80px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #061a33, #0c3d78);
+      color: white;
+      border-radius: 22px;
+      padding: 44px;
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
+      margin-bottom: 28px;
+    }
+
+    .hero-label {
+      display: inline-block;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.18);
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 18px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-family: Georgia, serif;
+      font-size: 54px;
+      line-height: 1.05;
+    }
+
+    .hero p {
+      max-width: 800px;
+      margin: 18px 0 0;
+      color: #dbeafe;
+      font-size: 18px;
+      line-height: 1.7;
+    }
+
+    .controls {
+      background: white;
+      border: 1px solid #e5eaf1;
+      border-radius: 18px;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+      padding: 24px;
+      margin-bottom: 28px;
+    }
+
+    .search-row {
+      display: grid;
+      grid-template-columns: 1fr 220px;
+      gap: 14px;
+    }
+
+    .search-input,
+    .filter-select {
+      width: 100%;
+      border: 1px solid #d6e0ec;
+      border-radius: 12px;
+      padding: 15px 16px;
+      font-size: 15px;
+      color: #0d1b2a;
+      background: #fbfdff;
+      outline: none;
+    }
+
+    .search-input:focus,
+    .filter-select:focus {
+      border-color: #1f6ed4;
+      box-shadow: 0 0 0 4px rgba(31, 110, 212, 0.1);
+    }
+
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    .meta-row strong {
+      color: #0d1b2a;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 330px;
+      gap: 28px;
+    }
+
+    .source-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+      align-content: start;
+    }
+
+    .source-card,
+    .side-card {
+      background: white;
+      border: 1px solid #e5eaf1;
+      border-radius: 16px;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+    }
+
+    .source-card {
+      padding: 24px;
+      cursor: pointer;
+      transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .source-card:hover {
+      transform: translateY(-3px);
+      border-color: #93c5fd;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.1);
+    }
+
+    .source-card.selected {
+      border-color: #1f6ed4;
+      box-shadow: 0 18px 40px rgba(31, 110, 212, 0.16);
+    }
+
+    .source-card h2 {
+      margin: 0 0 8px;
+      font-family: Georgia, serif;
+      font-size: 26px;
+      color: #0d1b2a;
+    }
+
+    .source-type {
+      display: inline-block;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: #e2efff;
+      color: #0f63c9;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 14px;
+    }
+
+    .source-description {
+      color: #475569;
+      line-height: 1.6;
+      margin: 0 0 18px;
+      font-size: 15px;
+    }
+
+    .used-by {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .concept-tag {
+      background: #f1f5f9;
+      color: #475569;
+      padding: 6px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .concept-tag:hover {
+      background: #e2efff;
+      color: #0f63c9;
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      color: #64748b;
+      font-size: 13px;
+      border-top: 1px solid #e5eaf1;
+      padding-top: 14px;
+    }
+
+    .open-link {
+      color: #1f6ed4;
+      font-weight: 800;
+    }
+
+    .side-panel {
+      display: grid;
+      gap: 18px;
+      align-content: start;
+    }
+
+    .side-card {
+      padding: 24px;
+    }
+
+    .side-card h3 {
+      margin: 0 0 16px;
+      font-family: Georgia, serif;
+      font-size: 22px;
+    }
+
+    .selected-source-title {
+      font-family: Georgia, serif;
+      font-size: 30px;
+      margin: 0 0 8px;
+    }
+
+    .selected-source-description {
+      color: #475569;
+      line-height: 1.6;
+      margin: 0 0 18px;
+    }
+
+    .source-concept-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .source-concept-list a {
+      color: #0d1b2a;
+      text-decoration: none;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px;
+      border: 1px solid #e5eaf1;
+      border-radius: 12px;
+      background: #fbfdff;
+      font-weight: 700;
+    }
+
+    .source-concept-list a:hover {
+      border-color: #93c5fd;
+      background: #f0f7ff;
+    }
+
+    .source-concept-list span {
+      color: #1f6ed4;
+    }
+
+    .stat-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .stat {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      background: #f8fbff;
+      border: 1px solid #e5eaf1;
+      border-radius: 12px;
+      padding: 13px;
+    }
+
+    .stat span {
+      color: #64748b;
+      font-size: 13px;
+    }
+
+    .stat strong {
+      font-size: 18px;
+      color: #0d1b2a;
+    }
+
+    .empty-state {
+      background: white;
+      border: 1px solid #e5eaf1;
+      border-radius: 16px;
+      padding: 36px;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+      grid-column: 1 / -1;
+    }
+
+    .empty-state h2 {
+      margin-top: 0;
+      font-family: Georgia, serif;
+      font-size: 32px;
+    }
+
+    @media (max-width: 950px) {
+      .site-header {
+        padding: 20px;
+        height: auto;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      nav {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 18px;
+      }
+
+      .hero {
+        padding: 32px 24px;
+      }
+
+      .hero h1 {
+        font-size: 42px;
+      }
+
+      .search-row {
+        grid-template-columns: 1fr;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .source-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+
+</head>
+
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html">
+      <div class="logo">☼</div>
+      <div>
+        <h1>SourceRoot</h1>
+        <p>DictionaryHub</p>
+      </div>
+    </a>
+
+```
+<nav>
+  <a href="index.html">Home</a>
+  <a href="explore.html">Explore</a>
+  <a href="graph.html">Graph</a>
+  <a href="sources.html" class="active">Sources</a>
+  <a href="revisions.html">Revisions</a>
+  <a href="about.html">About</a>
+</nav>
+
+<button class="icon-button" onclick="focusSearch()">⌕</button>
+```
+
+  </header>
+
+  <main class="page">
+    <section class="hero">
+      <div class="hero-label">SourceRoot Source Library</div>
+      <h1>Trace knowledge back to sources.</h1>
+      <p>
+        SourceRoot is built on provenance. This page shows the references supporting the DictionaryHub seed graph and the concepts connected to each source.
+      </p>
+    </section>
+
+```
+<section class="controls">
+  <div class="search-row">
+    <input
+      class="search-input"
+      id="search-input"
+      type="text"
+      placeholder="Search sources, descriptions, or concepts..."
+      oninput="applyFilters()"
+    />
+
+    <select class="filter-select" id="sort-filter" onchange="applyFilters()">
+      <option value="name">Sort by name</option>
+      <option value="usage">Sort by usage</option>
+      <option value="type">Sort by type</option>
+    </select>
+  </div>
+
+  <div class="meta-row">
+    <div>
+      Showing <strong id="visible-count">0</strong> of <strong id="total-count">0</strong> sources
+    </div>
+    <div>
+      Data source: <strong>data/nodes.json</strong>
+    </div>
+  </div>
+</section>
+
+<section class="layout">
+  <div class="source-grid" id="source-grid"></div>
+
+  <aside class="side-panel">
+    <div class="side-card">
+      <h3>Selected Source</h3>
+
+      <h2 class="selected-source-title" id="selected-source-name">Loading...</h2>
+      <p class="selected-source-description" id="selected-source-description"></p>
+
+      <h3 style="font-size:20px; margin-top:24px;">Used By</h3>
+      <div class="source-concept-list" id="selected-source-concepts"></div>
+    </div>
+
+    <div class="side-card">
+      <h3>Source Summary</h3>
+
+      <div class="stat-grid">
+        <div class="stat">
+          <span>Unique Sources</span>
+          <strong id="stat-sources">0</strong>
+        </div>
+
+        <div class="stat">
+          <span>Total Citations</span>
+          <strong id="stat-citations">0</strong>
+        </div>
+
+        <div class="stat">
+          <span>Concepts With Sources</span>
+          <strong id="stat-concepts">0</strong>
+        </div>
+
+        <div class="stat">
+          <span>Source Types</span>
+          <strong id="stat-types">0</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-card">
+      <h3>Why this matters</h3>
+      <p style="color:#475569; line-height:1.6; margin:0;">
+        A claim without a source is fragile. SourceRoot becomes valuable by showing where knowledge came from, what supports it, and which concepts depend on the same references.
+      </p>
+    </div>
+  </aside>
+</section>
+```
+
+  </main>
+
+  <script>
+    const fallbackNodes = [
+      {
+        id: "truth",
+        entryId: "SRC-NODE-00001",
+        name: "Truth",
+        domain: "Knowledge",
+        sources: [
+          { name: "Stanford Encyclopedia of Philosophy", description: "Philosophy reference" },
+          { name: "Merriam-Webster Dictionary", description: "Definition reference" },
+          { name: "Online Etymology Dictionary", description: "Etymology reference" },
+          { name: "Encyclopaedia Britannica", description: "General reference" }
+        ]
+      },
+      {
+        id: "knowledge",
+        entryId: "SRC-NODE-00003",
+        name: "Knowledge",
+        domain: "Knowledge",
+        sources: [
+          { name: "Stanford Encyclopedia of Philosophy", description: "Epistemology reference" },
+          { name: "Encyclopaedia Britannica", description: "General reference" }
+        ]
+      }
+    ];
+
+    let allNodes = [];
+    let allSources = [];
+    let selectedSourceKey = "";
+
+    async function loadNodes() {
+      try {
+        const response = await fetch("data/nodes.json");
+        if (!response.ok) {
+          throw new Error("nodes.json not found");
+        }
+        return await response.json();
+      } catch (error) {
+        return fallbackNodes;
+      }
+    }
+
+    function normalizeKey(value) {
+      return (value || "").toLowerCase().trim();
+    }
+
+    function inferSourceType(source) {
+      const text = `${source.name || ""} ${source.description || ""}`.toLowerCase();
+
+      if (text.includes("dictionary") || text.includes("etymology")) return "Dictionary";
+      if (text.includes("philosophy") || text.includes("encyclopedia")) return "Reference";
+      if (text.includes("legal") || text.includes("law") || text.includes("court")) return "Legal";
+      if (text.includes("science") || text.includes("nature") || text.includes("nasa")) return "Scientific";
+      if (text.includes("archive") || text.includes("library")) return "Archive";
+
+      return "Reference";
+    }
+
+    function collectSources(nodes) {
+      const sourceMap = new Map();
+
+      nodes.forEach(node => {
+        const sources = node.sources || [];
+
+        sources.forEach(source => {
+          const key = normalizeKey(source.name);
+
+          if (!key) return;
+
+          if (!sourceMap.has(key)) {
+            sourceMap.set(key, {
+              key,
+              name: source.name,
+              description: source.description || "Source reference",
+              type: source.type || inferSourceType(source),
+              url: source.url || "",
+              concepts: []
+            });
+          }
+
+          const existing = sourceMap.get(key);
+
+          existing.concepts.push({
+            id: node.id,
+            name: node.name,
+            domain: node.domain,
+            entryId: node.entryId
+          });
+        });
+      });
+
+      return Array.from(sourceMap.values());
+    }
+
+    function applyFilters() {
+      const search = document.getElementById("search-input").value.toLowerCase().trim();
+      const sort = document.getElementById("sort-filter").value;
+
+      let filtered = allSources.filter(source => {
+        const conceptText = source.concepts.map(concept => concept.name).join(" ");
+        const searchText = `
+          ${source.name}
+          ${source.description}
+          ${source.type}
+          ${conceptText}
+        `.toLowerCase();
+
+        return searchText.includes(search);
+      });
+
+      if (sort === "name") {
+        filtered.sort((a, b) => a.name.localeCompare(b.name));
+      }
+
+      if (sort === "usage") {
+        filtered.sort((a, b) => b.concepts.length - a.concepts.length);
+      }
+
+      if (sort === "type") {
+        filtered.sort((a, b) => {
+          const typeCompare = a.type.localeCompare(b.type);
+          if (typeCompare !== 0) return typeCompare;
+          return a.name.localeCompare(b.name);
+        });
+      }
+
+      renderSources(filtered);
+
+      document.getElementById("visible-count").textContent = filtered.length;
+      document.getElementById("total-count").textContent = allSources.length;
+    }
+
+    function renderSources(sources) {
+      const grid = document.getElementById("source-grid");
+      grid.innerHTML = "";
+
+      if (sources.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state">
+            <h2>No sources found</h2>
+            <p>Try searching for Stanford, Merriam-Webster, Britannica, Etymology, Truth, or Knowledge.</p>
+          </div>
+        `;
+        return;
+      }
+
+      sources.forEach(source => {
+        const card = document.createElement("div");
+        card.className = `source-card ${source.key === selectedSourceKey ? "selected" : ""}`;
+        card.onclick = () => selectSource(source.key);
+
+        const usedByTags = source.concepts
+          .slice(0, 5)
+          .map(concept => `<a class="concept-tag" href="concept.html?id=${concept.id}" onclick="event.stopPropagation()">${concept.name}</a>`)
+          .join("");
+
+        card.innerHTML = `
+          <span class="source-type">${source.type}</span>
+          <h2>${source.name}</h2>
+          <p class="source-description">${source.description}</p>
+
+          <div class="used-by">
+            ${usedByTags || `<span class="concept-tag">No concepts linked</span>`}
+          </div>
+
+          <div class="card-footer">
+            <span>Used by ${source.concepts.length} concept${source.concepts.length === 1 ? "" : "s"}</span>
+            <span class="open-link">Inspect →</span>
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+    }
+
+    function selectSource(key) {
+      selectedSourceKey = key;
+
+      const source = allSources.find(item => item.key === key);
+      if (!source) return;
+
+      document.getElementById("selected-source-name").textContent = source.name;
+      document.getElementById("selected-source-description").textContent = source.description;
+
+      const container = document.getElementById("selected-source-concepts");
+      container.innerHTML = "";
+
+      source.concepts.forEach(concept => {
+        const link = document.createElement("a");
+        link.href = `concept.html?id=${concept.id}`;
+        link.innerHTML = `
+          ${concept.name}
+          <span>Open</span>
+        `;
+        container.appendChild(link);
+      });
+
+      applyFilters();
+    }
+
+    function renderStats() {
+      const totalCitations = allSources.reduce((sum, source) => sum + source.concepts.length, 0);
+      const conceptsWithSources = allNodes.filter(node => (node.sources || []).length > 0).length;
+      const sourceTypes = [...new Set(allSources.map(source => source.type))];
+
+      document.getElementById("stat-sources").textContent = allSources.length;
+      document.getElementById("stat-citations").textContent = totalCitations;
+      document.getElementById("stat-concepts").textContent = conceptsWithSources;
+      document.getElementById("stat-types").textContent = sourceTypes.length;
+    }
+
+    function focusSearch() {
+      document.getElementById("search-input").focus();
+    }
+
+    async function init() {
+      allNodes = await loadNodes();
+      allSources = collectSources(allNodes);
+
+      if (allSources.length > 0) {
+        selectedSourceKey = allSources[0].key;
+      }
+
+      renderStats();
+      applyFilters();
+
+      if (selectedSourceKey) {
+        selectSource(selectedSourceKey);
+      }
+    }
+
+    init();
+  </script>
+
+</body>
+</html>
