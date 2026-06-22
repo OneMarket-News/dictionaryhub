@@ -4,9 +4,94 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Truth | DictionaryHub</title>
-  <link rel="stylesheet" href="style.css" />
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f7f9fc;
+      color: #0d1b2a;
+    }
+
+    .site-header {
+      height: 86px;
+      padding: 0 48px;
+      background: #061a33;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo {
+      width: 46px;
+      height: 46px;
+      border: 2px solid white;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 24px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-family: Georgia, serif;
+      font-size: 28px;
+      line-height: 1;
+      color: white;
+    }
+
+    .brand p {
+      margin: 3px 0 0;
+      font-size: 14px;
+      opacity: 0.85;
+      color: white;
+    }
+
+    nav {
+      display: flex;
+      gap: 30px;
+      align-items: center;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-size: 15px;
+      opacity: 0.9;
+      padding-bottom: 8px;
+    }
+
+    nav a:hover {
+      color: #9fd2ff;
+    }
+
+    nav a.active {
+      border-bottom: 2px solid #5aa9ff;
+    }
+
+    .icon-button {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      border: none;
+      color: white;
+      background: #102b4c;
+      font-size: 22px;
+      cursor: pointer;
+    }
+
     .page {
       max-width: 1180px;
       margin: 0 auto;
@@ -32,8 +117,7 @@
     }
 
     .entry-main,
-    .entry-side-card,
-    .content-card {
+    .entry-side-card {
       background: white;
       border: 1px solid #e5eaf1;
       border-radius: 16px;
@@ -335,6 +419,18 @@
     }
 
     @media (max-width: 900px) {
+      .site-header {
+        padding: 20px;
+        height: auto;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      nav {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
       .entry-layout {
         grid-template-columns: 1fr;
       }
