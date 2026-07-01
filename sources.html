@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -11,22 +10,39 @@
       box-sizing: border-box;
     }
 
+    :root {
+      --navy: #061a33;
+      --navy-2: #0c3d78;
+      --blue: #1f6ed4;
+      --blue-soft: #eaf4ff;
+      --line: #e5eaf1;
+      --text: #0d1b2a;
+      --muted: #64748b;
+      --bg: #f7f9fc;
+      --white: #ffffff;
+      --shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
+      --soft-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+    }
+
     body {
       margin: 0;
       font-family: Arial, Helvetica, sans-serif;
-      background: #f7f9fc;
-      color: #0d1b2a;
+      background: var(--bg);
+      color: var(--text);
     }
 
     .site-header {
-      height: 86px;
+      height: 78px;
       padding: 0 48px;
-      background: #061a33;
+      background: var(--navy);
       color: white;
       display: flex;
       align-items: center;
       justify-content: space-between;
       border-bottom: 1px solid rgba(255,255,255,0.12);
+      position: sticky;
+      top: 0;
+      z-index: 50;
     }
 
     .brand {
@@ -38,42 +54,44 @@
     }
 
     .logo {
-      width: 46px;
-      height: 46px;
+      width: 42px;
+      height: 42px;
       border: 2px solid white;
       border-radius: 50%;
       display: grid;
       place-items: center;
-      font-size: 24px;
+      font-size: 23px;
+      flex: 0 0 auto;
     }
 
     .brand h1 {
       margin: 0;
       font-family: Georgia, serif;
-      font-size: 28px;
+      font-size: 24px;
       line-height: 1;
       color: white;
     }
 
     .brand p {
       margin: 3px 0 0;
-      font-size: 14px;
+      font-size: 12px;
       opacity: 0.85;
       color: white;
     }
 
     nav {
       display: flex;
-      gap: 30px;
+      gap: 26px;
       align-items: center;
     }
 
     nav a {
       color: white;
       text-decoration: none;
-      font-size: 15px;
+      font-size: 14px;
       opacity: 0.9;
       padding-bottom: 8px;
+      white-space: nowrap;
     }
 
     nav a:hover {
@@ -85,18 +103,18 @@
     }
 
     .icon-button {
-      width: 46px;
-      height: 46px;
+      width: 42px;
+      height: 42px;
       border-radius: 50%;
       border: none;
       color: white;
       background: #102b4c;
-      font-size: 22px;
+      font-size: 20px;
       cursor: pointer;
     }
 
     .page {
-      max-width: 1180px;
+      max-width: 1420px;
       margin: 0 auto;
       padding: 42px 24px 80px;
     }
@@ -105,50 +123,91 @@
       background: linear-gradient(135deg, #061a33, #0c3d78);
       color: white;
       border-radius: 22px;
-      padding: 44px;
-      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
-      margin-bottom: 28px;
+      padding: 38px 42px;
+      box-shadow: var(--shadow);
+      margin-bottom: 24px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 28px;
+      align-items: end;
     }
 
     .hero-label {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
       background: rgba(255,255,255,0.12);
-      border: 1px solid rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.22);
       padding: 8px 12px;
       border-radius: 999px;
-      font-size: 13px;
-      font-weight: 700;
-      margin-bottom: 18px;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 16px;
+      color: white;
     }
 
     .hero h1 {
       margin: 0;
       font-family: Georgia, serif;
-      font-size: 54px;
-      line-height: 1.05;
+      font-size: 52px;
+      line-height: 1.02;
+      color: white;
     }
 
     .hero p {
-      max-width: 800px;
-      margin: 18px 0 0;
+      margin: 15px 0 0;
+      max-width: 900px;
       color: #dbeafe;
-      font-size: 18px;
-      line-height: 1.7;
+      font-size: 17px;
+      line-height: 1.65;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .primary-link,
+    .secondary-link {
+      border-radius: 13px;
+      padding: 14px 17px;
+      font-weight: 900;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+      font-size: 14px;
+    }
+
+    .primary-link {
+      background: var(--blue);
+      color: white;
+      box-shadow: 0 14px 30px rgba(31,110,212,0.22);
+    }
+
+    .secondary-link {
+      background: rgba(255,255,255,0.08);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.22);
     }
 
     .controls {
       background: white;
-      border: 1px solid #e5eaf1;
+      border: 1px solid var(--line);
       border-radius: 18px;
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
-      padding: 24px;
-      margin-bottom: 28px;
-    }
-
-    .search-row {
+      box-shadow: var(--soft-shadow);
+      padding: 18px;
+      margin-bottom: 20px;
       display: grid;
-      grid-template-columns: 1fr 220px;
-      gap: 14px;
+      grid-template-columns: minmax(320px, 1fr) 190px 180px 170px;
+      gap: 12px;
+      align-items: center;
     }
 
     .search-input,
@@ -156,264 +215,403 @@
       width: 100%;
       border: 1px solid #d6e0ec;
       border-radius: 12px;
-      padding: 15px 16px;
-      font-size: 15px;
-      color: #0d1b2a;
+      padding: 14px 15px;
+      font-size: 14px;
+      color: var(--text);
       background: #fbfdff;
       outline: none;
     }
 
     .search-input:focus,
     .filter-select:focus {
-      border-color: #1f6ed4;
+      border-color: var(--blue);
       box-shadow: 0 0 0 4px rgba(31, 110, 212, 0.1);
     }
 
-    .meta-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 18px;
-      flex-wrap: wrap;
-      margin-top: 18px;
-      color: #64748b;
-      font-size: 14px;
+    .source-strip {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--soft-shadow);
+      padding: 16px 18px;
+      margin-bottom: 24px;
     }
 
-    .meta-row strong {
-      color: #0d1b2a;
+    .source-strip-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .category-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+    }
+
+    .category-chip {
+      border: 1px solid #bfdbfe;
+      background: #f0f7ff;
+      color: var(--blue);
+      border-radius: 999px;
+      padding: 8px 11px;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .category-chip.active {
+      background: var(--blue);
+      color: white;
+      border-color: var(--blue);
     }
 
     .layout {
       display: grid;
-      grid-template-columns: 1fr 330px;
-      gap: 28px;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 24px;
+      align-items: start;
     }
 
     .source-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 18px;
-      align-content: start;
-    }
-
-    .source-card,
-    .side-card {
-      background: white;
-      border: 1px solid #e5eaf1;
-      border-radius: 16px;
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
     }
 
     .source-card {
-      padding: 24px;
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--soft-shadow);
+      padding: 20px;
+      min-height: 250px;
+      display: flex;
+      flex-direction: column;
       cursor: pointer;
       transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
     }
 
-    .source-card:hover {
+    .source-card:hover,
+    .source-card.selected {
       transform: translateY(-3px);
-      border-color: #93c5fd;
-      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.1);
+      border-color: #bfdbfe;
+      box-shadow: var(--shadow);
     }
 
     .source-card.selected {
-      border-color: #1f6ed4;
-      box-shadow: 0 18px 40px rgba(31, 110, 212, 0.16);
+      outline: 4px solid rgba(31, 110, 212, 0.12);
+    }
+
+    .source-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 10px;
     }
 
     .source-card h2 {
-      margin: 0 0 8px;
+      margin: 0;
       font-family: Georgia, serif;
-      font-size: 26px;
-      color: #0d1b2a;
+      font-size: 25px;
+      line-height: 1.08;
+      color: var(--text);
     }
 
-    .source-type {
-      display: inline-block;
-      padding: 7px 10px;
-      border-radius: 999px;
-      background: #e2efff;
-      color: #0f63c9;
-      font-size: 12px;
+    .source-id {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 11px;
       font-weight: 800;
-      margin-bottom: 14px;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .category-badge {
+      background: var(--blue-soft);
+      color: var(--blue);
+      border: 1px solid #bfdbfe;
+      border-radius: 999px;
+      padding: 7px 9px;
+      font-size: 11px;
+      font-weight: 900;
+      white-space: nowrap;
+      max-width: 140px;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .source-description {
       color: #475569;
       line-height: 1.6;
-      margin: 0 0 18px;
-      font-size: 15px;
+      font-size: 14px;
+      margin: 0 0 15px;
+      flex: 1;
     }
 
-    .used-by {
+    .concept-chips {
       display: flex;
-      gap: 8px;
       flex-wrap: wrap;
-      margin-bottom: 16px;
+      gap: 7px;
+      margin-bottom: 15px;
     }
 
-    .concept-tag {
-      background: #f1f5f9;
-      color: #475569;
-      padding: 6px 9px;
+    .concept-chip {
+      background: #f8fbff;
+      color: #33506f;
+      border: 1px solid var(--line);
       border-radius: 999px;
-      font-size: 12px;
-      font-weight: 700;
-      text-decoration: none;
-    }
-
-    .concept-tag:hover {
-      background: #e2efff;
-      color: #0f63c9;
-    }
-
-    .card-footer {
-      display: flex;
-      justify-content: space-between;
-      gap: 14px;
-      color: #64748b;
-      font-size: 13px;
-      border-top: 1px solid #e5eaf1;
-      padding-top: 14px;
-    }
-
-    .open-link {
-      color: #1f6ed4;
+      padding: 6px 8px;
+      font-size: 11px;
       font-weight: 800;
+      max-width: 125px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .card-meta {
+      display: flex;
+      gap: 14px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      padding-top: 13px;
+      border-top: 1px solid #eef2f7;
+    }
+
+    .card-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .card-actions button,
+    .card-actions a {
+      border-radius: 11px;
+      padding: 11px;
+      text-align: center;
+      font-weight: 900;
+      font-size: 13px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .inspect-action {
+      background: var(--blue);
+      color: white;
+    }
+
+    .graph-action {
+      background: #f0f7ff;
+      color: var(--blue);
+      border: 1px solid #bfdbfe;
     }
 
     .side-panel {
       display: grid;
       gap: 18px;
-      align-content: start;
+      position: sticky;
+      top: 98px;
     }
 
     .side-card {
-      padding: 24px;
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--soft-shadow);
+      padding: 20px;
     }
 
     .side-card h3 {
-      margin: 0 0 16px;
+      margin: 0 0 14px;
       font-family: Georgia, serif;
-      font-size: 22px;
+      font-size: 24px;
     }
 
-    .selected-source-title {
+    .selected-title {
+      margin: 0;
       font-family: Georgia, serif;
       font-size: 30px;
-      margin: 0 0 8px;
+      line-height: 1.08;
     }
 
-    .selected-source-description {
+    .selected-meta {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      margin: 7px 0 14px;
+    }
+
+    .selected-description {
       color: #475569;
-      line-height: 1.6;
-      margin: 0 0 18px;
+      line-height: 1.62;
+      font-size: 14px;
+      margin: 0 0 16px;
     }
 
-    .source-concept-list {
+    .summary-grid {
       display: grid;
       gap: 10px;
     }
 
-    .source-concept-list a {
-      color: #0d1b2a;
-      text-decoration: none;
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fbfdff;
+    }
+
+    .summary-row span {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .summary-row strong {
+      color: var(--text);
+      font-size: 16px;
+    }
+
+    .linked-list {
+      display: grid;
+      gap: 10px;
+      max-height: 440px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .linked-list a {
       display: flex;
       justify-content: space-between;
       gap: 12px;
       padding: 12px;
-      border: 1px solid #e5eaf1;
+      border: 1px solid var(--line);
       border-radius: 12px;
       background: #fbfdff;
-      font-weight: 700;
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 900;
     }
 
-    .source-concept-list a:hover {
-      border-color: #93c5fd;
+    .linked-list a:hover {
       background: #f0f7ff;
+      border-color: #bfdbfe;
     }
 
-    .source-concept-list span {
-      color: #1f6ed4;
+    .linked-list span {
+      color: var(--blue);
+      font-size: 12px;
+      white-space: nowrap;
     }
 
-    .stat-grid {
-      display: grid;
-      gap: 12px;
+    .proof-card p {
+      color: var(--muted);
+      line-height: 1.62;
+      margin: 0;
+      font-size: 14px;
     }
 
-    .stat {
-      display: flex;
-      justify-content: space-between;
-      gap: 14px;
-      background: #f8fbff;
-      border: 1px solid #e5eaf1;
-      border-radius: 12px;
-      padding: 13px;
-    }
-
-    .stat span {
-      color: #64748b;
-      font-size: 13px;
-    }
-
-    .stat strong {
-      font-size: 18px;
-      color: #0d1b2a;
-    }
-
-    .empty-state {
+    .empty {
       background: white;
-      border: 1px solid #e5eaf1;
-      border-radius: 16px;
-      padding: 36px;
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
-      grid-column: 1 / -1;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 28px;
+      color: var(--muted);
+      box-shadow: var(--soft-shadow);
     }
 
-    .empty-state h2 {
-      margin-top: 0;
-      font-family: Georgia, serif;
-      font-size: 32px;
+    .load-row {
+      display: flex;
+      justify-content: center;
+      margin-top: 24px;
     }
 
-    @media (max-width: 950px) {
+    .load-button {
+      border: 1px solid #bfdbfe;
+      background: #f0f7ff;
+      color: var(--blue);
+      border-radius: 12px;
+      padding: 13px 18px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    @media (max-width: 1200px) {
+      .source-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 980px) {
       .site-header {
-        padding: 20px;
         height: auto;
+        padding: 18px 24px;
         flex-direction: column;
-        gap: 18px;
+        gap: 16px;
       }
 
       nav {
         flex-wrap: wrap;
         justify-content: center;
-        gap: 18px;
       }
 
       .hero {
-        padding: 32px 24px;
-      }
-
-      .hero h1 {
-        font-size: 42px;
-      }
-
-      .search-row {
         grid-template-columns: 1fr;
+      }
+
+      .hero-actions {
+        justify-content: flex-start;
+      }
+
+      .controls {
+        grid-template-columns: 1fr 1fr;
       }
 
       .layout {
         grid-template-columns: 1fr;
       }
 
+      .side-panel {
+        position: static;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .page {
+        padding: 28px 16px 60px;
+      }
+
+      .hero {
+        padding: 30px 24px;
+      }
+
+      .hero h1 {
+        font-size: 38px;
+      }
+
+      .controls,
       .source-grid {
         grid-template-columns: 1fr;
       }
+
+      .primary-link,
+      .secondary-link {
+        width: 100%;
+      }
     }
   </style>
-
 </head>
 
 <body>
@@ -426,108 +624,130 @@
       </div>
     </a>
 
-```
-<nav>
-  <a href="index.html">Home</a>
-  <a href="explore.html">Explore</a>
-  <a href="graph.html">Graph</a>
-  <a href="sources.html" class="active">Sources</a>
-  <a href="revisions.html">Revisions</a>
-  <a href="about.html">About</a>
-</nav>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="explore.html">Explore</a>
+      <a href="graph.html">Graph</a>
+      <a href="sources.html" class="active">Sources</a>
+      <a href="revisions.html">Revisions</a>
+      <a href="about.html">About</a>
+    </nav>
 
-<button class="icon-button" onclick="focusSearch()">⌕</button>
-```
-
+    <button class="icon-button" onclick="focusSourceSearch()">⌕</button>
   </header>
 
   <main class="page">
     <section class="hero">
-      <div class="hero-label">SourceRoot Source Library</div>
-      <h1>Trace knowledge back to sources.</h1>
-      <p>
-        SourceRoot is built on provenance. This page shows the references supporting the DictionaryHub seed graph and the concepts connected to each source.
-      </p>
+      <div>
+        <div class="hero-label">SourceRoot Source Library</div>
+        <h1>Trace knowledge back to sources.</h1>
+        <p>
+          Review the references that support DictionaryHub concepts, see which ideas each source supports, and jump from a source into the concept graph.
+        </p>
+      </div>
+
+      <div class="hero-actions">
+        <a class="secondary-link" href="graph.html?center=truth&view=sphere&depth=2&edges=center&lens=domain">Open Truth Graph</a>
+        <a class="primary-link" href="concept.html?id=truth">Start with Truth</a>
+      </div>
     </section>
 
-```
-<section class="controls">
-  <div class="search-row">
-    <input
-      class="search-input"
-      id="search-input"
-      type="text"
-      placeholder="Search sources, descriptions, or concepts..."
-      oninput="applyFilters()"
-    />
+    <section class="controls">
+      <input
+        class="search-input"
+        id="search-input"
+        type="text"
+        placeholder="Search sources, categories, concepts, or descriptions..."
+        oninput="setSearch()"
+      />
 
-    <select class="filter-select" id="sort-filter" onchange="applyFilters()">
-      <option value="name">Sort by name</option>
-      <option value="usage">Sort by usage</option>
-      <option value="type">Sort by type</option>
-    </select>
-  </div>
+      <select class="filter-select" id="category-select" onchange="setCategory()">
+        <option value="all">All categories</option>
+      </select>
 
-  <div class="meta-row">
-    <div>
-      Showing <strong id="visible-count">0</strong> of <strong id="total-count">0</strong> sources
-    </div>
-    <div>
-      Data source: <strong>data/nodes.json</strong>
-    </div>
-  </div>
-</section>
+      <select class="filter-select" id="sort-select" onchange="setSort()">
+        <option value="usage">Most used</option>
+        <option value="name">Sort by name</option>
+        <option value="category">Sort by category</option>
+      </select>
 
-<section class="layout">
-  <div class="source-grid" id="source-grid"></div>
+      <select class="filter-select" id="view-select" onchange="setCardDensity()">
+        <option value="comfortable">Comfortable cards</option>
+        <option value="compact">Compact cards</option>
+      </select>
+    </section>
 
-  <aside class="side-panel">
-    <div class="side-card">
-      <h3>Selected Source</h3>
+    <section class="source-strip">
+      <div class="source-strip-top">
+        <span id="result-count">Loading sources...</span>
+        <span>Data source: <strong>data/nodes.json</strong></span>
+      </div>
 
-      <h2 class="selected-source-title" id="selected-source-name">Loading...</h2>
-      <p class="selected-source-description" id="selected-source-description"></p>
+      <div class="category-chips" id="category-chips"></div>
+    </section>
 
-      <h3 style="font-size:20px; margin-top:24px;">Used By</h3>
-      <div class="source-concept-list" id="selected-source-concepts"></div>
-    </div>
-
-    <div class="side-card">
-      <h3>Source Summary</h3>
-
-      <div class="stat-grid">
-        <div class="stat">
-          <span>Unique Sources</span>
-          <strong id="stat-sources">0</strong>
-        </div>
-
-        <div class="stat">
-          <span>Total Citations</span>
-          <strong id="stat-citations">0</strong>
-        </div>
-
-        <div class="stat">
-          <span>Concepts With Sources</span>
-          <strong id="stat-concepts">0</strong>
-        </div>
-
-        <div class="stat">
-          <span>Source Types</span>
-          <strong id="stat-types">0</strong>
+    <section class="layout">
+      <div>
+        <div class="source-grid" id="source-grid"></div>
+        <div class="load-row" id="load-row">
+          <button class="load-button" onclick="loadMore()">Load more sources</button>
         </div>
       </div>
-    </div>
 
-    <div class="side-card">
-      <h3>Why this matters</h3>
-      <p style="color:#475569; line-height:1.6; margin:0;">
-        A claim without a source is fragile. SourceRoot becomes valuable by showing where knowledge came from, what supports it, and which concepts depend on the same references.
-      </p>
-    </div>
-  </aside>
-</section>
-```
+      <aside class="side-panel">
+        <div class="side-card">
+          <h3>Selected Source</h3>
+          <h2 class="selected-title" id="selected-name">Loading...</h2>
+          <div class="selected-meta" id="selected-meta">Source details loading...</div>
+          <p class="selected-description" id="selected-description"></p>
 
+          <div class="summary-grid">
+            <div class="summary-row">
+              <span>Linked Concepts</span>
+              <strong id="selected-concepts">0</strong>
+            </div>
+            <div class="summary-row">
+              <span>Category</span>
+              <strong id="selected-category">—</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="side-card">
+          <h3>Supported Concepts</h3>
+          <div class="linked-list" id="linked-list"></div>
+        </div>
+
+        <div class="side-card">
+          <h3>Source Summary</h3>
+          <div class="summary-grid">
+            <div class="summary-row">
+              <span>Total Sources</span>
+              <strong id="stat-sources">0</strong>
+            </div>
+            <div class="summary-row">
+              <span>Visible Sources</span>
+              <strong id="stat-visible">0</strong>
+            </div>
+            <div class="summary-row">
+              <span>Linked Concepts</span>
+              <strong id="stat-concepts">0</strong>
+            </div>
+            <div class="summary-row">
+              <span>Categories</span>
+              <strong id="stat-categories">0</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="side-card proof-card">
+          <h3>What this proves</h3>
+          <p>
+            The source library is not separate from the graph. Each source is tied back to the concepts it supports, making provenance visible and navigable.
+          </p>
+        </div>
+      </aside>
+    </section>
   </main>
 
   <script>
@@ -537,232 +757,334 @@
         entryId: "SRC-NODE-00001",
         name: "Truth",
         domain: "Knowledge",
+        definition: "Truth is the quality of being in accordance with fact, reality, evidence, or verified understanding.",
+        related: [{ id: "evidence" }, { id: "verification" }],
         sources: [
-          { name: "Stanford Encyclopedia of Philosophy", description: "Philosophy reference" },
-          { name: "Merriam-Webster Dictionary", description: "Definition reference" },
-          { name: "Online Etymology Dictionary", description: "Etymology reference" },
-          { name: "Encyclopaedia Britannica", description: "General reference" }
-        ]
-      },
-      {
-        id: "knowledge",
-        entryId: "SRC-NODE-00003",
-        name: "Knowledge",
-        domain: "Knowledge",
-        sources: [
-          { name: "Stanford Encyclopedia of Philosophy", description: "Epistemology reference" },
-          { name: "Encyclopaedia Britannica", description: "General reference" }
-        ]
+          { name: "Stanford Encyclopedia of Philosophy", category: "Academic Reference" },
+          { name: "Merriam-Webster Dictionary", category: "Dictionary" }
+        ],
+        revisions: [{ version: "v1.0" }]
       }
     ];
 
     let allNodes = [];
     let allSources = [];
-    let selectedSourceKey = "";
+    let filteredSources = [];
+    let selectedSourceId = "";
+    let activeSearch = "";
+    let activeCategory = "all";
+    let activeSort = "usage";
+    let activeDensity = "comfortable";
+    let visibleLimit = 24;
 
-    async function loadNodes() {
+    async function loadData() {
       try {
         const response = await fetch("data/nodes.json");
-        if (!response.ok) {
-          throw new Error("nodes.json not found");
-        }
-        return await response.json();
+        if (!response.ok) throw new Error("nodes.json not found");
+        const data = await response.json();
+        allNodes = Array.isArray(data) ? data : fallbackNodes;
       } catch (error) {
-        return fallbackNodes;
+        allNodes = fallbackNodes;
+      }
+
+      normalizeNodes();
+      buildSourcesFromNodes();
+      buildCategoryControls();
+      applyFilters();
+
+      if (allSources.length > 0) {
+        selectSource(allSources[0].id);
       }
     }
 
-    function normalizeKey(value) {
-      return (value || "").toLowerCase().trim();
+    function normalizeNodes() {
+      allNodes.forEach(node => {
+        if (!node.id && node.name) {
+          node.id = slugify(node.name);
+        }
+      });
     }
 
-    function inferSourceType(source) {
-      const text = `${source.name || ""} ${source.description || ""}`.toLowerCase();
-
-      if (text.includes("dictionary") || text.includes("etymology")) return "Dictionary";
-      if (text.includes("philosophy") || text.includes("encyclopedia")) return "Reference";
-      if (text.includes("legal") || text.includes("law") || text.includes("court")) return "Legal";
-      if (text.includes("science") || text.includes("nature") || text.includes("nasa")) return "Scientific";
-      if (text.includes("archive") || text.includes("library")) return "Archive";
-
-      return "Reference";
+    function slugify(value) {
+      return String(value || "")
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
     }
 
-    function collectSources(nodes) {
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function getNodeId(node) {
+      return node.id || slugify(node.name || "");
+    }
+
+    function getSourceName(source) {
+      return source.name || source.title || source.source || source.url || "Unnamed Source";
+    }
+
+    function getSourceCategory(source) {
+      return source.category || source.type || source.publisherType || "Reference";
+    }
+
+    function getSourceDescription(source) {
+      return source.description || source.note || source.summary || "Reference used to support one or more DictionaryHub concepts.";
+    }
+
+    function buildSourcesFromNodes() {
       const sourceMap = new Map();
 
-      nodes.forEach(node => {
-        const sources = node.sources || [];
+      allNodes.forEach(node => {
+        const sources = Array.isArray(node.sources) ? node.sources : [];
 
         sources.forEach(source => {
-          const key = normalizeKey(source.name);
+          const name = getSourceName(source);
+          const id = slugify(name);
 
-          if (!key) return;
-
-          if (!sourceMap.has(key)) {
-            sourceMap.set(key, {
-              key,
-              name: source.name,
-              description: source.description || "Source reference",
-              type: source.type || inferSourceType(source),
-              url: source.url || "",
+          if (!sourceMap.has(id)) {
+            sourceMap.set(id, {
+              id,
+              name,
+              category: getSourceCategory(source),
+              description: getSourceDescription(source),
+              url: source.url || source.link || source.href || "",
               concepts: []
             });
           }
 
-          const existing = sourceMap.get(key);
-
+          const existing = sourceMap.get(id);
           existing.concepts.push({
-            id: node.id,
-            name: node.name,
-            domain: node.domain,
-            entryId: node.entryId
+            id: getNodeId(node),
+            name: node.name || getNodeId(node),
+            domain: node.domain || "Concept"
           });
         });
       });
 
-      return Array.from(sourceMap.values());
+      allSources = Array.from(sourceMap.values()).sort((a, b) => b.concepts.length - a.concepts.length);
+    }
+
+    function buildCategoryControls() {
+      const categories = [...new Set(allSources.map(source => source.category).filter(Boolean))].sort();
+      const select = document.getElementById("category-select");
+      const chips = document.getElementById("category-chips");
+
+      select.innerHTML = `<option value="all">All categories</option>`;
+      categories.forEach(category => {
+        const option = document.createElement("option");
+        option.value = category;
+        option.textContent = category;
+        select.appendChild(option);
+      });
+
+      chips.innerHTML = "";
+      chips.appendChild(makeCategoryChip("all", "All"));
+
+      categories.slice(0, 18).forEach(category => {
+        chips.appendChild(makeCategoryChip(category, category));
+      });
+    }
+
+    function makeCategoryChip(value, label) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = `category-chip ${activeCategory === value ? "active" : ""}`;
+      button.textContent = label;
+      button.addEventListener("click", () => {
+        activeCategory = value;
+        document.getElementById("category-select").value = value;
+        visibleLimit = 24;
+        applyFilters();
+      });
+      return button;
+    }
+
+    function refreshCategoryChips() {
+      document.querySelectorAll(".category-chip").forEach(chip => {
+        chip.classList.toggle("active", chip.textContent === "All" ? activeCategory === "all" : chip.textContent === activeCategory);
+      });
+    }
+
+    function setSearch() {
+      activeSearch = document.getElementById("search-input").value.toLowerCase().trim();
+      visibleLimit = 24;
+      applyFilters();
+    }
+
+    function setCategory() {
+      activeCategory = document.getElementById("category-select").value;
+      visibleLimit = 24;
+      applyFilters();
+    }
+
+    function setSort() {
+      activeSort = document.getElementById("sort-select").value;
+      visibleLimit = 24;
+      applyFilters();
+    }
+
+    function setCardDensity() {
+      activeDensity = document.getElementById("view-select").value;
+      renderSources();
     }
 
     function applyFilters() {
-      const search = document.getElementById("search-input").value.toLowerCase().trim();
-      const sort = document.getElementById("sort-filter").value;
+      filteredSources = allSources.filter(source => {
+        const conceptText = source.concepts.map(concept => `${concept.name} ${concept.domain}`).join(" ");
+        const text = `${source.name} ${source.category} ${source.description} ${conceptText}`.toLowerCase();
 
-      let filtered = allSources.filter(source => {
-        const conceptText = source.concepts.map(concept => concept.name).join(" ");
-        const searchText = `
-          ${source.name}
-          ${source.description}
-          ${source.type}
-          ${conceptText}
-        `.toLowerCase();
+        const matchesSearch = !activeSearch || text.includes(activeSearch);
+        const matchesCategory = activeCategory === "all" || source.category === activeCategory;
 
-        return searchText.includes(search);
+        return matchesSearch && matchesCategory;
       });
 
-      if (sort === "name") {
-        filtered.sort((a, b) => a.name.localeCompare(b.name));
-      }
+      filteredSources.sort((a, b) => {
+        if (activeSort === "usage") return b.concepts.length - a.concepts.length;
+        if (activeSort === "category") return String(a.category).localeCompare(String(b.category));
+        return String(a.name).localeCompare(String(b.name));
+      });
 
-      if (sort === "usage") {
-        filtered.sort((a, b) => b.concepts.length - a.concepts.length);
-      }
-
-      if (sort === "type") {
-        filtered.sort((a, b) => {
-          const typeCompare = a.type.localeCompare(b.type);
-          if (typeCompare !== 0) return typeCompare;
-          return a.name.localeCompare(b.name);
-        });
-      }
-
-      renderSources(filtered);
-
-      document.getElementById("visible-count").textContent = filtered.length;
-      document.getElementById("total-count").textContent = allSources.length;
+      refreshCategoryChips();
+      renderSources();
+      updateStats();
     }
 
-    function renderSources(sources) {
+    function renderSources() {
       const grid = document.getElementById("source-grid");
-      grid.innerHTML = "";
+      const sourcesToShow = filteredSources.slice(0, visibleLimit);
 
-      if (sources.length === 0) {
+      if (sourcesToShow.length === 0) {
         grid.innerHTML = `
-          <div class="empty-state">
-            <h2>No sources found</h2>
-            <p>Try searching for Stanford, Merriam-Webster, Britannica, Etymology, Truth, or Knowledge.</p>
+          <div class="empty">
+            No sources matched your search or filter. Try clearing the search or switching to all categories.
           </div>
         `;
+        document.getElementById("load-row").style.display = "none";
         return;
       }
 
-      sources.forEach(source => {
-        const card = document.createElement("div");
-        card.className = `source-card ${source.key === selectedSourceKey ? "selected" : ""}`;
-        card.onclick = () => selectSource(source.key);
-
-        const usedByTags = source.concepts
-          .slice(0, 5)
-          .map(concept => `<a class="concept-tag" href="concept.html?id=${concept.id}" onclick="event.stopPropagation()">${concept.name}</a>`)
-          .join("");
-
-        card.innerHTML = `
-          <span class="source-type">${source.type}</span>
-          <h2>${source.name}</h2>
-          <p class="source-description">${source.description}</p>
-
-          <div class="used-by">
-            ${usedByTags || `<span class="concept-tag">No concepts linked</span>`}
-          </div>
-
-          <div class="card-footer">
-            <span>Used by ${source.concepts.length} concept${source.concepts.length === 1 ? "" : "s"}</span>
-            <span class="open-link">Inspect →</span>
-          </div>
-        `;
-
-        grid.appendChild(card);
-      });
+      grid.innerHTML = sourcesToShow.map(renderSourceCard).join("");
+      document.getElementById("load-row").style.display = filteredSources.length > visibleLimit ? "flex" : "none";
     }
 
-    function selectSource(key) {
-      selectedSourceKey = key;
+    function clip(value, max) {
+      const text = String(value || "").trim().replace(/\s+/g, " ");
+      return text.length > max ? text.slice(0, max - 3) + "..." : text;
+    }
 
-      const source = allSources.find(item => item.key === key);
+    function renderSourceCard(source) {
+      const conceptLimit = activeDensity === "compact" ? 3 : 5;
+      const descriptionLength = activeDensity === "compact" ? 95 : 145;
+      const concepts = source.concepts.slice(0, conceptLimit);
+      const firstConcept = source.concepts[0];
+
+      const conceptsHtml = concepts.length
+        ? concepts.map(concept => `<span class="concept-chip">${escapeHtml(concept.name)}</span>`).join("")
+        : `<span class="concept-chip">No linked concepts</span>`;
+
+      const graphHref = firstConcept
+        ? `graph.html?center=${encodeURIComponent(firstConcept.id)}&view=sphere&depth=2&edges=center&lens=domain`
+        : "graph.html";
+
+      return `
+        <article class="source-card ${source.id === selectedSourceId ? "selected" : ""}" onclick="selectSource('${escapeHtml(source.id)}')">
+          <div class="source-top">
+            <div>
+              <h2>${escapeHtml(source.name)}</h2>
+              <div class="source-id">${escapeHtml(source.id)}</div>
+            </div>
+            <span class="category-badge">${escapeHtml(source.category)}</span>
+          </div>
+
+          <p class="source-description">${escapeHtml(clip(source.description, descriptionLength))}</p>
+
+          <div class="concept-chips">
+            ${conceptsHtml}
+          </div>
+
+          <div class="card-meta">
+            <span>${source.concepts.length} linked concepts</span>
+          </div>
+
+          <div class="card-actions">
+            <button class="inspect-action" type="button" onclick="event.stopPropagation(); selectSource('${escapeHtml(source.id)}')">Inspect</button>
+            <a class="graph-action" href="${graphHref}" onclick="event.stopPropagation()">Graph</a>
+          </div>
+        </article>
+      `;
+    }
+
+    function selectSource(id) {
+      selectedSourceId = id;
+      const source = allSources.find(item => item.id === id);
       if (!source) return;
 
-      document.getElementById("selected-source-name").textContent = source.name;
-      document.getElementById("selected-source-description").textContent = source.description;
+      document.getElementById("selected-name").textContent = source.name;
+      document.getElementById("selected-meta").textContent = source.id;
+      document.getElementById("selected-description").textContent = source.description;
+      document.getElementById("selected-concepts").textContent = source.concepts.length;
+      document.getElementById("selected-category").textContent = source.category;
 
-      const container = document.getElementById("selected-source-concepts");
-      container.innerHTML = "";
+      renderLinkedConcepts(source);
+      renderSources();
+    }
 
-      source.concepts.forEach(concept => {
-        const link = document.createElement("a");
-        link.href = `concept.html?id=${concept.id}`;
-        link.innerHTML = `
-          ${concept.name}
-          <span>Open</span>
-        `;
-        container.appendChild(link);
+    function renderLinkedConcepts(source) {
+      const container = document.getElementById("linked-list");
+
+      if (!source.concepts.length) {
+        container.innerHTML = `<div class="empty">No linked concepts yet.</div>`;
+        return;
+      }
+
+      container.innerHTML = source.concepts
+        .slice()
+        .sort((a, b) => String(a.name).localeCompare(String(b.name)))
+        .map(concept => `
+          <a href="concept.html?id=${encodeURIComponent(concept.id)}">
+            ${escapeHtml(concept.name)}
+            <span>Open →</span>
+          </a>
+        `)
+        .join("");
+    }
+
+    function updateStats() {
+      const categories = [...new Set(allSources.map(source => source.category))].length;
+      const conceptIds = new Set();
+
+      allSources.forEach(source => {
+        source.concepts.forEach(concept => conceptIds.add(concept.id));
       });
 
-      applyFilters();
-    }
-
-    function renderStats() {
-      const totalCitations = allSources.reduce((sum, source) => sum + source.concepts.length, 0);
-      const conceptsWithSources = allNodes.filter(node => (node.sources || []).length > 0).length;
-      const sourceTypes = [...new Set(allSources.map(source => source.type))];
-
       document.getElementById("stat-sources").textContent = allSources.length;
-      document.getElementById("stat-citations").textContent = totalCitations;
-      document.getElementById("stat-concepts").textContent = conceptsWithSources;
-      document.getElementById("stat-types").textContent = sourceTypes.length;
+      document.getElementById("stat-visible").textContent = filteredSources.length;
+      document.getElementById("stat-concepts").textContent = conceptIds.size;
+      document.getElementById("stat-categories").textContent = categories;
+
+      document.getElementById("result-count").textContent =
+        `Showing ${Math.min(visibleLimit, filteredSources.length)} of ${filteredSources.length} matching sources`;
     }
 
-    function focusSearch() {
+    function loadMore() {
+      visibleLimit += 24;
+      renderSources();
+      updateStats();
+    }
+
+    function focusSourceSearch() {
       document.getElementById("search-input").focus();
     }
 
-    async function init() {
-      allNodes = await loadNodes();
-      allSources = collectSources(allNodes);
-
-      if (allSources.length > 0) {
-        selectedSourceKey = allSources[0].key;
-      }
-
-      renderStats();
-      applyFilters();
-
-      if (selectedSourceKey) {
-        selectSource(selectedSourceKey);
-      }
-    }
-
-    init();
+    loadData();
   </script>
-
 </body>
 </html>
