@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -11,22 +10,39 @@
       box-sizing: border-box;
     }
 
+    :root {
+      --navy: #061a33;
+      --navy-2: #0c3d78;
+      --blue: #1f6ed4;
+      --blue-soft: #eaf4ff;
+      --line: #e5eaf1;
+      --text: #0d1b2a;
+      --muted: #64748b;
+      --bg: #f7f9fc;
+      --white: #ffffff;
+      --shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
+      --soft-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+    }
+
     body {
       margin: 0;
       font-family: Arial, Helvetica, sans-serif;
-      background: #f7f9fc;
-      color: #0d1b2a;
+      background: var(--bg);
+      color: var(--text);
     }
 
     .site-header {
-      height: 86px;
+      height: 78px;
       padding: 0 48px;
-      background: #061a33;
+      background: var(--navy);
       color: white;
       display: flex;
       align-items: center;
       justify-content: space-between;
       border-bottom: 1px solid rgba(255,255,255,0.12);
+      position: sticky;
+      top: 0;
+      z-index: 50;
     }
 
     .brand {
@@ -38,42 +54,44 @@
     }
 
     .logo {
-      width: 46px;
-      height: 46px;
+      width: 42px;
+      height: 42px;
       border: 2px solid white;
       border-radius: 50%;
       display: grid;
       place-items: center;
-      font-size: 24px;
+      font-size: 23px;
+      flex: 0 0 auto;
     }
 
     .brand h1 {
       margin: 0;
       font-family: Georgia, serif;
-      font-size: 28px;
+      font-size: 24px;
       line-height: 1;
       color: white;
     }
 
     .brand p {
       margin: 3px 0 0;
-      font-size: 14px;
+      font-size: 12px;
       opacity: 0.85;
       color: white;
     }
 
     nav {
       display: flex;
-      gap: 30px;
+      gap: 26px;
       align-items: center;
     }
 
     nav a {
       color: white;
       text-decoration: none;
-      font-size: 15px;
+      font-size: 14px;
       opacity: 0.9;
       padding-bottom: 8px;
+      white-space: nowrap;
     }
 
     nav a:hover {
@@ -85,18 +103,18 @@
     }
 
     .icon-button {
-      width: 46px;
-      height: 46px;
+      width: 42px;
+      height: 42px;
       border-radius: 50%;
       border: none;
       color: white;
       background: #102b4c;
-      font-size: 22px;
+      font-size: 20px;
       cursor: pointer;
     }
 
     .page {
-      max-width: 1180px;
+      max-width: 1420px;
       margin: 0 auto;
       padding: 42px 24px 80px;
     }
@@ -105,50 +123,91 @@
       background: linear-gradient(135deg, #061a33, #0c3d78);
       color: white;
       border-radius: 22px;
-      padding: 44px;
-      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
-      margin-bottom: 28px;
+      padding: 38px 42px;
+      box-shadow: var(--shadow);
+      margin-bottom: 24px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 28px;
+      align-items: end;
     }
 
     .hero-label {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
       background: rgba(255,255,255,0.12);
-      border: 1px solid rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.22);
       padding: 8px 12px;
       border-radius: 999px;
-      font-size: 13px;
-      font-weight: 700;
-      margin-bottom: 18px;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 16px;
+      color: white;
     }
 
     .hero h1 {
       margin: 0;
       font-family: Georgia, serif;
-      font-size: 54px;
-      line-height: 1.05;
+      font-size: 52px;
+      line-height: 1.02;
+      color: white;
     }
 
     .hero p {
-      max-width: 820px;
-      margin: 18px 0 0;
+      margin: 15px 0 0;
+      max-width: 900px;
       color: #dbeafe;
-      font-size: 18px;
-      line-height: 1.7;
+      font-size: 17px;
+      line-height: 1.65;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .primary-link,
+    .secondary-link {
+      border-radius: 13px;
+      padding: 14px 17px;
+      font-weight: 900;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+      font-size: 14px;
+    }
+
+    .primary-link {
+      background: var(--blue);
+      color: white;
+      box-shadow: 0 14px 30px rgba(31,110,212,0.22);
+    }
+
+    .secondary-link {
+      background: rgba(255,255,255,0.08);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.22);
     }
 
     .controls {
       background: white;
-      border: 1px solid #e5eaf1;
+      border: 1px solid var(--line);
       border-radius: 18px;
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
-      padding: 24px;
-      margin-bottom: 28px;
-    }
-
-    .search-row {
+      box-shadow: var(--soft-shadow);
+      padding: 18px;
+      margin-bottom: 20px;
       display: grid;
-      grid-template-columns: 1fr 220px 210px;
-      gap: 14px;
+      grid-template-columns: minmax(320px, 1fr) 190px 180px 170px;
+      gap: 12px;
+      align-items: center;
     }
 
     .search-input,
@@ -156,334 +215,429 @@
       width: 100%;
       border: 1px solid #d6e0ec;
       border-radius: 12px;
-      padding: 15px 16px;
-      font-size: 15px;
-      color: #0d1b2a;
+      padding: 14px 15px;
+      font-size: 14px;
+      color: var(--text);
       background: #fbfdff;
       outline: none;
     }
 
     .search-input:focus,
     .filter-select:focus {
-      border-color: #1f6ed4;
+      border-color: var(--blue);
       box-shadow: 0 0 0 4px rgba(31, 110, 212, 0.1);
     }
 
-    .meta-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 18px;
-      flex-wrap: wrap;
-      margin-top: 18px;
-      color: #64748b;
-      font-size: 14px;
+    .revision-strip {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--soft-shadow);
+      padding: 16px 18px;
+      margin-bottom: 24px;
     }
 
-    .meta-row strong {
-      color: #0d1b2a;
+    .revision-strip-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .type-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+    }
+
+    .type-chip {
+      border: 1px solid #bfdbfe;
+      background: #f0f7ff;
+      color: var(--blue);
+      border-radius: 999px;
+      padding: 8px 11px;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .type-chip.active {
+      background: var(--blue);
+      color: white;
+      border-color: var(--blue);
     }
 
     .layout {
       display: grid;
-      grid-template-columns: 1fr 340px;
-      gap: 28px;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 24px;
+      align-items: start;
     }
 
-    .timeline-panel,
-    .side-card {
+    .timeline-card {
       background: white;
-      border: 1px solid #e5eaf1;
-      border-radius: 16px;
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--soft-shadow);
+      padding: 24px;
     }
 
-    .timeline-panel {
-      padding: 26px;
-      position: relative;
-    }
-
-    .timeline-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 20px;
-      margin-bottom: 24px;
-      border-bottom: 1px solid #e5eaf1;
-      padding-bottom: 18px;
-    }
-
-    .timeline-header h2 {
+    .timeline-card h2 {
       margin: 0;
       font-family: Georgia, serif;
-      font-size: 30px;
+      font-size: 32px;
     }
 
-    .timeline-header p {
-      margin: 6px 0 0;
-      color: #64748b;
-      line-height: 1.5;
+    .timeline-subtitle {
+      color: var(--muted);
+      margin: 8px 0 22px;
+      line-height: 1.55;
+      font-size: 14px;
     }
 
-    .timeline-list {
-      display: grid;
-      gap: 18px;
+    .timeline {
       position: relative;
+      display: grid;
+      gap: 16px;
+      padding-left: 28px;
     }
 
-    .timeline-list::before {
+    .timeline::before {
       content: "";
       position: absolute;
-      left: 18px;
+      left: 10px;
       top: 8px;
       bottom: 8px;
       width: 2px;
-      background: #dbeafe;
+      background: linear-gradient(var(--blue), #bfdbfe);
+      border-radius: 999px;
     }
 
-    .revision-card {
-      display: grid;
-      grid-template-columns: 46px 1fr;
-      gap: 16px;
-      cursor: pointer;
+    .revision-item {
       position: relative;
+      background: #fbfdff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 18px;
+      cursor: pointer;
+      transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
     }
 
-    .revision-dot {
-      width: 38px;
-      height: 38px;
+    .revision-item::before {
+      content: attr(data-index);
+      position: absolute;
+      left: -37px;
+      top: 18px;
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
-      background: #ffffff;
-      border: 3px solid #1f6ed4;
-      z-index: 2;
+      background: #f0f7ff;
+      border: 2px solid var(--blue);
+      color: var(--blue);
       display: grid;
       place-items: center;
-      color: #1f6ed4;
+      font-size: 10px;
       font-weight: 900;
-      font-size: 13px;
-      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.1);
     }
 
-    .revision-content {
-      border: 1px solid #e5eaf1;
-      border-radius: 14px;
-      background: #fbfdff;
-      padding: 18px;
-      transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+    .revision-item:hover,
+    .revision-item.selected {
+      transform: translateY(-2px);
+      border-color: #bfdbfe;
+      box-shadow: var(--soft-shadow);
+      background: white;
     }
 
-    .revision-card:hover .revision-content,
-    .revision-card.selected .revision-content {
-      border-color: #93c5fd;
-      background: #f0f7ff;
-      box-shadow: 0 12px 26px rgba(15, 23, 42, 0.08);
+    .revision-item.selected {
+      outline: 4px solid rgba(31, 110, 212, 0.12);
     }
 
     .revision-top {
       display: flex;
       justify-content: space-between;
-      gap: 14px;
-      flex-wrap: wrap;
+      align-items: flex-start;
+      gap: 16px;
       margin-bottom: 10px;
     }
 
     .revision-title {
+      margin: 0;
       font-family: Georgia, serif;
-      font-size: 22px;
-      font-weight: 800;
-      color: #0d1b2a;
+      font-size: 23px;
+      line-height: 1.12;
+    }
+
+    .revision-id {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      margin-top: 5px;
     }
 
     .revision-type {
-      display: inline-block;
-      padding: 7px 10px;
+      background: var(--blue-soft);
+      color: var(--blue);
+      border: 1px solid #bfdbfe;
       border-radius: 999px;
-      background: #e2efff;
-      color: #0f63c9;
-      font-size: 12px;
-      font-weight: 800;
+      padding: 7px 9px;
+      font-size: 11px;
+      font-weight: 900;
       white-space: nowrap;
+      max-width: 160px;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .revision-description {
       color: #475569;
-      line-height: 1.6;
-      margin: 0 0 14px;
+      line-height: 1.55;
+      font-size: 14px;
+      margin: 0 0 12px;
     }
 
     .revision-meta {
       display: flex;
-      gap: 10px;
       flex-wrap: wrap;
-      color: #64748b;
-      font-size: 13px;
-      border-top: 1px solid #e5eaf1;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
       padding-top: 12px;
+      border-top: 1px solid #eef2f7;
     }
 
     .revision-meta a {
-      color: #1f6ed4;
-      font-weight: 800;
+      color: var(--blue);
       text-decoration: none;
+      font-weight: 900;
+    }
+
+    .load-row {
+      display: flex;
+      justify-content: center;
+      margin-top: 24px;
+    }
+
+    .load-button {
+      border: 1px solid #bfdbfe;
+      background: #f0f7ff;
+      color: var(--blue);
+      border-radius: 12px;
+      padding: 13px 18px;
+      font-weight: 900;
+      cursor: pointer;
     }
 
     .side-panel {
       display: grid;
       gap: 18px;
-      align-content: start;
+      position: sticky;
+      top: 98px;
     }
 
     .side-card {
-      padding: 24px;
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--soft-shadow);
+      padding: 20px;
     }
 
     .side-card h3 {
-      margin: 0 0 16px;
+      margin: 0 0 14px;
       font-family: Georgia, serif;
-      font-size: 22px;
+      font-size: 24px;
     }
 
     .selected-title {
+      margin: 0;
       font-family: Georgia, serif;
       font-size: 30px;
-      margin: 0 0 8px;
+      line-height: 1.08;
     }
 
-    .selected-subtitle {
-      color: #64748b;
-      font-size: 13px;
-      margin-bottom: 18px;
+    .selected-meta {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      margin: 7px 0 14px;
     }
 
     .selected-description {
       color: #475569;
-      line-height: 1.6;
-      margin: 0 0 18px;
+      line-height: 1.62;
+      font-size: 14px;
+      margin: 0 0 16px;
     }
 
-    .detail-box {
-      border: 1px solid #e5eaf1;
+    .summary-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px;
+      border: 1px solid var(--line);
       border-radius: 12px;
       background: #fbfdff;
-      padding: 13px;
-      margin-bottom: 12px;
     }
 
-    .detail-box strong {
-      display: block;
-      margin-bottom: 4px;
-      color: #0d1b2a;
-    }
-
-    .detail-box span {
-      color: #64748b;
+    .summary-row span {
+      color: var(--muted);
       font-size: 13px;
+      font-weight: 800;
     }
 
-    .action-row {
+    .summary-row strong {
+      color: var(--text);
+      font-size: 16px;
+      text-align: right;
+    }
+
+    .action-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
-      margin-top: 18px;
+      margin-top: 16px;
     }
 
-    .action-row a,
-    .action-row button {
-      text-align: center;
+    .action-grid a {
       text-decoration: none;
-      border: none;
       border-radius: 11px;
-      padding: 12px;
-      font-weight: 800;
-      cursor: pointer;
-      font-size: 14px;
-    }
-
-    .action-row a {
-      background: #1f6ed4;
-      color: white;
-    }
-
-    .action-row button {
-      background: #f0f7ff;
-      color: #1f6ed4;
-      border: 1px solid #bfdbfe;
-    }
-
-    .stat-grid {
-      display: grid;
-      gap: 12px;
-    }
-
-    .stat {
-      display: flex;
-      justify-content: space-between;
-      gap: 14px;
-      background: #f8fbff;
-      border: 1px solid #e5eaf1;
-      border-radius: 12px;
-      padding: 13px;
-    }
-
-    .stat span {
-      color: #64748b;
+      padding: 11px;
+      text-align: center;
+      font-weight: 900;
       font-size: 13px;
     }
 
-    .stat strong {
-      font-size: 18px;
-      color: #0d1b2a;
+    .open-action {
+      background: var(--blue);
+      color: white;
     }
 
-    .empty-state {
+    .graph-action {
+      background: #f0f7ff;
+      color: var(--blue);
+      border: 1px solid #bfdbfe;
+    }
+
+    .concept-list {
+      display: grid;
+      gap: 10px;
+      max-height: 320px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .concept-list a {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fbfdff;
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 900;
+    }
+
+    .concept-list a:hover {
+      background: #f0f7ff;
+      border-color: #bfdbfe;
+    }
+
+    .concept-list span {
+      color: var(--blue);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .proof-card p {
+      color: var(--muted);
+      line-height: 1.62;
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .empty {
       background: white;
-      border: 1px solid #e5eaf1;
-      border-radius: 16px;
-      padding: 36px;
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 28px;
+      color: var(--muted);
+      box-shadow: var(--soft-shadow);
     }
 
-    .empty-state h2 {
-      margin-top: 0;
-      font-family: Georgia, serif;
-      font-size: 32px;
-    }
-
-    @media (max-width: 950px) {
+    @media (max-width: 980px) {
       .site-header {
-        padding: 20px;
         height: auto;
+        padding: 18px 24px;
         flex-direction: column;
-        gap: 18px;
+        gap: 16px;
       }
 
       nav {
         flex-wrap: wrap;
         justify-content: center;
-        gap: 18px;
       }
 
       .hero {
-        padding: 32px 24px;
-      }
-
-      .hero h1 {
-        font-size: 42px;
-      }
-
-      .search-row {
         grid-template-columns: 1fr;
+      }
+
+      .hero-actions {
+        justify-content: flex-start;
+      }
+
+      .controls {
+        grid-template-columns: 1fr 1fr;
       }
 
       .layout {
         grid-template-columns: 1fr;
       }
 
-      .timeline-header {
-        flex-direction: column;
+      .side-panel {
+        position: static;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .page {
+        padding: 28px 16px 60px;
+      }
+
+      .hero {
+        padding: 30px 24px;
+      }
+
+      .hero h1 {
+        font-size: 38px;
+      }
+
+      .controls {
+        grid-template-columns: 1fr;
+      }
+
+      .timeline-card {
+        padding: 20px;
+      }
+
+      .primary-link,
+      .secondary-link {
+        width: 100%;
       }
     }
   </style>
-
 </head>
 
 <body>
@@ -496,139 +650,145 @@
       </div>
     </a>
 
-```
-<nav>
-  <a href="index.html">Home</a>
-  <a href="explore.html">Explore</a>
-  <a href="graph.html">Graph</a>
-  <a href="sources.html">Sources</a>
-  <a href="revisions.html" class="active">Revisions</a>
-  <a href="about.html">About</a>
-</nav>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="explore.html">Explore</a>
+      <a href="graph.html">Graph</a>
+      <a href="sources.html">Sources</a>
+      <a href="revisions.html" class="active">Revisions</a>
+      <a href="about.html">About</a>
+    </nav>
 
-<button class="icon-button" onclick="focusSearch()">⌕</button>
-```
-
+    <button class="icon-button" onclick="focusRevisionSearch()">⌕</button>
   </header>
 
   <main class="page">
     <section class="hero">
-      <div class="hero-label">SourceRoot Revision History</div>
-      <h1>Track how knowledge changes.</h1>
-      <p>
-        SourceRoot is not just a graph of concepts. It is a record of how entries are created, sourced, revised, connected, and improved over time.
-      </p>
+      <div>
+        <div class="hero-label">SourceRoot Revision History</div>
+        <h1>Track how knowledge changes.</h1>
+        <p>
+          Review when entries are created, sourced, connected, and revised. Each change links back to the concept it affected.
+        </p>
+      </div>
+
+      <div class="hero-actions">
+        <a class="secondary-link" href="graph.html?center=truth&view=sphere&depth=2&edges=center&lens=domain">Open Truth Graph</a>
+        <a class="primary-link" href="concept.html?id=truth">Start with Truth</a>
+      </div>
     </section>
 
-```
-<section class="controls">
-  <div class="search-row">
-    <input
-      class="search-input"
-      id="search-input"
-      type="text"
-      placeholder="Search revisions, concepts, sources, or descriptions..."
-      oninput="applyFilters()"
-    />
+    <section class="controls">
+      <input
+        class="search-input"
+        id="search-input"
+        type="text"
+        placeholder="Search revisions, concepts, sources, or descriptions..."
+        oninput="setSearch()"
+      />
 
-    <select class="filter-select" id="concept-filter" onchange="applyFilters()">
-      <option value="all">All concepts</option>
-    </select>
+      <select class="filter-select" id="type-select" onchange="setType()">
+        <option value="all">All revision types</option>
+      </select>
 
-    <select class="filter-select" id="sort-filter" onchange="applyFilters()">
-      <option value="latest">Sort by latest</option>
-      <option value="concept">Sort by concept</option>
-      <option value="type">Sort by revision type</option>
-    </select>
-  </div>
+      <select class="filter-select" id="sort-select" onchange="setSort()">
+        <option value="latest">Sort by latest</option>
+        <option value="concept">Sort by concept</option>
+        <option value="type">Sort by type</option>
+      </select>
 
-  <div class="meta-row">
-    <div>
-      Showing <strong id="visible-count">0</strong> of <strong id="total-count">0</strong> revisions
-    </div>
-    <div>
-      Data source: <strong>data/nodes.json</strong>
-    </div>
-  </div>
-</section>
+      <select class="filter-select" id="view-select" onchange="setCardDensity()">
+        <option value="comfortable">Comfortable timeline</option>
+        <option value="compact">Compact timeline</option>
+      </select>
+    </section>
 
-<section class="layout">
-  <section class="timeline-panel">
-    <div class="timeline-header">
-      <div>
+    <section class="revision-strip">
+      <div class="revision-strip-top">
+        <span id="result-count">Loading revisions...</span>
+        <span>Data source: <strong>data/nodes.json</strong></span>
+      </div>
+
+      <div class="type-chips" id="type-chips"></div>
+    </section>
+
+    <section class="layout">
+      <section class="timeline-card">
         <h2>Revision Timeline</h2>
-        <p>Every concept update becomes part of the provenance trail.</p>
-      </div>
-    </div>
+        <p class="timeline-subtitle">
+          Every concept update becomes part of the provenance trail.
+        </p>
 
-    <div class="timeline-list" id="revision-list"></div>
-  </section>
+        <div class="timeline" id="timeline"></div>
 
-  <aside class="side-panel">
-    <div class="side-card">
-      <h3>Selected Revision</h3>
+        <div class="load-row" id="load-row">
+          <button class="load-button" onclick="loadMore()">Load more revisions</button>
+        </div>
+      </section>
 
-      <h2 class="selected-title" id="selected-title">Loading...</h2>
-      <div class="selected-subtitle" id="selected-subtitle">Select a revision</div>
-      <p class="selected-description" id="selected-description"></p>
+      <aside class="side-panel">
+        <div class="side-card">
+          <h3>Selected Revision</h3>
+          <h2 class="selected-title" id="selected-title">Loading...</h2>
+          <div class="selected-meta" id="selected-meta">Revision details loading...</div>
+          <p class="selected-description" id="selected-description"></p>
 
-      <div class="detail-box">
-        <strong>Concept</strong>
-        <span id="selected-concept">Loading...</span>
-      </div>
+          <div class="summary-grid">
+            <div class="summary-row">
+              <span>Concept</span>
+              <strong id="selected-concept">—</strong>
+            </div>
+            <div class="summary-row">
+              <span>Revision Type</span>
+              <strong id="selected-type">—</strong>
+            </div>
+            <div class="summary-row">
+              <span>Source / Support</span>
+              <strong id="selected-source">—</strong>
+            </div>
+          </div>
 
-      <div class="detail-box">
-        <strong>Revision Type</strong>
-        <span id="selected-type">Loading...</span>
-      </div>
-
-      <div class="detail-box">
-        <strong>Source / Support</strong>
-        <span id="selected-source">No source attached yet</span>
-      </div>
-
-      <div class="action-row">
-        <a id="open-concept-link" href="concept.html?id=truth">Open Concept</a>
-        <button onclick="alert('Revision comparison is coming in a future version of DictionaryHub.')">Compare</button>
-      </div>
-    </div>
-
-    <div class="side-card">
-      <h3>Revision Summary</h3>
-
-      <div class="stat-grid">
-        <div class="stat">
-          <span>Total Revisions</span>
-          <strong id="stat-revisions">0</strong>
+          <div class="action-grid">
+            <a class="open-action" id="open-concept-link" href="concept.html?id=truth">Open Concept</a>
+            <a class="graph-action" id="open-graph-link" href="graph.html?center=truth&view=sphere&depth=2&edges=center&lens=domain">Graph</a>
+          </div>
         </div>
 
-        <div class="stat">
-          <span>Concepts Revised</span>
-          <strong id="stat-concepts">0</strong>
+        <div class="side-card">
+          <h3>Revision Summary</h3>
+          <div class="summary-grid">
+            <div class="summary-row">
+              <span>Total Revisions</span>
+              <strong id="stat-revisions">0</strong>
+            </div>
+            <div class="summary-row">
+              <span>Visible Revisions</span>
+              <strong id="stat-visible">0</strong>
+            </div>
+            <div class="summary-row">
+              <span>Concepts Revised</span>
+              <strong id="stat-concepts">0</strong>
+            </div>
+            <div class="summary-row">
+              <span>Revision Types</span>
+              <strong id="stat-types">0</strong>
+            </div>
+          </div>
         </div>
 
-        <div class="stat">
-          <span>Revision Types</span>
-          <strong id="stat-types">0</strong>
+        <div class="side-card">
+          <h3>Recently Revised Concepts</h3>
+          <div class="concept-list" id="recent-concepts"></div>
         </div>
 
-        <div class="stat">
-          <span>Source-Attached</span>
-          <strong id="stat-sourced">0</strong>
+        <div class="side-card proof-card">
+          <h3>Why this matters</h3>
+          <p>
+            A normal dictionary shows the current entry. SourceRoot also shows how the entry changed, why it changed, and what supported the change.
+          </p>
         </div>
-      </div>
-    </div>
-
-    <div class="side-card">
-      <h3>Why this matters</h3>
-      <p style="color:#475569; line-height:1.6; margin:0;">
-        A normal dictionary shows the current entry. SourceRoot also shows how the entry changed, why it changed, and what supported the change.
-      </p>
-    </div>
-  </aside>
-</section>
-```
-
+      </aside>
+    </section>
   </main>
 
   <script>
@@ -638,271 +798,379 @@
         entryId: "SRC-NODE-00001",
         name: "Truth",
         domain: "Knowledge",
+        definition: "Truth is the quality of being in accordance with fact, reality, evidence, or verified understanding.",
+        related: [{ id: "evidence" }, { id: "verification" }],
+        sources: [{ name: "Stanford Encyclopedia of Philosophy" }],
         revisions: [
-          { version: "v1.0 — Initial Entry", description: "Created Truth concept node." },
-          { version: "v1.1 — Sources Added", description: "Added dictionary and philosophy references." },
-          { version: "v1.2 — Relationships Added", description: "Connected Truth to Evidence, Verification, Knowledge, Trust, and Reality." }
-        ]
-      },
-      {
-        id: "knowledge",
-        entryId: "SRC-NODE-00003",
-        name: "Knowledge",
-        domain: "Knowledge",
-        revisions: [
-          { version: "v1.0 — Initial Entry", description: "Created Knowledge concept node." }
+          { version: "v1.0", type: "Created entry", description: "Initial Truth concept seed import." },
+          { version: "v1.1", type: "Added source", description: "Added initial source support." }
         ]
       }
     ];
 
     let allNodes = [];
     let allRevisions = [];
+    let filteredRevisions = [];
     let selectedRevisionId = "";
+    let activeSearch = "";
+    let activeType = "all";
+    let activeSort = "latest";
+    let activeDensity = "comfortable";
+    let visibleLimit = 30;
 
-    async function loadNodes() {
+    async function loadData() {
       try {
         const response = await fetch("data/nodes.json");
-        if (!response.ok) {
-          throw new Error("nodes.json not found");
-        }
-        return await response.json();
+        if (!response.ok) throw new Error("nodes.json not found");
+        const data = await response.json();
+        allNodes = Array.isArray(data) ? data : fallbackNodes;
       } catch (error) {
-        return fallbackNodes;
+        allNodes = fallbackNodes;
+      }
+
+      normalizeNodes();
+      buildRevisionsFromNodes();
+      buildTypeControls();
+      renderRecentConcepts();
+      applyFilters();
+
+      if (allRevisions.length > 0) {
+        selectRevision(allRevisions[0].id);
       }
     }
 
-    function normalizeKey(value) {
-      return (value || "").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-");
+    function normalizeNodes() {
+      allNodes.forEach(node => {
+        if (!node.id && node.name) {
+          node.id = slugify(node.name);
+        }
+      });
     }
 
-    function inferRevisionType(revision) {
-      const text = `${revision.version || ""} ${revision.description || ""}`.toLowerCase();
-
-      if (text.includes("source")) return "Sources Added";
-      if (text.includes("relationship") || text.includes("connected")) return "Relationships Added";
-      if (text.includes("definition")) return "Definition Updated";
-      if (text.includes("origin") || text.includes("etymology")) return "Origin Updated";
-      if (text.includes("created") || text.includes("initial")) return "Initial Entry";
-
-      return "General Revision";
+    function slugify(value) {
+      return String(value || "")
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
     }
 
-    function parseVersionNumber(version) {
-      const match = (version || "").match(/v(\d+(\.\d+)?)/i);
-      if (!match) return 0;
-      return parseFloat(match[1]);
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
     }
 
-    function collectRevisions(nodes) {
-      const revisions = [];
+    function getNodeId(node) {
+      return node.id || slugify(node.name || "");
+    }
 
-      nodes.forEach(node => {
-        const nodeRevisions = node.revisions || [];
+    function getSources(node) {
+      return Array.isArray(node.sources) ? node.sources : [];
+    }
 
-        nodeRevisions.forEach((revision, index) => {
-          const version = revision.version || `Revision ${index + 1}`;
-          const description = revision.description || "No revision description available yet.";
-          const id = `${node.id}-${index}-${normalizeKey(version)}`;
+    function getRelated(node) {
+      return Array.isArray(node.related)
+        ? node.related
+        : Array.isArray(node.relationships)
+          ? node.relationships
+          : [];
+    }
 
-          revisions.push({
-            id,
-            conceptId: node.id,
-            conceptName: node.name,
-            entryId: node.entryId || "SRC-NODE",
-            domain: node.domain || "Unknown",
-            version,
-            versionNumber: parseVersionNumber(version),
-            description,
-            source: revision.source || revision.sourceName || "",
-            date: revision.date || "",
-            type: revision.type || inferRevisionType(revision),
-            index
+    function getRevisionType(revision) {
+      return revision.type || revision.changeType || revision.action || revision.label || "Concept Update";
+    }
+
+    function getRevisionDescription(revision, node, index) {
+      return revision.description
+        || revision.summary
+        || revision.note
+        || revision.reason
+        || `${node.name || getNodeId(node)} was updated as part of the SourceRoot knowledge graph.`;
+    }
+
+    function getRevisionVersion(revision, index) {
+      return revision.version || revision.id || `v${index + 1}.0`;
+    }
+
+    function getRevisionSource(revision, node) {
+      if (revision.source) return revision.source;
+      if (revision.sourceName) return revision.sourceName;
+      const sources = getSources(node);
+      if (sources.length > 0) {
+        return sources[0].name || sources[0].title || sources[0].source || "Source linked";
+      }
+      return "Seed graph";
+    }
+
+    function buildRevisionsFromNodes() {
+      allRevisions = [];
+
+      allNodes.forEach((node, nodeIndex) => {
+        const nodeRevisions = Array.isArray(node.revisions) ? node.revisions : [];
+        const nodeId = getNodeId(node);
+
+        if (nodeRevisions.length > 0) {
+          nodeRevisions.forEach((revision, revisionIndex) => {
+            allRevisions.push({
+              id: `${nodeId}-revision-${revisionIndex + 1}`,
+              nodeId,
+              nodeName: node.name || nodeId,
+              domain: node.domain || "Concept",
+              version: getRevisionVersion(revision, revisionIndex),
+              type: getRevisionType(revision),
+              description: getRevisionDescription(revision, node, revisionIndex),
+              source: getRevisionSource(revision, node),
+              date: revision.date || revision.createdAt || revision.updatedAt || "",
+              order: allRevisions.length
+            });
           });
-        });
+        } else {
+          allRevisions.push({
+            id: `${nodeId}-revision-seed`,
+            nodeId,
+            nodeName: node.name || nodeId,
+            domain: node.domain || "Concept",
+            version: "v1.0",
+            type: "Created concept seed node",
+            description: `Initial seed entry created for ${node.name || nodeId}.`,
+            source: getSources(node)[0]?.name || "Seed graph",
+            date: "",
+            order: allRevisions.length
+          });
+        }
+
+        if (getSources(node).length > 0) {
+          allRevisions.push({
+            id: `${nodeId}-revision-source-support`,
+            nodeId,
+            nodeName: node.name || nodeId,
+            domain: node.domain || "Concept",
+            version: "v1.1",
+            type: "Source / Support",
+            description: `Source support linked for ${node.name || nodeId}.`,
+            source: getSources(node)[0]?.name || "Source linked",
+            date: "",
+            order: allRevisions.length
+          });
+        }
+
+        if (getRelated(node).length > 0) {
+          allRevisions.push({
+            id: `${nodeId}-revision-relationships`,
+            nodeId,
+            nodeName: node.name || nodeId,
+            domain: node.domain || "Concept",
+            version: "v1.2",
+            type: "Relationship Update",
+            description: `Added relationship context for ${node.name || nodeId}.`,
+            source: `${getRelated(node).length} relationships`,
+            date: "",
+            order: allRevisions.length
+          });
+        }
       });
 
-      return revisions;
+      allRevisions.sort((a, b) => b.order - a.order);
     }
 
-    function buildConceptFilter() {
-      const select = document.getElementById("concept-filter");
-      select.innerHTML = `<option value="all">All concepts</option>`;
+    function buildTypeControls() {
+      const types = [...new Set(allRevisions.map(revision => revision.type).filter(Boolean))].sort();
+      const select = document.getElementById("type-select");
+      const chips = document.getElementById("type-chips");
 
-      allNodes
-        .slice()
-        .sort((a, b) => a.name.localeCompare(b.name))
-        .forEach(node => {
-          const option = document.createElement("option");
-          option.value = node.id;
-          option.textContent = node.name;
-          select.appendChild(option);
-        });
+      select.innerHTML = `<option value="all">All revision types</option>`;
+      types.forEach(type => {
+        const option = document.createElement("option");
+        option.value = type;
+        option.textContent = type;
+        select.appendChild(option);
+      });
+
+      chips.innerHTML = "";
+      chips.appendChild(makeTypeChip("all", "All"));
+
+      types.slice(0, 18).forEach(type => {
+        chips.appendChild(makeTypeChip(type, type));
+      });
+    }
+
+    function makeTypeChip(value, label) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = `type-chip ${activeType === value ? "active" : ""}`;
+      button.textContent = label;
+      button.addEventListener("click", () => {
+        activeType = value;
+        document.getElementById("type-select").value = value;
+        visibleLimit = 30;
+        applyFilters();
+      });
+      return button;
+    }
+
+    function refreshTypeChips() {
+      document.querySelectorAll(".type-chip").forEach(chip => {
+        chip.classList.toggle("active", chip.textContent === "All" ? activeType === "all" : chip.textContent === activeType);
+      });
+    }
+
+    function setSearch() {
+      activeSearch = document.getElementById("search-input").value.toLowerCase().trim();
+      visibleLimit = 30;
+      applyFilters();
+    }
+
+    function setType() {
+      activeType = document.getElementById("type-select").value;
+      visibleLimit = 30;
+      applyFilters();
+    }
+
+    function setSort() {
+      activeSort = document.getElementById("sort-select").value;
+      visibleLimit = 30;
+      applyFilters();
+    }
+
+    function setCardDensity() {
+      activeDensity = document.getElementById("view-select").value;
+      renderTimeline();
     }
 
     function applyFilters() {
-      const search = document.getElementById("search-input").value.toLowerCase().trim();
-      const concept = document.getElementById("concept-filter").value;
-      const sort = document.getElementById("sort-filter").value;
+      filteredRevisions = allRevisions.filter(revision => {
+        const text = `${revision.nodeName} ${revision.domain} ${revision.version} ${revision.type} ${revision.description} ${revision.source}`.toLowerCase();
 
-      let filtered = allRevisions.filter(revision => {
-        const searchText = `
-          ${revision.conceptName}
-          ${revision.entryId}
-          ${revision.domain}
-          ${revision.version}
-          ${revision.description}
-          ${revision.source}
-          ${revision.type}
-        `.toLowerCase();
+        const matchesSearch = !activeSearch || text.includes(activeSearch);
+        const matchesType = activeType === "all" || revision.type === activeType;
 
-        const matchesSearch = searchText.includes(search);
-        const matchesConcept = concept === "all" || revision.conceptId === concept;
-
-        return matchesSearch && matchesConcept;
+        return matchesSearch && matchesType;
       });
 
-      if (sort === "latest") {
-        filtered.sort((a, b) => {
-          if (a.conceptName === b.conceptName) {
-            return b.versionNumber - a.versionNumber;
-          }
-          return a.conceptName.localeCompare(b.conceptName);
-        });
-      }
+      filteredRevisions.sort((a, b) => {
+        if (activeSort === "concept") return String(a.nodeName).localeCompare(String(b.nodeName));
+        if (activeSort === "type") return String(a.type).localeCompare(String(b.type));
+        return b.order - a.order;
+      });
 
-      if (sort === "concept") {
-        filtered.sort((a, b) => {
-          const conceptCompare = a.conceptName.localeCompare(b.conceptName);
-          if (conceptCompare !== 0) return conceptCompare;
-          return b.versionNumber - a.versionNumber;
-        });
-      }
-
-      if (sort === "type") {
-        filtered.sort((a, b) => {
-          const typeCompare = a.type.localeCompare(b.type);
-          if (typeCompare !== 0) return typeCompare;
-          return a.conceptName.localeCompare(b.conceptName);
-        });
-      }
-
-      renderRevisions(filtered);
-
-      document.getElementById("visible-count").textContent = filtered.length;
-      document.getElementById("total-count").textContent = allRevisions.length;
+      refreshTypeChips();
+      renderTimeline();
+      updateStats();
     }
 
-    function renderRevisions(revisions) {
-      const container = document.getElementById("revision-list");
-      container.innerHTML = "";
+    function clip(value, max) {
+      const text = String(value || "").trim().replace(/\s+/g, " ");
+      return text.length > max ? text.slice(0, max - 3) + "..." : text;
+    }
 
-      if (revisions.length === 0) {
-        container.innerHTML = `
-          <div class="empty-state">
-            <h2>No revisions found</h2>
-            <p>Try searching for Truth, Knowledge, sources, relationships, or initial entry.</p>
+    function renderTimeline() {
+      const timeline = document.getElementById("timeline");
+      const revisionsToShow = filteredRevisions.slice(0, visibleLimit);
+
+      if (revisionsToShow.length === 0) {
+        timeline.innerHTML = `
+          <div class="empty">
+            No revisions matched your search or filter. Try clearing the search or switching to all revision types.
           </div>
         `;
+        document.getElementById("load-row").style.display = "none";
         return;
       }
 
-      revisions.forEach(revision => {
-        const item = document.createElement("div");
-        item.className = `revision-card ${revision.id === selectedRevisionId ? "selected" : ""}`;
-        item.onclick = () => selectRevision(revision.id);
+      timeline.innerHTML = revisionsToShow.map((revision, index) => renderRevisionItem(revision, index + 1)).join("");
+      document.getElementById("load-row").style.display = filteredRevisions.length > visibleLimit ? "flex" : "none";
+    }
 
-        const shortVersion = revision.version.split("—")[0].trim();
+    function renderRevisionItem(revision, index) {
+      const descriptionLength = activeDensity === "compact" ? 110 : 170;
 
-        item.innerHTML = `
-          <div class="revision-dot">${revision.versionNumber ? revision.versionNumber.toFixed(1) : "v"}</div>
-
-          <div class="revision-content">
-            <div class="revision-top">
-              <div>
-                <div class="revision-title">${revision.version}</div>
-                <div style="color:#64748b; font-size:13px; margin-top:4px;">
-                  ${revision.conceptName} · ${revision.entryId}
-                </div>
-              </div>
-
-              <span class="revision-type">${revision.type}</span>
+      return `
+        <article class="revision-item ${revision.id === selectedRevisionId ? "selected" : ""}" data-index="${index}" onclick="selectRevision('${escapeHtml(revision.id)}')">
+          <div class="revision-top">
+            <div>
+              <h3 class="revision-title">${escapeHtml(revision.version)}</h3>
+              <div class="revision-id">${escapeHtml(revision.nodeName)} · ${escapeHtml(revision.domain)}</div>
             </div>
-
-            <p class="revision-description">${revision.description}</p>
-
-            <div class="revision-meta">
-              <span>Concept: <a href="concept.html?id=${revision.conceptId}" onclick="event.stopPropagation()">${revision.conceptName}</a></span>
-              <span>Domain: ${revision.domain}</span>
-              <span>Version: ${shortVersion}</span>
-            </div>
+            <span class="revision-type">${escapeHtml(revision.type)}</span>
           </div>
-        `;
 
-        container.appendChild(item);
-      });
+          <p class="revision-description">${escapeHtml(clip(revision.description, descriptionLength))}</p>
+
+          <div class="revision-meta">
+            <span>Concept: <a href="concept.html?id=${encodeURIComponent(revision.nodeId)}" onclick="event.stopPropagation()">${escapeHtml(revision.nodeName)}</a></span>
+            <span>Source: ${escapeHtml(clip(revision.source, 48))}</span>
+            <span>${escapeHtml(revision.date || "Seed timeline")}</span>
+          </div>
+        </article>
+      `;
     }
 
     function selectRevision(id) {
       selectedRevisionId = id;
-
       const revision = allRevisions.find(item => item.id === id);
       if (!revision) return;
 
       document.getElementById("selected-title").textContent = revision.version;
-      document.getElementById("selected-subtitle").textContent = `${revision.conceptName} · ${revision.entryId}`;
+      document.getElementById("selected-meta").textContent = `${revision.nodeName} · ${revision.domain}`;
       document.getElementById("selected-description").textContent = revision.description;
-      document.getElementById("selected-concept").textContent = revision.conceptName;
+      document.getElementById("selected-concept").textContent = revision.nodeName;
       document.getElementById("selected-type").textContent = revision.type;
-      document.getElementById("selected-source").textContent = revision.source || "No source attached yet";
-      document.getElementById("open-concept-link").href = `concept.html?id=${revision.conceptId}`;
+      document.getElementById("selected-source").textContent = revision.source;
 
-      applyFilters();
+      document.getElementById("open-concept-link").href = `concept.html?id=${encodeURIComponent(revision.nodeId)}`;
+      document.getElementById("open-graph-link").href = `graph.html?center=${encodeURIComponent(revision.nodeId)}&view=sphere&depth=2&edges=center&lens=domain`;
+
+      renderTimeline();
     }
 
-    function renderStats() {
-      const conceptsRevised = [...new Set(allRevisions.map(revision => revision.conceptId))];
-      const revisionTypes = [...new Set(allRevisions.map(revision => revision.type))];
-      const sourced = allRevisions.filter(revision => revision.source).length;
+    function updateStats() {
+      const conceptIds = new Set(allRevisions.map(revision => revision.nodeId));
+      const types = new Set(allRevisions.map(revision => revision.type));
 
       document.getElementById("stat-revisions").textContent = allRevisions.length;
-      document.getElementById("stat-concepts").textContent = conceptsRevised.length;
-      document.getElementById("stat-types").textContent = revisionTypes.length;
-      document.getElementById("stat-sourced").textContent = sourced;
+      document.getElementById("stat-visible").textContent = filteredRevisions.length;
+      document.getElementById("stat-concepts").textContent = conceptIds.size;
+      document.getElementById("stat-types").textContent = types.size;
+
+      document.getElementById("result-count").textContent =
+        `Showing ${Math.min(visibleLimit, filteredRevisions.length)} of ${filteredRevisions.length} matching revisions`;
     }
 
-    function focusSearch() {
+    function renderRecentConcepts() {
+      const container = document.getElementById("recent-concepts");
+      const seen = new Set();
+      const concepts = [];
+
+      allRevisions.forEach(revision => {
+        if (!seen.has(revision.nodeId)) {
+          seen.add(revision.nodeId);
+          concepts.push(revision);
+        }
+      });
+
+      container.innerHTML = concepts.slice(0, 14).map(revision => `
+        <a href="concept.html?id=${encodeURIComponent(revision.nodeId)}">
+          ${escapeHtml(revision.nodeName)}
+          <span>Open →</span>
+        </a>
+      `).join("");
+    }
+
+    function loadMore() {
+      visibleLimit += 30;
+      renderTimeline();
+      updateStats();
+    }
+
+    function focusRevisionSearch() {
       document.getElementById("search-input").focus();
     }
 
-    async function init() {
-      allNodes = await loadNodes();
-      allRevisions = collectRevisions(allNodes);
-
-      buildConceptFilter();
-      renderStats();
-
-      if (allRevisions.length > 0) {
-        selectedRevisionId = allRevisions[0].id;
-      }
-
-      applyFilters();
-
-      if (selectedRevisionId) {
-        const first = allRevisions.find(item => item.id === selectedRevisionId);
-        if (first) {
-          document.getElementById("selected-title").textContent = first.version;
-          document.getElementById("selected-subtitle").textContent = `${first.conceptName} · ${first.entryId}`;
-          document.getElementById("selected-description").textContent = first.description;
-          document.getElementById("selected-concept").textContent = first.conceptName;
-          document.getElementById("selected-type").textContent = first.type;
-          document.getElementById("selected-source").textContent = first.source || "No source attached yet";
-          document.getElementById("open-concept-link").href = `concept.html?id=${first.conceptId}`;
-        }
-      }
-    }
-
-    init();
+    loadData();
   </script>
-
 </body>
 </html>
