@@ -538,6 +538,93 @@
       border-radius: 12px;
     }
 
+
+    .breadcrumb-card {
+      background: white;
+      border: 1px solid #e5eaf1;
+      border-radius: 18px;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+      padding: 18px 22px;
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    .breadcrumb-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      min-width: 0;
+    }
+
+    .breadcrumb-label {
+      font-weight: 900;
+      color: #0d1b2a;
+      font-size: 14px;
+      margin-bottom: 3px;
+    }
+
+    .breadcrumb-help {
+      color: #64748b;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .breadcrumb-trail {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .breadcrumb-node {
+      border: 1px solid #d6e0ec;
+      background: #fbfdff;
+      color: #1f6ed4;
+      border-radius: 999px;
+      padding: 9px 12px;
+      font-size: 13px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+    }
+
+    .breadcrumb-node:hover {
+      background: #f0f7ff;
+      border-color: #93c5fd;
+    }
+
+    .breadcrumb-node.active {
+      background: #0c3d78;
+      color: white;
+      border-color: #0c3d78;
+    }
+
+    .breadcrumb-arrow {
+      color: #94a3b8;
+      font-weight: 900;
+    }
+
+    .breadcrumb-clear {
+      border: 1px solid #bfdbfe;
+      border-radius: 999px;
+      background: #f0f7ff;
+      color: #1f6ed4;
+      font-size: 13px;
+      font-weight: 900;
+      padding: 10px 13px;
+      cursor: pointer;
+    }
+
+    .breadcrumb-clear:hover {
+      background: #dbeafe;
+    }
+
     @media (max-width: 1280px) {
       .controls { grid-template-columns: 1fr 1fr 1fr 1fr; }
       .layout { grid-template-columns: 1fr; }
@@ -562,6 +649,8 @@
       .controls { grid-template-columns: 1fr; }
       .graph-stage { height: 520px; }
       .node { font-size: 11px; }
+      .breadcrumb-card { align-items: flex-start; }
+      .breadcrumb-left { align-items: flex-start; }
     }
   </style>
 </head>
@@ -590,10 +679,10 @@
 
   <main class="page">
     <section class="hero">
-      <div class="hero-label">SourceRoot Graph View v3.3</div>
+      <div class="hero-label">SourceRoot Graph View v3.4</div>
       <h1>Explore the knowledge sphere.</h1>
       <p>
-        Visualize knowledge as a rotating sphere of interconnected concepts. Press any word to make it the new center. Position shows relationship structure, depth shows near and far concepts, color shows domain, size shows importance, and line weight shows relationship strength.
+        Visualize knowledge as a rotating sphere of interconnected concepts. Press any word to make it the new center and build a breadcrumb trail through the knowledge sphere. Position shows relationship structure, depth shows near and far concepts, color shows domain, size shows importance, and line weight shows relationship strength.
       </p>
     </section>
 
@@ -638,6 +727,18 @@
       </select>
 
       <button class="primary-button" onclick="centerSelectedNode()">Center Graph</button>
+    </section>
+
+    <section class="breadcrumb-card" aria-label="Concept path">
+      <div class="breadcrumb-left">
+        <div>
+          <div class="breadcrumb-label">Concept Path</div>
+          <div class="breadcrumb-help">Your trail through the knowledge sphere</div>
+        </div>
+        <div class="breadcrumb-trail" id="breadcrumb-trail"></div>
+      </div>
+
+      <button class="breadcrumb-clear" type="button" onclick="clearBreadcrumbTrail()">Reset Path</button>
     </section>
 
     <section class="layout">
@@ -827,6 +928,7 @@
 
     let currentVisibleIds = [];
     let currentEdges = [];
+    let navigationTrail = [];
 
     let sphereRotationX = -0.18;
     let sphereRotationY = 0.45;
@@ -1493,6 +1595,109 @@
       updateLensPanel();
     }
 
+
+
+    function ensureCenterOption(node) {
+      if (!node) return;
+
+      const select = document.getElementById("center-select");
+      if (!select) return;
+
+      if (![...select.options].some(option => option.value === node.id)) {
+        const option = document.createElement("option");
+        option.value = node.id;
+        option.textContent = node.name || node.id;
+        select.appendChild(option);
+      }
+
+      select.value = node.id;
+    }
+
+    function addToTrail(id) {
+      const node = getNode(id);
+      if (!node) return;
+
+      const existingIndex = navigationTrail.indexOf(id);
+
+      if (existingIndex >= 0) {
+        navigationTrail = navigationTrail.slice(0, existingIndex + 1);
+      } else {
+        navigationTrail.push(id);
+      }
+
+      if (navigationTrail.length > 14) {
+        navigationTrail = navigationTrail.slice(navigationTrail.length - 14);
+      }
+
+      renderBreadcrumbTrail();
+    }
+
+    function renderBreadcrumbTrail() {
+      const container = document.getElementById("breadcrumb-trail");
+      if (!container) return;
+
+      container.innerHTML = "";
+
+      if (navigationTrail.length === 0 && centerId) {
+        navigationTrail = [centerId];
+      }
+
+      navigationTrail.forEach((id, index) => {
+        const node = getNode(id);
+        if (!node) return;
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `breadcrumb-node ${id === centerId ? "active" : ""}`;
+        button.textContent = node.name || id;
+        button.title = `Return to ${node.name || id}`;
+
+        button.addEventListener("click", event => {
+          event.preventDefault();
+          event.stopPropagation();
+          goToBreadcrumbNode(id);
+        });
+
+        container.appendChild(button);
+
+        if (index < navigationTrail.length - 1) {
+          const arrow = document.createElement("span");
+          arrow.className = "breadcrumb-arrow";
+          arrow.textContent = "→";
+          container.appendChild(arrow);
+        }
+      });
+    }
+
+    function goToBreadcrumbNode(id) {
+      const node = getNode(id);
+      if (!node) return;
+
+      const existingIndex = navigationTrail.indexOf(id);
+      if (existingIndex >= 0) {
+        navigationTrail = navigationTrail.slice(0, existingIndex + 1);
+      } else {
+        navigationTrail.push(id);
+      }
+
+      centerId = id;
+      selectedId = id;
+      selectedEdgeKey = "";
+      autoRotateEnabled = true;
+      isDraggingSphere = false;
+
+      ensureCenterOption(node);
+      updateUrl();
+      renderGraph(node);
+      updateSelectedPanel(node);
+      renderBreadcrumbTrail();
+    }
+
+    function clearBreadcrumbTrail() {
+      navigationTrail = centerId ? [centerId] : [];
+      renderBreadcrumbTrail();
+    }
+
     function focusGraphOnNode(id) {
       const node = getNode(id);
       if (!node) return;
@@ -1503,20 +1708,11 @@
       autoRotateEnabled = true;
       isDraggingSphere = false;
 
-      const select = document.getElementById("center-select");
-
-      if (![...select.options].some(option => option.value === centerId)) {
-        const option = document.createElement("option");
-        option.value = centerId;
-        option.textContent = node.name || centerId;
-        select.appendChild(option);
-      }
-
-      select.value = centerId;
-
+      ensureCenterOption(node);
       updateUrl();
       renderGraph(node);
       updateSelectedPanel(node);
+      addToTrail(id);
     }
 
     function updateSelectedPanel(node) {
@@ -1768,6 +1964,7 @@
       updateUrl();
       renderGraph(center);
       updateSelectedPanel(center);
+      addToTrail(centerId);
     }
 
     function recenterOnSelected() {
@@ -1785,6 +1982,7 @@
       updateUrl();
       renderGraph(center);
       updateSelectedPanel(center);
+      addToTrail(centerId);
     }
 
     function setGraphView() {
@@ -1940,9 +2138,11 @@
       const center = getNode(centerId);
       if (!center) return;
 
+      navigationTrail = [centerId];
       renderGraph(center);
       updateSelectedPanel(center);
       updateLensPanel();
+      renderBreadcrumbTrail();
       animateSphere();
     }
 
