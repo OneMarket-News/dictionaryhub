@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -11,22 +10,39 @@
       box-sizing: border-box;
     }
 
+    :root {
+      --navy: #061a33;
+      --navy-2: #0c3d78;
+      --blue: #1f6ed4;
+      --blue-soft: #eaf4ff;
+      --line: #e5eaf1;
+      --text: #0d1b2a;
+      --muted: #64748b;
+      --bg: #f7f9fc;
+      --white: #ffffff;
+      --shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
+      --soft-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+    }
+
     body {
       margin: 0;
       font-family: Arial, Helvetica, sans-serif;
-      background: #f7f9fc;
-      color: #0d1b2a;
+      background: var(--bg);
+      color: var(--text);
     }
 
     .site-header {
-      height: 86px;
+      height: 78px;
       padding: 0 48px;
-      background: #061a33;
+      background: var(--navy);
       color: white;
       display: flex;
       align-items: center;
       justify-content: space-between;
       border-bottom: 1px solid rgba(255,255,255,0.12);
+      position: sticky;
+      top: 0;
+      z-index: 50;
     }
 
     .brand {
@@ -38,42 +54,44 @@
     }
 
     .logo {
-      width: 46px;
-      height: 46px;
+      width: 42px;
+      height: 42px;
       border: 2px solid white;
       border-radius: 50%;
       display: grid;
       place-items: center;
-      font-size: 24px;
+      font-size: 23px;
+      flex: 0 0 auto;
     }
 
     .brand h1 {
       margin: 0;
       font-family: Georgia, serif;
-      font-size: 28px;
+      font-size: 24px;
       line-height: 1;
       color: white;
     }
 
     .brand p {
       margin: 3px 0 0;
-      font-size: 14px;
+      font-size: 12px;
       opacity: 0.85;
       color: white;
     }
 
     nav {
       display: flex;
-      gap: 30px;
+      gap: 26px;
       align-items: center;
     }
 
     nav a {
       color: white;
       text-decoration: none;
-      font-size: 15px;
+      font-size: 14px;
       opacity: 0.9;
       padding-bottom: 8px;
+      white-space: nowrap;
     }
 
     nav a:hover {
@@ -85,18 +103,18 @@
     }
 
     .icon-button {
-      width: 46px;
-      height: 46px;
+      width: 42px;
+      height: 42px;
       border-radius: 50%;
       border: none;
       color: white;
       background: #102b4c;
-      font-size: 22px;
+      font-size: 20px;
       cursor: pointer;
     }
 
     .page {
-      max-width: 1180px;
+      max-width: 1420px;
       margin: 0 auto;
       padding: 42px 24px 80px;
     }
@@ -105,50 +123,91 @@
       background: linear-gradient(135deg, #061a33, #0c3d78);
       color: white;
       border-radius: 22px;
-      padding: 44px;
-      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
-      margin-bottom: 28px;
+      padding: 38px 42px;
+      box-shadow: var(--shadow);
+      margin-bottom: 24px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 28px;
+      align-items: end;
     }
 
     .hero-label {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
       background: rgba(255,255,255,0.12);
-      border: 1px solid rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.22);
       padding: 8px 12px;
       border-radius: 999px;
-      font-size: 13px;
-      font-weight: 700;
-      margin-bottom: 18px;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 16px;
+      color: white;
     }
 
     .hero h1 {
       margin: 0;
       font-family: Georgia, serif;
-      font-size: 54px;
-      line-height: 1.05;
+      font-size: 52px;
+      line-height: 1.02;
+      color: white;
     }
 
     .hero p {
-      max-width: 780px;
-      margin: 18px 0 0;
+      margin: 15px 0 0;
+      max-width: 900px;
       color: #dbeafe;
-      font-size: 18px;
-      line-height: 1.7;
+      font-size: 17px;
+      line-height: 1.65;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .primary-link,
+    .secondary-link {
+      border-radius: 13px;
+      padding: 14px 17px;
+      font-weight: 900;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+      font-size: 14px;
+    }
+
+    .primary-link {
+      background: var(--blue);
+      color: white;
+      box-shadow: 0 14px 30px rgba(31,110,212,0.22);
+    }
+
+    .secondary-link {
+      background: rgba(255,255,255,0.08);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.22);
     }
 
     .controls {
       background: white;
-      border: 1px solid #e5eaf1;
+      border: 1px solid var(--line);
       border-radius: 18px;
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
-      padding: 24px;
-      margin-bottom: 28px;
-    }
-
-    .search-row {
+      box-shadow: var(--soft-shadow);
+      padding: 18px;
+      margin-bottom: 20px;
       display: grid;
-      grid-template-columns: 1fr 220px 180px;
-      gap: 14px;
+      grid-template-columns: minmax(320px, 1fr) 190px 180px 170px;
+      gap: 12px;
+      align-items: center;
     }
 
     .search-input,
@@ -156,289 +215,369 @@
       width: 100%;
       border: 1px solid #d6e0ec;
       border-radius: 12px;
-      padding: 15px 16px;
-      font-size: 15px;
-      color: #0d1b2a;
+      padding: 14px 15px;
+      font-size: 14px;
+      color: var(--text);
       background: #fbfdff;
       outline: none;
     }
 
     .search-input:focus,
     .filter-select:focus {
-      border-color: #1f6ed4;
+      border-color: var(--blue);
       box-shadow: 0 0 0 4px rgba(31, 110, 212, 0.1);
     }
 
-    .meta-row {
+    .domain-strip {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--soft-shadow);
+      padding: 16px 18px;
+      margin-bottom: 24px;
+    }
+
+    .domain-strip-top {
       display: flex;
       justify-content: space-between;
-      gap: 18px;
-      flex-wrap: wrap;
-      margin-top: 18px;
-      color: #64748b;
-      font-size: 14px;
-    }
-
-    .meta-row strong {
-      color: #0d1b2a;
-    }
-
-    .domain-pills {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 18px;
-    }
-
-    .pill {
-      border: 1px solid #d6e0ec;
-      background: #f8fbff;
-      color: #0d1b2a;
-      padding: 9px 12px;
-      border-radius: 999px;
-      cursor: pointer;
-      font-weight: 700;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 12px;
+      color: var(--muted);
       font-size: 13px;
+      font-weight: 800;
     }
 
-    .pill.active {
-      background: #1f6ed4;
+    .domain-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+    }
+
+    .domain-chip {
+      border: 1px solid #bfdbfe;
+      background: #f0f7ff;
+      color: var(--blue);
+      border-radius: 999px;
+      padding: 8px 11px;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .domain-chip.active {
+      background: var(--blue);
       color: white;
-      border-color: #1f6ed4;
+      border-color: var(--blue);
     }
 
     .layout {
       display: grid;
-      grid-template-columns: 1fr 320px;
-      gap: 28px;
+      grid-template-columns: minmax(0, 1fr) 340px;
+      gap: 24px;
+      align-items: start;
     }
 
-    .concept-grid {
+    .results-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 18px;
-      align-content: start;
     }
 
     .concept-card {
       background: white;
-      border: 1px solid #e5eaf1;
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
-      text-decoration: none;
-      color: #0d1b2a;
-      display: block;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--soft-shadow);
+      padding: 20px;
+      min-height: 255px;
+      display: flex;
+      flex-direction: column;
       transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
     }
 
     .concept-card:hover {
       transform: translateY(-3px);
-      border-color: #93c5fd;
-      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.1);
+      border-color: #bfdbfe;
+      box-shadow: var(--shadow);
     }
 
-    .concept-card-top {
+    .concept-top {
       display: flex;
-      align-items: flex-start;
       justify-content: space-between;
       gap: 12px;
-      margin-bottom: 14px;
+      align-items: flex-start;
+      margin-bottom: 10px;
     }
 
     .concept-card h2 {
       margin: 0;
       font-family: Georgia, serif;
-      font-size: 30px;
-      color: #0d1b2a;
+      font-size: 28px;
+      line-height: 1.08;
+      color: var(--text);
     }
 
     .entry-id {
-      color: #64748b;
-      font-size: 12px;
       margin-top: 5px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
     }
 
-    .badge {
-      display: inline-block;
-      padding: 7px 10px;
+    .domain-badge {
+      background: var(--blue-soft);
+      color: var(--blue);
+      border: 1px solid #bfdbfe;
       border-radius: 999px;
-      font-size: 12px;
+      padding: 7px 9px;
+      font-size: 11px;
+      font-weight: 900;
+      white-space: nowrap;
+      max-width: 140px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .definition {
+      color: #475569;
+      line-height: 1.6;
+      font-size: 14px;
+      margin: 0 0 15px;
+      flex: 1;
+    }
+
+    .related-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-bottom: 15px;
+    }
+
+    .related-chip {
+      background: #f8fbff;
+      color: #33506f;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 8px;
+      font-size: 11px;
       font-weight: 800;
+      max-width: 110px;
+      overflow: hidden;
+      text-overflow: ellipsis;
       white-space: nowrap;
     }
 
-    .badge.blue {
-      background: #e2efff;
-      color: #0f63c9;
-    }
-
-    .badge.green {
-      background: #e3f7eb;
-      color: #177245;
-    }
-
-    .concept-definition {
-      color: #475569;
-      line-height: 1.6;
-      margin: 0 0 18px;
-      font-size: 15px;
-    }
-
-    .related-row {
+    .card-meta {
       display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-bottom: 18px;
-    }
-
-    .related-tag {
-      background: #f1f5f9;
-      color: #475569;
-      padding: 6px 9px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .card-footer {
-      display: flex;
-      justify-content: space-between;
       gap: 14px;
-      color: #64748b;
-      font-size: 13px;
-      border-top: 1px solid #e5eaf1;
-      padding-top: 14px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      padding-top: 13px;
+      border-top: 1px solid #eef2f7;
     }
 
-    .open-link {
-      color: #1f6ed4;
-      font-weight: 800;
+    .card-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .card-actions a {
+      text-decoration: none;
+      border-radius: 11px;
+      padding: 11px;
+      text-align: center;
+      font-weight: 900;
+      font-size: 13px;
+    }
+
+    .open-action {
+      background: var(--blue);
+      color: white;
+    }
+
+    .graph-action {
+      background: #f0f7ff;
+      color: var(--blue);
+      border: 1px solid #bfdbfe;
     }
 
     .side-panel {
       display: grid;
       gap: 18px;
-      align-content: start;
+      position: sticky;
+      top: 98px;
     }
 
     .side-card {
       background: white;
-      border: 1px solid #e5eaf1;
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--soft-shadow);
+      padding: 20px;
     }
 
     .side-card h3 {
-      margin: 0 0 16px;
+      margin: 0 0 14px;
       font-family: Georgia, serif;
-      font-size: 22px;
+      font-size: 24px;
     }
 
-    .stat-grid {
+    .summary-grid {
       display: grid;
-      gap: 12px;
+      gap: 10px;
     }
 
-    .stat {
+    .summary-row {
       display: flex;
       justify-content: space-between;
-      gap: 14px;
-      background: #f8fbff;
-      border: 1px solid #e5eaf1;
+      gap: 16px;
+      padding: 12px;
+      border: 1px solid var(--line);
       border-radius: 12px;
-      padding: 13px;
+      background: #fbfdff;
     }
 
-    .stat span {
-      color: #64748b;
+    .summary-row span {
+      color: var(--muted);
       font-size: 13px;
+      font-weight: 800;
     }
 
-    .stat strong {
-      font-size: 18px;
-      color: #0d1b2a;
+    .summary-row strong {
+      color: var(--text);
+      font-size: 16px;
     }
 
     .featured-list {
       display: grid;
-      gap: 12px;
+      gap: 10px;
     }
 
     .featured-list a {
-      color: #0d1b2a;
-      text-decoration: none;
       display: flex;
       justify-content: space-between;
       gap: 12px;
       padding: 12px;
-      border: 1px solid #e5eaf1;
+      border: 1px solid var(--line);
       border-radius: 12px;
       background: #fbfdff;
-      font-weight: 700;
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 900;
     }
 
     .featured-list a:hover {
-      border-color: #93c5fd;
       background: #f0f7ff;
+      border-color: #bfdbfe;
     }
 
     .featured-list span {
-      color: #1f6ed4;
+      color: var(--blue);
+      font-size: 12px;
     }
 
-    .empty-state {
+    .proof-card p {
+      color: var(--muted);
+      line-height: 1.62;
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .empty {
       background: white;
-      border: 1px solid #e5eaf1;
-      border-radius: 16px;
-      padding: 36px;
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
-      grid-column: 1 / -1;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 28px;
+      color: var(--muted);
+      box-shadow: var(--soft-shadow);
     }
 
-    .empty-state h2 {
-      margin-top: 0;
-      font-family: Georgia, serif;
-      font-size: 32px;
+    .load-row {
+      display: flex;
+      justify-content: center;
+      margin-top: 24px;
     }
 
-    @media (max-width: 950px) {
+    .load-button {
+      border: 1px solid #bfdbfe;
+      background: #f0f7ff;
+      color: var(--blue);
+      border-radius: 12px;
+      padding: 13px 18px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    @media (max-width: 1200px) {
+      .results-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 980px) {
       .site-header {
-        padding: 20px;
         height: auto;
+        padding: 18px 24px;
         flex-direction: column;
-        gap: 18px;
+        gap: 16px;
       }
 
       nav {
         flex-wrap: wrap;
         justify-content: center;
-        gap: 18px;
       }
 
       .hero {
-        padding: 32px 24px;
-      }
-
-      .hero h1 {
-        font-size: 42px;
-      }
-
-      .search-row {
         grid-template-columns: 1fr;
+      }
+
+      .hero-actions {
+        justify-content: flex-start;
+      }
+
+      .controls {
+        grid-template-columns: 1fr 1fr;
       }
 
       .layout {
         grid-template-columns: 1fr;
       }
 
-      .concept-grid {
+      .side-panel {
+        position: static;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .page {
+        padding: 28px 16px 60px;
+      }
+
+      .hero {
+        padding: 30px 24px;
+      }
+
+      .hero h1 {
+        font-size: 38px;
+      }
+
+      .controls,
+      .results-grid {
         grid-template-columns: 1fr;
+      }
+
+      .primary-link,
+      .secondary-link {
+        width: 100%;
       }
     }
   </style>
-
 </head>
 
 <body>
@@ -451,109 +590,119 @@
       </div>
     </a>
 
-```
-<nav>
-  <a href="index.html">Home</a>
-  <a href="explore.html" class="active">Explore</a>
-  <a href="graph.html">Graph</a>
-  <a href="sources.html">Sources</a>
-  <a href="revisions.html">Revisions</a>
-  <a href="about.html">About</a>
-</nav>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="explore.html" class="active">Explore</a>
+      <a href="graph.html">Graph</a>
+      <a href="sources.html">Sources</a>
+      <a href="revisions.html">Revisions</a>
+      <a href="about.html">About</a>
+    </nav>
 
-<button class="icon-button" onclick="focusSearch()">⌕</button>
-```
-
+    <button class="icon-button" onclick="focusExploreSearch()">⌕</button>
   </header>
 
   <main class="page">
     <section class="hero">
-      <div class="hero-label">SourceRoot Concept Explorer</div>
-      <h1>Browse the knowledge graph.</h1>
-      <p>
-        Explore concepts, definitions, origins, relationships, sources, and revision history from the DictionaryHub seed graph.
-      </p>
+      <div>
+        <div class="hero-label">SourceRoot Concept Explorer</div>
+        <h1>Browse the knowledge graph.</h1>
+        <p>
+          Search the concept library, filter by domain, inspect relationships, and jump directly into the sphere graph centered on any idea.
+        </p>
+      </div>
+
+      <div class="hero-actions">
+        <a class="secondary-link" href="graph.html?center=truth&view=sphere&depth=2&edges=center&lens=domain">Open Truth Graph</a>
+        <a class="primary-link" href="concept.html?id=truth">Start with Truth</a>
+      </div>
     </section>
 
-```
-<section class="controls">
-  <div class="search-row">
-    <input
-      class="search-input"
-      id="search-input"
-      type="text"
-      placeholder="Search concepts, definitions, domains, or related ideas..."
-      oninput="applyFilters()"
-    />
+    <section class="controls">
+      <input
+        class="search-input"
+        id="search-input"
+        type="text"
+        placeholder="Search concepts, definitions, domains, or related ideas..."
+        oninput="setSearch()"
+      />
 
-    <select class="filter-select" id="domain-filter" onchange="applyFilters()">
-      <option value="all">All domains</option>
-    </select>
+      <select class="filter-select" id="domain-select" onchange="setDomain()">
+        <option value="all">All domains</option>
+      </select>
 
-    <select class="filter-select" id="sort-filter" onchange="applyFilters()">
-      <option value="name">Sort by name</option>
-      <option value="domain">Sort by domain</option>
-      <option value="relationships">Sort by relationships</option>
-    </select>
-  </div>
+      <select class="filter-select" id="sort-select" onchange="setSort()">
+        <option value="name">Sort by name</option>
+        <option value="relationships">Most connected</option>
+        <option value="sources">Most sourced</option>
+        <option value="revisions">Most revised</option>
+      </select>
 
-  <div class="meta-row">
-    <div>
-      Showing <strong id="visible-count">0</strong> of <strong id="total-count">0</strong> concepts
-    </div>
-    <div>
-      Data source: <strong>data/nodes.json</strong>
-    </div>
-  </div>
+      <select class="filter-select" id="view-select" onchange="setCardDensity()">
+        <option value="comfortable">Comfortable cards</option>
+        <option value="compact">Compact cards</option>
+      </select>
+    </section>
 
-  <div class="domain-pills" id="domain-pills"></div>
-</section>
+    <section class="domain-strip">
+      <div class="domain-strip-top">
+        <span id="result-count">Loading concepts...</span>
+        <span>Data source: <strong>data/nodes.json</strong></span>
+      </div>
 
-<section class="layout">
-  <div class="concept-grid" id="concept-grid"></div>
+      <div class="domain-chips" id="domain-chips"></div>
+    </section>
 
-  <aside class="side-panel">
-    <div class="side-card">
-      <h3>Graph Summary</h3>
-
-      <div class="stat-grid">
-        <div class="stat">
-          <span>Total Concepts</span>
-          <strong id="stat-concepts">0</strong>
-        </div>
-
-        <div class="stat">
-          <span>Domains</span>
-          <strong id="stat-domains">0</strong>
-        </div>
-
-        <div class="stat">
-          <span>Relationships</span>
-          <strong id="stat-relationships">0</strong>
-        </div>
-
-        <div class="stat">
-          <span>Sources</span>
-          <strong id="stat-sources">0</strong>
+    <section class="layout">
+      <div>
+        <div class="results-grid" id="results-grid"></div>
+        <div class="load-row" id="load-row">
+          <button class="load-button" onclick="loadMore()">Load more concepts</button>
         </div>
       </div>
-    </div>
 
-    <div class="side-card">
-      <h3>Featured Concepts</h3>
-      <div class="featured-list" id="featured-list"></div>
-    </div>
+      <aside class="side-panel">
+        <div class="side-card">
+          <h3>Graph Summary</h3>
+          <div class="summary-grid">
+            <div class="summary-row">
+              <span>Total Concepts</span>
+              <strong id="stat-concepts">0</strong>
+            </div>
+            <div class="summary-row">
+              <span>Visible Results</span>
+              <strong id="stat-visible">0</strong>
+            </div>
+            <div class="summary-row">
+              <span>Relationships</span>
+              <strong id="stat-relationships">0</strong>
+            </div>
+            <div class="summary-row">
+              <span>Domains</span>
+              <strong id="stat-domains">0</strong>
+            </div>
+          </div>
+        </div>
 
-    <div class="side-card">
-      <h3>What this proves</h3>
-      <p style="color:#475569; line-height:1.6; margin:0;">
-        This page is powered by one reusable data file. As the SourceRoot graph grows, DictionaryHub can display more concepts without creating new HTML pages.
-      </p>
-    </div>
-  </aside>
-</section>
-```
+        <div class="side-card">
+          <h3>Featured Concepts</h3>
+          <div class="featured-list" id="featured-list">
+            <a href="concept.html?id=truth">Truth <span>Open →</span></a>
+            <a href="concept.html?id=knowledge">Knowledge <span>Open →</span></a>
+            <a href="concept.html?id=data">Data <span>Open →</span></a>
+            <a href="concept.html?id=evidence">Evidence <span>Open →</span></a>
+            <a href="concept.html?id=verification">Verification <span>Open →</span></a>
+          </div>
+        </div>
 
+        <div class="side-card proof-card">
+          <h3>What this proves</h3>
+          <p>
+            This page is powered by your seed graph data. It is not a static list. Concepts can be searched, filtered, opened, and sent directly into the sphere graph.
+          </p>
+        </div>
+      </aside>
+    </section>
   </main>
 
   <script>
@@ -564,258 +713,299 @@
         name: "Truth",
         type: "Core Concept",
         domain: "Knowledge",
-        confidence: "High Confidence",
-        version: "v3.0 Curated Seed",
         definition: "Truth is the quality of being in accordance with fact, reality, evidence, or verified understanding.",
         related: [
-          { id: "evidence", name: "Evidence", description: "Truth is supported by evidence." },
-          { id: "verification", name: "Verification", description: "Truth is confirmed through verification." },
-          { id: "knowledge", name: "Knowledge", description: "Truth is foundational to knowledge." }
+          { id: "evidence", name: "Evidence" },
+          { id: "verification", name: "Verification" },
+          { id: "knowledge", name: "Knowledge" }
         ],
-        sources: [
-          { name: "Stanford Encyclopedia of Philosophy", description: "Philosophy reference" }
-        ]
-      },
-      {
-        id: "knowledge",
-        entryId: "SRC-NODE-00003",
-        name: "Knowledge",
-        type: "Core Concept",
-        domain: "Knowledge",
-        confidence: "High Confidence",
-        version: "v3.0 Curated Seed",
-        definition: "Knowledge is understanding, awareness, or familiarity gained through experience, study, evidence, or reasoning.",
-        related: [
-          { id: "truth", name: "Truth", description: "Knowledge depends on truth." },
-          { id: "evidence", name: "Evidence", description: "Knowledge is strengthened by evidence." }
-        ],
-        sources: [
-          { name: "Stanford Encyclopedia of Philosophy", description: "Epistemology reference" }
-        ]
+        sources: [{ name: "Fallback Source" }],
+        revisions: [{ version: "v1.0" }]
       }
     ];
 
     let allNodes = [];
+    let filteredNodes = [];
+    let activeSearch = "";
     let activeDomain = "all";
+    let activeSort = "name";
+    let activeDensity = "comfortable";
+    let visibleLimit = 24;
 
     async function loadNodes() {
       try {
         const response = await fetch("data/nodes.json");
-        if (!response.ok) {
-          throw new Error("nodes.json not found");
-        }
-        return await response.json();
+        if (!response.ok) throw new Error("nodes.json not found");
+        const data = await response.json();
+        allNodes = Array.isArray(data) ? data : fallbackNodes;
       } catch (error) {
-        return fallbackNodes;
+        allNodes = fallbackNodes;
       }
-    }
 
-    function getInitialSearch() {
-      const params = new URLSearchParams(window.location.search);
-      return params.get("q") || "";
-    }
-
-    function uniqueValues(items, key) {
-      return [...new Set(items.map(item => item[key]).filter(Boolean))].sort();
-    }
-
-    function getRelationshipCount(node) {
-      return node.related ? node.related.length : 0;
-    }
-
-    function getSourceCount(node) {
-      return node.sources ? node.sources.length : 0;
-    }
-
-    function setDomain(domain) {
-      activeDomain = domain;
-      document.getElementById("domain-filter").value = domain;
+      normalizeNodes();
+      buildDomainControls();
+      buildFeaturedLinks();
       applyFilters();
     }
 
-    function buildDomainFilter() {
-      const domains = uniqueValues(allNodes, "domain");
-      const select = document.getElementById("domain-filter");
-      const pills = document.getElementById("domain-pills");
+    function normalizeNodes() {
+      allNodes.forEach(node => {
+        if (!node.id && node.name) {
+          node.id = slugify(node.name);
+        }
+      });
+    }
+
+    function slugify(value) {
+      return String(value || "")
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function getNodeId(node) {
+      return node.id || slugify(node.name || "");
+    }
+
+    function getDomain(node) {
+      return node.domain || "Unknown";
+    }
+
+    function getRelatedItems(node) {
+      const raw = Array.isArray(node.related)
+        ? node.related
+        : Array.isArray(node.relationships)
+          ? node.relationships
+          : [];
+
+      return raw.map(item => ({
+        id: item.id || item.to || item.target || item.nodeId || slugify(item.name || item.toName || ""),
+        name: item.name || item.toName || item.id || item.to || item.target || "Related"
+      })).filter(item => item.id || item.name);
+    }
+
+    function getRelatedCount(node) {
+      return getRelatedItems(node).length;
+    }
+
+    function getSourceCount(node) {
+      return Array.isArray(node.sources) ? node.sources.length : 0;
+    }
+
+    function getRevisionCount(node) {
+      return Array.isArray(node.revisions) ? node.revisions.length : 0;
+    }
+
+    function clip(value, max) {
+      const text = String(value || "").trim().replace(/\s+/g, " ");
+      return text.length > max ? text.slice(0, max - 3) + "..." : text;
+    }
+
+    function buildDomainControls() {
+      const domains = [...new Set(allNodes.map(getDomain).filter(Boolean))].sort();
+      const select = document.getElementById("domain-select");
+      const chips = document.getElementById("domain-chips");
 
       select.innerHTML = `<option value="all">All domains</option>`;
-      pills.innerHTML = "";
-
-      const allPill = document.createElement("button");
-      allPill.className = "pill active";
-      allPill.textContent = "All";
-      allPill.onclick = () => setDomain("all");
-      allPill.dataset.domain = "all";
-      pills.appendChild(allPill);
-
       domains.forEach(domain => {
         const option = document.createElement("option");
         option.value = domain;
         option.textContent = domain;
         select.appendChild(option);
+      });
 
-        const pill = document.createElement("button");
-        pill.className = "pill";
-        pill.textContent = domain;
-        pill.onclick = () => setDomain(domain);
-        pill.dataset.domain = domain;
-        pills.appendChild(pill);
+      chips.innerHTML = "";
+
+      const allChip = makeDomainChip("all", "All");
+      chips.appendChild(allChip);
+
+      domains.slice(0, 18).forEach(domain => {
+        chips.appendChild(makeDomainChip(domain, domain));
       });
     }
 
-    function updatePills() {
-      document.querySelectorAll(".pill").forEach(pill => {
-        if (pill.dataset.domain === activeDomain) {
-          pill.classList.add("active");
-        } else {
-          pill.classList.remove("active");
-        }
+    function makeDomainChip(value, label) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = `domain-chip ${activeDomain === value ? "active" : ""}`;
+      button.textContent = label;
+      button.addEventListener("click", () => {
+        activeDomain = value;
+        document.getElementById("domain-select").value = value;
+        visibleLimit = 24;
+        applyFilters();
       });
+      return button;
+    }
+
+    function refreshDomainChips() {
+      document.querySelectorAll(".domain-chip").forEach(chip => {
+        chip.classList.toggle("active", chip.textContent === "All" ? activeDomain === "all" : chip.textContent === activeDomain);
+      });
+    }
+
+    function setSearch() {
+      activeSearch = document.getElementById("search-input").value.toLowerCase().trim();
+      visibleLimit = 24;
+      applyFilters();
+    }
+
+    function setDomain() {
+      activeDomain = document.getElementById("domain-select").value;
+      visibleLimit = 24;
+      applyFilters();
+    }
+
+    function setSort() {
+      activeSort = document.getElementById("sort-select").value;
+      visibleLimit = 24;
+      applyFilters();
+    }
+
+    function setCardDensity() {
+      activeDensity = document.getElementById("view-select").value;
+      renderResults();
     }
 
     function applyFilters() {
-      const search = document.getElementById("search-input").value.toLowerCase().trim();
-      const domain = document.getElementById("domain-filter").value;
-      const sort = document.getElementById("sort-filter").value;
+      filteredNodes = allNodes.filter(node => {
+        const relatedText = getRelatedItems(node).map(item => item.name).join(" ");
+        const text = `${node.name || ""} ${node.definition || ""} ${node.domain || ""} ${node.type || ""} ${relatedText}`.toLowerCase();
 
-      activeDomain = domain;
-
-      let filtered = allNodes.filter(node => {
-        const relatedText = (node.related || []).map(item => item.name).join(" ");
-        const searchText = `
-          ${node.name || ""}
-          ${node.definition || ""}
-          ${node.domain || ""}
-          ${node.type || ""}
-          ${node.confidence || ""}
-          ${relatedText}
-        `.toLowerCase();
-
-        const matchesSearch = searchText.includes(search);
-        const matchesDomain = domain === "all" || node.domain === domain;
+        const matchesSearch = !activeSearch || text.includes(activeSearch);
+        const matchesDomain = activeDomain === "all" || getDomain(node) === activeDomain;
 
         return matchesSearch && matchesDomain;
       });
 
-      if (sort === "name") {
-        filtered.sort((a, b) => a.name.localeCompare(b.name));
-      }
+      filteredNodes.sort((a, b) => {
+        if (activeSort === "relationships") return getRelatedCount(b) - getRelatedCount(a);
+        if (activeSort === "sources") return getSourceCount(b) - getSourceCount(a);
+        if (activeSort === "revisions") return getRevisionCount(b) - getRevisionCount(a);
+        return String(a.name || "").localeCompare(String(b.name || ""));
+      });
 
-      if (sort === "domain") {
-        filtered.sort((a, b) => {
-          const domainCompare = (a.domain || "").localeCompare(b.domain || "");
-          if (domainCompare !== 0) return domainCompare;
-          return a.name.localeCompare(b.name);
-        });
-      }
-
-      if (sort === "relationships") {
-        filtered.sort((a, b) => getRelationshipCount(b) - getRelationshipCount(a));
-      }
-
-      updatePills();
-      renderConcepts(filtered);
-      document.getElementById("visible-count").textContent = filtered.length;
-      document.getElementById("total-count").textContent = allNodes.length;
+      refreshDomainChips();
+      renderResults();
+      updateStats();
     }
 
-    function renderConcepts(nodes) {
-      const grid = document.getElementById("concept-grid");
-      grid.innerHTML = "";
+    function renderResults() {
+      const grid = document.getElementById("results-grid");
+      const nodesToShow = filteredNodes.slice(0, visibleLimit);
 
-      if (nodes.length === 0) {
+      if (nodesToShow.length === 0) {
         grid.innerHTML = `
-          <div class="empty-state">
-            <h2>No concepts found</h2>
-            <p>Try searching for Truth, Knowledge, Trust, Evidence, Verification, Reality, or Belief.</p>
+          <div class="empty">
+            No concepts matched your search or filter. Try clearing the search or switching to all domains.
           </div>
         `;
+        document.getElementById("load-row").style.display = "none";
         return;
       }
 
-      nodes.forEach(node => {
-        const card = document.createElement("a");
-        card.className = "concept-card";
-        card.href = `concept.html?id=${node.id}`;
-
-        const relatedTags = (node.related || [])
-          .slice(0, 4)
-          .map(item => `<span class="related-tag">${item.name}</span>`)
-          .join("");
-
-        card.innerHTML = `
-          <div class="concept-card-top">
-            <div>
-              <h2>${node.name}</h2>
-              <div class="entry-id">${node.entryId || "SRC-NODE"}</div>
-            </div>
-            <span class="badge blue">${node.domain || "Domain"}</span>
-          </div>
-
-          <p class="concept-definition">${node.definition || "No definition available yet."}</p>
-
-          <div class="related-row">
-            ${relatedTags || `<span class="related-tag">No relationships yet</span>`}
-          </div>
-
-          <div class="card-footer">
-            <span>${getRelationshipCount(node)} relationships · ${getSourceCount(node)} sources</span>
-            <span class="open-link">Open →</span>
-          </div>
-        `;
-
-        grid.appendChild(card);
-      });
+      grid.innerHTML = nodesToShow.map(renderConceptCard).join("");
+      document.getElementById("load-row").style.display = filteredNodes.length > visibleLimit ? "flex" : "none";
     }
 
-    function renderStats() {
-      const domains = uniqueValues(allNodes, "domain");
-      const relationshipTotal = allNodes.reduce((sum, node) => sum + getRelationshipCount(node), 0);
-      const sourceTotal = allNodes.reduce((sum, node) => sum + getSourceCount(node), 0);
+    function renderConceptCard(node) {
+      const id = getNodeId(node);
+      const name = node.name || id;
+      const domain = getDomain(node);
+      const definitionLength = activeDensity === "compact" ? 110 : 170;
+      const relatedLimit = activeDensity === "compact" ? 3 : 5;
+      const related = getRelatedItems(node).slice(0, relatedLimit);
+
+      const relatedHtml = related.length
+        ? related.map(item => `<span class="related-chip">${escapeHtml(item.name || item.id)}</span>`).join("")
+        : `<span class="related-chip">No links yet</span>`;
+
+      return `
+        <article class="concept-card">
+          <div class="concept-top">
+            <div>
+              <h2>${escapeHtml(name)}</h2>
+              <div class="entry-id">${escapeHtml(node.entryId || id)}</div>
+            </div>
+            <span class="domain-badge">${escapeHtml(domain)}</span>
+          </div>
+
+          <p class="definition">${escapeHtml(clip(node.definition || "No definition available yet.", definitionLength))}</p>
+
+          <div class="related-chips">
+            ${relatedHtml}
+          </div>
+
+          <div class="card-meta">
+            <span>${getRelatedCount(node)} relationships</span>
+            <span>${getSourceCount(node)} sources</span>
+            <span>${getRevisionCount(node)} revisions</span>
+          </div>
+
+          <div class="card-actions">
+            <a class="open-action" href="concept.html?id=${encodeURIComponent(id)}">Open</a>
+            <a class="graph-action" href="graph.html?center=${encodeURIComponent(id)}&view=sphere&depth=2&edges=center&lens=domain">Graph</a>
+          </div>
+        </article>
+      `;
+    }
+
+    function updateStats() {
+      const totalRelationships = allNodes.reduce((sum, node) => sum + getRelatedCount(node), 0);
+      const domains = [...new Set(allNodes.map(getDomain))].length;
 
       document.getElementById("stat-concepts").textContent = allNodes.length;
-      document.getElementById("stat-domains").textContent = domains.length;
-      document.getElementById("stat-relationships").textContent = relationshipTotal;
-      document.getElementById("stat-sources").textContent = sourceTotal;
+      document.getElementById("stat-visible").textContent = filteredNodes.length;
+      document.getElementById("stat-relationships").textContent = totalRelationships;
+      document.getElementById("stat-domains").textContent = domains;
+
+      document.getElementById("result-count").textContent =
+        `Showing ${Math.min(visibleLimit, filteredNodes.length)} of ${filteredNodes.length} matching concepts`;
     }
 
-    function renderFeatured() {
-      const featured = ["truth", "knowledge", "trust", "evidence", "verification"];
+    function buildFeaturedLinks() {
       const container = document.getElementById("featured-list");
-      container.innerHTML = "";
+      const preferred = ["truth", "knowledge", "data", "evidence", "verification", "meaning", "language"];
 
-      featured.forEach(id => {
-        const node = allNodes.find(item => item.id === id);
-        if (!node) return;
+      const featured = preferred
+        .map(id => allNodes.find(node => getNodeId(node) === id))
+        .filter(Boolean)
+        .slice(0, 6);
 
-        const link = document.createElement("a");
-        link.href = `concept.html?id=${node.id}`;
-        link.innerHTML = `
-          ${node.name}
-          <span>Open</span>
+      if (featured.length === 0) return;
+
+      container.innerHTML = featured.map(node => {
+        const id = getNodeId(node);
+        return `
+          <a href="concept.html?id=${encodeURIComponent(id)}">
+            ${escapeHtml(node.name || id)}
+            <span>Open →</span>
+          </a>
         `;
-        container.appendChild(link);
-      });
+      }).join("");
     }
 
-    function focusSearch() {
+    function loadMore() {
+      visibleLimit += 24;
+      renderResults();
+      updateStats();
+    }
+
+    function focusExploreSearch() {
       document.getElementById("search-input").focus();
     }
 
-    async function init() {
-      allNodes = await loadNodes();
-
-      const initialSearch = getInitialSearch();
-      document.getElementById("search-input").value = initialSearch;
-
-      buildDomainFilter();
-      renderStats();
-      renderFeatured();
-      applyFilters();
-    }
-
-    init();
+    loadNodes();
   </script>
-
 </body>
 </html>
