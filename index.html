@@ -1,32 +1,48 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DictionaryHub | Powered by SourceRoot</title>
+  <title>DictionaryHub | SourceRoot</title>
 
   <style>
     * {
       box-sizing: border-box;
     }
 
+    :root {
+      --navy: #061a33;
+      --navy-2: #0c3d78;
+      --blue: #1f6ed4;
+      --blue-soft: #eaf4ff;
+      --line: #e5eaf1;
+      --text: #0d1b2a;
+      --muted: #64748b;
+      --bg: #f7f9fc;
+      --white: #ffffff;
+      --shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
+      --soft-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+    }
+
     body {
       margin: 0;
       font-family: Arial, Helvetica, sans-serif;
-      background: #f7f9fc;
-      color: #0d1b2a;
+      background: var(--bg);
+      color: var(--text);
     }
 
     .site-header {
-      height: 86px;
+      height: 78px;
       padding: 0 48px;
-      background: #061a33;
+      background: var(--navy);
       color: white;
       display: flex;
       align-items: center;
       justify-content: space-between;
       border-bottom: 1px solid rgba(255,255,255,0.12);
+      position: sticky;
+      top: 0;
+      z-index: 50;
     }
 
     .brand {
@@ -38,42 +54,44 @@
     }
 
     .logo {
-      width: 46px;
-      height: 46px;
+      width: 42px;
+      height: 42px;
       border: 2px solid white;
       border-radius: 50%;
       display: grid;
       place-items: center;
-      font-size: 24px;
+      font-size: 23px;
+      flex: 0 0 auto;
     }
 
     .brand h1 {
       margin: 0;
       font-family: Georgia, serif;
-      font-size: 28px;
+      font-size: 24px;
       line-height: 1;
       color: white;
     }
 
     .brand p {
       margin: 3px 0 0;
-      font-size: 14px;
+      font-size: 12px;
       opacity: 0.85;
       color: white;
     }
 
     nav {
       display: flex;
-      gap: 30px;
+      gap: 26px;
       align-items: center;
     }
 
     nav a {
       color: white;
       text-decoration: none;
-      font-size: 15px;
+      font-size: 14px;
       opacity: 0.9;
       padding-bottom: 8px;
+      white-space: nowrap;
     }
 
     nav a:hover {
@@ -85,425 +103,549 @@
     }
 
     .icon-button {
-      width: 46px;
-      height: 46px;
+      width: 42px;
+      height: 42px;
       border-radius: 50%;
       border: none;
       color: white;
       background: #102b4c;
-      font-size: 22px;
+      font-size: 20px;
       cursor: pointer;
     }
 
-    .hero {
-      background: linear-gradient(135deg, #061a33, #0c3d78);
+    .hero-wrap {
+      background:
+        radial-gradient(circle at 70% 30%, rgba(31,110,212,0.28), transparent 26%),
+        linear-gradient(135deg, #061a33, #0c3d78);
       color: white;
-      min-height: 650px;
-      padding: 76px 48px 70px;
+      padding: 70px 24px 78px;
     }
 
-    .hero-inner {
-      max-width: 1180px;
+    .hero {
+      max-width: 1280px;
       margin: 0 auto;
       display: grid;
-      grid-template-columns: 1.05fr 0.95fr;
-      gap: 58px;
+      grid-template-columns: minmax(0, 1fr) 420px;
+      gap: 54px;
       align-items: center;
     }
 
     .hero-label {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
       background: rgba(255,255,255,0.12);
-      border: 1px solid rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.22);
       padding: 8px 12px;
       border-radius: 999px;
-      font-size: 13px;
-      font-weight: 700;
-      margin-bottom: 22px;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 20px;
+      color: white;
     }
 
     .hero h2 {
       margin: 0;
       font-family: Georgia, serif;
-      font-size: 68px;
-      line-height: 1.02;
-      letter-spacing: -1.5px;
+      font-size: clamp(44px, 6vw, 76px);
+      line-height: 0.96;
+      letter-spacing: -1.2px;
+      color: white;
+      max-width: 780px;
     }
 
     .hero p {
-      margin: 24px 0 0;
+      margin: 22px 0 0;
+      max-width: 760px;
       color: #dbeafe;
-      font-size: 19px;
-      line-height: 1.75;
-      max-width: 680px;
-    }
-
-    .search-box {
-      margin-top: 34px;
-      background: white;
-      border-radius: 18px;
-      padding: 10px;
-      display: flex;
-      gap: 10px;
-      box-shadow: 0 22px 50px rgba(0,0,0,0.2);
-      max-width: 680px;
-    }
-
-    .search-box input {
-      flex: 1;
-      border: none;
-      outline: none;
-      padding: 18px 18px;
-      border-radius: 12px;
-      font-size: 16px;
-      color: #0d1b2a;
-    }
-
-    .search-box button {
-      border: none;
-      background: #1f6ed4;
-      color: white;
-      border-radius: 12px;
-      padding: 0 24px;
-      font-weight: 900;
-      cursor: pointer;
-      font-size: 15px;
-    }
-
-    .popular {
-      margin-top: 22px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .popular span {
-      color: #bfdbfe;
-      font-size: 14px;
-      font-weight: 700;
-    }
-
-    .popular a {
-      color: white;
-      text-decoration: none;
-      border: 1px solid rgba(255,255,255,0.22);
-      background: rgba(255,255,255,0.08);
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-size: 14px;
-      font-weight: 700;
-    }
-
-    .popular a:hover {
-      background: rgba(255,255,255,0.15);
+      font-size: 18px;
+      line-height: 1.72;
     }
 
     .hero-actions {
-      display: flex;
-      gap: 14px;
-      flex-wrap: wrap;
-      margin-top: 30px;
+      margin-top: 28px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      max-width: 660px;
     }
 
-    .hero-actions a {
-      text-decoration: none;
+    .hero-search {
+      position: relative;
+    }
+
+    .hero-search input {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.24);
+      background: rgba(255,255,255,0.96);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 16px 18px;
+      font-size: 15px;
+      outline: none;
+      box-shadow: 0 14px 34px rgba(0,0,0,0.14);
+    }
+
+    .hero-search input:focus {
+      border-color: #9fd2ff;
+      box-shadow: 0 0 0 4px rgba(159,210,255,0.2), 0 14px 34px rgba(0,0,0,0.14);
+    }
+
+    .suggestions {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: calc(100% + 8px);
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      z-index: 10;
+      display: none;
+    }
+
+    .suggestions.show {
+      display: block;
+    }
+
+    .suggestions button {
+      width: 100%;
+      border: none;
+      background: white;
+      color: var(--text);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 13px 15px;
+      cursor: pointer;
+      text-align: left;
+      border-bottom: 1px solid #f0f3f8;
+      font-weight: 800;
+    }
+
+    .suggestions button:hover {
+      background: #f0f7ff;
+    }
+
+    .suggestions span {
+      color: var(--blue);
+      font-size: 12px;
       font-weight: 900;
-      border-radius: 12px;
-      padding: 14px 18px;
+      white-space: nowrap;
+    }
+
+    .primary-link,
+    .secondary-link,
+    .ghost-link {
+      border-radius: 13px;
+      padding: 15px 18px;
+      font-weight: 900;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+      font-size: 14px;
     }
 
     .primary-link {
-      background: white;
-      color: #0c3d78;
+      background: var(--blue);
+      color: white;
+      box-shadow: 0 14px 30px rgba(31,110,212,0.22);
     }
 
     .secondary-link {
-      color: white;
-      border: 1px solid rgba(255,255,255,0.28);
-      background: rgba(255,255,255,0.08);
+      background: white;
+      color: var(--navy-2);
+      border: 1px solid #bfdbfe;
     }
 
-    .graph-preview {
+    .ghost-link {
       background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.16);
-      border-radius: 26px;
-      min-height: 480px;
+      color: white;
+      border: 1px solid rgba(255,255,255,0.22);
+    }
+
+    .chip-row {
+      margin-top: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      align-items: center;
+    }
+
+    .chip-label {
+      color: #bfdbfe;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .chip {
+      border: 1px solid rgba(255,255,255,0.24);
+      background: rgba(255,255,255,0.09);
+      color: white;
+      text-decoration: none;
+      border-radius: 999px;
+      padding: 8px 11px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .chip:hover {
+      background: rgba(255,255,255,0.16);
+    }
+
+    .hero-button-row {
+      margin-top: 24px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .sphere-card {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 22px;
+      min-height: 390px;
+      box-shadow: 0 22px 55px rgba(0,0,0,0.18);
       position: relative;
       overflow: hidden;
-      box-shadow: 0 24px 70px rgba(0,0,0,0.22);
     }
 
-    .graph-preview::before {
+    .sphere-card::before {
       content: "";
       position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(circle at center, rgba(255,255,255,0.18), transparent 30%),
-        linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
-      background-size: auto, 36px 36px, 36px 36px;
-    }
-
-    .graph-node {
-      position: absolute;
+      inset: 42px;
       border-radius: 50%;
-      display: grid;
-      place-items: center;
-      text-align: center;
-      font-weight: 900;
-      color: #0d1b2a;
-      background: white;
-      border: 2px solid #bfdbfe;
-      box-shadow: 0 18px 45px rgba(0,0,0,0.22);
-      z-index: 2;
-      text-decoration: none;
+      border: 1px solid rgba(255,255,255,0.18);
+      box-shadow:
+        inset 0 0 40px rgba(255,255,255,0.08),
+        0 0 60px rgba(159,210,255,0.08);
     }
 
-    .graph-node.center {
-      width: 130px;
-      height: 130px;
-      background: #ffffff;
-      color: #0c3d78;
-      font-family: Georgia, serif;
-      font-size: 28px;
-      top: 175px;
-      left: 50%;
-      transform: translateX(-50%);
-    }
-
-    .graph-node.small {
-      width: 96px;
-      height: 96px;
-      font-size: 13px;
-      padding: 10px;
-    }
-
-    .n1 { top: 50px; left: 42%; }
-    .n2 { top: 135px; right: 48px; }
-    .n3 { bottom: 70px; right: 86px; }
-    .n4 { bottom: 70px; left: 86px; }
-    .n5 { top: 135px; left: 48px; }
-
-    .line {
+    .mini-svg {
       position: absolute;
-      height: 2px;
-      background: rgba(255,255,255,0.32);
-      transform-origin: left center;
+      inset: 0;
+      width: 100%;
+      height: 100%;
       z-index: 1;
     }
 
-    .line.l1 { width: 130px; top: 159px; left: 245px; transform: rotate(-58deg); }
-    .line.l2 { width: 130px; top: 223px; left: 335px; transform: rotate(-16deg); }
-    .line.l3 { width: 140px; top: 314px; left: 330px; transform: rotate(35deg); }
-    .line.l4 { width: 140px; top: 314px; left: 152px; transform: rotate(145deg); }
-    .line.l5 { width: 130px; top: 223px; left: 145px; transform: rotate(196deg); }
-
-    .page-section {
-      max-width: 1180px;
-      margin: 0 auto;
-      padding: 58px 24px;
+    .mini-edge {
+      stroke: rgba(159,210,255,0.55);
+      stroke-width: 1.2;
     }
 
-    .section-header {
-      text-align: center;
-      max-width: 760px;
-      margin: 0 auto 34px;
-    }
-
-    .section-header h2 {
-      margin: 0;
-      font-family: Georgia, serif;
-      font-size: 42px;
-      color: #0d1b2a;
-    }
-
-    .section-header p {
-      color: #64748b;
-      font-size: 17px;
-      line-height: 1.7;
-    }
-
-    .feature-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 18px;
-    }
-
-    .feature-card {
-      background: white;
-      border: 1px solid #e5eaf1;
-      border-radius: 18px;
-      padding: 26px;
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
-      text-decoration: none;
-      color: #0d1b2a;
-      transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-    }
-
-    .feature-card:hover {
-      transform: translateY(-4px);
-      border-color: #93c5fd;
-      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.1);
-    }
-
-    .feature-icon {
-      width: 46px;
-      height: 46px;
-      border-radius: 50%;
-      background: #e2efff;
-      color: #0f63c9;
+    .mini-node {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+      min-width: 82px;
+      min-height: 58px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.96);
+      color: var(--navy);
+      border: 2px solid rgba(159,210,255,0.75);
       display: grid;
       place-items: center;
+      text-align: center;
+      font-size: 12px;
       font-weight: 900;
-      margin-bottom: 16px;
+      padding: 8px 10px;
+      box-shadow: 0 16px 30px rgba(0,0,0,0.16);
     }
 
-    .feature-card h3 {
-      margin: 0 0 10px;
+    .mini-node.center {
+      min-width: 112px;
+      min-height: 84px;
+      background: white;
+      color: var(--navy-2);
       font-family: Georgia, serif;
-      font-size: 24px;
+      font-size: 23px;
+      border-color: white;
+      z-index: 4;
     }
 
-    .feature-card p {
-      color: #64748b;
-      line-height: 1.6;
-      margin: 0;
-      font-size: 15px;
-    }
-
-    .stats {
-      background: #061a33;
-      color: white;
+    .section {
+      max-width: 1280px;
+      margin: 0 auto;
       padding: 48px 24px;
     }
 
-    .stats-inner {
-      max-width: 1180px;
-      margin: 0 auto;
+    .section-heading {
+      text-align: center;
+      max-width: 780px;
+      margin: 0 auto 28px;
+    }
+
+    .section-heading h2 {
+      margin: 0;
+      font-family: Georgia, serif;
+      font-size: 38px;
+      line-height: 1.08;
+      color: var(--text);
+    }
+
+    .section-heading p {
+      margin: 12px 0 0;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .path-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 18px;
     }
 
-    .stat-card {
-      border: 1px solid rgba(255,255,255,0.14);
-      background: rgba(255,255,255,0.07);
+    .path-card {
+      background: white;
+      border: 1px solid var(--line);
       border-radius: 18px;
-      padding: 24px;
+      padding: 22px;
+      box-shadow: var(--soft-shadow);
+      text-decoration: none;
+      color: var(--text);
+      min-height: 176px;
+      transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .path-card:hover {
+      transform: translateY(-3px);
+      border-color: #bfdbfe;
+      box-shadow: var(--shadow);
+    }
+
+    .step-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #e2efff;
+      color: var(--blue);
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      font-size: 13px;
+      margin-bottom: 18px;
+    }
+
+    .path-card h3 {
+      margin: 0;
+      font-family: Georgia, serif;
+      font-size: 22px;
+      line-height: 1.1;
+    }
+
+    .path-card p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 14px;
+    }
+
+    .stats-wrap {
+      background: var(--navy);
+      color: white;
+      padding: 40px 24px;
+    }
+
+    .stats-grid {
+      max-width: 920px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .stat-card {
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(255,255,255,0.07);
+      border-radius: 16px;
+      padding: 22px;
       text-align: center;
     }
 
     .stat-card strong {
       display: block;
       font-family: Georgia, serif;
-      font-size: 40px;
+      font-size: 34px;
+      line-height: 1;
       color: white;
     }
 
     .stat-card span {
+      display: block;
+      margin-top: 7px;
       color: #bfdbfe;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 800;
     }
 
-    .callout {
-      max-width: 1180px;
-      margin: 58px auto;
-      padding: 0 24px;
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 24px;
+      align-items: start;
     }
 
-    .callout-inner {
-      background: #f0f7ff;
-      border: 1px solid #bfdbfe;
-      border-radius: 22px;
-      padding: 34px;
+    .feature-panel {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      box-shadow: var(--soft-shadow);
+      padding: 26px;
+    }
+
+    .feature-panel h3 {
+      margin: 0;
+      font-family: Georgia, serif;
+      font-size: 28px;
+    }
+
+    .feature-panel p {
+      color: var(--muted);
+      line-height: 1.65;
+      margin: 12px 0 0;
+    }
+
+    .link-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .link-list a {
       display: flex;
       justify-content: space-between;
-      gap: 24px;
       align-items: center;
-    }
-
-    .callout h2 {
-      margin: 0 0 8px;
-      font-family: Georgia, serif;
-      font-size: 34px;
-    }
-
-    .callout p {
-      margin: 0;
-      color: #475569;
-      line-height: 1.6;
-    }
-
-    .callout a {
-      white-space: nowrap;
+      gap: 16px;
+      padding: 14px 15px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
       text-decoration: none;
-      background: #1f6ed4;
-      color: white;
-      border-radius: 12px;
-      padding: 14px 18px;
+      color: var(--text);
+      background: #fbfdff;
       font-weight: 900;
     }
 
+    .link-list a:hover {
+      background: #f0f7ff;
+      border-color: #bfdbfe;
+    }
+
+    .link-list span {
+      color: var(--blue);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .cta {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 26px 24px 54px;
+    }
+
+    .cta-card {
+      background: #f0f7ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 20px;
+      padding: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 24px;
+      box-shadow: var(--soft-shadow);
+    }
+
+    .cta-card h3 {
+      margin: 0;
+      font-family: Georgia, serif;
+      font-size: 28px;
+    }
+
+    .cta-card p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
     footer {
-      border-top: 1px solid #e5eaf1;
+      border-top: 1px solid var(--line);
       padding: 28px 24px;
       text-align: center;
-      color: #64748b;
-      font-size: 14px;
+      color: var(--muted);
+      font-size: 13px;
+      background: white;
     }
 
     @media (max-width: 980px) {
       .site-header {
-        padding: 20px;
         height: auto;
+        padding: 18px 24px;
         flex-direction: column;
-        gap: 18px;
+        gap: 16px;
       }
 
       nav {
         flex-wrap: wrap;
         justify-content: center;
-        gap: 18px;
       }
 
       .hero {
-        padding: 42px 24px;
+        grid-template-columns: 1fr;
       }
 
-      .hero-inner {
+      .sphere-card {
+        min-height: 330px;
+      }
+
+      .path-grid,
+      .stats-grid,
+      .dashboard-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .hero-actions {
         grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .hero-wrap {
+        padding: 42px 18px 50px;
       }
 
       .hero h2 {
-        font-size: 46px;
+        font-size: 44px;
       }
 
-      .graph-preview {
-        min-height: 420px;
+      .hero p {
+        font-size: 16px;
       }
 
-      .feature-grid,
-      .stats-inner {
+      .path-grid,
+      .stats-grid,
+      .dashboard-grid {
         grid-template-columns: 1fr;
       }
 
-      .callout-inner {
+      .cta-card {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
       }
 
-      .search-box {
-        flex-direction: column;
-      }
-
-      .search-box button {
-        padding: 16px;
+      .primary-link,
+      .secondary-link,
+      .ghost-link {
+        width: 100%;
       }
     }
   </style>
-
 </head>
 
 <body>
@@ -516,269 +658,403 @@
       </div>
     </a>
 
-```
-<nav>
-  <a href="index.html" class="active">Home</a>
-  <a href="explore.html">Explore</a>
-  <a href="graph.html">Graph</a>
-  <a href="sources.html">Sources</a>
-  <a href="revisions.html">Revisions</a>
-  <a href="about.html">About</a>
-</nav>
+    <nav>
+      <a href="index.html" class="active">Home</a>
+      <a href="explore.html">Explore</a>
+      <a href="graph.html">Graph</a>
+      <a href="sources.html">Sources</a>
+      <a href="revisions.html">Revisions</a>
+      <a href="about.html">About</a>
+    </nav>
 
-<button class="icon-button" onclick="focusSearch()">⌕</button>
-```
-
+    <button class="icon-button" onclick="focusHomeSearch()">⌕</button>
   </header>
 
-  <section class="hero">
-    <div class="hero-inner">
+  <section class="hero-wrap">
+    <div class="hero">
       <div>
-        <div class="hero-label">Powered by the SourceRoot Protocol</div>
+        <div class="hero-label">Powered by the SourceRoot Protocol →</div>
 
-```
-    <h2>Explore Knowledge. Understand Origins. See Everything Connected.</h2>
+        <h2>Explore knowledge. Understand origins. See everything connected.</h2>
 
-    <p>
-      DictionaryHub is a living knowledge graph that shows the origin, meaning, relationships, sources, and revision history behind concepts.
-    </p>
+        <p>
+          DictionaryHub is a living knowledge graph that shows the origin, meaning, relationships, sources, and revision history behind concepts.
+        </p>
 
-    <div class="search-box">
-      <input
-        id="home-search"
-        type="text"
-        placeholder="Search for a concept, word, person, event, or source..."
-        onkeydown="handleSearchKey(event)"
-      />
-      <button onclick="searchConcept()">Search</button>
+        <div class="hero-actions">
+          <div class="hero-search">
+            <input
+              id="home-search"
+              type="text"
+              placeholder="Search for a concept, word, source, or idea..."
+              autocomplete="off"
+              oninput="handleHomeSearch()"
+              onkeydown="handleSearchKey(event)"
+            />
+            <div class="suggestions" id="suggestions"></div>
+          </div>
+
+          <button class="primary-link" onclick="openSearchConcept()">Search</button>
+        </div>
+
+        <div class="chip-row">
+          <span class="chip-label">Popular:</span>
+          <a class="chip" href="concept.html?id=truth">Truth</a>
+          <a class="chip" href="concept.html?id=knowledge">Knowledge</a>
+          <a class="chip" href="concept.html?id=data">Data</a>
+          <a class="chip" href="concept.html?id=evidence">Evidence</a>
+          <a class="chip" href="concept.html?id=verification">Verification</a>
+          <a class="chip" href="concept.html?id=language">Language</a>
+        </div>
+
+        <div class="hero-button-row">
+          <a class="secondary-link" href="explore.html">Start Exploring</a>
+          <a class="ghost-link" href="graph.html?center=truth&view=sphere&depth=2&edges=center&lens=domain">View Truth Graph</a>
+        </div>
+      </div>
+
+      <div class="sphere-card" aria-label="Knowledge sphere preview">
+        <svg class="mini-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <line class="mini-edge" x1="50" y1="50" x2="50" y2="22"></line>
+          <line class="mini-edge" x1="50" y1="50" x2="76" y2="38"></line>
+          <line class="mini-edge" x1="50" y1="50" x2="74" y2="72"></line>
+          <line class="mini-edge" x1="50" y1="50" x2="26" y2="72"></line>
+          <line class="mini-edge" x1="50" y1="50" x2="23" y2="40"></line>
+        </svg>
+
+        <a class="mini-node center" style="left: 50%; top: 50%;" href="graph.html?center=truth&view=sphere&depth=2&edges=center&lens=domain">Truth</a>
+        <a class="mini-node" style="left: 50%; top: 22%;" href="concept.html?id=knowledge">Knowledge</a>
+        <a class="mini-node" style="left: 76%; top: 38%;" href="concept.html?id=evidence">Evidence</a>
+        <a class="mini-node" style="left: 74%; top: 72%;" href="concept.html?id=verification">Verification</a>
+        <a class="mini-node" style="left: 26%; top: 72%;" href="concept.html?id=trust">Trust</a>
+        <a class="mini-node" style="left: 23%; top: 40%;" href="concept.html?id=reality">Reality</a>
+      </div>
     </div>
-
-    <div class="popular">
-      <span>Popular:</span>
-      <a href="concept.html?id=truth">Truth</a>
-      <a href="concept.html?id=knowledge">Knowledge</a>
-      <a href="concept.html?id=trust">Trust</a>
-      <a href="concept.html?id=evidence">Evidence</a>
-      <a href="concept.html?id=verification">Verification</a>
-      <a href="explore.html?q=language">Language</a>
-    </div>
-
-    <div class="hero-actions">
-      <a class="primary-link" href="explore.html">Start Exploring</a>
-      <a class="secondary-link" href="graph.html?center=truth">View Truth Graph</a>
-    </div>
-  </div>
-
-  <div class="graph-preview">
-    <div class="line l1"></div>
-    <div class="line l2"></div>
-    <div class="line l3"></div>
-    <div class="line l4"></div>
-    <div class="line l5"></div>
-
-    <a class="graph-node center" href="concept.html?id=truth">Truth</a>
-    <a class="graph-node small n1" href="concept.html?id=knowledge">Knowledge</a>
-    <a class="graph-node small n2" href="concept.html?id=evidence">Evidence</a>
-    <a class="graph-node small n3" href="concept.html?id=verification">Verification</a>
-    <a class="graph-node small n4" href="concept.html?id=trust">Trust</a>
-    <a class="graph-node small n5" href="concept.html?id=reality">Reality</a>
-  </div>
-</div>
-```
-
   </section>
 
-  <section class="page-section">
-    <div class="section-header">
+  <section class="section">
+    <div class="section-heading">
       <h2>A dictionary that shows the source trail.</h2>
       <p>
         Instead of stopping at a definition, DictionaryHub connects every concept to its relationships, references, and revision history.
       </p>
     </div>
 
-```
-<div class="feature-grid">
-  <a class="feature-card" href="explore.html">
-    <div class="feature-icon">1</div>
-    <h3>Explore Concepts</h3>
-    <p>Browse the seed graph and open reusable concept pages powered by data.</p>
-  </a>
+    <div class="path-grid">
+      <a class="path-card" href="explore.html">
+        <div class="step-dot">1</div>
+        <h3>Explore Concepts</h3>
+        <p>Browse words, domains, and categories from the knowledge index.</p>
+      </a>
 
-  <a class="feature-card" href="graph.html?center=truth">
-    <div class="feature-icon">2</div>
-    <h3>View Relationships</h3>
-    <p>See how ideas like Truth, Evidence, Verification, Trust, and Knowledge connect.</p>
-  </a>
+      <a class="path-card" href="graph.html?center=truth&view=sphere&depth=2&edges=center&lens=domain">
+        <div class="step-dot">2</div>
+        <h3>View Relationships</h3>
+        <p>Open the sphere graph to see how ideas connect and move.</p>
+      </a>
 
-  <a class="feature-card" href="sources.html">
-    <div class="feature-icon">3</div>
-    <h3>Check Sources</h3>
-    <p>Trace concepts back to the references that support them.</p>
-  </a>
+      <a class="path-card" href="sources.html">
+        <div class="step-dot">3</div>
+        <h3>Check Sources</h3>
+        <p>Trace concepts back to the references that support them.</p>
+      </a>
 
-  <a class="feature-card" href="revisions.html">
-    <div class="feature-icon">4</div>
-    <h3>Review History</h3>
-    <p>Track how entries are created, sourced, connected, and revised over time.</p>
-  </a>
-</div>
-```
-
+      <a class="path-card" href="revisions.html">
+        <div class="step-dot">4</div>
+        <h3>Review History</h3>
+        <p>Track how entries are created, connected, and revised over time.</p>
+      </a>
+    </div>
   </section>
 
-  <section class="stats">
-    <div class="stats-inner">
+  <section class="stats-wrap">
+    <div class="stats-grid">
       <div class="stat-card">
-        <strong id="stat-concepts">0</strong>
+        <strong id="stat-concepts">990</strong>
         <span>Concepts</span>
       </div>
 
-```
-  <div class="stat-card">
-    <strong id="stat-relationships">0</strong>
-    <span>Relationships</span>
-  </div>
+      <div class="stat-card">
+        <strong id="stat-relationships">—</strong>
+        <span>Relationships</span>
+      </div>
 
-  <div class="stat-card">
-    <strong id="stat-sources">0</strong>
-    <span>Sources</span>
-  </div>
+      <div class="stat-card">
+        <strong id="stat-sources">—</strong>
+        <span>Sources</span>
+      </div>
 
-  <div class="stat-card">
-    <strong id="stat-revisions">0</strong>
-    <span>Revisions</span>
-  </div>
-</div>
-```
-
+      <div class="stat-card">
+        <strong id="stat-revisions">—</strong>
+        <span>Revisions</span>
+      </div>
+    </div>
   </section>
 
-  <section class="callout">
-    <div class="callout-inner">
-      <div>
-        <h2>Start with Truth.</h2>
+  <section class="section">
+    <div class="dashboard-grid">
+      <div class="feature-panel">
+        <h3>Built for navigation, not just lookup.</h3>
         <p>
-          The first SourceRoot concept shows the larger system: definition, origin, relationships, sources, and revision history in one traceable entry.
+          Every major action on this home page points into the working DictionaryHub system: concept pages, the sphere graph, source review, revision history, and exploration.
+        </p>
+
+        <div class="link-list">
+          <a href="graph.html?center=truth&view=sphere&depth=2&edges=center&lens=domain">
+            Open the Knowledge Sphere <span>Graph →</span>
+          </a>
+
+          <a href="explore.html">
+            Browse the Concept Index <span>Explore →</span>
+          </a>
+
+          <a href="sources.html">
+            Review the Source Trail <span>Sources →</span>
+          </a>
+
+          <a href="revisions.html">
+            Inspect Revision History <span>Revisions →</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="feature-panel">
+        <h3>Start with a core concept.</h3>
+        <p>
+          These links are wired directly to concept pages and graph centers so the home page feels connected to the rest of the site.
+        </p>
+
+        <div class="link-list" id="starter-links">
+          <a href="concept.html?id=truth">Truth <span>Open →</span></a>
+          <a href="concept.html?id=knowledge">Knowledge <span>Open →</span></a>
+          <a href="concept.html?id=data">Data <span>Open →</span></a>
+          <a href="concept.html?id=evidence">Evidence <span>Open →</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta">
+    <div class="cta-card">
+      <div>
+        <h3>Start with Truth.</h3>
+        <p>
+          Open the SourceRoot concept that begins the larger system: definition, origin, relationships, sources, and revision history in one traceable entry.
         </p>
       </div>
 
-```
-  <a href="concept.html?id=truth">Open Truth</a>
-</div>
-```
-
+      <a class="primary-link" href="concept.html?id=truth">Open Truth</a>
+    </div>
   </section>
 
   <footer>
-    DictionaryHub is a SourceRoot prototype for traceable, connected, and source-backed knowledge.
+    DictionaryHub is a SourceRoot prototype for traceable, connected, and source-linked knowledge.
   </footer>
 
   <script>
+    let allNodes = [];
+    let searchMatches = [];
+
     const fallbackNodes = [
       {
         id: "truth",
         name: "Truth",
-        related: [{ id: "evidence" }, { id: "verification" }, { id: "knowledge" }],
-        sources: [{ name: "Stanford Encyclopedia of Philosophy" }],
+        domain: "Knowledge",
+        definition: "Truth is the quality of being in accordance with fact, reality, evidence, or verified understanding.",
+        related: [
+          { id: "evidence" },
+          { id: "knowledge" },
+          { id: "verification" }
+        ],
+        sources: [{ name: "Fallback Source" }],
         revisions: [{ version: "v1.0" }]
       }
     ];
 
-    let allNodes = [];
-
     async function loadNodes() {
       try {
         const response = await fetch("data/nodes.json");
-        if (!response.ok) {
-          throw new Error("nodes.json not found");
-        }
-        return await response.json();
+        if (!response.ok) throw new Error("nodes.json not found");
+        const data = await response.json();
+        allNodes = Array.isArray(data) ? data : fallbackNodes;
       } catch (error) {
-        return fallbackNodes;
+        allNodes = fallbackNodes;
       }
-    }
 
-    function normalizeSearch(value) {
-      return value.toLowerCase().trim();
+      updateHomeStats();
+      renderStarterLinks();
     }
 
     function slugify(value) {
-      return value
+      return String(value || "")
         .toLowerCase()
         .trim()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-|-$/g, "");
     }
 
-    function uniqueSources(nodes) {
-      const names = new Set();
-
-      nodes.forEach(node => {
-        (node.sources || []).forEach(source => {
-          if (source.name) {
-            names.add(source.name.toLowerCase());
-          }
-        });
-      });
-
-      return names.size;
+    function getNodeId(node) {
+      return node.id || slugify(node.name || "");
     }
 
-    function searchConcept() {
+    function getRelatedCount(node) {
+      const related = Array.isArray(node.related)
+        ? node.related
+        : Array.isArray(node.relationships)
+          ? node.relationships
+          : [];
+
+      return related.length;
+    }
+
+    function updateHomeStats() {
+      const concepts = allNodes.length;
+      const relationships = allNodes.reduce((sum, node) => sum + getRelatedCount(node), 0);
+      const sources = allNodes.reduce((sum, node) => sum + (Array.isArray(node.sources) ? node.sources.length : 0), 0);
+      const revisions = allNodes.reduce((sum, node) => sum + (Array.isArray(node.revisions) ? node.revisions.length : 0), 0);
+
+      document.getElementById("stat-concepts").textContent = concepts || "—";
+      document.getElementById("stat-relationships").textContent = relationships || "—";
+      document.getElementById("stat-sources").textContent = sources || "—";
+      document.getElementById("stat-revisions").textContent = revisions || "—";
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function focusHomeSearch() {
+      document.getElementById("home-search").focus();
+    }
+
+    function handleHomeSearch() {
       const input = document.getElementById("home-search");
-      const query = normalizeSearch(input.value);
+      const value = input.value.toLowerCase().trim();
+      const suggestions = document.getElementById("suggestions");
 
-      if (!query) {
-        window.location.href = "explore.html";
+      if (!value) {
+        searchMatches = [];
+        suggestions.classList.remove("show");
+        suggestions.innerHTML = "";
         return;
       }
 
-      const exactMatch = allNodes.find(node => {
-        return normalizeSearch(node.name || "") === query || normalizeSearch(node.id || "") === query;
-      });
+      searchMatches = allNodes
+        .filter(node => {
+          const text = `${node.name || ""} ${node.definition || ""} ${node.domain || ""} ${node.type || ""}`.toLowerCase();
+          return text.includes(value);
+        })
+        .sort((a, b) => {
+          const aName = String(a.name || "").toLowerCase();
+          const bName = String(b.name || "").toLowerCase();
 
-      if (exactMatch) {
-        window.location.href = `concept.html?id=${exactMatch.id}`;
+          if (aName === value) return -1;
+          if (bName === value) return 1;
+          if (aName.startsWith(value) && !bName.startsWith(value)) return -1;
+          if (bName.startsWith(value) && !aName.startsWith(value)) return 1;
+
+          return aName.localeCompare(bName);
+        })
+        .slice(0, 7);
+
+      if (searchMatches.length === 0) {
+        suggestions.innerHTML = `
+          <button type="button" onclick="window.location.href='explore.html'">
+            No exact match — browse concepts
+            <span>Explore →</span>
+          </button>
+        `;
+        suggestions.classList.add("show");
         return;
       }
 
-      const slugMatch = allNodes.find(node => {
-        return slugify(node.name || "") === slugify(query);
-      });
+      suggestions.innerHTML = searchMatches.map(node => {
+        const id = getNodeId(node);
+        const domain = node.domain || "Concept";
 
-      if (slugMatch) {
-        window.location.href = `concept.html?id=${slugMatch.id}`;
+        return `
+          <button type="button" onclick="openConcept('${escapeHtml(id)}')">
+            ${escapeHtml(node.name || id)}
+            <span>${escapeHtml(domain)} →</span>
+          </button>
+        `;
+      }).join("");
+
+      suggestions.classList.add("show");
+    }
+
+    function openConcept(id) {
+      window.location.href = `concept.html?id=${encodeURIComponent(id)}`;
+    }
+
+    function openSearchConcept() {
+      const input = document.getElementById("home-search");
+      const value = input.value.toLowerCase().trim();
+
+      if (searchMatches.length > 0) {
+        openConcept(getNodeId(searchMatches[0]));
         return;
       }
 
-      window.location.href = `explore.html?q=${encodeURIComponent(query)}`;
+      if (value) {
+        const exact = allNodes.find(node => String(node.name || "").toLowerCase() === value || String(node.id || "").toLowerCase() === value);
+        if (exact) {
+          openConcept(getNodeId(exact));
+          return;
+        }
+      }
+
+      window.location.href = "explore.html";
     }
 
     function handleSearchKey(event) {
       if (event.key === "Enter") {
-        searchConcept();
+        event.preventDefault();
+        openSearchConcept();
+      }
+
+      if (event.key === "Escape") {
+        document.getElementById("suggestions").classList.remove("show");
       }
     }
 
-    function focusSearch() {
-      document.getElementById("home-search").focus();
+    function renderStarterLinks() {
+      const container = document.getElementById("starter-links");
+      const preferred = ["truth", "knowledge", "data", "evidence", "verification", "meaning"];
+
+      const nodes = preferred
+        .map(id => allNodes.find(node => getNodeId(node) === id))
+        .filter(Boolean)
+        .slice(0, 5);
+
+      if (nodes.length === 0) return;
+
+      container.innerHTML = nodes.map(node => {
+        const id = getNodeId(node);
+        const name = node.name || id;
+
+        return `
+          <a href="concept.html?id=${encodeURIComponent(id)}">
+            ${escapeHtml(name)}
+            <span>Open →</span>
+          </a>
+        `;
+      }).join("");
     }
 
-    async function init() {
-      allNodes = await loadNodes();
+    document.addEventListener("click", event => {
+      const searchArea = event.target.closest(".hero-search");
+      if (!searchArea) {
+        document.getElementById("suggestions").classList.remove("show");
+      }
+    });
 
-      const relationshipCount = allNodes.reduce((sum, node) => sum + ((node.related || []).length), 0);
-      const sourceCount = uniqueSources(allNodes);
-      const revisionCount = allNodes.reduce((sum, node) => sum + ((node.revisions || []).length), 0);
-
-      document.getElementById("stat-concepts").textContent = allNodes.length;
-      document.getElementById("stat-relationships").textContent = relationshipCount;
-      document.getElementById("stat-sources").textContent = sourceCount;
-      document.getElementById("stat-revisions").textContent = revisionCount;
-    }
-
-    init();
+    loadNodes();
   </script>
-
 </body>
 </html>
