@@ -88,18 +88,19 @@
     }
 
     .page {
-      max-width: 1460px;
+      width: min(96vw, 1680px);
+      max-width: 1680px;
       margin: 0 auto;
-      padding: 42px 24px 80px;
+      padding: 32px 18px 80px;
     }
 
     .hero {
       background: linear-gradient(135deg, #061a33, #0c3d78);
       color: white;
       border-radius: 22px;
-      padding: 40px 44px;
+      padding: 36px 40px;
       box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
-      margin-bottom: 28px;
+      margin-bottom: 24px;
     }
 
     .hero-label {
@@ -121,7 +122,7 @@
     }
 
     .hero p {
-      max-width: 980px;
+      max-width: 1120px;
       margin: 18px 0 0;
       color: #dbeafe;
       font-size: 18px;
@@ -133,11 +134,11 @@
       border: 1px solid #e5eaf1;
       border-radius: 18px;
       box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
-      padding: 22px;
-      margin-bottom: 28px;
+      padding: 18px;
+      margin-bottom: 18px;
       display: grid;
-      grid-template-columns: 1fr 180px 130px 140px 150px 155px 160px 145px;
-      gap: 14px;
+      grid-template-columns: minmax(260px, 1fr) 180px 135px 140px 150px 155px 160px 145px;
+      gap: 12px;
       align-items: center;
     }
 
@@ -165,8 +166,9 @@
 
     .layout {
       display: grid;
-      grid-template-columns: 1fr 390px;
-      gap: 28px;
+      grid-template-columns: minmax(760px, 1fr) 360px;
+      gap: 22px;
+      align-items: start;
     }
 
     .graph-card,
@@ -178,7 +180,7 @@
     }
 
     .graph-card {
-      min-height: 660px;
+      min-height: auto;
       overflow: hidden;
       position: relative;
     }
@@ -206,7 +208,7 @@
 
     .graph-stage {
       position: relative;
-      height: 570px;
+      height: 680px;
       background:
         radial-gradient(circle at center, rgba(31, 110, 212, 0.16), transparent 30%),
         radial-gradient(circle at center, rgba(6, 26, 51, 0.05), transparent 52%),
@@ -330,11 +332,13 @@
 
     .side-panel {
       display: grid;
-      gap: 18px;
+      gap: 16px;
       align-content: start;
+      position: sticky;
+      top: 18px;
     }
 
-    .side-card { padding: 24px; }
+    .side-card { padding: 22px; }
 
     .side-card h3 {
       margin: 0 0 16px;
@@ -544,8 +548,8 @@
       border: 1px solid #e5eaf1;
       border-radius: 18px;
       box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
-      padding: 18px 22px;
-      margin-bottom: 28px;
+      padding: 16px 18px;
+      margin-bottom: 18px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -625,9 +629,11 @@
       background: #dbeafe;
     }
 
-    @media (max-width: 1280px) {
+    @media (max-width: 1180px) {
       .controls { grid-template-columns: 1fr 1fr 1fr 1fr; }
       .layout { grid-template-columns: 1fr; }
+      .side-panel { position: static; }
+      .graph-stage { height: 640px; }
     }
 
     @media (max-width: 760px) {
@@ -679,7 +685,7 @@
 
   <main class="page">
     <section class="hero">
-      <div class="hero-label">SourceRoot Graph View v3.4</div>
+      <div class="hero-label">SourceRoot Graph View v3.5</div>
       <h1>Explore the knowledge sphere.</h1>
       <p>
         Visualize knowledge as a rotating sphere of interconnected concepts. Press any word to make it the new center and build a breadcrumb trail through the knowledge sphere. Position shows relationship structure, depth shows near and far concepts, color shows domain, size shows importance, and line weight shows relationship strength.
