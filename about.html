@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -11,22 +10,39 @@
       box-sizing: border-box;
     }
 
+    :root {
+      --navy: #061a33;
+      --navy-2: #0c3d78;
+      --blue: #1f6ed4;
+      --blue-soft: #eaf4ff;
+      --line: #e5eaf1;
+      --text: #0d1b2a;
+      --muted: #64748b;
+      --bg: #f7f9fc;
+      --white: #ffffff;
+      --shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
+      --soft-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+    }
+
     body {
       margin: 0;
       font-family: Arial, Helvetica, sans-serif;
-      background: #f7f9fc;
-      color: #0d1b2a;
+      background: var(--bg);
+      color: var(--text);
     }
 
     .site-header {
-      height: 86px;
+      height: 78px;
       padding: 0 48px;
-      background: #061a33;
+      background: var(--navy);
       color: white;
       display: flex;
       align-items: center;
       justify-content: space-between;
       border-bottom: 1px solid rgba(255,255,255,0.12);
+      position: sticky;
+      top: 0;
+      z-index: 50;
     }
 
     .brand {
@@ -38,42 +54,44 @@
     }
 
     .logo {
-      width: 46px;
-      height: 46px;
+      width: 42px;
+      height: 42px;
       border: 2px solid white;
       border-radius: 50%;
       display: grid;
       place-items: center;
-      font-size: 24px;
+      font-size: 23px;
+      flex: 0 0 auto;
     }
 
     .brand h1 {
       margin: 0;
       font-family: Georgia, serif;
-      font-size: 28px;
+      font-size: 24px;
       line-height: 1;
       color: white;
     }
 
     .brand p {
       margin: 3px 0 0;
-      font-size: 14px;
+      font-size: 12px;
       opacity: 0.85;
       color: white;
     }
 
     nav {
       display: flex;
-      gap: 30px;
+      gap: 26px;
       align-items: center;
     }
 
     nav a {
       color: white;
       text-decoration: none;
-      font-size: 15px;
+      font-size: 14px;
       opacity: 0.9;
       padding-bottom: 8px;
+      white-space: nowrap;
     }
 
     nav a:hover {
@@ -85,18 +103,18 @@
     }
 
     .icon-button {
-      width: 46px;
-      height: 46px;
+      width: 42px;
+      height: 42px;
       border-radius: 50%;
       border: none;
       color: white;
       background: #102b4c;
-      font-size: 22px;
+      font-size: 20px;
       cursor: pointer;
     }
 
     .page {
-      max-width: 1180px;
+      max-width: 1420px;
       margin: 0 auto;
       padding: 42px 24px 80px;
     }
@@ -105,329 +123,575 @@
       background: linear-gradient(135deg, #061a33, #0c3d78);
       color: white;
       border-radius: 22px;
-      padding: 52px 46px;
-      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
-      margin-bottom: 28px;
+      padding: 42px;
+      box-shadow: var(--shadow);
+      margin-bottom: 24px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 390px;
+      gap: 34px;
+      align-items: center;
     }
 
     .hero-label {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
       background: rgba(255,255,255,0.12);
-      border: 1px solid rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.22);
       padding: 8px 12px;
       border-radius: 999px;
-      font-size: 13px;
-      font-weight: 700;
-      margin-bottom: 18px;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 16px;
+      color: white;
     }
 
     .hero h1 {
       margin: 0;
       font-family: Georgia, serif;
-      font-size: 58px;
-      line-height: 1.05;
-      max-width: 920px;
+      font-size: clamp(42px, 5vw, 64px);
+      line-height: 0.98;
+      color: white;
+      max-width: 850px;
     }
 
     .hero p {
-      max-width: 850px;
-      margin: 20px 0 0;
+      margin: 18px 0 0;
+      max-width: 900px;
       color: #dbeafe;
-      font-size: 19px;
-      line-height: 1.75;
+      font-size: 17px;
+      line-height: 1.7;
     }
 
     .hero-actions {
+      margin-top: 26px;
       display: flex;
-      gap: 14px;
+      gap: 12px;
       flex-wrap: wrap;
-      margin-top: 28px;
     }
 
-    .hero-actions a {
+    .primary-link,
+    .secondary-link {
+      border-radius: 13px;
+      padding: 14px 17px;
+      font-weight: 900;
       text-decoration: none;
-      font-weight: 800;
-      border-radius: 12px;
-      padding: 14px 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+      font-size: 14px;
     }
 
     .primary-link {
-      background: #ffffff;
-      color: #0c3d78;
+      background: var(--blue);
+      color: white;
+      box-shadow: 0 14px 30px rgba(31,110,212,0.22);
     }
 
     .secondary-link {
-      border: 1px solid rgba(255,255,255,0.28);
-      color: white;
       background: rgba(255,255,255,0.08);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.22);
     }
 
-    .stats {
+    .hero-visual {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 22px;
+      min-height: 290px;
+      box-shadow: 0 22px 55px rgba(0,0,0,0.18);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-visual::before {
+      content: "";
+      position: absolute;
+      inset: 44px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.18);
+      box-shadow:
+        inset 0 0 40px rgba(255,255,255,0.08),
+        0 0 60px rgba(159,210,255,0.08);
+    }
+
+    .mini-line {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      height: 2px;
+      width: 150px;
+      background: rgba(159,210,255,0.55);
+      transform-origin: left center;
+    }
+
+    .mini-line.one { transform: rotate(-42deg); }
+    .mini-line.two { transform: rotate(18deg); }
+    .mini-line.three { transform: rotate(82deg); }
+    .mini-line.four { transform: rotate(146deg); }
+
+    .mini-node {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+      min-width: 88px;
+      min-height: 54px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.96);
+      color: var(--navy);
+      border: 2px solid rgba(159,210,255,0.75);
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 18px;
-      margin-bottom: 28px;
+      place-items: center;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 900;
+      padding: 8px 10px;
+      text-decoration: none;
+      box-shadow: 0 16px 30px rgba(0,0,0,0.16);
+    }
+
+    .mini-node.center {
+      left: 50%;
+      top: 50%;
+      min-width: 125px;
+      min-height: 82px;
+      background: white;
+      color: var(--navy-2);
+      font-family: Georgia, serif;
+      font-size: 22px;
+      border-color: white;
+      z-index: 4;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
     }
 
     .stat-card {
       background: white;
-      border: 1px solid #e5eaf1;
+      border: 1px solid var(--line);
       border-radius: 16px;
-      padding: 22px;
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+      padding: 20px;
+      box-shadow: var(--soft-shadow);
     }
 
     .stat-card strong {
       display: block;
       font-family: Georgia, serif;
-      font-size: 34px;
-      color: #0c3d78;
-      margin-bottom: 4px;
+      font-size: 32px;
+      line-height: 1;
+      color: var(--blue);
     }
 
     .stat-card span {
-      color: #64748b;
-      font-size: 14px;
-      font-weight: 700;
+      display: block;
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
     }
 
-    .section {
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .main-stack {
+      display: grid;
+      gap: 22px;
+    }
+
+    .panel {
       background: white;
-      border: 1px solid #e5eaf1;
-      border-radius: 18px;
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
-      padding: 34px;
-      margin-bottom: 28px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      box-shadow: var(--soft-shadow);
+      padding: 26px;
     }
 
-    .section-header {
-      margin-bottom: 24px;
-    }
-
-    .section-label {
-      color: #1f6ed4;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
+    .panel-label {
+      color: var(--blue);
       font-size: 12px;
       font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
       margin-bottom: 8px;
     }
 
-    .section h2 {
+    .panel h2 {
       margin: 0;
       font-family: Georgia, serif;
-      font-size: 38px;
-      color: #0d1b2a;
+      font-size: 36px;
+      line-height: 1.08;
     }
 
-    .section p {
+    .panel p {
       color: #475569;
-      line-height: 1.75;
-      font-size: 17px;
-    }
-
-    .principle-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 18px;
-    }
-
-    .principle-card {
-      background: #fbfdff;
-      border: 1px solid #e5eaf1;
-      border-radius: 14px;
-      padding: 22px;
-    }
-
-    .principle-icon {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      background: #e2efff;
-      color: #0f63c9;
-      display: grid;
-      place-items: center;
-      font-weight: 900;
-      margin-bottom: 14px;
-    }
-
-    .principle-card h3 {
-      margin: 0 0 8px;
-      font-family: Georgia, serif;
-      font-size: 24px;
-    }
-
-    .principle-card p {
-      margin: 0;
+      line-height: 1.7;
+      margin: 14px 0 0;
       font-size: 15px;
     }
 
-    .protocol-flow {
+    .principles-grid {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 14px;
-      margin-top: 24px;
+      margin-top: 20px;
+    }
+
+    .principle {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 18px;
+      background: #fbfdff;
+    }
+
+    .principle-number {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #e2efff;
+      color: var(--blue);
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      font-size: 12px;
+      margin-bottom: 14px;
+    }
+
+    .principle h3 {
+      margin: 0;
+      font-family: Georgia, serif;
+      font-size: 20px;
+    }
+
+    .principle p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 20px;
     }
 
     .flow-step {
-      background: #f8fbff;
-      border: 1px solid #dbeafe;
-      border-radius: 14px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
       padding: 18px;
+      background: #fbfdff;
       text-align: center;
       position: relative;
+    }
+
+    .flow-step:not(:last-child)::after {
+      content: "→";
+      position: absolute;
+      right: -14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--blue);
+      font-weight: 900;
     }
 
     .flow-step strong {
       display: block;
       font-family: Georgia, serif;
-      font-size: 21px;
-      color: #0d1b2a;
+      font-size: 18px;
       margin-bottom: 6px;
     }
 
     .flow-step span {
-      color: #64748b;
-      font-size: 13px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
       line-height: 1.4;
     }
 
-    .split {
+    .split-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 28px;
+      gap: 22px;
     }
 
-    .mini-list {
+    .use-list {
       display: grid;
-      gap: 12px;
+      gap: 10px;
       margin-top: 18px;
     }
 
-    .mini-item {
-      border: 1px solid #e5eaf1;
-      background: #fbfdff;
-      border-radius: 12px;
-      padding: 15px;
+    .use-row {
       display: flex;
       justify-content: space-between;
-      gap: 14px;
+      gap: 16px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      padding: 13px 14px;
+      background: #fbfdff;
     }
 
-    .mini-item strong {
-      color: #0d1b2a;
+    .use-row strong {
+      color: var(--text);
     }
 
-    .mini-item span {
-      color: #64748b;
+    .use-row span {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+      text-align: right;
     }
 
     .roadmap {
       display: grid;
-      gap: 16px;
-      margin-top: 22px;
+      gap: 14px;
+      margin-top: 20px;
     }
 
     .roadmap-item {
       display: grid;
-      grid-template-columns: 130px 1fr;
+      grid-template-columns: 120px 1fr;
       gap: 18px;
-      border: 1px solid #e5eaf1;
-      background: #fbfdff;
-      border-radius: 14px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
       padding: 18px;
+      background: #fbfdff;
     }
 
-    .roadmap-phase {
+    .roadmap-item strong {
+      color: var(--blue);
+      font-size: 13px;
       font-weight: 900;
-      color: #1f6ed4;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
     }
 
     .roadmap-item h3 {
-      margin: 0 0 5px;
+      margin: 0;
       font-family: Georgia, serif;
-      font-size: 23px;
+      font-size: 22px;
     }
 
     .roadmap-item p {
-      margin: 0;
-      font-size: 15px;
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
     }
 
-    .callout {
-      background: #f0f7ff;
-      border: 1px solid #bfdbfe;
+    .side-panel {
+      display: grid;
+      gap: 18px;
+      position: sticky;
+      top: 98px;
+    }
+
+    .side-card {
+      background: white;
+      border: 1px solid var(--line);
       border-radius: 18px;
-      padding: 30px;
+      box-shadow: var(--soft-shadow);
+      padding: 20px;
+    }
+
+    .side-card h3 {
+      margin: 0 0 14px;
+      font-family: Georgia, serif;
+      font-size: 24px;
+    }
+
+    .link-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .link-list a {
       display: flex;
       justify-content: space-between;
-      gap: 24px;
-      align-items: center;
-      margin-bottom: 28px;
-    }
-
-    .callout h2 {
-      margin: 0 0 8px;
-      font-family: Georgia, serif;
-      font-size: 32px;
-    }
-
-    .callout p {
-      margin: 0;
-      color: #475569;
-      line-height: 1.6;
-    }
-
-    .callout a {
-      white-space: nowrap;
-      text-decoration: none;
-      background: #1f6ed4;
-      color: white;
+      gap: 12px;
+      padding: 12px;
+      border: 1px solid var(--line);
       border-radius: 12px;
-      padding: 14px 18px;
+      background: #fbfdff;
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 900;
+    }
+
+    .link-list a:hover {
+      background: #f0f7ff;
+      border-color: #bfdbfe;
+    }
+
+    .link-list span {
+      color: var(--blue);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .summary-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fbfdff;
+    }
+
+    .summary-row span {
+      color: var(--muted);
+      font-size: 13px;
       font-weight: 800;
     }
 
-    @media (max-width: 950px) {
+    .summary-row strong {
+      color: var(--text);
+      font-size: 16px;
+      text-align: right;
+    }
+
+    .quote-card {
+      background: linear-gradient(135deg, #061a33, #0c3d78);
+      color: white;
+      border: none;
+    }
+
+    .quote-card h3,
+    .quote-card p {
+      color: white;
+    }
+
+    .quote-card p {
+      color: #dbeafe;
+      line-height: 1.65;
+      margin: 0;
+    }
+
+    .cta-card {
+      background: #f0f7ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 20px;
+      padding: 26px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 22px;
+      box-shadow: var(--soft-shadow);
+    }
+
+    .cta-card h2 {
+      margin: 0;
+      font-family: Georgia, serif;
+      font-size: 30px;
+    }
+
+    .cta-card p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    footer {
+      margin-top: 28px;
+      border-top: 1px solid var(--line);
+      padding: 28px 0 0;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 1100px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .side-panel {
+        position: static;
+      }
+
+      .principles-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .flow {
+        grid-template-columns: 1fr;
+      }
+
+      .flow-step:not(:last-child)::after {
+        content: "↓";
+        right: auto;
+        top: auto;
+        left: 50%;
+        bottom: -17px;
+        transform: translateX(-50%);
+      }
+    }
+
+    @media (max-width: 760px) {
       .site-header {
-        padding: 20px;
         height: auto;
+        padding: 18px 24px;
         flex-direction: column;
-        gap: 18px;
+        gap: 16px;
       }
 
       nav {
         flex-wrap: wrap;
         justify-content: center;
-        gap: 18px;
+      }
+
+      .page {
+        padding: 28px 16px 60px;
       }
 
       .hero {
-        padding: 34px 24px;
+        padding: 30px 24px;
       }
 
-      .hero h1 {
-        font-size: 42px;
-      }
-
-      .stats,
-      .principle-grid,
-      .protocol-flow,
-      .split {
+      .stats-grid,
+      .principles-grid,
+      .split-grid {
         grid-template-columns: 1fr;
+      }
+
+      .hero-actions,
+      .cta-card {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .primary-link,
+      .secondary-link {
+        width: 100%;
       }
 
       .roadmap-item {
         grid-template-columns: 1fr;
       }
-
-      .callout {
-        flex-direction: column;
-        align-items: flex-start;
-      }
     }
   </style>
-
 </head>
 
 <body>
@@ -440,293 +704,331 @@
       </div>
     </a>
 
-```
-<nav>
-  <a href="index.html">Home</a>
-  <a href="explore.html">Explore</a>
-  <a href="graph.html">Graph</a>
-  <a href="sources.html">Sources</a>
-  <a href="revisions.html">Revisions</a>
-  <a href="about.html" class="active">About</a>
-</nav>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="explore.html">Explore</a>
+      <a href="graph.html">Graph</a>
+      <a href="sources.html">Sources</a>
+      <a href="revisions.html">Revisions</a>
+      <a href="about.html" class="active">About</a>
+    </nav>
 
-<button class="icon-button" onclick="window.location.href='explore.html'">⌕</button>
-```
-
+    <button class="icon-button" onclick="window.location.href='explore.html'">⌕</button>
   </header>
 
   <main class="page">
     <section class="hero">
-      <div class="hero-label">About SourceRoot</div>
-      <h1>The provenance layer for human knowledge.</h1>
-      <p>
-        DictionaryHub is the first application powered by the SourceRoot idea: knowledge should not only be searchable. It should be traceable, connected, sourced, revised, and preserved.
-      </p>
-
-```
-  <div class="hero-actions">
-    <a class="primary-link" href="explore.html">Explore Concepts</a>
-    <a class="secondary-link" href="graph.html">View Graph</a>
-  </div>
-</section>
-
-<section class="stats">
-  <div class="stat-card">
-    <strong id="stat-concepts">0</strong>
-    <span>Concepts</span>
-  </div>
-
-  <div class="stat-card">
-    <strong id="stat-relationships">0</strong>
-    <span>Relationships</span>
-  </div>
-
-  <div class="stat-card">
-    <strong id="stat-sources">0</strong>
-    <span>Sources</span>
-  </div>
-
-  <div class="stat-card">
-    <strong id="stat-revisions">0</strong>
-    <span>Revisions</span>
-  </div>
-</section>
-
-<section class="section">
-  <div class="section-header">
-    <div class="section-label">The Mission</div>
-    <h2>Make knowledge traceable.</h2>
-  </div>
-
-  <p>
-    Most digital knowledge is presented as a final answer. SourceRoot takes a different approach. It asks where the answer came from, what supports it, how it changed, who contributed to it, and what other ideas it connects to.
-  </p>
-
-  <p>
-    DictionaryHub starts with familiar concepts like Truth, Knowledge, Evidence, Trust, and Verification. But the larger vision is a universal knowledge graph where entries carry their origin, relationships, sources, and revision history.
-  </p>
-</section>
-
-<section class="section">
-  <div class="section-header">
-    <div class="section-label">Core Principles</div>
-    <h2>What SourceRoot stands for.</h2>
-  </div>
-
-  <div class="principle-grid">
-    <div class="principle-card">
-      <div class="principle-icon">1</div>
-      <h3>Provenance First</h3>
-      <p>Knowledge should show where it came from, what supports it, and how it has changed over time.</p>
-    </div>
-
-    <div class="principle-card">
-      <div class="principle-icon">2</div>
-      <h3>Everything Connects</h3>
-      <p>Concepts do not exist alone. They gain meaning through relationships with other concepts, sources, and histories.</p>
-    </div>
-
-    <div class="principle-card">
-      <div class="principle-icon">3</div>
-      <h3>History Matters</h3>
-      <p>A revision history turns knowledge into a living record instead of a static page.</p>
-    </div>
-
-    <div class="principle-card">
-      <div class="principle-icon">4</div>
-      <h3>Sources Matter</h3>
-      <p>Claims become stronger when they are tied to transparent references and supporting evidence.</p>
-    </div>
-
-    <div class="principle-card">
-      <div class="principle-icon">5</div>
-      <h3>Human + AI Ready</h3>
-      <p>AI can suggest connections, but trust requires sources, validation, and revision trails.</p>
-    </div>
-
-    <div class="principle-card">
-      <div class="principle-icon">6</div>
-      <h3>Built to Last</h3>
-      <p>The long-term goal is knowledge infrastructure that can outlive platforms, formats, and individual contributors.</p>
-    </div>
-  </div>
-</section>
-
-<section class="section">
-  <div class="section-header">
-    <div class="section-label">The Protocol Model</div>
-    <h2>How a SourceRoot entry works.</h2>
-  </div>
-
-  <p>
-    A SourceRoot entry is more than a definition. Each entry can include identity, meaning, relationships, sources, and revision history.
-  </p>
-
-  <div class="protocol-flow">
-    <div class="flow-step">
-      <strong>Node</strong>
-      <span>The concept, word, person, source, event, or idea.</span>
-    </div>
-
-    <div class="flow-step">
-      <strong>Origin</strong>
-      <span>Where the entry came from and how it began.</span>
-    </div>
-
-    <div class="flow-step">
-      <strong>Relationships</strong>
-      <span>How the entry connects to other knowledge.</span>
-    </div>
-
-    <div class="flow-step">
-      <strong>Sources</strong>
-      <span>References that support or explain the entry.</span>
-    </div>
-
-    <div class="flow-step">
-      <strong>Revisions</strong>
-      <span>A history of what changed and why.</span>
-    </div>
-  </div>
-</section>
-
-<section class="split">
-  <div class="section">
-    <div class="section-header">
-      <div class="section-label">DictionaryHub</div>
-      <h2>The first application.</h2>
-    </div>
-
-    <p>
-      DictionaryHub starts with words and concepts because they are familiar. Everyone understands a dictionary. SourceRoot expands that idea into a connected knowledge graph.
-    </p>
-
-    <div class="mini-list">
-      <div class="mini-item">
-        <strong>Explore</strong>
-        <span>Browse concepts</span>
-      </div>
-
-      <div class="mini-item">
-        <strong>Concept</strong>
-        <span>View one reusable entry</span>
-      </div>
-
-      <div class="mini-item">
-        <strong>Graph</strong>
-        <span>See relationships</span>
-      </div>
-
-      <div class="mini-item">
-        <strong>Sources</strong>
-        <span>Trace references</span>
-      </div>
-
-      <div class="mini-item">
-        <strong>Revisions</strong>
-        <span>Track changes</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="section-header">
-      <div class="section-label">Future Applications</div>
-      <h2>Beyond dictionaries.</h2>
-    </div>
-
-    <p>
-      DictionaryHub is the starting point. The same protocol could eventually power many knowledge applications.
-    </p>
-
-    <div class="mini-list">
-      <div class="mini-item">
-        <strong>BibleHub</strong>
-        <span>Translations, sources, interpretations</span>
-      </div>
-
-      <div class="mini-item">
-        <strong>HistoryHub</strong>
-        <span>Events, evidence, timelines</span>
-      </div>
-
-      <div class="mini-item">
-        <strong>ResearchHub</strong>
-        <span>Papers, claims, citations</span>
-      </div>
-
-      <div class="mini-item">
-        <strong>LawHub</strong>
-        <span>Cases, statutes, precedent</span>
-      </div>
-
-      <div class="mini-item">
-        <strong>AIHub</strong>
-        <span>Answer provenance and source trails</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="section">
-  <div class="section-header">
-    <div class="section-label">Roadmap</div>
-    <h2>Where this goes next.</h2>
-  </div>
-
-  <div class="roadmap">
-    <div class="roadmap-item">
-      <div class="roadmap-phase">Phase 1</div>
       <div>
-        <h3>Static Prototype</h3>
-        <p>Homepage, Explore, Concept, Graph, Sources, Revisions, and About pages powered by a small JSON seed graph.</p>
+        <div class="hero-label">About SourceRoot</div>
+        <h1>The provenance layer for human knowledge.</h1>
+        <p>
+          DictionaryHub is the first application powered by the SourceRoot idea: knowledge should not only be searchable. It should be traceable, connected, sourced, revised, and preserved.
+        </p>
+
+        <div class="hero-actions">
+          <a class="primary-link" href="explore.html">Explore Concepts</a>
+          <a class="secondary-link" href="graph.html?center=truth&view=sphere&depth=2&edges=center&lens=domain">View Graph</a>
+        </div>
       </div>
-    </div>
 
-    <div class="roadmap-item">
-      <div class="roadmap-phase">Phase 2</div>
-      <div>
-        <h3>Expanded Data</h3>
-        <p>Grow nodes.json from a handful of concepts to a larger curated seed graph with stronger sources and relationship types.</p>
+      <div class="hero-visual">
+        <div class="mini-line one"></div>
+        <div class="mini-line two"></div>
+        <div class="mini-line three"></div>
+        <div class="mini-line four"></div>
+
+        <a class="mini-node center" href="graph.html?center=truth&view=sphere&depth=2&edges=center&lens=domain">Truth</a>
+        <a class="mini-node" style="left: 50%; top: 19%;" href="concept.html?id=knowledge">Knowledge</a>
+        <a class="mini-node" style="left: 78%; top: 42%;" href="concept.html?id=evidence">Evidence</a>
+        <a class="mini-node" style="left: 69%; top: 78%;" href="concept.html?id=sources">Sources</a>
+        <a class="mini-node" style="left: 22%; top: 55%;" href="concept.html?id=revisions">Revisions</a>
       </div>
-    </div>
+    </section>
 
-    <div class="roadmap-item">
-      <div class="roadmap-phase">Phase 3</div>
-      <div>
-        <h3>Structured Graph Database</h3>
-        <p>Move from JSON files into a real graph database when the dataset becomes too large for simple static files.</p>
+    <section class="stats-grid">
+      <div class="stat-card">
+        <strong id="stat-concepts">—</strong>
+        <span>Concepts</span>
       </div>
-    </div>
 
-    <div class="roadmap-item">
-      <div class="roadmap-phase">Phase 4</div>
-      <div>
-        <h3>Contributor Layer</h3>
-        <p>Add identity, suggestions, validation, approval workflows, reputation, and revision comparison.</p>
+      <div class="stat-card">
+        <strong id="stat-relationships">—</strong>
+        <span>Relationships</span>
       </div>
-    </div>
 
-    <div class="roadmap-item">
-      <div class="roadmap-phase">Phase 5</div>
-      <div>
-        <h3>Protocol Ecosystem</h3>
-        <p>Support APIs, partner applications, AI provenance, public archives, and long-term preservation systems.</p>
+      <div class="stat-card">
+        <strong id="stat-sources">—</strong>
+        <span>Sources</span>
       </div>
-    </div>
-  </div>
-</section>
 
-<section class="callout">
-  <div>
-    <h2>Start with Truth.</h2>
-    <p>The first SourceRoot concept shows the larger idea: a definition, origin, relationships, sources, and revisions in one traceable entry.</p>
-  </div>
+      <div class="stat-card">
+        <strong id="stat-revisions">—</strong>
+        <span>Revisions</span>
+      </div>
+    </section>
 
-  <a href="concept.html?id=truth">Open Truth</a>
-</section>
-```
+    <section class="layout">
+      <div class="main-stack">
+        <section class="panel">
+          <div class="panel-label">The mission</div>
+          <h2>Make knowledge traceable.</h2>
+          <p>
+            Most digital knowledge is presented as a final answer. SourceRoot asks a different question: if someone uses this answer, what supports it, how it changed, who contributed to it, and what other ideas it connects to?
+          </p>
+          <p>
+            DictionaryHub starts with familiar concepts like Truth, Knowledge, Evidence, Data, and Verification. But the larger vision is a universal knowledge graph where entries carry their origin, relationship, sources, and revision history.
+          </p>
+        </section>
 
+        <section class="panel">
+          <div class="panel-label">Core principles</div>
+          <h2>What SourceRoot stands for.</h2>
+
+          <div class="principles-grid">
+            <div class="principle">
+              <div class="principle-number">1</div>
+              <h3>Provenance First</h3>
+              <p>Knowledge should show where it came from, what supports it, and how it has changed over time.</p>
+            </div>
+
+            <div class="principle">
+              <div class="principle-number">2</div>
+              <h3>Everything Connects</h3>
+              <p>Concepts do not exist alone. They move through relationships with other concepts, sources, and histories.</p>
+            </div>
+
+            <div class="principle">
+              <div class="principle-number">3</div>
+              <h3>History Matters</h3>
+              <p>A revision history turns knowledge into a living record instead of a static page.</p>
+            </div>
+
+            <div class="principle">
+              <div class="principle-number">4</div>
+              <h3>Sources Matter</h3>
+              <p>Claims become stronger when they are tied to transparent references and supporting evidence.</p>
+            </div>
+
+            <div class="principle">
+              <div class="principle-number">5</div>
+              <h3>Human + AI Ready</h3>
+              <p>AI can suggest connections, but trust requires sources, validation, and revision trails.</p>
+            </div>
+
+            <div class="principle">
+              <div class="principle-number">6</div>
+              <h3>Built to Last</h3>
+              <p>The long-term goal is knowledge infrastructure that can outlive platforms, formats, and individual contributors.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-label">The protocol model</div>
+          <h2>How a SourceRoot entry works.</h2>
+          <p>
+            A SourceRoot entry is more than a definition. Each entry can include identity, meaning, relationships, sources, and revision history.
+          </p>
+
+          <div class="flow">
+            <div class="flow-step">
+              <strong>Node</strong>
+              <span>The concept, word, person, event, source, or idea.</span>
+            </div>
+
+            <div class="flow-step">
+              <strong>Origin</strong>
+              <span>Where the entry came from and how it began.</span>
+            </div>
+
+            <div class="flow-step">
+              <strong>Relationships</strong>
+              <span>How the entry connects to other knowledge.</span>
+            </div>
+
+            <div class="flow-step">
+              <strong>Sources</strong>
+              <span>References that support or explain the entry.</span>
+            </div>
+
+            <div class="flow-step">
+              <strong>Revisions</strong>
+              <span>A history of what changed and why.</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="split-grid">
+          <div class="panel">
+            <div class="panel-label">DictionaryHub</div>
+            <h2>The first application.</h2>
+            <p>
+              DictionaryHub starts with words and concepts because they are familiar. Everyone understands a dictionary. SourceRoot expands that idea into a connected knowledge graph.
+            </p>
+
+            <div class="use-list">
+              <div class="use-row">
+                <strong>Explore</strong>
+                <span>Browse concepts</span>
+              </div>
+              <div class="use-row">
+                <strong>Concept</strong>
+                <span>View one traceable entry</span>
+              </div>
+              <div class="use-row">
+                <strong>Graph</strong>
+                <span>See relationships</span>
+              </div>
+              <div class="use-row">
+                <strong>Sources</strong>
+                <span>Trace references</span>
+              </div>
+              <div class="use-row">
+                <strong>Revisions</strong>
+                <span>Track changes</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-label">Future applications</div>
+            <h2>Beyond dictionaries.</h2>
+            <p>
+              DictionaryHub is the starting point. The same protocol could eventually power many knowledge applications.
+            </p>
+
+            <div class="use-list">
+              <div class="use-row">
+                <strong>GitHub</strong>
+                <span>Translations, sources, integrations</span>
+              </div>
+              <div class="use-row">
+                <strong>MoneyHub</strong>
+                <span>Events, evidence, timelines</span>
+              </div>
+              <div class="use-row">
+                <strong>ResearchHub</strong>
+                <span>Papers, claims, citations</span>
+              </div>
+              <div class="use-row">
+                <strong>LawHub</strong>
+                <span>Cases, statutes, precedents</span>
+              </div>
+              <div class="use-row">
+                <strong>AIHub</strong>
+                <span>Answer provenance and source trails</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-label">Roadmap</div>
+          <h2>Where this goes next.</h2>
+
+          <div class="roadmap">
+            <div class="roadmap-item">
+              <strong>Phase 1</strong>
+              <div>
+                <h3>Seed graph</h3>
+                <p>Build a functional concept graph with definitions, relationships, sources, revisions, and navigation.</p>
+              </div>
+            </div>
+
+            <div class="roadmap-item">
+              <strong>Phase 2</strong>
+              <div>
+                <h3>Source validation</h3>
+                <p>Add richer citation logic, source quality signals, and clearer provenance trails for each entry.</p>
+              </div>
+            </div>
+
+            <div class="roadmap-item">
+              <strong>Phase 3</strong>
+              <div>
+                <h3>Revision workflows</h3>
+                <p>Allow structured proposals, approvals, comparisons, and change histories for knowledge updates.</p>
+              </div>
+            </div>
+
+            <div class="roadmap-item">
+              <strong>Phase 4</strong>
+              <div>
+                <h3>Protocol layer</h3>
+                <p>Turn the model into reusable infrastructure that other knowledge products can build on top of.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="cta-card">
+          <div>
+            <h2>Start with the graph.</h2>
+            <p>
+              The knowledge sphere is the clearest way to see what SourceRoot is becoming: connected, navigable, and source-aware.
+            </p>
+          </div>
+
+          <a class="primary-link" href="graph.html?center=truth&view=sphere&depth=2&edges=center&lens=domain">Open Graph</a>
+        </section>
+      </div>
+
+      <aside class="side-panel">
+        <div class="side-card quote-card">
+          <h3>The simple idea</h3>
+          <p>
+            SourceRoot is a provenance system for knowledge: where it came from, why it matters, what supports it, and how it changed.
+          </p>
+        </div>
+
+        <div class="side-card">
+          <h3>Navigate the system</h3>
+          <div class="link-list">
+            <a href="explore.html">Explore Concepts <span>Open →</span></a>
+            <a href="graph.html?center=truth&view=sphere&depth=2&edges=center&lens=domain">Knowledge Sphere <span>Open →</span></a>
+            <a href="sources.html">Source Library <span>Open →</span></a>
+            <a href="revisions.html">Revision History <span>Open →</span></a>
+            <a href="concept.html?id=truth">Truth Entry <span>Open →</span></a>
+          </div>
+        </div>
+
+        <div class="side-card">
+          <h3>Current prototype</h3>
+          <div class="summary-grid">
+            <div class="summary-row">
+              <span>Concepts</span>
+              <strong id="side-concepts">—</strong>
+            </div>
+            <div class="summary-row">
+              <span>Relationships</span>
+              <strong id="side-relationships">—</strong>
+            </div>
+            <div class="summary-row">
+              <span>Sources</span>
+              <strong id="side-sources">—</strong>
+            </div>
+            <div class="summary-row">
+              <span>Revisions</span>
+              <strong id="side-revisions">—</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="side-card">
+          <h3>Core concepts</h3>
+          <div class="link-list" id="core-concepts">
+            <a href="concept.html?id=truth">Truth <span>Open →</span></a>
+            <a href="concept.html?id=knowledge">Knowledge <span>Open →</span></a>
+            <a href="concept.html?id=evidence">Evidence <span>Open →</span></a>
+            <a href="concept.html?id=verification">Verification <span>Open →</span></a>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <footer>
+      DictionaryHub is a SourceRoot prototype for traceable, connected, and source-linked knowledge.
+    </footer>
   </main>
 
   <script>
@@ -734,53 +1036,110 @@
       {
         id: "truth",
         name: "Truth",
-        related: [{ id: "evidence" }, { id: "verification" }],
-        sources: [{ name: "Stanford Encyclopedia of Philosophy" }],
+        domain: "Knowledge",
+        definition: "Truth is the quality of being in accordance with fact, reality, evidence, or verified understanding.",
+        related: [{ id: "evidence" }, { id: "knowledge" }, { id: "verification" }],
+        sources: [{ name: "Fallback Source" }],
         revisions: [{ version: "v1.0" }]
       }
     ];
 
-    async function loadNodes() {
+    let allNodes = [];
+
+    async function loadStats() {
       try {
         const response = await fetch("data/nodes.json");
-        if (!response.ok) {
-          throw new Error("nodes.json not found");
-        }
-        return await response.json();
+        if (!response.ok) throw new Error("nodes.json not found");
+        const data = await response.json();
+        allNodes = Array.isArray(data) ? data : fallbackNodes;
       } catch (error) {
-        return fallbackNodes;
+        allNodes = fallbackNodes;
+      }
+
+      updateStats();
+      renderCoreConcepts();
+    }
+
+    function slugify(value) {
+      return String(value || "")
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+    }
+
+    function getNodeId(node) {
+      return node.id || slugify(node.name || "");
+    }
+
+    function getRelatedCount(node) {
+      const related = Array.isArray(node.related)
+        ? node.related
+        : Array.isArray(node.relationships)
+          ? node.relationships
+          : [];
+
+      return related.length;
+    }
+
+    function updateStats() {
+      const concepts = allNodes.length;
+      const relationships = allNodes.reduce((sum, node) => sum + getRelatedCount(node), 0);
+      const sources = allNodes.reduce((sum, node) => sum + (Array.isArray(node.sources) ? node.sources.length : 0), 0);
+      const revisions = allNodes.reduce((sum, node) => sum + (Array.isArray(node.revisions) ? node.revisions.length : 0), 0);
+
+      setText("stat-concepts", concepts);
+      setText("stat-relationships", relationships);
+      setText("stat-sources", sources);
+      setText("stat-revisions", revisions);
+
+      setText("side-concepts", concepts);
+      setText("side-relationships", relationships);
+      setText("side-sources", sources);
+      setText("side-revisions", revisions);
+    }
+
+    function setText(id, value) {
+      const element = document.getElementById(id);
+      if (element) {
+        element.textContent = value || "—";
       }
     }
 
-    function uniqueSources(nodes) {
-      const names = new Set();
-
-      nodes.forEach(node => {
-        (node.sources || []).forEach(source => {
-          if (source.name) {
-            names.add(source.name.toLowerCase());
-          }
-        });
-      });
-
-      return names.size;
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
     }
 
-    async function init() {
-      const nodes = await loadNodes();
+    function renderCoreConcepts() {
+      const container = document.getElementById("core-concepts");
+      const preferred = ["truth", "knowledge", "data", "evidence", "verification", "meaning"];
 
-      const relationshipCount = nodes.reduce((sum, node) => sum + ((node.related || []).length), 0);
-      const sourceCount = uniqueSources(nodes);
-      const revisionCount = nodes.reduce((sum, node) => sum + ((node.revisions || []).length), 0);
+      const nodes = preferred
+        .map(id => allNodes.find(node => getNodeId(node) === id))
+        .filter(Boolean)
+        .slice(0, 6);
 
-      document.getElementById("stat-concepts").textContent = nodes.length;
-      document.getElementById("stat-relationships").textContent = relationshipCount;
-      document.getElementById("stat-sources").textContent = sourceCount;
-      document.getElementById("stat-revisions").textContent = revisionCount;
+      if (nodes.length === 0) return;
+
+      container.innerHTML = nodes.map(node => {
+        const id = getNodeId(node);
+        const name = node.name || id;
+
+        return `
+          <a href="concept.html?id=${encodeURIComponent(id)}">
+            ${escapeHtml(name)}
+            <span>Open →</span>
+          </a>
+        `;
+      }).join("");
     }
 
-    init();
+    loadStats();
   </script>
-
 </body>
 </html>
