@@ -684,28 +684,6 @@
       .breadcrumb-card { align-items: flex-start; }
       .breadcrumb-left { align-items: flex-start; }
     }
-
-    .graph-below-grid {
-      display: grid;
-      grid-template-columns: 1fr 0.8fr 0.8fr;
-      gap: 18px;
-      margin-top: 18px;
-    }
-
-    .graph-below-grid .side-card {
-      min-height: 100%;
-    }
-
-    .graph-below-grid .relationship-list {
-      max-height: 260px;
-    }
-
-    @media (max-width: 980px) {
-      .graph-below-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
   </style>
 </head>
 
@@ -733,7 +711,7 @@
 
   <main class="page">
     <section class="hero">
-      <div class="hero-label">SourceRoot Graph View v3.7</div>
+      <div class="hero-label">SourceRoot Graph View v3.6</div>
       <h1>Explore the knowledge sphere.</h1>
       <p>
         Visualize knowledge as a rotating sphere of interconnected concepts. Press any word to make it the new center and build a breadcrumb trail through the knowledge sphere. Position shows relationship structure, depth shows near and far concepts, color shows domain, size shows importance, and line weight shows relationship strength.
@@ -818,6 +796,35 @@
         </section>
 
         <section class="below-graph-grid" aria-label="Graph overview">
+          <div class="side-card">
+            <h3>Graph Summary</h3>
+
+            <div class="stat-grid">
+              <div class="stat">
+                <span>Total Concepts</span>
+                <strong id="stat-concepts">0</strong>
+              </div>
+
+              <div class="stat">
+                <span>Visible Nodes</span>
+                <strong id="stat-visible">0</strong>
+              </div>
+
+              <div class="stat">
+                <span>Visible Edges</span>
+                <strong id="stat-edges">0</strong>
+              </div>
+
+              <div class="stat">
+                <span>Domains</span>
+                <strong id="stat-domains">0</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="side-card">
+            <h3>Visible Domains</h3>
+            <div class="legend" id="domain-legend"></div>
           </div>
         </section>
       </div>
@@ -896,6 +903,11 @@
               <span>Strength score</span>
             </div>
           </div>
+        </div>
+
+        <div class="side-card">
+          <h3>Connected Concepts</h3>
+          <div class="relationship-list" id="relationship-list"></div>
         </div>
 
       </aside>
