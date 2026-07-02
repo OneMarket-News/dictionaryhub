@@ -171,6 +171,32 @@
       align-items: start;
     }
 
+    .graph-column {
+      display: grid;
+      gap: 18px;
+      min-width: 0;
+    }
+
+    .below-graph-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .below-graph-grid .side-card {
+      padding: 20px;
+    }
+
+    .below-graph-grid .stat-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .below-graph-grid .legend {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-content: start;
+    }
+
     .graph-card,
     .side-card {
       background: white;
@@ -685,7 +711,7 @@
 
   <main class="page">
     <section class="hero">
-      <div class="hero-label">SourceRoot Graph View v3.5</div>
+      <div class="hero-label">SourceRoot Graph View v3.6</div>
       <h1>Explore the knowledge sphere.</h1>
       <p>
         Visualize knowledge as a rotating sphere of interconnected concepts. Press any word to make it the new center and build a breadcrumb trail through the knowledge sphere. Position shows relationship structure, depth shows near and far concepts, color shows domain, size shows importance, and line weight shows relationship strength.
@@ -748,25 +774,60 @@
     </section>
 
     <section class="layout">
-      <section class="graph-card">
-        <div class="graph-header">
-          <div>
-            <h2 id="graph-title">Truth Graph</h2>
-            <div class="graph-meta" id="graph-meta">Loading graph...</div>
+      <div class="graph-column">
+        <section class="graph-card">
+          <div class="graph-header">
+            <div>
+              <h2 id="graph-title">Truth Graph</h2>
+              <div class="graph-meta" id="graph-meta">Loading graph...</div>
+            </div>
+
+            <div class="graph-meta">
+              Data source: <strong>data/nodes.json</strong>
+            </div>
           </div>
 
-          <div class="graph-meta">
-            Data source: <strong>data/nodes.json</strong>
+          <div class="graph-stage sphere-mode" id="graph-stage">
+            <div class="sphere-shell"></div>
+            <svg class="graph-svg" viewBox="0 0 100 100" preserveAspectRatio="none" id="graph-svg"></svg>
+            <div id="node-layer"></div>
+            <div class="sphere-hint" id="sphere-hint">Drag empty space to rotate · Press a word to center · Auto-fit enabled</div>
           </div>
-        </div>
+        </section>
 
-        <div class="graph-stage sphere-mode" id="graph-stage">
-          <div class="sphere-shell"></div>
-          <svg class="graph-svg" viewBox="0 0 100 100" preserveAspectRatio="none" id="graph-svg"></svg>
-          <div id="node-layer"></div>
-          <div class="sphere-hint" id="sphere-hint">Drag empty space to rotate · Press a word to center · Auto-fit enabled</div>
-        </div>
-      </section>
+        <section class="below-graph-grid" aria-label="Graph overview">
+          <div class="side-card">
+            <h3>Graph Summary</h3>
+
+            <div class="stat-grid">
+              <div class="stat">
+                <span>Total Concepts</span>
+                <strong id="stat-concepts">0</strong>
+              </div>
+
+              <div class="stat">
+                <span>Visible Nodes</span>
+                <strong id="stat-visible">0</strong>
+              </div>
+
+              <div class="stat">
+                <span>Visible Edges</span>
+                <strong id="stat-edges">0</strong>
+              </div>
+
+              <div class="stat">
+                <span>Domains</span>
+                <strong id="stat-domains">0</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="side-card">
+            <h3>Visible Domains</h3>
+            <div class="legend" id="domain-legend"></div>
+          </div>
+        </section>
+      </div>
 
       <aside class="side-panel">
         <div class="side-card">
@@ -849,36 +910,6 @@
           <div class="relationship-list" id="relationship-list"></div>
         </div>
 
-        <div class="side-card">
-          <h3>Graph Summary</h3>
-
-          <div class="stat-grid">
-            <div class="stat">
-              <span>Total Concepts</span>
-              <strong id="stat-concepts">0</strong>
-            </div>
-
-            <div class="stat">
-              <span>Visible Nodes</span>
-              <strong id="stat-visible">0</strong>
-            </div>
-
-            <div class="stat">
-              <span>Visible Edges</span>
-              <strong id="stat-edges">0</strong>
-            </div>
-
-            <div class="stat">
-              <span>Domains</span>
-              <strong id="stat-domains">0</strong>
-            </div>
-          </div>
-        </div>
-
-        <div class="side-card">
-          <h3>Visible Domains</h3>
-          <div class="legend" id="domain-legend"></div>
-        </div>
       </aside>
     </section>
   </main>
