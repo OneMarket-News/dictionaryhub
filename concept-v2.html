@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Concept V2 | SourceRoot</title>
+  <style>
+    *{box-sizing:border-box}
+    :root{--navy:#061a33;--blue:#1f6ed4;--line:#e5eaf1;--text:#0d1b2a;--muted:#64748b;--bg:#f7f9fc;--shadow:0 18px 45px rgba(15,23,42,.12);--soft:0 12px 30px rgba(15,23,42,.06)}
+    body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+    .site-header{height:78px;padding:0 48px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+    .brand{display:flex;gap:12px;align-items:center;color:#fff;text-decoration:none}.logo{width:42px;height:42px;border:2px solid #fff;border-radius:50%;display:grid;place-items:center;font-size:23px}.brand h1{margin:0;font-family:Georgia,serif;font-size:24px;line-height:1}.brand p{margin:3px 0 0;font-size:12px;opacity:.85}
+    nav{display:flex;gap:26px;align-items:center}nav a{color:#fff;text-decoration:none;font-size:14px;opacity:.9;padding-bottom:8px;white-space:nowrap}nav a:hover{color:#9fd2ff}
+    .icon-button{width:42px;height:42px;border-radius:50%;border:0;color:#fff;background:#102b4c;font-size:20px;cursor:pointer}
+    .page{max-width:1420px;margin:0 auto;padding:42px 24px 80px}
+    .warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:16px;padding:16px;font-weight:800;line-height:1.55;margin-bottom:24px}
+    .hero{background:linear-gradient(135deg,#061a33,#0c3d78);color:#fff;border-radius:22px;padding:38px 42px;box-shadow:var(--shadow);margin-bottom:24px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:28px;align-items:end}
+    .hero-label{display:inline-flex;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);padding:8px 12px;border-radius:999px;font-size:12px;font-weight:800;margin-bottom:16px}.hero h1{margin:0;font-family:Georgia,serif;font-size:clamp(46px,6vw,72px);line-height:.96}.hero p{margin:18px 0 0;max-width:980px;color:#dbeafe;font-size:17px;line-height:1.7}
+    .hero-actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-end}.primary-link,.secondary-link{border-radius:13px;padding:14px 17px;font-weight:900;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;font-size:14px}.primary-link{background:var(--blue);color:#fff}.secondary-link{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.22)}
+    .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:24px}.stat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:var(--soft)}.stat strong{display:block;color:var(--blue);font-family:Georgia,serif;font-size:28px;line-height:1}.stat span{display:block;color:var(--muted);font-size:12px;font-weight:900;margin-top:7px;text-transform:uppercase}
+    .layout{display:grid;grid-template-columns:minmax(0,1fr) 390px;gap:24px;align-items:start}.main-stack,.side-panel{display:grid;gap:22px}.side-panel{position:sticky;top:98px}
+    .panel,.side-card{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--soft);padding:26px}.side-card{padding:20px}
+    .label{color:var(--blue);font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}.panel h2,.side-card h3{margin:0;font-family:Georgia,serif}.panel h2{font-size:34px}.side-card h3{font-size:24px;margin-bottom:14px}.panel p{color:#475569;line-height:1.72;margin:14px 0 0;font-size:15px}
+    .def-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}.mini{border:1px solid var(--line);border-radius:16px;padding:18px;background:#fbfdff}.mini h3{margin:0 0 8px;font-family:Georgia,serif;font-size:21px}.mini p{margin:0;color:#475569;line-height:1.62;font-size:14px}
+    .cards{display:grid;gap:14px;margin-top:18px}.relationship{border:1px solid var(--line);border-radius:18px;background:#fbfdff;padding:18px;cursor:pointer;transition:.15s}.relationship:hover,.relationship.selected{transform:translateY(-2px);border-color:#bfdbfe;box-shadow:var(--soft);background:#fff}.relationship.selected{outline:4px solid rgba(31,110,212,.12)}
+    .top{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;margin-bottom:10px}.relationship h3{margin:0;font-family:Georgia,serif;font-size:23px}.badge{display:inline-flex;border-radius:999px;padding:7px 10px;font-size:11px;font-weight:900;white-space:nowrap;border:1px solid #bfdbfe;background:#f0f7ff;color:var(--blue)}
+    .dots{display:flex;gap:4px;margin-top:12px}.dot{width:10px;height:10px;border-radius:50%;background:#d6e0ec}.dot.active{background:var(--blue)}
+    .row{display:flex;justify-content:space-between;gap:16px;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fbfdff}.row span{color:var(--muted);font-size:13px;font-weight:800}.row strong{text-align:right}.summary{display:grid;gap:10px}
+    .chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}.chip{border:1px solid var(--line);background:#fbfdff;border-radius:999px;color:#334155;padding:8px 11px;font-size:12px;font-weight:900;text-decoration:none}.chip:hover{border-color:#bfdbfe;color:var(--blue);background:#f0f7ff}
+    .pill{border-radius:999px;background:#ecfdf5;color:#059669;border:1px solid #bbf7d0;padding:6px 9px;font-size:11px;font-weight:900}.pill-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+    .link-list{display:grid;gap:10px}.link-list a{display:flex;justify-content:space-between;gap:12px;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fbfdff;color:var(--text);text-decoration:none;font-weight:900}.link-list a:hover{background:#f0f7ff;border-color:#bfdbfe}.link-list span{color:var(--blue);font-size:12px}
+    .rel-title{margin:0;font-family:Georgia,serif;font-size:28px;line-height:1.08}.rel-text{color:#475569;line-height:1.65;font-size:14px;margin:12px 0 0}.empty{background:#fff;border:1px solid var(--line);border-radius:18px;padding:28px;color:var(--muted);box-shadow:var(--soft)}
+    @media(max-width:1050px){.layout{grid-template-columns:1fr}.side-panel{position:static}}@media(max-width:760px){.site-header{height:auto;padding:18px 24px;flex-direction:column;gap:16px}nav{flex-wrap:wrap;justify-content:center}.page{padding:28px 16px 60px}.hero{grid-template-columns:1fr;padding:30px 24px}.stats,.def-grid{grid-template-columns:1fr}.primary-link,.secondary-link{width:100%}}
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html"><div class="logo">☼</div><div><h1>SourceRoot</h1><p>DictionaryHub V2</p></div></a>
+    <nav><a href="index.html">Home</a><a href="explore.html">Explore</a><a href="graph.html">Graph</a><a href="sources.html">Sources</a><a href="revisions.html">Revisions</a><a href="about.html">About</a></nav>
+    <button class="icon-button" onclick="location.href='concept-v2.html?id=truth'">⌕</button>
+  </header>
+
+  <main class="page" id="page">
+    <div class="warning">V2 test page. This page reads <strong>data/nodes-v2-root.json</strong> and does not replace the live V1 concept page.</div>
+
+    <section class="hero">
+      <div>
+        <div class="hero-label" id="hero-label">SourceRoot V2 Concept</div>
+        <h1 id="concept-name">Loading...</h1>
+        <p id="concept-summary">Loading V2 concept data...</p>
+      </div>
+      <div class="hero-actions">
+        <a class="secondary-link" id="v1-link" href="concept.html?id=truth">Open V1 Concept</a>
+        <a class="primary-link" id="graph-link" href="graph.html?center=truth&view=sphere&depth=2&edges=center&lens=domain">Open Graph</a>
+      </div>
+    </section>
+
+    <section class="stats">
+      <div class="stat"><strong id="stat-relationships">0</strong><span>Relationships</span></div>
+      <div class="stat"><strong id="stat-sources">0</strong><span>Sources</span></div>
+      <div class="stat"><strong id="stat-revisions">0</strong><span>Revisions</span></div>
+      <div class="stat"><strong id="stat-status">Draft</strong><span>Status</span></div>
+    </section>
+
+    <section class="layout">
+      <div class="main-stack">
+        <section class="panel">
+          <div class="label">Definition Layers</div><h2>What this concept means.</h2>
+          <div class="def-grid">
+            <div class="mini"><h3>Short Definition</h3><p id="short-definition"></p></div>
+            <div class="mini"><h3>Plain English</h3><p id="plain-english"></p></div>
+            <div class="mini"><h3>Full Definition</h3><p id="full-definition"></p></div>
+            <div class="mini"><h3>Technical Definition</h3><p id="technical-definition"></p></div>
+          </div>
+        </section>
+
+        <section class="panel"><div class="label">Why It Matters</div><h2>Why this concept belongs in SourceRoot.</h2><p id="why-it-matters"></p></section>
+
+        <section class="panel">
+          <div class="label">Origin</div><h2>Where the concept comes from.</h2>
+          <div class="summary" style="margin-top:18px">
+            <div class="row"><span>Root</span><strong id="origin-root">—</strong></div>
+            <div class="row"><span>Language</span><strong id="origin-language">—</strong></div>
+            <div class="row"><span>Meaning</span><strong id="origin-meaning">—</strong></div>
+          </div>
+          <p id="origin-notes"></p>
+        </section>
+
+        <section class="panel"><div class="label">Relationships</div><h2>Why this concept connects to other ideas.</h2><div class="cards" id="relationships-grid"></div></section>
+        <section class="panel"><div class="label">Examples</div><h2>How this concept appears in use.</h2><div class="cards" id="examples-grid"></div></section>
+        <section class="panel"><div class="label">Common Confusions</div><h2>What this concept is not.</h2><div class="cards" id="confusions-grid"></div></section>
+        <section class="panel"><div class="label">Sources</div><h2>What supports this entry.</h2><div class="cards" id="sources-grid"></div></section>
+        <section class="panel"><div class="label">Revisions</div><h2>How this entry changed.</h2><div class="cards" id="revisions-grid"></div></section>
+      </div>
+
+      <aside class="side-panel">
+        <div class="side-card"><h3>Concept Summary</h3><div class="summary">
+          <div class="row"><span>ID</span><strong id="summary-id">—</strong></div>
+          <div class="row"><span>Type</span><strong id="summary-type">—</strong></div>
+          <div class="row"><span>Domain</span><strong id="summary-domain">—</strong></div>
+          <div class="row"><span>Status</span><strong id="summary-status">—</strong></div>
+        </div></div>
+
+        <div class="side-card"><h3>Selected Relationship</h3>
+          <h2 class="rel-title" id="selected-relationship-title">Select a relationship</h2>
+          <p class="rel-text" id="selected-relationship-text">Click a relationship card to inspect the direction, explanation, strength, bridge, and source support.</p>
+          <div class="summary" style="margin-top:16px">
+            <div class="row"><span>Type</span><strong id="selected-relationship-type">—</strong></div>
+            <div class="row"><span>Strength</span><strong id="selected-relationship-strength">—</strong></div>
+            <div class="row"><span>Bridge</span><strong id="selected-relationship-bridge">—</strong></div>
+          </div>
+        </div>
+
+        <div class="side-card"><h3>Related Terms</h3><div class="chip-row" id="related-terms"></div></div>
+        <div class="side-card"><h3>Other V2 Concepts</h3><div class="link-list" id="concept-list"></div></div>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    let nodes=[], currentNode=null, selectedRelationshipTarget="";
+    function slugify(v){return String(v||"").toLowerCase().trim().replace(/&/g," and ").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")}
+    function escapeHtml(v){return String(v||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
+    function getParam(n){return new URLSearchParams(location.search).get(n)}
+    function getNodeId(n){return n.id||slugify(n.name||"")}
+    function findNode(v){const k=slugify(v||"truth");return nodes.find(n=>getNodeId(n)===k||slugify(n.name)===k)||nodes[0]}
+    function setText(id,v,f="—"){const e=document.getElementById(id);if(e)e.textContent=v||f}
+
+    async function loadConcept(){
+      try{
+        const r=await fetch("data/nodes-v2-root.json");
+        if(!r.ok)throw new Error("Could not load data/nodes-v2-root.json");
+        nodes=await r.json();
+        if(!Array.isArray(nodes)||!nodes.length)throw new Error("nodes-v2-root.json is empty or invalid");
+        currentNode=findNode(getParam("id")||"truth");
+        renderConcept();
+      }catch(e){
+        document.getElementById("page").innerHTML=`<div class="empty"><h2>Could not load V2 concept data.</h2><p>${escapeHtml(e.message)}</p><p>Check that <strong>data/nodes-v2-root.json</strong> exists and contains valid JSON.</p></div>`;
+      }
+    }
+
+    function renderConcept(){
+      const id=getNodeId(currentNode), rels=currentNode.relationships||[], sources=currentNode.sources||[], revisions=currentNode.revisions||[];
+      document.title=`${currentNode.name} V2 | SourceRoot`;
+      setText("concept-name",currentNode.name);
+      setText("hero-label",`${currentNode.type||"Concept"} · ${currentNode.domain||"Knowledge"}`);
+      setText("concept-summary",currentNode.shortDefinition||currentNode.fullDefinition||currentNode.plainEnglish);
+      document.getElementById("v1-link").href=`concept.html?id=${encodeURIComponent(id)}`;
+      document.getElementById("graph-link").href=`graph.html?center=${encodeURIComponent(id)}&view=sphere&depth=2&edges=center&lens=domain`;
+      setText("stat-relationships",rels.length); setText("stat-sources",sources.length); setText("stat-revisions",revisions.length); setText("stat-status",currentNode.status||"draft");
+      setText("summary-id",id); setText("summary-type",currentNode.type); setText("summary-domain",currentNode.domain); setText("summary-status",currentNode.status);
+      setText("short-definition",currentNode.shortDefinition); setText("plain-english",currentNode.plainEnglish); setText("full-definition",currentNode.fullDefinition); setText("technical-definition",currentNode.technicalDefinition); setText("why-it-matters",currentNode.whyItMatters);
+      const o=currentNode.origin||{}; setText("origin-root",o.root); setText("origin-language",o.language); setText("origin-meaning",o.meaning); setText("origin-notes",o.notes,"");
+      renderRelationships(rels); renderExamples(currentNode.examples||[]); renderConfusions(currentNode.commonConfusions||[]); renderSources(sources); renderRevisions(revisions); renderRelatedTerms(currentNode.relatedTerms||[]); renderConceptList();
+      if(rels.length)selectRelationship(rels[0].target);
+    }
+
+    function dots(s){let h="";for(let i=1;i<=5;i++)h+=`<span class="dot ${i<=Number(s||0)?"active":""}"></span>`;return h}
+    function targetName(t){const n=findNode(t);return n&&getNodeId(n)===slugify(t)?n.name:String(t||"").replaceAll("-"," ")}
+    function renderRelationships(rels){
+      const c=document.getElementById("relationships-grid");
+      if(!rels.length){c.innerHTML='<div class="empty">No V2 relationships yet.</div>';return}
+      c.innerHTML=rels.map(r=>`<article class="relationship ${r.target===selectedRelationshipTarget?"selected":""}" onclick="selectRelationship('${escapeHtml(r.target)}')"><div class="top"><div><h3>${escapeHtml(r.direction||`${currentNode.name} → ${targetName(r.target)}`)}</h3><p>${escapeHtml(r.explanation||"No relationship explanation yet.")}</p></div><span class="badge">${escapeHtml(r.type||"RELATED")}</span></div><div class="dots">${dots(r.strength)}</div></article>`).join("");
+    }
+    function selectRelationship(target){
+      selectedRelationshipTarget=target; const r=(currentNode.relationships||[]).find(x=>x.target===target); if(!r)return;
+      setText("selected-relationship-title",r.direction||`${currentNode.name} → ${targetName(r.target)}`);
+      setText("selected-relationship-text",r.explanation||"No relationship explanation yet.");
+      setText("selected-relationship-type",r.type||"RELATED"); setText("selected-relationship-strength",`${r.strength||"—"} / 5`); setText("selected-relationship-bridge",r.bridge||"—");
+      renderRelationships(currentNode.relationships||[]);
+    }
+    function renderExamples(items){document.getElementById("examples-grid").innerHTML=items.length?items.map(x=>`<div class="mini"><h3>${escapeHtml(x.label||"Example")}</h3><p>${escapeHtml(x.text||"")}</p></div>`).join(""):'<div class="empty">No examples yet.</div>'}
+    function renderConfusions(items){document.getElementById("confusions-grid").innerHTML=items.length?items.map(x=>`<div class="mini"><h3>${escapeHtml(x.term||"Related concept")}</h3><p>${escapeHtml(x.difference||"")}</p></div>`).join(""):'<div class="empty">No common confusions yet.</div>'}
+    function renderSources(items){document.getElementById("sources-grid").innerHTML=items.length?items.map(s=>`<div class="mini"><h3>${escapeHtml(s.name||"Source")}</h3><p>${escapeHtml(s.notes||s.type||"")}</p><div class="pill-row">${(s.supports||[]).map(x=>`<span class="pill">${escapeHtml(x)}</span>`).join("")}</div></div>`).join(""):'<div class="empty">No sources yet.</div>'}
+    function renderRevisions(items){document.getElementById("revisions-grid").innerHTML=items.length?items.map(r=>`<div class="mini"><h3>${escapeHtml(r.version||"Revision")}: ${escapeHtml(r.type||"Update")}</h3><p>${escapeHtml(r.summary||"")}</p><p style="margin-top:10px"><strong>Reason:</strong> ${escapeHtml(r.reason||"—")}</p><div class="pill-row">${(r.changedFields||[]).map(x=>`<span class="pill">${escapeHtml(x)}</span>`).join("")}</div></div>`).join(""):'<div class="empty">No revisions yet.</div>'}
+    function renderRelatedTerms(items){document.getElementById("related-terms").innerHTML=items.length?items.map(t=>`<a class="chip" href="concept-v2.html?id=${encodeURIComponent(slugify(t))}">${escapeHtml(t)}</a>`).join(""):'<span class="chip">No terms yet</span>'}
+    function renderConceptList(){document.getElementById("concept-list").innerHTML=nodes.map(n=>`<a href="concept-v2.html?id=${encodeURIComponent(getNodeId(n))}">${escapeHtml(n.name||getNodeId(n))}<span>Open →</span></a>`).join("")}
+    loadConcept();
+  </script>
+</body>
+</html>
