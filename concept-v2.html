@@ -41,7 +41,7 @@
   </header>
 
   <main class="page" id="page">
-    <div class="warning">V2 test page. This page reads <strong>data/nodes-v2-root.json</strong> and does not replace the live V1 concept page.</div>
+    <div class="warning">V2 test page. This page reads <strong>data/nodes-v2-root.json</strong> and <strong>data/sources-v2.json</strong>. It does not replace the live V1 concept page.</div>
 
     <section class="hero">
       <div>
@@ -57,7 +57,7 @@
 
     <section class="stats">
       <div class="stat"><strong id="stat-relationships">0</strong><span>Relationships</span></div>
-      <div class="stat"><strong id="stat-sources">0</strong><span>Sources</span></div>
+      <div class="stat"><strong id="stat-sources">0</strong><span>Entry Sources</span></div>
       <div class="stat"><strong id="stat-revisions">0</strong><span>Revisions</span></div>
       <div class="stat"><strong id="stat-status">Draft</strong><span>Status</span></div>
     </section>
@@ -118,7 +118,7 @@
   </main>
 
   <script>
-    let nodes=[], currentNode=null, selectedRelationshipTarget="";
+    let nodes=[], sourcesRegistry=[], currentNode=null, selectedRelationshipTarget="";
     function slugify(v){return String(v||"").toLowerCase().trim().replace(/&/g," and ").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")}
     function escapeHtml(v){return String(v||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
     function getParam(n){return new URLSearchParams(location.search).get(n)}
@@ -132,6 +132,16 @@
         if(!r.ok)throw new Error("Could not load data/nodes-v2-root.json");
         nodes=await r.json();
         if(!Array.isArray(nodes)||!nodes.length)throw new Error("nodes-v2-root.json is empty or invalid");
+
+        try {
+          const sourceResponse = await fetch("data/sources-v2.json");
+          if (sourceResponse.ok) {
+            sourcesRegistry = await sourceResponse.json();
+            if (!Array.isArray(sourcesRegistry)) sourcesRegistry = [];
+          }
+        } catch (sourceError) {
+          sourcesRegistry = [];
+        }
         currentNode=findNode(getParam("id")||"truth");
         renderConcept();
       }catch(e){
@@ -147,7 +157,7 @@
       setText("concept-summary",currentNode.shortDefinition||currentNode.fullDefinition||currentNode.plainEnglish);
       document.getElementById("v1-link").href=`concept.html?id=${encodeURIComponent(id)}`;
       document.getElementById("graph-link").href=`graph.html?center=${encodeURIComponent(id)}&view=sphere&depth=2&edges=center&lens=domain`;
-      setText("stat-relationships",rels.length); setText("stat-sources",sources.length); setText("stat-revisions",revisions.length); setText("stat-status",currentNode.status||"draft");
+      setText("stat-relationships",rels.length); setText("stat-sources",sources.length + registrySourcesForCurrentNode().length); setText("stat-revisions",revisions.length); setText("stat-status",currentNode.status||"draft");
       setText("summary-id",id); setText("summary-type",currentNode.type); setText("summary-domain",currentNode.domain); setText("summary-status",currentNode.status);
       setText("short-definition",currentNode.shortDefinition); setText("plain-english",currentNode.plainEnglish); setText("full-definition",currentNode.fullDefinition); setText("technical-definition",currentNode.technicalDefinition); setText("why-it-matters",currentNode.whyItMatters);
       const o=currentNode.origin||{}; setText("origin-root",o.root); setText("origin-language",o.language); setText("origin-meaning",o.meaning); setText("origin-notes",o.notes,"");
@@ -171,7 +181,38 @@
     }
     function renderExamples(items){document.getElementById("examples-grid").innerHTML=items.length?items.map(x=>`<div class="mini"><h3>${escapeHtml(x.label||"Example")}</h3><p>${escapeHtml(x.text||"")}</p></div>`).join(""):'<div class="empty">No examples yet.</div>'}
     function renderConfusions(items){document.getElementById("confusions-grid").innerHTML=items.length?items.map(x=>`<div class="mini"><h3>${escapeHtml(x.term||"Related concept")}</h3><p>${escapeHtml(x.difference||"")}</p></div>`).join(""):'<div class="empty">No common confusions yet.</div>'}
-    function renderSources(items){document.getElementById("sources-grid").innerHTML=items.length?items.map(s=>`<div class="mini"><h3>${escapeHtml(s.name||"Source")}</h3><p>${escapeHtml(s.notes||s.type||"")}</p><div class="pill-row">${(s.supports||[]).map(x=>`<span class="pill">${escapeHtml(x)}</span>`).join("")}</div></div>`).join(""):'<div class="empty">No sources yet.</div>'}
+    function registrySourcesForCurrentNode(){
+      const id=getNodeId(currentNode);
+      return sourcesRegistry.filter(source=>{
+        const concepts=Array.isArray(source.supportsConcepts)?source.supportsConcepts:[];
+        return concepts.map(slugify).includes(id);
+      });
+    }
+
+    function renderSources(items){
+      const registryItems=registrySourcesForCurrentNode();
+      const localItems=Array.isArray(items)?items:[];
+      const blocks=[];
+
+      if(registryItems.length){
+        blocks.push(`<div class="mini"><h3>Source Registry Matches</h3><p>These sources come from <strong>data/sources-v2.json</strong> and are connected to this concept by source ID and supported concept fields.</p><div class="pill-row"><span class="pill">${registryItems.length} registry sources</span></div></div>`);
+        registryItems.forEach(s=>{
+          const fields=Array.isArray(s.supportsFields)?s.supportsFields:[];
+          const concepts=Array.isArray(s.supportsConcepts)?s.supportsConcepts:[];
+          const sourceLink=s.url?`<p style="margin-top:10px"><a href="${escapeHtml(s.url)}" target="_blank" rel="noopener">Open source →</a></p>`:"";
+          blocks.push(`<div class="mini"><h3>${escapeHtml(s.name||"Source")}</h3><p><strong>${escapeHtml(s.publisher||"")}</strong>${s.type?` · ${escapeHtml(s.type)}`:""}</p><p>${escapeHtml(s.notes||"")}</p>${sourceLink}<div class="pill-row">${fields.map(x=>`<span class="pill">${escapeHtml(x)}</span>`).join("")}${concepts.map(x=>`<span class="pill">${escapeHtml(x)}</span>`).join("")}</div></div>`);
+        });
+      }
+
+      if(localItems.length){
+        blocks.push(`<div class="mini"><h3>Entry-Level Source Notes</h3><p>These are source notes stored directly inside this concept entry. Some may still be placeholders until replaced by registry source IDs.</p></div>`);
+        localItems.forEach(s=>{
+          blocks.push(`<div class="mini"><h3>${escapeHtml(s.name||"Source")}</h3><p>${escapeHtml(s.notes||s.type||"")}</p><div class="pill-row">${(s.supports||[]).map(x=>`<span class="pill">${escapeHtml(x)}</span>`).join("")}</div></div>`);
+        });
+      }
+
+      document.getElementById("sources-grid").innerHTML=blocks.length?blocks.join(""):'<div class="empty">No sources yet.</div>';
+    }
     function renderRevisions(items){document.getElementById("revisions-grid").innerHTML=items.length?items.map(r=>`<div class="mini"><h3>${escapeHtml(r.version||"Revision")}: ${escapeHtml(r.type||"Update")}</h3><p>${escapeHtml(r.summary||"")}</p><p style="margin-top:10px"><strong>Reason:</strong> ${escapeHtml(r.reason||"—")}</p><div class="pill-row">${(r.changedFields||[]).map(x=>`<span class="pill">${escapeHtml(x)}</span>`).join("")}</div></div>`).join(""):'<div class="empty">No revisions yet.</div>'}
     function renderRelatedTerms(items){document.getElementById("related-terms").innerHTML=items.length?items.map(t=>`<a class="chip" href="concept-v2.html?id=${encodeURIComponent(slugify(t))}">${escapeHtml(t)}</a>`).join(""):'<span class="chip">No terms yet</span>'}
     function renderConceptList(){document.getElementById("concept-list").innerHTML=nodes.map(n=>`<a href="concept-v2.html?id=${encodeURIComponent(getNodeId(n))}">${escapeHtml(n.name||getNodeId(n))}<span>Open →</span></a>`).join("")}
