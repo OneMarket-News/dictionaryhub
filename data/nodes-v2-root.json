@@ -6,15 +6,15 @@
     "domain": "Knowledge",
     "status": "v2-draft",
     "shortDefinition": "Truth is the quality of a claim, belief, statement, or understanding being aligned with reality, fact, or verified support.",
-    "fullDefinition": "Truth is the quality of being in accordance with reality, fact, evidence, or verified understanding. In a knowledge system, truth is not only a final answer; it is a relationship between a claim, the world it describes, the evidence supporting it, and the methods used to verify it.",
+    "fullDefinition": "Truth is the quality of being in accordance with reality, fact, evidence, or verified understanding. In SourceRoot, truth is treated as a traceable relationship between a claim, the world it describes, the evidence supporting it, and the methods used to verify it.",
     "plainEnglish": "Truth means something is actually the case, not just believed, repeated, assumed, or popular.",
-    "technicalDefinition": "Within SourceRoot, truth is treated as a traceable knowledge condition: a claim is stronger when it can be connected to evidence, verification, reliable sources, and a revision history that shows how the understanding developed.",
-    "whyItMatters": "Truth is the central anchor of SourceRoot because every definition, source, relationship, and revision ultimately supports the question of whether knowledge can be trusted.",
+    "technicalDefinition": "Within SourceRoot, truth is a traceable knowledge condition connected to evidence, verification, reliable sources, and revision history.",
+    "whyItMatters": "Truth is the central anchor of SourceRoot because every definition, source, relationship, and revision supports the question of whether knowledge can be trusted.",
     "origin": {
       "root": "Old English trēowth / truth",
       "language": "Old English",
       "meaning": "Faithfulness, constancy, reliability, agreement with fact",
-      "notes": "The historical meaning of truth is closely related to trust, fidelity, and reliability."
+      "notes": "Historically connected to trust, fidelity, and reliability."
     },
     "examples": [
       {
@@ -29,19 +29,26 @@
     "commonConfusions": [
       {
         "term": "Belief",
-        "difference": "A belief is something a person accepts as true. Truth requires alignment with reality or verified support, whether or not someone believes it."
+        "difference": "A belief is something accepted as true. Truth requires alignment with reality or verified support."
       },
       {
         "term": "Opinion",
-        "difference": "An opinion expresses a judgment or preference. A truth claim asserts something about reality that can be supported or challenged."
-      },
-      {
-        "term": "Consensus",
-        "difference": "Consensus means many people agree. Agreement may support confidence, but agreement alone does not guarantee truth."
+        "difference": "An opinion expresses judgment or preference. A truth claim asserts something about reality that can be supported or challenged."
       }
     ],
-    "opposites": ["falsehood", "error", "misrepresentation"],
-    "relatedTerms": ["knowledge", "evidence", "verification", "fact", "claim", "trust", "reliability"],
+    "opposites": [
+      "falsehood",
+      "error",
+      "misrepresentation"
+    ],
+    "relatedTerms": [
+      "knowledge",
+      "evidence",
+      "verification",
+      "fact",
+      "claim",
+      "trust"
+    ],
     "relationships": [
       {
         "target": "evidence",
@@ -50,43 +57,31 @@
         "strength": 5,
         "explanation": "Evidence provides the observations, records, measurements, testimony, or reasoning used to evaluate whether a claim corresponds to reality.",
         "bridge": "Claim",
-        "sourceIds": ["source-placeholder-truth-evidence"]
+        "sourceIds": [
+          "source-placeholder-truth-evidence"
+        ]
       },
       {
         "target": "verification",
         "type": "VERIFIED_BY",
         "direction": "Truth is tested through verification",
         "strength": 5,
-        "explanation": "Verification is the process of checking whether a claim, source, measurement, or explanation is reliable enough to support truth.",
+        "explanation": "Verification checks whether a claim, source, measurement, or explanation is reliable enough to support truth.",
         "bridge": "Evidence",
-        "sourceIds": ["source-placeholder-truth-verification"]
+        "sourceIds": [
+          "source-placeholder-truth-verification"
+        ]
       },
       {
         "target": "knowledge",
         "type": "FOUNDATION_FOR",
         "direction": "Truth is foundational to knowledge",
         "strength": 5,
-        "explanation": "Knowledge depends on truth because knowing something requires more than belief; it requires that the belief or claim is actually correct or well-supported.",
+        "explanation": "Knowledge depends on truth because knowing something requires more than belief; it requires that the claim is actually correct or well-supported.",
         "bridge": "Justification",
-        "sourceIds": ["source-placeholder-truth-knowledge"]
-      },
-      {
-        "target": "belief",
-        "type": "CONTRASTS_WITH",
-        "direction": "Truth differs from belief",
-        "strength": 4,
-        "explanation": "A belief can be true or false. Truth is about whether the belief aligns with reality, not simply whether it is held.",
-        "bridge": "Claim",
-        "sourceIds": ["source-placeholder-truth-belief"]
-      },
-      {
-        "target": "trust",
-        "type": "BUILDS_ON",
-        "direction": "Truth supports trust",
-        "strength": 4,
-        "explanation": "When claims, sources, and definitions are shown to be truthful or well-supported, trust in the knowledge system increases.",
-        "bridge": "Reliability",
-        "sourceIds": ["source-placeholder-truth-trust"]
+        "sourceIds": [
+          "source-placeholder-truth-knowledge"
+        ]
       }
     ],
     "sources": [
@@ -95,33 +90,456 @@
         "name": "Source needed: philosophical definition of truth",
         "type": "Source Placeholder",
         "url": "",
-        "supports": ["shortDefinition", "fullDefinition"],
-        "notes": "Replace with a reliable source such as an academic encyclopedia or philosophy reference."
-      },
-      {
-        "id": "source-placeholder-truth-evidence",
-        "name": "Source needed: evidence and truth relationship",
-        "type": "Source Placeholder",
-        "url": "",
-        "supports": ["relationship:evidence"],
-        "notes": "Replace with a reliable source explaining evidence as support for truth claims."
-      },
-      {
-        "id": "source-placeholder-truth-verification",
-        "name": "Source needed: verification and truth relationship",
-        "type": "Source Placeholder",
-        "url": "",
-        "supports": ["relationship:verification"],
-        "notes": "Replace with a reliable source explaining verification."
+        "supports": [
+          "shortDefinition",
+          "fullDefinition"
+        ],
+        "notes": "Replace with a reliable source."
       }
     ],
     "revisions": [
       {
         "version": "v2.0",
         "type": "Definition Upgrade",
-        "summary": "Expanded Truth from a simple definition into a SourceRoot-ready knowledge object.",
-        "changedFields": ["shortDefinition", "fullDefinition", "plainEnglish", "technicalDefinition", "relationships", "sources", "revisions"],
+        "summary": "Expanded Truth into a SourceRoot-ready knowledge object.",
+        "changedFields": [
+          "shortDefinition",
+          "fullDefinition",
+          "relationships"
+        ],
         "reason": "V2 requires richer concept content and relationship explanations.",
+        "date": "2026-07-02"
+      }
+    ]
+  },
+  {
+    "id": "knowledge",
+    "name": "Knowledge",
+    "type": "Core Concept",
+    "domain": "Knowledge",
+    "status": "v2-draft",
+    "shortDefinition": "Knowledge is organized understanding that can be justified, communicated, revised, and connected.",
+    "fullDefinition": "Knowledge is understanding formed from information, experience, reasoning, evidence, or learning. In SourceRoot, knowledge is structured so it can be defined, sourced, connected to related concepts, and revised when better support becomes available.",
+    "plainEnglish": "Knowledge is what you understand well enough to explain, use, or connect to other ideas.",
+    "technicalDefinition": "Within SourceRoot, knowledge is a traceable state of understanding supported by definitions, relationships, evidence, sources, and revision history.",
+    "whyItMatters": "Knowledge is the main material SourceRoot organizes and makes traceable.",
+    "origin": {
+      "root": "Old English cnāwan",
+      "language": "Old English",
+      "meaning": "To know, recognize, perceive, or understand",
+      "notes": "Historically tied to recognition, awareness, and understanding."
+    },
+    "examples": [
+      {
+        "label": "Everyday example",
+        "text": "Knowing how to fix a bike means understanding the parts, the problem, and the repair steps."
+      }
+    ],
+    "commonConfusions": [
+      {
+        "term": "Information",
+        "difference": "Information is organized data or content. Knowledge is understanding that can be applied, explained, or justified."
+      },
+      {
+        "term": "Belief",
+        "difference": "Belief is something accepted as true. Knowledge requires stronger support, justification, or connection to truth."
+      }
+    ],
+    "opposites": [
+      "ignorance",
+      "misunderstanding",
+      "confusion"
+    ],
+    "relatedTerms": [
+      "truth",
+      "information",
+      "evidence",
+      "understanding",
+      "belief",
+      "verification"
+    ],
+    "relationships": [
+      {
+        "target": "truth",
+        "type": "DEPENDS_ON",
+        "direction": "Knowledge depends on truth",
+        "strength": 5,
+        "explanation": "Knowledge requires that an understanding or claim is meaningfully aligned with truth or reliable support.",
+        "bridge": "Justification",
+        "sourceIds": [
+          "source-placeholder-knowledge-truth"
+        ]
+      },
+      {
+        "target": "information",
+        "type": "BUILDS_ON",
+        "direction": "Knowledge builds on information",
+        "strength": 5,
+        "explanation": "Information becomes knowledge when it is understood, organized, connected, and usable within a context.",
+        "bridge": "Meaning",
+        "sourceIds": [
+          "source-placeholder-knowledge-information"
+        ]
+      },
+      {
+        "target": "evidence",
+        "type": "SUPPORTED_BY",
+        "direction": "Knowledge is supported by evidence",
+        "strength": 4,
+        "explanation": "Evidence helps justify whether a piece of knowledge should be trusted or revised.",
+        "bridge": "Verification",
+        "sourceIds": [
+          "source-placeholder-knowledge-evidence"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "source-placeholder-knowledge-definition",
+        "name": "Source needed: definition of knowledge",
+        "type": "Source Placeholder",
+        "url": "",
+        "supports": [
+          "shortDefinition",
+          "fullDefinition"
+        ],
+        "notes": "Replace with a reliable epistemology or dictionary source."
+      }
+    ],
+    "revisions": [
+      {
+        "version": "v2.0",
+        "type": "Created Entry",
+        "summary": "Created V2 Knowledge entry.",
+        "changedFields": [
+          "shortDefinition",
+          "fullDefinition",
+          "relationships"
+        ],
+        "reason": "Batch 1 root concept upgrade.",
+        "date": "2026-07-02"
+      }
+    ]
+  },
+  {
+    "id": "evidence",
+    "name": "Evidence",
+    "type": "Core Concept",
+    "domain": "Knowledge",
+    "status": "v2-draft",
+    "shortDefinition": "Evidence is information, observation, record, measurement, or reasoning used to support or challenge a claim.",
+    "fullDefinition": "Evidence is the support used to evaluate whether a claim, belief, explanation, or conclusion should be accepted. Evidence can include observations, documents, measurements, testimony, data, experiments, or logical reasoning.",
+    "plainEnglish": "Evidence is what you point to when someone asks, 'How do you know?'",
+    "technicalDefinition": "Within SourceRoot, evidence is support that connects claims to sources, observations, data, or verification methods.",
+    "whyItMatters": "Evidence gives SourceRoot its trust layer. Without evidence, definitions and relationships are only assertions.",
+    "origin": {
+      "root": "Latin evidentia",
+      "language": "Latin",
+      "meaning": "Obviousness, clearness, visibility",
+      "notes": "Historically related to what is made clear or visible."
+    },
+    "examples": [
+      {
+        "label": "Everyday example",
+        "text": "Wet pavement can be evidence that it recently rained."
+      }
+    ],
+    "commonConfusions": [
+      {
+        "term": "Proof",
+        "difference": "Proof is often treated as conclusive. Evidence may support a claim strongly or weakly without always proving it completely."
+      },
+      {
+        "term": "Data",
+        "difference": "Data can be evidence, but only when used to support or challenge a claim."
+      }
+    ],
+    "opposites": [
+      "unsupported claim",
+      "speculation",
+      "assumption"
+    ],
+    "relatedTerms": [
+      "truth",
+      "claim",
+      "source",
+      "data",
+      "verification",
+      "proof"
+    ],
+    "relationships": [
+      {
+        "target": "truth",
+        "type": "SUPPORTS",
+        "direction": "Evidence supports truth claims",
+        "strength": 5,
+        "explanation": "Evidence helps determine whether a claim should be treated as true, false, uncertain, or in need of revision.",
+        "bridge": "Claim",
+        "sourceIds": [
+          "source-placeholder-evidence-truth"
+        ]
+      },
+      {
+        "target": "verification",
+        "type": "USED_BY",
+        "direction": "Evidence is used by verification",
+        "strength": 5,
+        "explanation": "Verification checks evidence to determine whether a claim, source, or observation is reliable.",
+        "bridge": "Source",
+        "sourceIds": [
+          "source-placeholder-evidence-verification"
+        ]
+      },
+      {
+        "target": "source",
+        "type": "COMES_FROM",
+        "direction": "Evidence often comes from sources",
+        "strength": 4,
+        "explanation": "Sources provide the documents, records, observations, or authorities from which evidence can be drawn.",
+        "bridge": "Reference",
+        "sourceIds": [
+          "source-placeholder-evidence-source"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "source-placeholder-evidence-definition",
+        "name": "Source needed: definition of evidence",
+        "type": "Source Placeholder",
+        "url": "",
+        "supports": [
+          "shortDefinition",
+          "fullDefinition"
+        ],
+        "notes": "Replace with a reliable source."
+      }
+    ],
+    "revisions": [
+      {
+        "version": "v2.0",
+        "type": "Created Entry",
+        "summary": "Created V2 Evidence entry.",
+        "changedFields": [
+          "shortDefinition",
+          "fullDefinition",
+          "relationships"
+        ],
+        "reason": "Batch 1 root concept upgrade.",
+        "date": "2026-07-02"
+      }
+    ]
+  },
+  {
+    "id": "verification",
+    "name": "Verification",
+    "type": "Core Concept",
+    "domain": "Knowledge",
+    "status": "v2-draft",
+    "shortDefinition": "Verification is the process of checking whether something is accurate, reliable, supported, or true.",
+    "fullDefinition": "Verification is the act of confirming, checking, or testing whether a claim, source, measurement, identity, process, or statement is reliable enough to be trusted. In knowledge systems, verification connects evidence to confidence.",
+    "plainEnglish": "Verification means checking that something is actually correct or trustworthy.",
+    "technicalDefinition": "Within SourceRoot, verification evaluates claims, sources, evidence, and relationships before they are treated as reliable knowledge.",
+    "whyItMatters": "Verification helps separate supported knowledge from unsupported claims.",
+    "origin": {
+      "root": "Latin verificare",
+      "language": "Latin",
+      "meaning": "To make true or confirm",
+      "notes": "Historically connected to confirming truth."
+    },
+    "examples": [
+      {
+        "label": "Everyday example",
+        "text": "Checking a receipt against a bank charge is a form of verification."
+      }
+    ],
+    "commonConfusions": [
+      {
+        "term": "Validation",
+        "difference": "Verification checks whether something is accurate or supported. Validation checks whether something is appropriate, sound, or fit for purpose."
+      }
+    ],
+    "opposites": [
+      "assumption",
+      "unchecked claim",
+      "unverified statement"
+    ],
+    "relatedTerms": [
+      "truth",
+      "evidence",
+      "source",
+      "accuracy",
+      "reliability",
+      "validity"
+    ],
+    "relationships": [
+      {
+        "target": "truth",
+        "type": "TESTS",
+        "direction": "Verification tests truth claims",
+        "strength": 5,
+        "explanation": "Verification checks whether a claim has enough support to be treated as true, reliable, or accurate.",
+        "bridge": "Evidence",
+        "sourceIds": [
+          "source-placeholder-verification-truth"
+        ]
+      },
+      {
+        "target": "evidence",
+        "type": "EVALUATES",
+        "direction": "Verification evaluates evidence",
+        "strength": 5,
+        "explanation": "Verification examines evidence to determine whether it is relevant, reliable, and strong enough to support a claim.",
+        "bridge": "Source",
+        "sourceIds": [
+          "source-placeholder-verification-evidence"
+        ]
+      },
+      {
+        "target": "source",
+        "type": "CHECKS",
+        "direction": "Verification checks sources",
+        "strength": 4,
+        "explanation": "Verification can examine whether a source is credible, accurate, current, and properly represented.",
+        "bridge": "Reliability",
+        "sourceIds": [
+          "source-placeholder-verification-source"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "source-placeholder-verification-definition",
+        "name": "Source needed: definition of verification",
+        "type": "Source Placeholder",
+        "url": "",
+        "supports": [
+          "shortDefinition",
+          "fullDefinition"
+        ],
+        "notes": "Replace with a reliable source."
+      }
+    ],
+    "revisions": [
+      {
+        "version": "v2.0",
+        "type": "Created Entry",
+        "summary": "Created V2 Verification entry.",
+        "changedFields": [
+          "shortDefinition",
+          "fullDefinition",
+          "relationships"
+        ],
+        "reason": "Batch 1 root concept upgrade.",
+        "date": "2026-07-02"
+      }
+    ]
+  },
+  {
+    "id": "source",
+    "name": "Source",
+    "type": "Core Concept",
+    "domain": "Knowledge",
+    "status": "v2-draft",
+    "shortDefinition": "A source is the origin, reference point, person, document, system, or record from which information, evidence, or a claim comes.",
+    "fullDefinition": "A source is the point of origin or reference for information, evidence, claims, data, or knowledge. In SourceRoot, sources are provenance objects that explain where support comes from and what part of a concept they support.",
+    "plainEnglish": "A source is where information comes from.",
+    "technicalDefinition": "Within SourceRoot, a source is a traceable support object linked to definitions, relationships, examples, origins, and revisions.",
+    "whyItMatters": "Sources make knowledge traceable and help users inspect where an entry came from.",
+    "origin": {
+      "root": "Old French sourse / Latin surgere",
+      "language": "Old French / Latin",
+      "meaning": "A rising, spring, origin, or beginning",
+      "notes": "Historically connected to the place where something begins or emerges."
+    },
+    "examples": [
+      {
+        "label": "Everyday example",
+        "text": "A news article, interview, book, database, or measurement record can be a source."
+      }
+    ],
+    "commonConfusions": [
+      {
+        "term": "Reference",
+        "difference": "A source is the thing information comes from. A reference is the pointer or citation that directs someone to that source."
+      },
+      {
+        "term": "Evidence",
+        "difference": "A source can provide evidence, but the source itself is not always the evidence unless it directly supports the claim."
+      }
+    ],
+    "opposites": [
+      "unknown origin",
+      "unsupported statement",
+      "uncited claim"
+    ],
+    "relatedTerms": [
+      "reference",
+      "evidence",
+      "provenance",
+      "origin",
+      "authority",
+      "reliability"
+    ],
+    "relationships": [
+      {
+        "target": "evidence",
+        "type": "PROVIDES",
+        "direction": "Sources provide evidence",
+        "strength": 5,
+        "explanation": "Sources provide the documents, records, testimony, data, or references that can be used as evidence.",
+        "bridge": "Reference",
+        "sourceIds": [
+          "source-placeholder-source-evidence"
+        ]
+      },
+      {
+        "target": "provenance",
+        "type": "PART_OF",
+        "direction": "Sources are part of provenance",
+        "strength": 5,
+        "explanation": "A source helps establish provenance by showing where information or support originated.",
+        "bridge": "Origin",
+        "sourceIds": [
+          "source-placeholder-source-provenance"
+        ]
+      },
+      {
+        "target": "verification",
+        "type": "CHECKED_BY",
+        "direction": "Sources are checked through verification",
+        "strength": 4,
+        "explanation": "Verification can evaluate whether a source is credible, relevant, accurate, and properly connected to the claim it supports.",
+        "bridge": "Reliability",
+        "sourceIds": [
+          "source-placeholder-source-verification"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "source-placeholder-source-definition",
+        "name": "Source needed: definition of source",
+        "type": "Source Placeholder",
+        "url": "",
+        "supports": [
+          "shortDefinition",
+          "fullDefinition"
+        ],
+        "notes": "Replace with a reliable source."
+      }
+    ],
+    "revisions": [
+      {
+        "version": "v2.0",
+        "type": "Created Entry",
+        "summary": "Created V2 Source entry.",
+        "changedFields": [
+          "shortDefinition",
+          "fullDefinition",
+          "relationships"
+        ],
+        "reason": "Batch 1 root concept upgrade.",
         "date": "2026-07-02"
       }
     ]
