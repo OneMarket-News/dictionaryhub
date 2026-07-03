@@ -88,13 +88,13 @@
       {
         "id": "source-placeholder-truth-definition",
         "name": "Source needed: philosophical definition of truth",
-        "type": "Source Placeholder",
+        "type": "Legacy Source Note",
         "url": "",
         "supports": [
           "shortDefinition",
           "fullDefinition"
         ],
-        "notes": "Replace with a reliable source."
+        "notes": "Replace with a reliable source. This is retained as an entry-level note until fully replaced by sourceIds."
       }
     ],
     "revisions": [
@@ -109,7 +109,23 @@
         ],
         "reason": "V2 requires richer concept content and relationship explanations.",
         "date": "2026-07-02"
+      },
+      {
+        "version": "v2.1",
+        "type": "Source ID Cleanup",
+        "summary": "Connected this concept to shared source IDs from data/sources-v2.json.",
+        "changedFields": [
+          "sourceIds",
+          "sources",
+          "revisions"
+        ],
+        "reason": "V2 source registry integration requires concepts to reference reusable source records instead of relying only on placeholder notes.",
+        "date": "2026-07-03"
       }
+    ],
+    "sourceIds": [
+      "sep-truth",
+      "merriam-webster-truth"
     ]
   },
   {
@@ -197,13 +213,13 @@
       {
         "id": "source-placeholder-knowledge-definition",
         "name": "Source needed: definition of knowledge",
-        "type": "Source Placeholder",
+        "type": "Legacy Source Note",
         "url": "",
         "supports": [
           "shortDefinition",
           "fullDefinition"
         ],
-        "notes": "Replace with a reliable epistemology or dictionary source."
+        "notes": "Replace with a reliable epistemology or dictionary source. This is retained as an entry-level note until fully replaced by sourceIds."
       }
     ],
     "revisions": [
@@ -218,7 +234,24 @@
         ],
         "reason": "Batch 1 root concept upgrade.",
         "date": "2026-07-02"
+      },
+      {
+        "version": "v2.1",
+        "type": "Source ID Cleanup",
+        "summary": "Connected this concept to shared source IDs from data/sources-v2.json.",
+        "changedFields": [
+          "sourceIds",
+          "sources",
+          "revisions"
+        ],
+        "reason": "V2 source registry integration requires concepts to reference reusable source records instead of relying only on placeholder notes.",
+        "date": "2026-07-03"
       }
+    ],
+    "sourceIds": [
+      "sep-knowledge-analysis",
+      "sep-epistemology",
+      "merriam-webster-knowledge"
     ]
   },
   {
@@ -306,13 +339,13 @@
       {
         "id": "source-placeholder-evidence-definition",
         "name": "Source needed: definition of evidence",
-        "type": "Source Placeholder",
+        "type": "Legacy Source Note",
         "url": "",
         "supports": [
           "shortDefinition",
           "fullDefinition"
         ],
-        "notes": "Replace with a reliable source."
+        "notes": "Replace with a reliable source. This is retained as an entry-level note until fully replaced by sourceIds."
       }
     ],
     "revisions": [
@@ -327,7 +360,24 @@
         ],
         "reason": "Batch 1 root concept upgrade.",
         "date": "2026-07-02"
+      },
+      {
+        "version": "v2.1",
+        "type": "Source ID Cleanup",
+        "summary": "Connected this concept to shared source IDs from data/sources-v2.json.",
+        "changedFields": [
+          "sourceIds",
+          "sources",
+          "revisions"
+        ],
+        "reason": "V2 source registry integration requires concepts to reference reusable source records instead of relying only on placeholder notes.",
+        "date": "2026-07-03"
       }
+    ],
+    "sourceIds": [
+      "sep-evidence",
+      "iep-evidence",
+      "merriam-webster-evidence"
     ]
   },
   {
@@ -411,13 +461,13 @@
       {
         "id": "source-placeholder-verification-definition",
         "name": "Source needed: definition of verification",
-        "type": "Source Placeholder",
+        "type": "Legacy Source Note",
         "url": "",
         "supports": [
           "shortDefinition",
           "fullDefinition"
         ],
-        "notes": "Replace with a reliable source."
+        "notes": "Replace with a reliable source. This is retained as an entry-level note until fully replaced by sourceIds."
       }
     ],
     "revisions": [
@@ -432,7 +482,23 @@
         ],
         "reason": "Batch 1 root concept upgrade.",
         "date": "2026-07-02"
+      },
+      {
+        "version": "v2.1",
+        "type": "Source ID Cleanup",
+        "summary": "Connected this concept to shared source IDs from data/sources-v2.json.",
+        "changedFields": [
+          "sourceIds",
+          "sources",
+          "revisions"
+        ],
+        "reason": "V2 source registry integration requires concepts to reference reusable source records instead of relying only on placeholder notes.",
+        "date": "2026-07-03"
       }
+    ],
+    "sourceIds": [
+      "merriam-webster-verification",
+      "sep-evidence"
     ]
   },
   {
@@ -520,13 +586,13 @@
       {
         "id": "source-placeholder-source-definition",
         "name": "Source needed: definition of source",
-        "type": "Source Placeholder",
+        "type": "Legacy Source Note",
         "url": "",
         "supports": [
           "shortDefinition",
           "fullDefinition"
         ],
-        "notes": "Replace with a reliable source."
+        "notes": "Replace with a reliable source. This is retained as an entry-level note until fully replaced by sourceIds."
       }
     ],
     "revisions": [
@@ -541,7 +607,23 @@
         ],
         "reason": "Batch 1 root concept upgrade.",
         "date": "2026-07-02"
+      },
+      {
+        "version": "v2.1",
+        "type": "Source ID Cleanup",
+        "summary": "Connected this concept to shared source IDs from data/sources-v2.json.",
+        "changedFields": [
+          "sourceIds",
+          "sources",
+          "revisions"
+        ],
+        "reason": "V2 source registry integration requires concepts to reference reusable source records instead of relying only on placeholder notes.",
+        "date": "2026-07-03"
       }
+    ],
+    "sourceIds": [
+      "merriam-webster-source",
+      "w3c-prov-overview"
     ]
   },
   {
@@ -632,13 +714,13 @@
       {
         "id": "source-placeholder-reference-definition",
         "name": "Source needed: definition of reference",
-        "type": "Source Placeholder",
+        "type": "Legacy Source Note",
         "url": "",
         "supports": [
           "shortDefinition",
           "fullDefinition"
         ],
-        "notes": "Replace with a reliable dictionary, citation, or information science source."
+        "notes": "Replace with a reliable dictionary, citation, or information science source. This is retained as an entry-level note until fully replaced by sourceIds."
       }
     ],
     "revisions": [
@@ -653,7 +735,23 @@
         ],
         "reason": "Batch 2 root concept upgrade.",
         "date": "2026-07-02"
+      },
+      {
+        "version": "v2.1",
+        "type": "Source ID Cleanup",
+        "summary": "Connected this concept to shared source IDs from data/sources-v2.json.",
+        "changedFields": [
+          "sourceIds",
+          "sources",
+          "revisions"
+        ],
+        "reason": "V2 source registry integration requires concepts to reference reusable source records instead of relying only on placeholder notes.",
+        "date": "2026-07-03"
       }
+    ],
+    "sourceIds": [
+      "merriam-webster-source",
+      "w3c-prov-overview"
     ]
   },
   {
@@ -745,13 +843,13 @@
       {
         "id": "source-placeholder-data-definition",
         "name": "Source needed: definition of data",
-        "type": "Source Placeholder",
+        "type": "Legacy Source Note",
         "url": "",
         "supports": [
           "shortDefinition",
           "fullDefinition"
         ],
-        "notes": "Replace with a reliable dictionary, information science, or data management source."
+        "notes": "Replace with a reliable dictionary, information science, or data management source. This is retained as an entry-level note until fully replaced by sourceIds."
       }
     ],
     "revisions": [
@@ -766,7 +864,22 @@
         ],
         "reason": "Batch 2 root concept upgrade.",
         "date": "2026-07-02"
+      },
+      {
+        "version": "v2.1",
+        "type": "Source ID Cleanup",
+        "summary": "Connected this concept to shared source IDs from data/sources-v2.json.",
+        "changedFields": [
+          "sourceIds",
+          "sources",
+          "revisions"
+        ],
+        "reason": "V2 source registry integration requires concepts to reference reusable source records instead of relying only on placeholder notes.",
+        "date": "2026-07-03"
       }
+    ],
+    "sourceIds": [
+      "iso-8000-data-quality-overview"
     ]
   },
   {
@@ -858,13 +971,13 @@
       {
         "id": "source-placeholder-information-definition",
         "name": "Source needed: definition of information",
-        "type": "Source Placeholder",
+        "type": "Legacy Source Note",
         "url": "",
         "supports": [
           "shortDefinition",
           "fullDefinition"
         ],
-        "notes": "Replace with a reliable dictionary, information theory, or information science source."
+        "notes": "Replace with a reliable dictionary, information theory, or information science source. This is retained as an entry-level note until fully replaced by sourceIds."
       }
     ],
     "revisions": [
@@ -879,7 +992,23 @@
         ],
         "reason": "Batch 2 root concept upgrade.",
         "date": "2026-07-02"
+      },
+      {
+        "version": "v2.1",
+        "type": "Source ID Cleanup",
+        "summary": "Connected this concept to shared source IDs from data/sources-v2.json.",
+        "changedFields": [
+          "sourceIds",
+          "sources",
+          "revisions"
+        ],
+        "reason": "V2 source registry integration requires concepts to reference reusable source records instead of relying only on placeholder notes.",
+        "date": "2026-07-03"
       }
+    ],
+    "sourceIds": [
+      "iso-8000-data-quality-overview",
+      "sep-epistemology"
     ]
   },
   {
@@ -971,13 +1100,13 @@
       {
         "id": "source-placeholder-meaning-definition",
         "name": "Source needed: definition of meaning",
-        "type": "Source Placeholder",
+        "type": "Legacy Source Note",
         "url": "",
         "supports": [
           "shortDefinition",
           "fullDefinition"
         ],
-        "notes": "Replace with a reliable dictionary, linguistics, or philosophy of language source."
+        "notes": "Replace with a reliable dictionary, linguistics, or philosophy of language source. This is retained as an entry-level note until fully replaced by sourceIds."
       }
     ],
     "revisions": [
@@ -992,7 +1121,23 @@
         ],
         "reason": "Batch 2 root concept upgrade.",
         "date": "2026-07-02"
+      },
+      {
+        "version": "v2.1",
+        "type": "Source ID Cleanup",
+        "summary": "Connected this concept to shared source IDs from data/sources-v2.json.",
+        "changedFields": [
+          "sourceIds",
+          "sources",
+          "revisions"
+        ],
+        "reason": "V2 source registry integration requires concepts to reference reusable source records instead of relying only on placeholder notes.",
+        "date": "2026-07-03"
       }
+    ],
+    "sourceIds": [
+      "merriam-webster-definition",
+      "merriam-webster-context"
     ]
   },
   {
@@ -1084,13 +1229,13 @@
       {
         "id": "source-placeholder-context-definition",
         "name": "Source needed: definition of context",
-        "type": "Source Placeholder",
+        "type": "Legacy Source Note",
         "url": "",
         "supports": [
           "shortDefinition",
           "fullDefinition"
         ],
-        "notes": "Replace with a reliable dictionary, linguistics, information science, or philosophy source."
+        "notes": "Replace with a reliable dictionary, linguistics, information science, or philosophy source. This is retained as an entry-level note until fully replaced by sourceIds."
       }
     ],
     "revisions": [
@@ -1105,7 +1250,22 @@
         ],
         "reason": "Batch 2 root concept upgrade.",
         "date": "2026-07-02"
+      },
+      {
+        "version": "v2.1",
+        "type": "Source ID Cleanup",
+        "summary": "Connected this concept to shared source IDs from data/sources-v2.json.",
+        "changedFields": [
+          "sourceIds",
+          "sources",
+          "revisions"
+        ],
+        "reason": "V2 source registry integration requires concepts to reference reusable source records instead of relying only on placeholder notes.",
+        "date": "2026-07-03"
       }
+    ],
+    "sourceIds": [
+      "merriam-webster-context"
     ]
   },
   {
@@ -1197,13 +1357,13 @@
       {
         "id": "source-placeholder-claim-definition",
         "name": "Source needed: definition of claim",
-        "type": "Source Placeholder",
+        "type": "Legacy Source Note",
         "url": "",
         "supports": [
           "shortDefinition",
           "fullDefinition"
         ],
-        "notes": "Replace with a reliable dictionary, logic, rhetoric, or epistemology source."
+        "notes": "Replace with a reliable dictionary, logic, rhetoric, or epistemology source. This is retained as an entry-level note until fully replaced by sourceIds."
       }
     ],
     "revisions": [
@@ -1218,7 +1378,23 @@
         ],
         "reason": "Batch 3 root concept upgrade.",
         "date": "2026-07-03"
+      },
+      {
+        "version": "v2.1",
+        "type": "Source ID Cleanup",
+        "summary": "Connected this concept to shared source IDs from data/sources-v2.json.",
+        "changedFields": [
+          "sourceIds",
+          "sources",
+          "revisions"
+        ],
+        "reason": "V2 source registry integration requires concepts to reference reusable source records instead of relying only on placeholder notes.",
+        "date": "2026-07-03"
       }
+    ],
+    "sourceIds": [
+      "sep-truth",
+      "sep-evidence"
     ]
   },
   {
@@ -1310,13 +1486,13 @@
       {
         "id": "source-placeholder-fact-definition",
         "name": "Source needed: definition of fact",
-        "type": "Source Placeholder",
+        "type": "Legacy Source Note",
         "url": "",
         "supports": [
           "shortDefinition",
           "fullDefinition"
         ],
-        "notes": "Replace with a reliable dictionary, logic, science, or epistemology source."
+        "notes": "Replace with a reliable dictionary, logic, science, or epistemology source. This is retained as an entry-level note until fully replaced by sourceIds."
       }
     ],
     "revisions": [
@@ -1331,7 +1507,23 @@
         ],
         "reason": "Batch 3 root concept upgrade.",
         "date": "2026-07-03"
+      },
+      {
+        "version": "v2.1",
+        "type": "Source ID Cleanup",
+        "summary": "Connected this concept to shared source IDs from data/sources-v2.json.",
+        "changedFields": [
+          "sourceIds",
+          "sources",
+          "revisions"
+        ],
+        "reason": "V2 source registry integration requires concepts to reference reusable source records instead of relying only on placeholder notes.",
+        "date": "2026-07-03"
       }
+    ],
+    "sourceIds": [
+      "merriam-webster-fact",
+      "sep-truth"
     ]
   },
   {
@@ -1423,13 +1615,13 @@
       {
         "id": "source-placeholder-belief-definition",
         "name": "Source needed: definition of belief",
-        "type": "Source Placeholder",
+        "type": "Legacy Source Note",
         "url": "",
         "supports": [
           "shortDefinition",
           "fullDefinition"
         ],
-        "notes": "Replace with a reliable dictionary, psychology, philosophy, or epistemology source."
+        "notes": "Replace with a reliable dictionary, psychology, philosophy, or epistemology source. This is retained as an entry-level note until fully replaced by sourceIds."
       }
     ],
     "revisions": [
@@ -1444,7 +1636,23 @@
         ],
         "reason": "Batch 3 root concept upgrade.",
         "date": "2026-07-03"
+      },
+      {
+        "version": "v2.1",
+        "type": "Source ID Cleanup",
+        "summary": "Connected this concept to shared source IDs from data/sources-v2.json.",
+        "changedFields": [
+          "sourceIds",
+          "sources",
+          "revisions"
+        ],
+        "reason": "V2 source registry integration requires concepts to reference reusable source records instead of relying only on placeholder notes.",
+        "date": "2026-07-03"
       }
+    ],
+    "sourceIds": [
+      "sep-knowledge-analysis",
+      "sep-epistemology"
     ]
   },
   {
@@ -1536,13 +1744,13 @@
       {
         "id": "source-placeholder-trust-definition",
         "name": "Source needed: definition of trust",
-        "type": "Source Placeholder",
+        "type": "Legacy Source Note",
         "url": "",
         "supports": [
           "shortDefinition",
           "fullDefinition"
         ],
-        "notes": "Replace with a reliable dictionary, psychology, sociology, or information trust source."
+        "notes": "Replace with a reliable dictionary, psychology, sociology, or information trust source. This is retained as an entry-level note until fully replaced by sourceIds."
       }
     ],
     "revisions": [
@@ -1557,7 +1765,24 @@
         ],
         "reason": "Batch 3 root concept upgrade.",
         "date": "2026-07-03"
+      },
+      {
+        "version": "v2.1",
+        "type": "Source ID Cleanup",
+        "summary": "Connected this concept to shared source IDs from data/sources-v2.json.",
+        "changedFields": [
+          "sourceIds",
+          "sources",
+          "revisions"
+        ],
+        "reason": "V2 source registry integration requires concepts to reference reusable source records instead of relying only on placeholder notes.",
+        "date": "2026-07-03"
       }
+    ],
+    "sourceIds": [
+      "sep-epistemology",
+      "merriam-webster-reliability",
+      "w3c-prov-overview"
     ]
   },
   {
@@ -1649,13 +1874,13 @@
       {
         "id": "source-placeholder-provenance-definition",
         "name": "Source needed: definition of provenance",
-        "type": "Source Placeholder",
+        "type": "Legacy Source Note",
         "url": "",
         "supports": [
           "shortDefinition",
           "fullDefinition"
         ],
-        "notes": "Replace with a reliable dictionary, archival, art history, data provenance, or information science source."
+        "notes": "Replace with a reliable dictionary, archival, art history, data provenance, or information science source. This is retained as an entry-level note until fully replaced by sourceIds."
       }
     ],
     "revisions": [
@@ -1670,7 +1895,23 @@
         ],
         "reason": "Batch 3 root concept upgrade.",
         "date": "2026-07-03"
+      },
+      {
+        "version": "v2.1",
+        "type": "Source ID Cleanup",
+        "summary": "Connected this concept to shared source IDs from data/sources-v2.json.",
+        "changedFields": [
+          "sourceIds",
+          "sources",
+          "revisions"
+        ],
+        "reason": "V2 source registry integration requires concepts to reference reusable source records instead of relying only on placeholder notes.",
+        "date": "2026-07-03"
       }
+    ],
+    "sourceIds": [
+      "w3c-prov-overview",
+      "w3c-prov-o"
     ]
   },
   {
@@ -1762,13 +2003,13 @@
       {
         "id": "source-placeholder-origin-definition",
         "name": "Source needed: definition of origin",
-        "type": "Source Placeholder",
+        "type": "Legacy Source Note",
         "url": "",
         "supports": [
           "shortDefinition",
           "fullDefinition"
         ],
-        "notes": "Replace with a reliable dictionary, etymology, archival, or information science source."
+        "notes": "Replace with a reliable dictionary, etymology, archival, or information science source. This is retained as an entry-level note until fully replaced by sourceIds."
       }
     ],
     "revisions": [
@@ -1783,7 +2024,23 @@
         ],
         "reason": "Batch 4 root concept upgrade.",
         "date": "2026-07-03"
+      },
+      {
+        "version": "v2.1",
+        "type": "Source ID Cleanup",
+        "summary": "Connected this concept to shared source IDs from data/sources-v2.json.",
+        "changedFields": [
+          "sourceIds",
+          "sources",
+          "revisions"
+        ],
+        "reason": "V2 source registry integration requires concepts to reference reusable source records instead of relying only on placeholder notes.",
+        "date": "2026-07-03"
       }
+    ],
+    "sourceIds": [
+      "merriam-webster-source",
+      "w3c-prov-overview"
     ]
   },
   {
@@ -1875,13 +2132,13 @@
       {
         "id": "source-placeholder-revision-definition",
         "name": "Source needed: definition of revision",
-        "type": "Source Placeholder",
+        "type": "Legacy Source Note",
         "url": "",
         "supports": [
           "shortDefinition",
           "fullDefinition"
         ],
-        "notes": "Replace with a reliable dictionary, publishing, software versioning, archival, or documentation source."
+        "notes": "Replace with a reliable dictionary, publishing, software versioning, archival, or documentation source. This is retained as an entry-level note until fully replaced by sourceIds."
       }
     ],
     "revisions": [
@@ -1896,7 +2153,23 @@
         ],
         "reason": "Batch 4 root concept upgrade.",
         "date": "2026-07-03"
+      },
+      {
+        "version": "v2.1",
+        "type": "Source ID Cleanup",
+        "summary": "Connected this concept to shared source IDs from data/sources-v2.json.",
+        "changedFields": [
+          "sourceIds",
+          "sources",
+          "revisions"
+        ],
+        "reason": "V2 source registry integration requires concepts to reference reusable source records instead of relying only on placeholder notes.",
+        "date": "2026-07-03"
       }
+    ],
+    "sourceIds": [
+      "w3c-prov-overview",
+      "w3c-prov-o"
     ]
   },
   {
@@ -1988,13 +2261,13 @@
       {
         "id": "source-placeholder-authority-definition",
         "name": "Source needed: definition of authority",
-        "type": "Source Placeholder",
+        "type": "Legacy Source Note",
         "url": "",
         "supports": [
           "shortDefinition",
           "fullDefinition"
         ],
-        "notes": "Replace with a reliable dictionary, epistemology, information literacy, or source-evaluation reference."
+        "notes": "Replace with a reliable dictionary, epistemology, information literacy, or source-evaluation reference. This is retained as an entry-level note until fully replaced by sourceIds."
       }
     ],
     "revisions": [
@@ -2009,7 +2282,22 @@
         ],
         "reason": "Batch 4 root concept upgrade.",
         "date": "2026-07-03"
+      },
+      {
+        "version": "v2.1",
+        "type": "Source ID Cleanup",
+        "summary": "Connected this concept to shared source IDs from data/sources-v2.json.",
+        "changedFields": [
+          "sourceIds",
+          "sources",
+          "revisions"
+        ],
+        "reason": "V2 source registry integration requires concepts to reference reusable source records instead of relying only on placeholder notes.",
+        "date": "2026-07-03"
       }
+    ],
+    "sourceIds": [
+      "sep-epistemology"
     ]
   },
   {
@@ -2101,13 +2389,13 @@
       {
         "id": "source-placeholder-reliability-definition",
         "name": "Source needed: definition of reliability",
-        "type": "Source Placeholder",
+        "type": "Legacy Source Note",
         "url": "",
         "supports": [
           "shortDefinition",
           "fullDefinition"
         ],
-        "notes": "Replace with a reliable dictionary, measurement, research methods, or information literacy source."
+        "notes": "Replace with a reliable dictionary, measurement, research methods, or information literacy source. This is retained as an entry-level note until fully replaced by sourceIds."
       }
     ],
     "revisions": [
@@ -2122,7 +2410,23 @@
         ],
         "reason": "Batch 4 root concept upgrade.",
         "date": "2026-07-03"
+      },
+      {
+        "version": "v2.1",
+        "type": "Source ID Cleanup",
+        "summary": "Connected this concept to shared source IDs from data/sources-v2.json.",
+        "changedFields": [
+          "sourceIds",
+          "sources",
+          "revisions"
+        ],
+        "reason": "V2 source registry integration requires concepts to reference reusable source records instead of relying only on placeholder notes.",
+        "date": "2026-07-03"
       }
+    ],
+    "sourceIds": [
+      "merriam-webster-reliability",
+      "iso-8000-data-quality-overview"
     ]
   },
   {
@@ -2214,13 +2518,13 @@
       {
         "id": "source-placeholder-validity-definition",
         "name": "Source needed: definition of validity",
-        "type": "Source Placeholder",
+        "type": "Legacy Source Note",
         "url": "",
         "supports": [
           "shortDefinition",
           "fullDefinition"
         ],
-        "notes": "Replace with a reliable dictionary, logic, research methods, measurement, or philosophy source."
+        "notes": "Replace with a reliable dictionary, logic, research methods, measurement, or philosophy source. This is retained as an entry-level note until fully replaced by sourceIds."
       }
     ],
     "revisions": [
@@ -2235,7 +2539,23 @@
         ],
         "reason": "Batch 4 root concept upgrade.",
         "date": "2026-07-03"
+      },
+      {
+        "version": "v2.1",
+        "type": "Source ID Cleanup",
+        "summary": "Connected this concept to shared source IDs from data/sources-v2.json.",
+        "changedFields": [
+          "sourceIds",
+          "sources",
+          "revisions"
+        ],
+        "reason": "V2 source registry integration requires concepts to reference reusable source records instead of relying only on placeholder notes.",
+        "date": "2026-07-03"
       }
+    ],
+    "sourceIds": [
+      "merriam-webster-validity",
+      "sep-evidence"
     ]
   },
   {
@@ -2327,13 +2647,13 @@
       {
         "id": "source-placeholder-accuracy-definition",
         "name": "Source needed: definition of accuracy",
-        "type": "Source Placeholder",
+        "type": "Legacy Source Note",
         "url": "",
         "supports": [
           "shortDefinition",
           "fullDefinition"
         ],
-        "notes": "Replace with a reliable dictionary, measurement, research methods, or information quality source."
+        "notes": "Replace with a reliable dictionary, measurement, research methods, or information quality source. This is retained as an entry-level note until fully replaced by sourceIds."
       }
     ],
     "revisions": [
@@ -2348,7 +2668,23 @@
         ],
         "reason": "Batch 5 root concept upgrade.",
         "date": "2026-07-03"
+      },
+      {
+        "version": "v2.1",
+        "type": "Source ID Cleanup",
+        "summary": "Connected this concept to shared source IDs from data/sources-v2.json.",
+        "changedFields": [
+          "sourceIds",
+          "sources",
+          "revisions"
+        ],
+        "reason": "V2 source registry integration requires concepts to reference reusable source records instead of relying only on placeholder notes.",
+        "date": "2026-07-03"
       }
+    ],
+    "sourceIds": [
+      "merriam-webster-accuracy",
+      "iso-8000-data-quality-overview"
     ]
   },
   {
@@ -2440,13 +2776,13 @@
       {
         "id": "source-placeholder-interpretation-definition",
         "name": "Source needed: definition of interpretation",
-        "type": "Source Placeholder",
+        "type": "Legacy Source Note",
         "url": "",
         "supports": [
           "shortDefinition",
           "fullDefinition"
         ],
-        "notes": "Replace with a reliable dictionary, hermeneutics, linguistics, philosophy, or information science source."
+        "notes": "Replace with a reliable dictionary, hermeneutics, linguistics, philosophy, or information science source. This is retained as an entry-level note until fully replaced by sourceIds."
       }
     ],
     "revisions": [
@@ -2461,7 +2797,23 @@
         ],
         "reason": "Batch 5 root concept upgrade.",
         "date": "2026-07-03"
+      },
+      {
+        "version": "v2.1",
+        "type": "Source ID Cleanup",
+        "summary": "Connected this concept to shared source IDs from data/sources-v2.json.",
+        "changedFields": [
+          "sourceIds",
+          "sources",
+          "revisions"
+        ],
+        "reason": "V2 source registry integration requires concepts to reference reusable source records instead of relying only on placeholder notes.",
+        "date": "2026-07-03"
       }
+    ],
+    "sourceIds": [
+      "merriam-webster-context",
+      "merriam-webster-definition"
     ]
   },
   {
@@ -2553,13 +2905,13 @@
       {
         "id": "source-placeholder-relationship-definition",
         "name": "Source needed: definition of relationship",
-        "type": "Source Placeholder",
+        "type": "Legacy Source Note",
         "url": "",
         "supports": [
           "shortDefinition",
           "fullDefinition"
         ],
-        "notes": "Replace with a reliable dictionary, graph theory, ontology, semantics, or knowledge representation source."
+        "notes": "Replace with a reliable dictionary, graph theory, ontology, semantics, or knowledge representation source. This is retained as an entry-level note until fully replaced by sourceIds."
       }
     ],
     "revisions": [
@@ -2574,7 +2926,23 @@
         ],
         "reason": "Batch 5 root concept upgrade.",
         "date": "2026-07-03"
+      },
+      {
+        "version": "v2.1",
+        "type": "Source ID Cleanup",
+        "summary": "Connected this concept to shared source IDs from data/sources-v2.json.",
+        "changedFields": [
+          "sourceIds",
+          "sources",
+          "revisions"
+        ],
+        "reason": "V2 source registry integration requires concepts to reference reusable source records instead of relying only on placeholder notes.",
+        "date": "2026-07-03"
       }
+    ],
+    "sourceIds": [
+      "w3c-prov-o",
+      "w3c-prov-overview"
     ]
   },
   {
@@ -2666,13 +3034,13 @@
       {
         "id": "source-placeholder-definition-definition",
         "name": "Source needed: definition of definition",
-        "type": "Source Placeholder",
+        "type": "Legacy Source Note",
         "url": "",
         "supports": [
           "shortDefinition",
           "fullDefinition"
         ],
-        "notes": "Replace with a reliable dictionary, lexicography, linguistics, or philosophy source."
+        "notes": "Replace with a reliable dictionary, lexicography, linguistics, or philosophy source. This is retained as an entry-level note until fully replaced by sourceIds."
       }
     ],
     "revisions": [
@@ -2687,7 +3055,22 @@
         ],
         "reason": "Batch 5 root concept upgrade.",
         "date": "2026-07-03"
+      },
+      {
+        "version": "v2.1",
+        "type": "Source ID Cleanup",
+        "summary": "Connected this concept to shared source IDs from data/sources-v2.json.",
+        "changedFields": [
+          "sourceIds",
+          "sources",
+          "revisions"
+        ],
+        "reason": "V2 source registry integration requires concepts to reference reusable source records instead of relying only on placeholder notes.",
+        "date": "2026-07-03"
       }
+    ],
+    "sourceIds": [
+      "merriam-webster-definition"
     ]
   },
   {
@@ -2779,13 +3162,13 @@
       {
         "id": "source-placeholder-concept-definition",
         "name": "Source needed: definition of concept",
-        "type": "Source Placeholder",
+        "type": "Legacy Source Note",
         "url": "",
         "supports": [
           "shortDefinition",
           "fullDefinition"
         ],
-        "notes": "Replace with a reliable dictionary, philosophy, cognitive science, ontology, or knowledge representation source."
+        "notes": "Replace with a reliable dictionary, philosophy, cognitive science, ontology, or knowledge representation source. This is retained as an entry-level note until fully replaced by sourceIds."
       }
     ],
     "revisions": [
@@ -2800,7 +3183,23 @@
         ],
         "reason": "Batch 5 root concept upgrade.",
         "date": "2026-07-03"
+      },
+      {
+        "version": "v2.1",
+        "type": "Source ID Cleanup",
+        "summary": "Connected this concept to shared source IDs from data/sources-v2.json.",
+        "changedFields": [
+          "sourceIds",
+          "sources",
+          "revisions"
+        ],
+        "reason": "V2 source registry integration requires concepts to reference reusable source records instead of relying only on placeholder notes.",
+        "date": "2026-07-03"
       }
+    ],
+    "sourceIds": [
+      "merriam-webster-definition",
+      "sep-epistemology"
     ]
   }
 ]
