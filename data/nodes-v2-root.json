@@ -543,5 +543,569 @@
         "date": "2026-07-02"
       }
     ]
+  }, 
+  {
+    "id": "reference",
+    "name": "Reference",
+    "type": "Core Concept",
+    "domain": "Knowledge",
+    "status": "v2-draft",
+    "shortDefinition": "A reference is a pointer, citation, or identifier that directs someone to a source of information.",
+    "fullDefinition": "A reference is a structured pointer to a source, work, record, document, person, or system that supports or explains a claim, definition, relationship, or piece of knowledge. In SourceRoot, references help users move from an entry to the source trail behind it.",
+    "plainEnglish": "A reference tells you where to go to check the source.",
+    "technicalDefinition": "Within SourceRoot, a reference is a navigational and provenance object that links a concept field, relationship, or revision to the source that supports it.",
+    "whyItMatters": "References are the bridge between knowledge and verification. They make it possible to trace claims back to their supporting sources.",
+    "origin": {
+      "root": "Latin referre",
+      "language": "Latin",
+      "meaning": "To carry back, relate, report, or bring back",
+      "notes": "Reference is historically connected to pointing back toward something else."
+    },
+    "examples": [
+      {
+        "label": "Everyday example",
+        "text": "A footnote in a book is a reference because it points the reader to the source of a claim."
+      },
+      {
+        "label": "SourceRoot example",
+        "text": "A concept relationship can reference the source that supports why two concepts are connected."
+      }
+    ],
+    "commonConfusions": [
+      {
+        "term": "Source",
+        "difference": "A source is where information comes from. A reference is the pointer that directs someone to that source."
+      },
+      {
+        "term": "Citation",
+        "difference": "A citation is a formal kind of reference, often following a specific format."
+      }
+    ],
+    "opposites": [
+      "uncited claim",
+      "missing citation",
+      "unsupported pointer"
+    ],
+    "relatedTerms": [
+      "source",
+      "citation",
+      "evidence",
+      "provenance",
+      "verification"
+    ],
+    "relationships": [
+      {
+        "target": "source",
+        "type": "POINTS_TO",
+        "direction": "References point to sources",
+        "strength": 5,
+        "explanation": "A reference directs a user to the source where information, evidence, or support can be inspected.",
+        "bridge": "Citation",
+        "sourceIds": [
+          "source-placeholder-reference-source"
+        ]
+      },
+      {
+        "target": "evidence",
+        "type": "SUPPORTS_ACCESS_TO",
+        "direction": "References help users access evidence",
+        "strength": 4,
+        "explanation": "References do not always prove a claim by themselves, but they help users locate the evidence that may support or challenge it.",
+        "bridge": "Source",
+        "sourceIds": [
+          "source-placeholder-reference-evidence"
+        ]
+      },
+      {
+        "target": "verification",
+        "type": "ENABLES",
+        "direction": "References enable verification",
+        "strength": 4,
+        "explanation": "Verification depends on being able to inspect the underlying source or support. References provide the path to that inspection.",
+        "bridge": "Source",
+        "sourceIds": [
+          "source-placeholder-reference-verification"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "source-placeholder-reference-definition",
+        "name": "Source needed: definition of reference",
+        "type": "Source Placeholder",
+        "url": "",
+        "supports": [
+          "shortDefinition",
+          "fullDefinition"
+        ],
+        "notes": "Replace with a reliable dictionary, citation, or information science source."
+      }
+    ],
+    "revisions": [
+      {
+        "version": "v2.0",
+        "type": "Created Entry",
+        "summary": "Created V2 Reference entry with relationship details.",
+        "changedFields": [
+          "shortDefinition",
+          "fullDefinition",
+          "relationships"
+        ],
+        "reason": "Batch 2 root concept upgrade.",
+        "date": "2026-07-02"
+      }
+    ]
+  },
+  {
+    "id": "data",
+    "name": "Data",
+    "type": "Core Concept",
+    "domain": "Information",
+    "status": "v2-draft",
+    "shortDefinition": "Data are recorded facts, observations, measurements, symbols, or values that can be stored, processed, analyzed, or interpreted.",
+    "fullDefinition": "Data are units of recorded information such as numbers, words, measurements, observations, signals, images, or symbols. Data may be raw or structured, and it becomes more meaningful when placed in context, interpreted, or connected to a question.",
+    "plainEnglish": "Data is the raw material that can become information when organized or interpreted.",
+    "technicalDefinition": "Within SourceRoot, data are recordable units that can support claims, feed evidence, become information through context, and contribute to knowledge through interpretation and verification.",
+    "whyItMatters": "Data is one of the raw materials of knowledge. SourceRoot needs to distinguish raw data from interpreted information and verified knowledge.",
+    "origin": {
+      "root": "Latin datum",
+      "language": "Latin",
+      "meaning": "Something given",
+      "notes": "Data is historically the plural of datum, meaning things given or recorded."
+    },
+    "examples": [
+      {
+        "label": "Everyday example",
+        "text": "A list of temperatures recorded every hour is data."
+      },
+      {
+        "label": "SourceRoot example",
+        "text": "A dataset may support a claim only after it is interpreted and connected to the right context."
+      }
+    ],
+    "commonConfusions": [
+      {
+        "term": "Information",
+        "difference": "Data are recorded values or observations. Information is data organized or interpreted in a meaningful way."
+      },
+      {
+        "term": "Evidence",
+        "difference": "Data becomes evidence when it is used to support or challenge a claim."
+      }
+    ],
+    "opposites": [
+      "absence of record",
+      "unrecorded observation",
+      "noise"
+    ],
+    "relatedTerms": [
+      "information",
+      "evidence",
+      "measurement",
+      "observation",
+      "context",
+      "knowledge"
+    ],
+    "relationships": [
+      {
+        "target": "information",
+        "type": "BECOMES",
+        "direction": "Data becomes information through structure and context",
+        "strength": 5,
+        "explanation": "Data becomes information when it is organized, labeled, interpreted, or placed into a context that makes it meaningful.",
+        "bridge": "Context",
+        "sourceIds": [
+          "source-placeholder-data-information"
+        ]
+      },
+      {
+        "target": "evidence",
+        "type": "CAN_SUPPORT",
+        "direction": "Data can support evidence",
+        "strength": 4,
+        "explanation": "Data can become evidence when it is used to support, test, or challenge a claim.",
+        "bridge": "Claim",
+        "sourceIds": [
+          "source-placeholder-data-evidence"
+        ]
+      },
+      {
+        "target": "context",
+        "type": "NEEDS",
+        "direction": "Data needs context",
+        "strength": 5,
+        "explanation": "Without context, data may be incomplete or misleading because users may not know what was measured, how it was collected, or what it means.",
+        "bridge": "Meaning",
+        "sourceIds": [
+          "source-placeholder-data-context"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "source-placeholder-data-definition",
+        "name": "Source needed: definition of data",
+        "type": "Source Placeholder",
+        "url": "",
+        "supports": [
+          "shortDefinition",
+          "fullDefinition"
+        ],
+        "notes": "Replace with a reliable dictionary, information science, or data management source."
+      }
+    ],
+    "revisions": [
+      {
+        "version": "v2.0",
+        "type": "Created Entry",
+        "summary": "Created V2 Data entry with relationship details.",
+        "changedFields": [
+          "shortDefinition",
+          "fullDefinition",
+          "relationships"
+        ],
+        "reason": "Batch 2 root concept upgrade.",
+        "date": "2026-07-02"
+      }
+    ]
+  },
+  {
+    "id": "information",
+    "name": "Information",
+    "type": "Core Concept",
+    "domain": "Information",
+    "status": "v2-draft",
+    "shortDefinition": "Information is data or content given structure, context, meaning, or usefulness.",
+    "fullDefinition": "Information is data, content, or signals organized in a way that can be understood, communicated, interpreted, or used. Information sits between raw data and knowledge: it carries meaning, but it may still require verification, context, and understanding before becoming trusted knowledge.",
+    "plainEnglish": "Information is data that has been organized enough to mean something.",
+    "technicalDefinition": "Within SourceRoot, information is structured or meaningful content that can support claims, contribute to knowledge, and be traced through sources, context, and revisions.",
+    "whyItMatters": "Information is the layer where data starts to become meaningful. SourceRoot must show how information connects to sources, context, claims, and knowledge.",
+    "origin": {
+      "root": "Latin informare",
+      "language": "Latin",
+      "meaning": "To shape, form, instruct, or give form to",
+      "notes": "Information is historically connected to giving form or structure to something."
+    },
+    "examples": [
+      {
+        "label": "Everyday example",
+        "text": "A weather forecast is information because raw measurements have been organized into something useful."
+      },
+      {
+        "label": "SourceRoot example",
+        "text": "A concept definition is information that may become knowledge when it is sourced, connected, and understood."
+      }
+    ],
+    "commonConfusions": [
+      {
+        "term": "Data",
+        "difference": "Data are recorded values or observations. Information is data arranged or interpreted so it carries meaning."
+      },
+      {
+        "term": "Knowledge",
+        "difference": "Information becomes knowledge when it is understood, justified, and connected to other understanding."
+      }
+    ],
+    "opposites": [
+      "noise",
+      "confusion",
+      "meaningless signal"
+    ],
+    "relatedTerms": [
+      "data",
+      "meaning",
+      "context",
+      "knowledge",
+      "communication",
+      "interpretation"
+    ],
+    "relationships": [
+      {
+        "target": "data",
+        "type": "BUILDS_ON",
+        "direction": "Information builds on data",
+        "strength": 5,
+        "explanation": "Information often begins as data that has been organized, labeled, interpreted, or structured.",
+        "bridge": "Context",
+        "sourceIds": [
+          "source-placeholder-information-data"
+        ]
+      },
+      {
+        "target": "knowledge",
+        "type": "CAN_BECOME",
+        "direction": "Information can become knowledge",
+        "strength": 5,
+        "explanation": "Information can become knowledge when it is understood, justified, applied, and connected to truth or reliable support.",
+        "bridge": "Understanding",
+        "sourceIds": [
+          "source-placeholder-information-knowledge"
+        ]
+      },
+      {
+        "target": "meaning",
+        "type": "CARRIES",
+        "direction": "Information carries meaning",
+        "strength": 4,
+        "explanation": "Information is useful because it communicates meaning, structure, or significance beyond raw data alone.",
+        "bridge": "Interpretation",
+        "sourceIds": [
+          "source-placeholder-information-meaning"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "source-placeholder-information-definition",
+        "name": "Source needed: definition of information",
+        "type": "Source Placeholder",
+        "url": "",
+        "supports": [
+          "shortDefinition",
+          "fullDefinition"
+        ],
+        "notes": "Replace with a reliable dictionary, information theory, or information science source."
+      }
+    ],
+    "revisions": [
+      {
+        "version": "v2.0",
+        "type": "Created Entry",
+        "summary": "Created V2 Information entry with relationship details.",
+        "changedFields": [
+          "shortDefinition",
+          "fullDefinition",
+          "relationships"
+        ],
+        "reason": "Batch 2 root concept upgrade.",
+        "date": "2026-07-02"
+      }
+    ]
+  },
+  {
+    "id": "meaning",
+    "name": "Meaning",
+    "type": "Core Concept",
+    "domain": "Language",
+    "status": "v2-draft",
+    "shortDefinition": "Meaning is the significance, interpretation, or intended sense of a word, sign, claim, event, or concept.",
+    "fullDefinition": "Meaning is what something expresses, indicates, represents, or is understood to signify. Meaning can arise from language, context, intention, interpretation, use, and relationship to other concepts.",
+    "plainEnglish": "Meaning is what something is understood to mean.",
+    "technicalDefinition": "Within SourceRoot, meaning is the interpretive layer that allows data, words, sources, and relationships to become understandable within a context.",
+    "whyItMatters": "Meaning is what turns stored entries into usable knowledge. Without meaning, a concept graph would only be labels and links.",
+    "origin": {
+      "root": "Old English mænan",
+      "language": "Old English",
+      "meaning": "To intend, signify, or have in mind",
+      "notes": "Meaning is historically tied to intention and signification."
+    },
+    "examples": [
+      {
+        "label": "Everyday example",
+        "text": "The word 'bank' can mean a financial institution or the side of a river depending on context."
+      },
+      {
+        "label": "SourceRoot example",
+        "text": "A relationship line becomes meaningful when SourceRoot explains why two concepts are connected."
+      }
+    ],
+    "commonConfusions": [
+      {
+        "term": "Definition",
+        "difference": "A definition states meaning, but meaning can also depend on use, context, interpretation, and relationship."
+      },
+      {
+        "term": "Information",
+        "difference": "Information can carry meaning, but meaning is the significance or interpretation that information communicates."
+      }
+    ],
+    "opposites": [
+      "meaninglessness",
+      "ambiguity",
+      "nonsense"
+    ],
+    "relatedTerms": [
+      "definition",
+      "context",
+      "interpretation",
+      "information",
+      "language",
+      "concept"
+    ],
+    "relationships": [
+      {
+        "target": "context",
+        "type": "DEPENDS_ON",
+        "direction": "Meaning depends on context",
+        "strength": 5,
+        "explanation": "The same word, signal, or statement can mean different things depending on surrounding conditions, use, or background.",
+        "bridge": "Interpretation",
+        "sourceIds": [
+          "source-placeholder-meaning-context"
+        ]
+      },
+      {
+        "target": "information",
+        "type": "GIVES_VALUE_TO",
+        "direction": "Meaning gives value to information",
+        "strength": 4,
+        "explanation": "Information becomes useful when a user can understand what it signifies and why it matters.",
+        "bridge": "Context",
+        "sourceIds": [
+          "source-placeholder-meaning-information"
+        ]
+      },
+      {
+        "target": "definition",
+        "type": "EXPRESSED_BY",
+        "direction": "Meaning is expressed through definitions",
+        "strength": 4,
+        "explanation": "A definition is one structured way to express the meaning of a word or concept.",
+        "bridge": "Language",
+        "sourceIds": [
+          "source-placeholder-meaning-definition"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "source-placeholder-meaning-definition",
+        "name": "Source needed: definition of meaning",
+        "type": "Source Placeholder",
+        "url": "",
+        "supports": [
+          "shortDefinition",
+          "fullDefinition"
+        ],
+        "notes": "Replace with a reliable dictionary, linguistics, or philosophy of language source."
+      }
+    ],
+    "revisions": [
+      {
+        "version": "v2.0",
+        "type": "Created Entry",
+        "summary": "Created V2 Meaning entry with relationship details.",
+        "changedFields": [
+          "shortDefinition",
+          "fullDefinition",
+          "relationships"
+        ],
+        "reason": "Batch 2 root concept upgrade.",
+        "date": "2026-07-02"
+      }
+    ]
+  },
+  {
+    "id": "context",
+    "name": "Context",
+    "type": "Core Concept",
+    "domain": "Knowledge",
+    "status": "v2-draft",
+    "shortDefinition": "Context is the surrounding information, conditions, background, or frame that affects how something is understood.",
+    "fullDefinition": "Context is the set of surrounding circumstances, background details, relationships, assumptions, conditions, or frames that shape the meaning and interpretation of a word, claim, source, event, or concept.",
+    "plainEnglish": "Context is the surrounding information that helps something make sense.",
+    "technicalDefinition": "Within SourceRoot, context is a framing layer that helps users interpret concepts, data, sources, claims, and relationships correctly.",
+    "whyItMatters": "Context prevents misunderstanding. It helps SourceRoot show not only what something says, but how and why it should be understood.",
+    "origin": {
+      "root": "Latin contextus",
+      "language": "Latin",
+      "meaning": "A joining together, connection, or weaving together",
+      "notes": "Context is historically connected to things woven or joined together."
+    },
+    "examples": [
+      {
+        "label": "Everyday example",
+        "text": "The sentence 'It is cold' means something different in winter in Chicago than in a laboratory freezer."
+      },
+      {
+        "label": "SourceRoot example",
+        "text": "A data point may be misleading without context about when, how, and why it was collected."
+      }
+    ],
+    "commonConfusions": [
+      {
+        "term": "Meaning",
+        "difference": "Meaning is what something signifies. Context is the surrounding frame that helps determine that meaning."
+      },
+      {
+        "term": "Background",
+        "difference": "Background is part of context, but context can also include relationships, assumptions, conditions, and timing."
+      }
+    ],
+    "opposites": [
+      "out of context",
+      "isolation",
+      "missing background"
+    ],
+    "relatedTerms": [
+      "meaning",
+      "interpretation",
+      "information",
+      "data",
+      "claim",
+      "source"
+    ],
+    "relationships": [
+      {
+        "target": "meaning",
+        "type": "SHAPES",
+        "direction": "Context shapes meaning",
+        "strength": 5,
+        "explanation": "Context affects how a word, claim, source, or data point should be interpreted.",
+        "bridge": "Interpretation",
+        "sourceIds": [
+          "source-placeholder-context-meaning"
+        ]
+      },
+      {
+        "target": "data",
+        "type": "CLARIFIES",
+        "direction": "Context clarifies data",
+        "strength": 5,
+        "explanation": "Data is easier to interpret accurately when users know how it was collected, what it measures, and what conditions surround it.",
+        "bridge": "Information",
+        "sourceIds": [
+          "source-placeholder-context-data"
+        ]
+      },
+      {
+        "target": "claim",
+        "type": "FRAMES",
+        "direction": "Context frames claims",
+        "strength": 4,
+        "explanation": "A claim can change in meaning or reliability depending on the assumptions, source, timing, and conditions around it.",
+        "bridge": "Source",
+        "sourceIds": [
+          "source-placeholder-context-claim"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "source-placeholder-context-definition",
+        "name": "Source needed: definition of context",
+        "type": "Source Placeholder",
+        "url": "",
+        "supports": [
+          "shortDefinition",
+          "fullDefinition"
+        ],
+        "notes": "Replace with a reliable dictionary, linguistics, information science, or philosophy source."
+      }
+    ],
+    "revisions": [
+      {
+        "version": "v2.0",
+        "type": "Created Entry",
+        "summary": "Created V2 Context entry with relationship details.",
+        "changedFields": [
+          "shortDefinition",
+          "fullDefinition",
+          "relationships"
+        ],
+        "reason": "Batch 2 root concept upgrade.",
+        "date": "2026-07-02"
+      }
+    ]
   }
 ]
