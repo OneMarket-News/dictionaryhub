@@ -2237,5 +2237,569 @@
         "date": "2026-07-03"
       }
     ]
+  }, 
+  {
+    "id": "accuracy",
+    "name": "Accuracy",
+    "type": "Core Concept",
+    "domain": "Knowledge",
+    "status": "v2-draft",
+    "shortDefinition": "Accuracy is the quality of being correct, exact, or closely aligned with truth, reality, or a standard.",
+    "fullDefinition": "Accuracy is the degree to which a statement, measurement, definition, claim, source, or representation matches what is true, correct, or intended. In SourceRoot, accuracy helps evaluate whether knowledge objects faithfully represent reality, sources, and meaning.",
+    "plainEnglish": "Accuracy means something is correct or close to correct.",
+    "technicalDefinition": "Within SourceRoot, accuracy is a quality measure applied to definitions, claims, sources, relationships, and revisions to judge how closely they match truth, evidence, or the intended reference.",
+    "whyItMatters": "Accuracy is one of the main quality goals of SourceRoot. A knowledge system is only useful if it can improve how correctly concepts and claims are represented.",
+    "origin": {
+      "root": "Latin accuratus",
+      "language": "Latin",
+      "meaning": "Done with care, exact, careful",
+      "notes": "Accuracy is historically connected to care, precision, and correctness."
+    },
+    "examples": [
+      {
+        "label": "Everyday example",
+        "text": "A map is accurate if it correctly represents roads, distances, and locations."
+      },
+      {
+        "label": "SourceRoot example",
+        "text": "A definition is more accurate when it matches reliable sources and avoids misleading simplification."
+      }
+    ],
+    "commonConfusions": [
+      {
+        "term": "Reliability",
+        "difference": "Reliability is consistency over time. Accuracy is closeness to correctness or truth."
+      },
+      {
+        "term": "Validity",
+        "difference": "Validity asks whether support or reasoning is appropriate. Accuracy asks whether the representation is correct."
+      }
+    ],
+    "opposites": [
+      "inaccuracy",
+      "error",
+      "misrepresentation"
+    ],
+    "relatedTerms": [
+      "truth",
+      "reliability",
+      "validity",
+      "verification",
+      "evidence",
+      "revision"
+    ],
+    "relationships": [
+      {
+        "target": "truth",
+        "type": "ALIGNED_WITH",
+        "direction": "Accuracy aligns representation with truth",
+        "strength": 5,
+        "explanation": "Accuracy improves when a claim, definition, or measurement more closely matches reality or verified support.",
+        "bridge": "Verification",
+        "sourceIds": [
+          "source-placeholder-accuracy-truth"
+        ]
+      },
+      {
+        "target": "revision",
+        "type": "IMPROVED_BY",
+        "direction": "Accuracy can be improved by revision",
+        "strength": 4,
+        "explanation": "Revisions can correct errors, refine definitions, add better sources, and improve how accurately a concept is represented.",
+        "bridge": "Correction",
+        "sourceIds": [
+          "source-placeholder-accuracy-revision"
+        ]
+      },
+      {
+        "target": "validity",
+        "type": "RELATED_TO",
+        "direction": "Accuracy relates to validity",
+        "strength": 4,
+        "explanation": "Accurate information is stronger when it is also valid for the claim, context, or purpose it is being used to support.",
+        "bridge": "Evidence",
+        "sourceIds": [
+          "source-placeholder-accuracy-validity"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "source-placeholder-accuracy-definition",
+        "name": "Source needed: definition of accuracy",
+        "type": "Source Placeholder",
+        "url": "",
+        "supports": [
+          "shortDefinition",
+          "fullDefinition"
+        ],
+        "notes": "Replace with a reliable dictionary, measurement, research methods, or information quality source."
+      }
+    ],
+    "revisions": [
+      {
+        "version": "v2.0",
+        "type": "Created Entry",
+        "summary": "Created V2 Accuracy entry with relationship details.",
+        "changedFields": [
+          "shortDefinition",
+          "fullDefinition",
+          "relationships"
+        ],
+        "reason": "Batch 5 root concept upgrade.",
+        "date": "2026-07-03"
+      }
+    ]
+  },
+  {
+    "id": "interpretation",
+    "name": "Interpretation",
+    "type": "Core Concept",
+    "domain": "Knowledge",
+    "status": "v2-draft",
+    "shortDefinition": "Interpretation is the act of explaining, understanding, or assigning meaning to information, evidence, language, or events.",
+    "fullDefinition": "Interpretation is the process of making sense of something by connecting it to context, meaning, assumptions, evidence, and prior knowledge. In SourceRoot, interpretation is important because the same data, source, or statement can lead to different understandings depending on context and reasoning.",
+    "plainEnglish": "Interpretation is how someone understands what something means.",
+    "technicalDefinition": "Within SourceRoot, interpretation is the meaning-making process that connects data, context, evidence, claims, and definitions into understandable knowledge.",
+    "whyItMatters": "Interpretation explains why knowledge is not just stored information. It shows how meaning is formed and where disagreement or ambiguity can enter.",
+    "origin": {
+      "root": "Latin interpretari",
+      "language": "Latin",
+      "meaning": "To explain, translate, understand, or expound",
+      "notes": "Interpretation is historically connected to explaining meaning."
+    },
+    "examples": [
+      {
+        "label": "Everyday example",
+        "text": "Two people may interpret the same message differently depending on tone, timing, and context."
+      },
+      {
+        "label": "SourceRoot example",
+        "text": "A relationship explanation is an interpretation of why two concepts are connected."
+      }
+    ],
+    "commonConfusions": [
+      {
+        "term": "Meaning",
+        "difference": "Meaning is what something signifies. Interpretation is the process of understanding or assigning that meaning."
+      },
+      {
+        "term": "Fact",
+        "difference": "A fact may be established, but interpretation explains what that fact means or implies."
+      }
+    ],
+    "opposites": [
+      "misinterpretation",
+      "confusion",
+      "literalism without context"
+    ],
+    "relatedTerms": [
+      "meaning",
+      "context",
+      "information",
+      "claim",
+      "definition",
+      "relationship"
+    ],
+    "relationships": [
+      {
+        "target": "meaning",
+        "type": "PRODUCES",
+        "direction": "Interpretation produces meaning",
+        "strength": 5,
+        "explanation": "Interpretation turns information, language, or evidence into an understood meaning.",
+        "bridge": "Context",
+        "sourceIds": [
+          "source-placeholder-interpretation-meaning"
+        ]
+      },
+      {
+        "target": "context",
+        "type": "DEPENDS_ON",
+        "direction": "Interpretation depends on context",
+        "strength": 5,
+        "explanation": "Interpretation changes depending on background, assumptions, timing, source, audience, and surrounding information.",
+        "bridge": "Frame",
+        "sourceIds": [
+          "source-placeholder-interpretation-context"
+        ]
+      },
+      {
+        "target": "relationship",
+        "type": "EXPLAINS",
+        "direction": "Interpretation explains relationships",
+        "strength": 4,
+        "explanation": "A relationship between concepts becomes useful when SourceRoot interprets and explains why the connection matters.",
+        "bridge": "Concept",
+        "sourceIds": [
+          "source-placeholder-interpretation-relationship"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "source-placeholder-interpretation-definition",
+        "name": "Source needed: definition of interpretation",
+        "type": "Source Placeholder",
+        "url": "",
+        "supports": [
+          "shortDefinition",
+          "fullDefinition"
+        ],
+        "notes": "Replace with a reliable dictionary, hermeneutics, linguistics, philosophy, or information science source."
+      }
+    ],
+    "revisions": [
+      {
+        "version": "v2.0",
+        "type": "Created Entry",
+        "summary": "Created V2 Interpretation entry with relationship details.",
+        "changedFields": [
+          "shortDefinition",
+          "fullDefinition",
+          "relationships"
+        ],
+        "reason": "Batch 5 root concept upgrade.",
+        "date": "2026-07-03"
+      }
+    ]
+  },
+  {
+    "id": "relationship",
+    "name": "Relationship",
+    "type": "Core Concept",
+    "domain": "Knowledge",
+    "status": "v2-draft",
+    "shortDefinition": "A relationship is a connection, association, dependency, contrast, or interaction between two or more things.",
+    "fullDefinition": "A relationship is the way concepts, claims, sources, evidence, people, events, or objects are connected. In SourceRoot, relationships are not just links; they include direction, type, strength, explanation, bridge concepts, and supporting sources.",
+    "plainEnglish": "A relationship explains how two things are connected.",
+    "technicalDefinition": "Within SourceRoot, a relationship is a structured edge between knowledge objects that includes a target, type, direction, strength, explanation, bridge, and source support.",
+    "whyItMatters": "Relationships are the heart of SourceRoot because they turn isolated entries into a knowledge graph with meaning, reasoning, and traceability.",
+    "origin": {
+      "root": "Latin relatio / referre",
+      "language": "Latin",
+      "meaning": "A carrying back, report, connection, or relation",
+      "notes": "Relationship is historically tied to relation, reference, and connection."
+    },
+    "examples": [
+      {
+        "label": "Everyday example",
+        "text": "A teacher and student have a relationship defined by learning, instruction, and responsibility."
+      },
+      {
+        "label": "SourceRoot example",
+        "text": "Truth is supported by evidence is a relationship with a direction, type, and explanation."
+      }
+    ],
+    "commonConfusions": [
+      {
+        "term": "Link",
+        "difference": "A link only connects two things. A relationship explains what kind of connection exists and why it matters."
+      },
+      {
+        "term": "Association",
+        "difference": "An association can be loose. A SourceRoot relationship should be typed, explained, and supported."
+      }
+    ],
+    "opposites": [
+      "isolation",
+      "disconnection",
+      "unrelatedness"
+    ],
+    "relatedTerms": [
+      "concept",
+      "definition",
+      "interpretation",
+      "meaning",
+      "graph",
+      "evidence"
+    ],
+    "relationships": [
+      {
+        "target": "concept",
+        "type": "CONNECTS",
+        "direction": "Relationships connect concepts",
+        "strength": 5,
+        "explanation": "Concepts become more useful when their connections to other concepts are visible and explained.",
+        "bridge": "Meaning",
+        "sourceIds": [
+          "source-placeholder-relationship-concept"
+        ]
+      },
+      {
+        "target": "interpretation",
+        "type": "NEEDS",
+        "direction": "Relationships need interpretation",
+        "strength": 4,
+        "explanation": "A connection between ideas becomes meaningful when users can interpret what the connection means and why it exists.",
+        "bridge": "Explanation",
+        "sourceIds": [
+          "source-placeholder-relationship-interpretation"
+        ]
+      },
+      {
+        "target": "source",
+        "type": "CAN_BE_SUPPORTED_BY",
+        "direction": "Relationships can be supported by sources",
+        "strength": 4,
+        "explanation": "Relationship explanations become stronger when supported by sources, evidence, or reasoning.",
+        "bridge": "Evidence",
+        "sourceIds": [
+          "source-placeholder-relationship-source"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "source-placeholder-relationship-definition",
+        "name": "Source needed: definition of relationship",
+        "type": "Source Placeholder",
+        "url": "",
+        "supports": [
+          "shortDefinition",
+          "fullDefinition"
+        ],
+        "notes": "Replace with a reliable dictionary, graph theory, ontology, semantics, or knowledge representation source."
+      }
+    ],
+    "revisions": [
+      {
+        "version": "v2.0",
+        "type": "Created Entry",
+        "summary": "Created V2 Relationship entry with relationship details.",
+        "changedFields": [
+          "shortDefinition",
+          "fullDefinition",
+          "relationships"
+        ],
+        "reason": "Batch 5 root concept upgrade.",
+        "date": "2026-07-03"
+      }
+    ]
+  },
+  {
+    "id": "definition",
+    "name": "Definition",
+    "type": "Core Concept",
+    "domain": "Language",
+    "status": "v2-draft",
+    "shortDefinition": "A definition is a statement that explains the meaning, boundaries, or essential nature of a word, concept, or thing.",
+    "fullDefinition": "A definition explains what something means by identifying its essential qualities, boundaries, use, category, or distinguishing features. In SourceRoot, definitions are layered so users can see short definitions, plain-English explanations, technical definitions, sources, and revision history.",
+    "plainEnglish": "A definition tells you what something means.",
+    "technicalDefinition": "Within SourceRoot, a definition is a structured meaning field connected to sources, examples, confusions, relationships, and revisions.",
+    "whyItMatters": "Definitions are the entry point into knowledge. A better definition helps users understand not only what a concept means, but how it connects to other concepts.",
+    "origin": {
+      "root": "Latin definire",
+      "language": "Latin",
+      "meaning": "To limit, determine, explain, or set boundaries",
+      "notes": "Definition is historically connected to setting boundaries around meaning."
+    },
+    "examples": [
+      {
+        "label": "Everyday example",
+        "text": "A dictionary definition explains what a word means and how it is commonly used."
+      },
+      {
+        "label": "SourceRoot example",
+        "text": "A SourceRoot definition includes meaning, examples, sources, relationship explanations, and revision history."
+      }
+    ],
+    "commonConfusions": [
+      {
+        "term": "Meaning",
+        "difference": "Meaning is what something signifies. A definition is one structured way of stating meaning."
+      },
+      {
+        "term": "Concept",
+        "difference": "A concept is the idea or mental category. A definition explains that concept in language."
+      }
+    ],
+    "opposites": [
+      "ambiguity",
+      "undefined term",
+      "vagueness"
+    ],
+    "relatedTerms": [
+      "meaning",
+      "concept",
+      "interpretation",
+      "language",
+      "source",
+      "revision"
+    ],
+    "relationships": [
+      {
+        "target": "meaning",
+        "type": "EXPRESSES",
+        "direction": "Definitions express meaning",
+        "strength": 5,
+        "explanation": "A definition gives language to the meaning of a concept, word, or thing.",
+        "bridge": "Language",
+        "sourceIds": [
+          "source-placeholder-definition-meaning"
+        ]
+      },
+      {
+        "target": "concept",
+        "type": "DESCRIBES",
+        "direction": "Definitions describe concepts",
+        "strength": 5,
+        "explanation": "A concept may exist as an idea, but a definition makes that idea explainable and shareable.",
+        "bridge": "Explanation",
+        "sourceIds": [
+          "source-placeholder-definition-concept"
+        ]
+      },
+      {
+        "target": "revision",
+        "type": "CAN_BE_UPDATED_BY",
+        "direction": "Definitions can be updated by revisions",
+        "strength": 4,
+        "explanation": "Definitions may change as better sources, clearer wording, or improved understanding become available.",
+        "bridge": "Accuracy",
+        "sourceIds": [
+          "source-placeholder-definition-revision"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "source-placeholder-definition-definition",
+        "name": "Source needed: definition of definition",
+        "type": "Source Placeholder",
+        "url": "",
+        "supports": [
+          "shortDefinition",
+          "fullDefinition"
+        ],
+        "notes": "Replace with a reliable dictionary, lexicography, linguistics, or philosophy source."
+      }
+    ],
+    "revisions": [
+      {
+        "version": "v2.0",
+        "type": "Created Entry",
+        "summary": "Created V2 Definition entry with relationship details.",
+        "changedFields": [
+          "shortDefinition",
+          "fullDefinition",
+          "relationships"
+        ],
+        "reason": "Batch 5 root concept upgrade.",
+        "date": "2026-07-03"
+      }
+    ]
+  },
+  {
+    "id": "concept",
+    "name": "Concept",
+    "type": "Core Concept",
+    "domain": "Knowledge",
+    "status": "v2-draft",
+    "shortDefinition": "A concept is an idea, category, mental model, or unit of meaning used to understand and organize knowledge.",
+    "fullDefinition": "A concept is a structured idea or category that helps people recognize, explain, group, compare, and reason about things. In SourceRoot, a concept is the primary knowledge object: it can have definitions, relationships, sources, examples, origins, and revision history.",
+    "plainEnglish": "A concept is an idea you can name, explain, and connect to other ideas.",
+    "technicalDefinition": "Within SourceRoot, a concept is a node in the knowledge graph with fields for meaning, definition, relationship, provenance, source support, and revision history.",
+    "whyItMatters": "Concepts are the building blocks of SourceRoot. The entire system is built around turning concepts into traceable, connected knowledge objects.",
+    "origin": {
+      "root": "Latin conceptus / concipere",
+      "language": "Latin",
+      "meaning": "Something conceived, taken in, or formed in the mind",
+      "notes": "Concept is historically connected to forming an idea in the mind."
+    },
+    "examples": [
+      {
+        "label": "Everyday example",
+        "text": "Justice, gravity, trust, and evidence are concepts because they are ideas that can be named and explained."
+      },
+      {
+        "label": "SourceRoot example",
+        "text": "Truth is a concept node connected to evidence, verification, knowledge, belief, and trust."
+      }
+    ],
+    "commonConfusions": [
+      {
+        "term": "Word",
+        "difference": "A word is a language label. A concept is the idea or category the word points to."
+      },
+      {
+        "term": "Definition",
+        "difference": "A definition explains a concept, but the concept can have relationships, examples, sources, and history beyond the definition."
+      }
+    ],
+    "opposites": [
+      "nonconcept",
+      "undefined idea",
+      "unformed thought"
+    ],
+    "relatedTerms": [
+      "definition",
+      "meaning",
+      "relationship",
+      "knowledge",
+      "category",
+      "node"
+    ],
+    "relationships": [
+      {
+        "target": "definition",
+        "type": "EXPLAINED_BY",
+        "direction": "Concepts are explained by definitions",
+        "strength": 5,
+        "explanation": "A definition gives a concept a clear explanation so it can be understood and shared.",
+        "bridge": "Meaning",
+        "sourceIds": [
+          "source-placeholder-concept-definition"
+        ]
+      },
+      {
+        "target": "relationship",
+        "type": "CONNECTED_BY",
+        "direction": "Concepts are connected by relationships",
+        "strength": 5,
+        "explanation": "Relationships show how concepts depend on, support, contrast with, or explain each other.",
+        "bridge": "Graph",
+        "sourceIds": [
+          "source-placeholder-concept-relationship"
+        ]
+      },
+      {
+        "target": "knowledge",
+        "type": "BUILDING_BLOCK_OF",
+        "direction": "Concepts are building blocks of knowledge",
+        "strength": 5,
+        "explanation": "Knowledge becomes easier to organize when concepts can be defined, sourced, connected, and revised.",
+        "bridge": "Structure",
+        "sourceIds": [
+          "source-placeholder-concept-knowledge"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "source-placeholder-concept-definition",
+        "name": "Source needed: definition of concept",
+        "type": "Source Placeholder",
+        "url": "",
+        "supports": [
+          "shortDefinition",
+          "fullDefinition"
+        ],
+        "notes": "Replace with a reliable dictionary, philosophy, cognitive science, ontology, or knowledge representation source."
+      }
+    ],
+    "revisions": [
+      {
+        "version": "v2.0",
+        "type": "Created Entry",
+        "summary": "Created V2 Concept entry with relationship details.",
+        "changedFields": [
+          "shortDefinition",
+          "fullDefinition",
+          "relationships"
+        ],
+        "reason": "Batch 5 root concept upgrade.",
+        "date": "2026-07-03"
+      }
+    ]
   }
-]
