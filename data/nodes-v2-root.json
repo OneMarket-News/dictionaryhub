@@ -543,7 +543,7 @@
         "date": "2026-07-02"
       }
     ]
-  }, 
+  },
   {
     "id": "reference",
     "name": "Reference",
@@ -1346,7 +1346,7 @@
     "technicalDefinition": "Within SourceRoot, belief is treated as an accepted position that may be compared against evidence, truth, sources, and verification.",
     "whyItMatters": "Belief matters because humans often act on what they believe before something is fully verified. SourceRoot needs to distinguish belief from truth, fact, and knowledge.",
     "origin": {
-      "root": "Old English gelÄafa",
+      "root": "Old English gelēafa",
       "language": "Old English",
       "meaning": "Faith, confidence, trust, or acceptance",
       "notes": "Belief is historically connected to trust and acceptance."
@@ -1459,7 +1459,7 @@
     "technicalDefinition": "Within SourceRoot, trust is a confidence layer produced by evidence, source reliability, verification, provenance, and revision transparency.",
     "whyItMatters": "Trust is the user-facing outcome of SourceRoot. The system exists so users can see why knowledge should or should not be trusted.",
     "origin": {
-      "root": "Old Norse traust / Old English trÄowe",
+      "root": "Old Norse traust / Old English trēowe",
       "language": "Old Norse / Old English",
       "meaning": "Confidence, protection, reliability, faithfulness",
       "notes": "Trust is historically connected to reliability, truth, and confidence."
@@ -1672,7 +1672,7 @@
         "date": "2026-07-03"
       }
     ]
-  }, 
+  },
   {
     "id": "origin",
     "name": "Origin",
@@ -2237,7 +2237,7 @@
         "date": "2026-07-03"
       }
     ]
-  }, 
+  },
   {
     "id": "accuracy",
     "name": "Accuracy",
@@ -2803,3 +2803,4 @@
       }
     ]
   }
+]
