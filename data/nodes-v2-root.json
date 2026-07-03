@@ -1,0 +1,129 @@
+[
+  {
+    "id": "truth",
+    "name": "Truth",
+    "type": "Core Concept",
+    "domain": "Knowledge",
+    "status": "v2-draft",
+    "shortDefinition": "Truth is the quality of a claim, belief, statement, or understanding being aligned with reality, fact, or verified support.",
+    "fullDefinition": "Truth is the quality of being in accordance with reality, fact, evidence, or verified understanding. In a knowledge system, truth is not only a final answer; it is a relationship between a claim, the world it describes, the evidence supporting it, and the methods used to verify it.",
+    "plainEnglish": "Truth means something is actually the case, not just believed, repeated, assumed, or popular.",
+    "technicalDefinition": "Within SourceRoot, truth is treated as a traceable knowledge condition: a claim is stronger when it can be connected to evidence, verification, reliable sources, and a revision history that shows how the understanding developed.",
+    "whyItMatters": "Truth is the central anchor of SourceRoot because every definition, source, relationship, and revision ultimately supports the question of whether knowledge can be trusted.",
+    "origin": {
+      "root": "Old English trēowth / truth",
+      "language": "Old English",
+      "meaning": "Faithfulness, constancy, reliability, agreement with fact",
+      "notes": "The historical meaning of truth is closely related to trust, fidelity, and reliability."
+    },
+    "examples": [
+      {
+        "label": "Everyday example",
+        "text": "If it is raining outside and someone says, 'It is raining,' the statement is true if it matches the actual condition."
+      },
+      {
+        "label": "SourceRoot example",
+        "text": "A concept definition becomes more trustworthy when its sources, relationships, and revisions are visible."
+      }
+    ],
+    "commonConfusions": [
+      {
+        "term": "Belief",
+        "difference": "A belief is something a person accepts as true. Truth requires alignment with reality or verified support, whether or not someone believes it."
+      },
+      {
+        "term": "Opinion",
+        "difference": "An opinion expresses a judgment or preference. A truth claim asserts something about reality that can be supported or challenged."
+      },
+      {
+        "term": "Consensus",
+        "difference": "Consensus means many people agree. Agreement may support confidence, but agreement alone does not guarantee truth."
+      }
+    ],
+    "opposites": ["falsehood", "error", "misrepresentation"],
+    "relatedTerms": ["knowledge", "evidence", "verification", "fact", "claim", "trust", "reliability"],
+    "relationships": [
+      {
+        "target": "evidence",
+        "type": "SUPPORTED_BY",
+        "direction": "Truth is supported by evidence",
+        "strength": 5,
+        "explanation": "Evidence provides the observations, records, measurements, testimony, or reasoning used to evaluate whether a claim corresponds to reality.",
+        "bridge": "Claim",
+        "sourceIds": ["source-placeholder-truth-evidence"]
+      },
+      {
+        "target": "verification",
+        "type": "VERIFIED_BY",
+        "direction": "Truth is tested through verification",
+        "strength": 5,
+        "explanation": "Verification is the process of checking whether a claim, source, measurement, or explanation is reliable enough to support truth.",
+        "bridge": "Evidence",
+        "sourceIds": ["source-placeholder-truth-verification"]
+      },
+      {
+        "target": "knowledge",
+        "type": "FOUNDATION_FOR",
+        "direction": "Truth is foundational to knowledge",
+        "strength": 5,
+        "explanation": "Knowledge depends on truth because knowing something requires more than belief; it requires that the belief or claim is actually correct or well-supported.",
+        "bridge": "Justification",
+        "sourceIds": ["source-placeholder-truth-knowledge"]
+      },
+      {
+        "target": "belief",
+        "type": "CONTRASTS_WITH",
+        "direction": "Truth differs from belief",
+        "strength": 4,
+        "explanation": "A belief can be true or false. Truth is about whether the belief aligns with reality, not simply whether it is held.",
+        "bridge": "Claim",
+        "sourceIds": ["source-placeholder-truth-belief"]
+      },
+      {
+        "target": "trust",
+        "type": "BUILDS_ON",
+        "direction": "Truth supports trust",
+        "strength": 4,
+        "explanation": "When claims, sources, and definitions are shown to be truthful or well-supported, trust in the knowledge system increases.",
+        "bridge": "Reliability",
+        "sourceIds": ["source-placeholder-truth-trust"]
+      }
+    ],
+    "sources": [
+      {
+        "id": "source-placeholder-truth-definition",
+        "name": "Source needed: philosophical definition of truth",
+        "type": "Source Placeholder",
+        "url": "",
+        "supports": ["shortDefinition", "fullDefinition"],
+        "notes": "Replace with a reliable source such as an academic encyclopedia or philosophy reference."
+      },
+      {
+        "id": "source-placeholder-truth-evidence",
+        "name": "Source needed: evidence and truth relationship",
+        "type": "Source Placeholder",
+        "url": "",
+        "supports": ["relationship:evidence"],
+        "notes": "Replace with a reliable source explaining evidence as support for truth claims."
+      },
+      {
+        "id": "source-placeholder-truth-verification",
+        "name": "Source needed: verification and truth relationship",
+        "type": "Source Placeholder",
+        "url": "",
+        "supports": ["relationship:verification"],
+        "notes": "Replace with a reliable source explaining verification."
+      }
+    ],
+    "revisions": [
+      {
+        "version": "v2.0",
+        "type": "Definition Upgrade",
+        "summary": "Expanded Truth from a simple definition into a SourceRoot-ready knowledge object.",
+        "changedFields": ["shortDefinition", "fullDefinition", "plainEnglish", "technicalDefinition", "relationships", "sources", "revisions"],
+        "reason": "V2 requires richer concept content and relationship explanations.",
+        "date": "2026-07-02"
+      }
+    ]
+  }
+]
