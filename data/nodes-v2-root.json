@@ -1107,5 +1107,571 @@
         "date": "2026-07-02"
       }
     ]
+  },
+  [
+  {
+    "id": "claim",
+    "name": "Claim",
+    "type": "Core Concept",
+    "domain": "Knowledge",
+    "status": "v2-draft",
+    "shortDefinition": "A claim is a statement or assertion that something is true, real, valid, or worth accepting.",
+    "fullDefinition": "A claim is an assertion that can be evaluated, supported, challenged, verified, revised, or rejected. In SourceRoot, claims are important because they are the units of knowledge that require evidence, sources, context, and verification.",
+    "plainEnglish": "A claim is something someone says is true or wants others to accept as true.",
+    "technicalDefinition": "Within SourceRoot, a claim is a traceable assertion that can be linked to evidence, sources, relationships, revisions, and verification status.",
+    "whyItMatters": "Claims are where trust begins or breaks. SourceRoot needs to show what is being claimed, what supports it, and how reliable that support is.",
+    "origin": {
+      "root": "Latin clamare / Old French clamer",
+      "language": "Latin / Old French",
+      "meaning": "To call out, demand, assert, or proclaim",
+      "notes": "Claim is historically connected to declaring or demanding something."
+    },
+    "examples": [
+      {
+        "label": "Everyday example",
+        "text": "Saying 'This product lasts 25 years' is a claim that can be checked against evidence."
+      },
+      {
+        "label": "SourceRoot example",
+        "text": "A concept definition contains claims that should be linked to sources and revision history."
+      }
+    ],
+    "commonConfusions": [
+      {
+        "term": "Fact",
+        "difference": "A claim is an assertion. A fact is something established as true or real."
+      },
+      {
+        "term": "Opinion",
+        "difference": "An opinion expresses judgment or preference. A claim asserts something that may be evaluated for truth or support."
+      }
+    ],
+    "opposites": [
+      "silence",
+      "nonassertion",
+      "withdrawn statement"
+    ],
+    "relatedTerms": [
+      "truth",
+      "evidence",
+      "fact",
+      "belief",
+      "source",
+      "verification"
+    ],
+    "relationships": [
+      {
+        "target": "evidence",
+        "type": "SUPPORTED_BY",
+        "direction": "Claims are supported by evidence",
+        "strength": 5,
+        "explanation": "A claim becomes stronger when evidence can be used to support, test, or challenge it.",
+        "bridge": "Verification",
+        "sourceIds": [
+          "source-placeholder-claim-evidence"
+        ]
+      },
+      {
+        "target": "fact",
+        "type": "CAN_BECOME",
+        "direction": "A claim can become accepted as fact",
+        "strength": 4,
+        "explanation": "A claim may become treated as fact when it is strongly supported, verified, and accepted as accurately describing reality.",
+        "bridge": "Truth",
+        "sourceIds": [
+          "source-placeholder-claim-fact"
+        ]
+      },
+      {
+        "target": "context",
+        "type": "FRAMED_BY",
+        "direction": "Claims are framed by context",
+        "strength": 4,
+        "explanation": "The meaning and reliability of a claim can depend on when it was made, who made it, what assumptions it uses, and what situation surrounds it.",
+        "bridge": "Meaning",
+        "sourceIds": [
+          "source-placeholder-claim-context"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "source-placeholder-claim-definition",
+        "name": "Source needed: definition of claim",
+        "type": "Source Placeholder",
+        "url": "",
+        "supports": [
+          "shortDefinition",
+          "fullDefinition"
+        ],
+        "notes": "Replace with a reliable dictionary, logic, rhetoric, or epistemology source."
+      }
+    ],
+    "revisions": [
+      {
+        "version": "v2.0",
+        "type": "Created Entry",
+        "summary": "Created V2 Claim entry with relationship details.",
+        "changedFields": [
+          "shortDefinition",
+          "fullDefinition",
+          "relationships"
+        ],
+        "reason": "Batch 3 root concept upgrade.",
+        "date": "2026-07-03"
+      }
+    ]
+  },
+  {
+    "id": "fact",
+    "name": "Fact",
+    "type": "Core Concept",
+    "domain": "Knowledge",
+    "status": "v2-draft",
+    "shortDefinition": "A fact is something that is established, observable, verified, or accepted as true about reality.",
+    "fullDefinition": "A fact is a statement, condition, event, or piece of information that corresponds to reality and is treated as true because it is observable, verifiable, documented, or strongly supported. In SourceRoot, facts are distinguished from claims, beliefs, and interpretations by their level of support and verification.",
+    "plainEnglish": "A fact is something that is actually the case or has been reliably shown to be true.",
+    "technicalDefinition": "Within SourceRoot, a fact is a high-confidence knowledge object supported by evidence, sources, context, and verification.",
+    "whyItMatters": "Facts are stable anchors that knowledge systems depend on, but SourceRoot still tracks how facts are supported, sourced, and revised.",
+    "origin": {
+      "root": "Latin factum",
+      "language": "Latin",
+      "meaning": "A thing done, deed, event, or occurrence",
+      "notes": "Fact is historically connected to something done or made real."
+    },
+    "examples": [
+      {
+        "label": "Everyday example",
+        "text": "Water freezing at a certain temperature under standard conditions is treated as a fact because it can be repeatedly tested."
+      },
+      {
+        "label": "SourceRoot example",
+        "text": "A fact entry should show the sources, evidence, and verification that support why it is treated as true."
+      }
+    ],
+    "commonConfusions": [
+      {
+        "term": "Claim",
+        "difference": "A claim asserts something. A fact is something established or verified as true."
+      },
+      {
+        "term": "Belief",
+        "difference": "A belief is accepted by a person. A fact does not depend on a person accepting it."
+      }
+    ],
+    "opposites": [
+      "falsehood",
+      "fiction",
+      "error"
+    ],
+    "relatedTerms": [
+      "truth",
+      "claim",
+      "evidence",
+      "verification",
+      "knowledge",
+      "accuracy"
+    ],
+    "relationships": [
+      {
+        "target": "truth",
+        "type": "ALIGNED_WITH",
+        "direction": "Facts align with truth",
+        "strength": 5,
+        "explanation": "A fact is treated as factual because it corresponds to reality or verified support.",
+        "bridge": "Reality",
+        "sourceIds": [
+          "source-placeholder-fact-truth"
+        ]
+      },
+      {
+        "target": "evidence",
+        "type": "SUPPORTED_BY",
+        "direction": "Facts are supported by evidence",
+        "strength": 5,
+        "explanation": "Evidence supports why a statement or condition should be treated as factual rather than merely claimed.",
+        "bridge": "Verification",
+        "sourceIds": [
+          "source-placeholder-fact-evidence"
+        ]
+      },
+      {
+        "target": "claim",
+        "type": "RESULT_OF_VERIFIED",
+        "direction": "Facts can result from verified claims",
+        "strength": 4,
+        "explanation": "When a claim is sufficiently verified and supported, it may become accepted as a fact.",
+        "bridge": "Source",
+        "sourceIds": [
+          "source-placeholder-fact-claim"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "source-placeholder-fact-definition",
+        "name": "Source needed: definition of fact",
+        "type": "Source Placeholder",
+        "url": "",
+        "supports": [
+          "shortDefinition",
+          "fullDefinition"
+        ],
+        "notes": "Replace with a reliable dictionary, logic, science, or epistemology source."
+      }
+    ],
+    "revisions": [
+      {
+        "version": "v2.0",
+        "type": "Created Entry",
+        "summary": "Created V2 Fact entry with relationship details.",
+        "changedFields": [
+          "shortDefinition",
+          "fullDefinition",
+          "relationships"
+        ],
+        "reason": "Batch 3 root concept upgrade.",
+        "date": "2026-07-03"
+      }
+    ]
+  },
+  {
+    "id": "belief",
+    "name": "Belief",
+    "type": "Core Concept",
+    "domain": "Knowledge",
+    "status": "v2-draft",
+    "shortDefinition": "Belief is the acceptance that something is true, real, meaningful, or worth trusting.",
+    "fullDefinition": "Belief is a mental state or position in which a person, group, or system accepts a claim, idea, explanation, or worldview as true or meaningful. Beliefs may be supported by evidence, shaped by experience, inherited from culture, or held without verification.",
+    "plainEnglish": "Belief is what someone accepts as true, even before or without full proof.",
+    "technicalDefinition": "Within SourceRoot, belief is treated as an accepted position that may be compared against evidence, truth, sources, and verification.",
+    "whyItMatters": "Belief matters because humans often act on what they believe before something is fully verified. SourceRoot needs to distinguish belief from truth, fact, and knowledge.",
+    "origin": {
+      "root": "Old English gelÄafa",
+      "language": "Old English",
+      "meaning": "Faith, confidence, trust, or acceptance",
+      "notes": "Belief is historically connected to trust and acceptance."
+    },
+    "examples": [
+      {
+        "label": "Everyday example",
+        "text": "Someone may believe it will rain tomorrow because the sky looks dark, even before checking the forecast."
+      },
+      {
+        "label": "SourceRoot example",
+        "text": "A belief can be recorded as a claim, then evaluated against sources and evidence."
+      }
+    ],
+    "commonConfusions": [
+      {
+        "term": "Truth",
+        "difference": "Truth is alignment with reality or verified support. Belief is acceptance by a person or group."
+      },
+      {
+        "term": "Knowledge",
+        "difference": "Knowledge requires stronger support or justification than belief alone."
+      }
+    ],
+    "opposites": [
+      "doubt",
+      "disbelief",
+      "skepticism"
+    ],
+    "relatedTerms": [
+      "truth",
+      "knowledge",
+      "claim",
+      "trust",
+      "opinion",
+      "evidence"
+    ],
+    "relationships": [
+      {
+        "target": "claim",
+        "type": "ACCEPTS",
+        "direction": "Belief accepts claims",
+        "strength": 4,
+        "explanation": "A belief often forms when a person accepts a claim as true or meaningful.",
+        "bridge": "Trust",
+        "sourceIds": [
+          "source-placeholder-belief-claim"
+        ]
+      },
+      {
+        "target": "truth",
+        "type": "MAY_OR_MAY_NOT_ALIGN_WITH",
+        "direction": "Belief may or may not align with truth",
+        "strength": 5,
+        "explanation": "A belief can be true, false, partially true, or unsupported depending on how it relates to evidence and reality.",
+        "bridge": "Evidence",
+        "sourceIds": [
+          "source-placeholder-belief-truth"
+        ]
+      },
+      {
+        "target": "trust",
+        "type": "BUILDS_ON",
+        "direction": "Belief often builds on trust",
+        "strength": 4,
+        "explanation": "People often form beliefs based on trust in a person, source, institution, memory, or prior experience.",
+        "bridge": "Source",
+        "sourceIds": [
+          "source-placeholder-belief-trust"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "source-placeholder-belief-definition",
+        "name": "Source needed: definition of belief",
+        "type": "Source Placeholder",
+        "url": "",
+        "supports": [
+          "shortDefinition",
+          "fullDefinition"
+        ],
+        "notes": "Replace with a reliable dictionary, psychology, philosophy, or epistemology source."
+      }
+    ],
+    "revisions": [
+      {
+        "version": "v2.0",
+        "type": "Created Entry",
+        "summary": "Created V2 Belief entry with relationship details.",
+        "changedFields": [
+          "shortDefinition",
+          "fullDefinition",
+          "relationships"
+        ],
+        "reason": "Batch 3 root concept upgrade.",
+        "date": "2026-07-03"
+      }
+    ]
+  },
+  {
+    "id": "trust",
+    "name": "Trust",
+    "type": "Core Concept",
+    "domain": "Knowledge",
+    "status": "v2-draft",
+    "shortDefinition": "Trust is confidence that a person, source, system, claim, or process is reliable enough to depend on.",
+    "fullDefinition": "Trust is confidence placed in something based on reliability, evidence, authority, transparency, verification, or relationship. In SourceRoot, trust is not blind acceptance; it is strengthened or weakened by source quality, evidence, revision history, and provenance.",
+    "plainEnglish": "Trust means you believe something is reliable enough to depend on.",
+    "technicalDefinition": "Within SourceRoot, trust is a confidence layer produced by evidence, source reliability, verification, provenance, and revision transparency.",
+    "whyItMatters": "Trust is the user-facing outcome of SourceRoot. The system exists so users can see why knowledge should or should not be trusted.",
+    "origin": {
+      "root": "Old Norse traust / Old English trÄowe",
+      "language": "Old Norse / Old English",
+      "meaning": "Confidence, protection, reliability, faithfulness",
+      "notes": "Trust is historically connected to reliability, truth, and confidence."
+    },
+    "examples": [
+      {
+        "label": "Everyday example",
+        "text": "You may trust a mechanic more if they explain the issue, show the part, and have a history of reliable work."
+      },
+      {
+        "label": "SourceRoot example",
+        "text": "A concept becomes more trustworthy when its sources, evidence, relationships, and revisions are visible."
+      }
+    ],
+    "commonConfusions": [
+      {
+        "term": "Belief",
+        "difference": "Belief is accepting something as true. Trust is confidence in reliability."
+      },
+      {
+        "term": "Authority",
+        "difference": "Authority can influence trust, but authority alone does not guarantee reliability."
+      }
+    ],
+    "opposites": [
+      "distrust",
+      "suspicion",
+      "doubt"
+    ],
+    "relatedTerms": [
+      "truth",
+      "belief",
+      "reliability",
+      "authority",
+      "source",
+      "verification"
+    ],
+    "relationships": [
+      {
+        "target": "source",
+        "type": "DEPENDS_ON",
+        "direction": "Trust depends on source quality",
+        "strength": 5,
+        "explanation": "A user's trust in knowledge is affected by whether the source is credible, relevant, transparent, and properly represented.",
+        "bridge": "Reliability",
+        "sourceIds": [
+          "source-placeholder-trust-source"
+        ]
+      },
+      {
+        "target": "verification",
+        "type": "STRENGTHENED_BY",
+        "direction": "Trust is strengthened by verification",
+        "strength": 5,
+        "explanation": "Verification increases trust by checking whether claims, sources, and evidence are accurate and reliable.",
+        "bridge": "Evidence",
+        "sourceIds": [
+          "source-placeholder-trust-verification"
+        ]
+      },
+      {
+        "target": "provenance",
+        "type": "SUPPORTED_BY",
+        "direction": "Trust is supported by provenance",
+        "strength": 4,
+        "explanation": "Provenance helps users trust knowledge by showing where it came from and how it changed over time.",
+        "bridge": "Origin",
+        "sourceIds": [
+          "source-placeholder-trust-provenance"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "source-placeholder-trust-definition",
+        "name": "Source needed: definition of trust",
+        "type": "Source Placeholder",
+        "url": "",
+        "supports": [
+          "shortDefinition",
+          "fullDefinition"
+        ],
+        "notes": "Replace with a reliable dictionary, psychology, sociology, or information trust source."
+      }
+    ],
+    "revisions": [
+      {
+        "version": "v2.0",
+        "type": "Created Entry",
+        "summary": "Created V2 Trust entry with relationship details.",
+        "changedFields": [
+          "shortDefinition",
+          "fullDefinition",
+          "relationships"
+        ],
+        "reason": "Batch 3 root concept upgrade.",
+        "date": "2026-07-03"
+      }
+    ]
+  },
+  {
+    "id": "provenance",
+    "name": "Provenance",
+    "type": "Core Concept",
+    "domain": "Knowledge",
+    "status": "v2-draft",
+    "shortDefinition": "Provenance is the documented origin, history, ownership, source trail, or chain of custody of something.",
+    "fullDefinition": "Provenance is the record of where something came from, how it moved, who handled it, what changed, and how its current form came to exist. In SourceRoot, provenance is the backbone of trustworthy knowledge because it connects concepts, claims, sources, revisions, and origins into a traceable chain.",
+    "plainEnglish": "Provenance is the history of where something came from and how it got here.",
+    "technicalDefinition": "Within SourceRoot, provenance is the traceable lineage of a knowledge object, including sources, origins, revisions, relationships, and support history.",
+    "whyItMatters": "Provenance is one of the most important SourceRoot concepts because it turns knowledge from a static statement into a traceable history.",
+    "origin": {
+      "root": "French provenance / provenir",
+      "language": "French / Latin",
+      "meaning": "Origin, source, place of coming from",
+      "notes": "Provenance is historically connected to origin and coming forth from a source."
+    },
+    "examples": [
+      {
+        "label": "Everyday example",
+        "text": "Artwork provenance records who owned a piece, where it was shown, and how its authenticity is supported."
+      },
+      {
+        "label": "SourceRoot example",
+        "text": "A definition's provenance includes its source, revision history, relationship explanations, and origin notes."
+      }
+    ],
+    "commonConfusions": [
+      {
+        "term": "Source",
+        "difference": "A source is one origin or reference point. Provenance is the broader history and chain of origin."
+      },
+      {
+        "term": "Origin",
+        "difference": "Origin is where something begins. Provenance includes origin plus the history and chain that follows."
+      }
+    ],
+    "opposites": [
+      "unknown origin",
+      "untraceable history",
+      "broken chain of custody"
+    ],
+    "relatedTerms": [
+      "source",
+      "origin",
+      "revision",
+      "trust",
+      "authority",
+      "reference"
+    ],
+    "relationships": [
+      {
+        "target": "source",
+        "type": "BUILDS_FROM",
+        "direction": "Provenance builds from sources",
+        "strength": 5,
+        "explanation": "Sources provide the origin points and supporting records that make provenance traceable.",
+        "bridge": "Reference",
+        "sourceIds": [
+          "source-placeholder-provenance-source"
+        ]
+      },
+      {
+        "target": "revision",
+        "type": "INCLUDES",
+        "direction": "Provenance includes revisions",
+        "strength": 5,
+        "explanation": "A full provenance trail includes how an entry changed, when it changed, and why it changed.",
+        "bridge": "History",
+        "sourceIds": [
+          "source-placeholder-provenance-revision"
+        ]
+      },
+      {
+        "target": "trust",
+        "type": "SUPPORTS",
+        "direction": "Provenance supports trust",
+        "strength": 5,
+        "explanation": "When users can inspect where knowledge came from and how it changed, they can judge whether it deserves trust.",
+        "bridge": "Transparency",
+        "sourceIds": [
+          "source-placeholder-provenance-trust"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "source-placeholder-provenance-definition",
+        "name": "Source needed: definition of provenance",
+        "type": "Source Placeholder",
+        "url": "",
+        "supports": [
+          "shortDefinition",
+          "fullDefinition"
+        ],
+        "notes": "Replace with a reliable dictionary, archival, art history, data provenance, or information science source."
+      }
+    ],
+    "revisions": [
+      {
+        "version": "v2.0",
+        "type": "Created Entry",
+        "summary": "Created V2 Provenance entry with relationship details.",
+        "changedFields": [
+          "shortDefinition",
+          "fullDefinition",
+          "relationships"
+        ],
+        "reason": "Batch 3 root concept upgrade.",
+        "date": "2026-07-03"
+      }
+    ]
   }
 ]
