@@ -1,0 +1,401 @@
+[
+  {
+    "id": "sep-truth",
+    "name": "Stanford Encyclopedia of Philosophy — Truth",
+    "publisher": "Stanford Encyclopedia of Philosophy",
+    "type": "Academic Encyclopedia",
+    "url": "https://plato.stanford.edu/entries/truth/",
+    "domain": "Philosophy / Epistemology",
+    "supportsConcepts": [
+      "truth",
+      "fact",
+      "claim",
+      "belief",
+      "knowledge"
+    ],
+    "supportsFields": [
+      "fullDefinition",
+      "technicalDefinition",
+      "relationships"
+    ],
+    "qualityTier": "foundation",
+    "notes": "Use for philosophical theories of truth and the relationship between truth, claims, reality, and belief."
+  },
+  {
+    "id": "sep-knowledge-analysis",
+    "name": "Stanford Encyclopedia of Philosophy — The Analysis of Knowledge",
+    "publisher": "Stanford Encyclopedia of Philosophy",
+    "type": "Academic Encyclopedia",
+    "url": "https://plato.stanford.edu/entries/knowledge-analysis/",
+    "domain": "Epistemology",
+    "supportsConcepts": [
+      "knowledge",
+      "belief",
+      "truth",
+      "evidence",
+      "justification"
+    ],
+    "supportsFields": [
+      "fullDefinition",
+      "technicalDefinition",
+      "relationships"
+    ],
+    "qualityTier": "foundation",
+    "notes": "Use for the relationship between knowledge, belief, truth, evidence, and justification."
+  },
+  {
+    "id": "sep-epistemology",
+    "name": "Stanford Encyclopedia of Philosophy — Epistemology",
+    "publisher": "Stanford Encyclopedia of Philosophy",
+    "type": "Academic Encyclopedia",
+    "url": "https://plato.stanford.edu/entries/epistemology/",
+    "domain": "Epistemology",
+    "supportsConcepts": [
+      "knowledge",
+      "belief",
+      "evidence",
+      "reliability",
+      "justification"
+    ],
+    "supportsFields": [
+      "fullDefinition",
+      "technicalDefinition",
+      "relationships"
+    ],
+    "qualityTier": "foundation",
+    "notes": "Use as a broad epistemology source for knowledge, belief, evidence, reliability, and justification."
+  },
+  {
+    "id": "sep-evidence",
+    "name": "Stanford Encyclopedia of Philosophy — Evidence",
+    "publisher": "Stanford Encyclopedia of Philosophy",
+    "type": "Academic Encyclopedia",
+    "url": "https://plato.stanford.edu/entries/evidence/",
+    "domain": "Epistemology",
+    "supportsConcepts": [
+      "evidence",
+      "knowledge",
+      "belief",
+      "claim",
+      "verification"
+    ],
+    "supportsFields": [
+      "fullDefinition",
+      "technicalDefinition",
+      "relationships"
+    ],
+    "qualityTier": "foundation",
+    "notes": "Use for evidence as a concept in epistemology and its role in justification and knowledge."
+  },
+  {
+    "id": "iep-evidence",
+    "name": "Internet Encyclopedia of Philosophy — Evidence",
+    "publisher": "Internet Encyclopedia of Philosophy",
+    "type": "Academic Encyclopedia",
+    "url": "https://iep.utm.edu/evidence/",
+    "domain": "Epistemology / Philosophy of Science",
+    "supportsConcepts": [
+      "evidence",
+      "knowledge",
+      "belief",
+      "justification",
+      "claim"
+    ],
+    "supportsFields": [
+      "fullDefinition",
+      "relationships"
+    ],
+    "qualityTier": "foundation",
+    "notes": "Use as a readable supporting source for how evidence relates to justified belief and knowledge."
+  },
+  {
+    "id": "iep-epistemology",
+    "name": "Internet Encyclopedia of Philosophy — Epistemology",
+    "publisher": "Internet Encyclopedia of Philosophy",
+    "type": "Academic Encyclopedia",
+    "url": "https://iep.utm.edu/epistemo/",
+    "domain": "Epistemology",
+    "supportsConcepts": [
+      "knowledge",
+      "belief",
+      "truth",
+      "evidence",
+      "justification"
+    ],
+    "supportsFields": [
+      "fullDefinition",
+      "relationships"
+    ],
+    "qualityTier": "foundation",
+    "notes": "Use as a broad source for the study of knowledge and core epistemology concepts."
+  },
+  {
+    "id": "merriam-webster-truth",
+    "name": "Merriam-Webster — Truth",
+    "publisher": "Merriam-Webster",
+    "type": "Dictionary",
+    "url": "https://www.merriam-webster.com/dictionary/truth",
+    "domain": "Language / Definition",
+    "supportsConcepts": [
+      "truth"
+    ],
+    "supportsFields": [
+      "shortDefinition",
+      "plainEnglish",
+      "origin"
+    ],
+    "qualityTier": "definition",
+    "notes": "Use for common-language definitions and quick definition support."
+  },
+  {
+    "id": "merriam-webster-evidence",
+    "name": "Merriam-Webster — Evidence",
+    "publisher": "Merriam-Webster",
+    "type": "Dictionary",
+    "url": "https://www.merriam-webster.com/dictionary/evidence",
+    "domain": "Language / Definition",
+    "supportsConcepts": [
+      "evidence"
+    ],
+    "supportsFields": [
+      "shortDefinition",
+      "plainEnglish",
+      "origin"
+    ],
+    "qualityTier": "definition",
+    "notes": "Use for common-language definitions of evidence and examples of usage."
+  },
+  {
+    "id": "merriam-webster-verification",
+    "name": "Merriam-Webster — Verification",
+    "publisher": "Merriam-Webster",
+    "type": "Dictionary",
+    "url": "https://www.merriam-webster.com/dictionary/verification",
+    "domain": "Language / Definition",
+    "supportsConcepts": [
+      "verification"
+    ],
+    "supportsFields": [
+      "shortDefinition",
+      "plainEnglish",
+      "origin"
+    ],
+    "qualityTier": "definition",
+    "notes": "Use for common-language definition support for verification."
+  },
+  {
+    "id": "merriam-webster-source",
+    "name": "Merriam-Webster — Source",
+    "publisher": "Merriam-Webster",
+    "type": "Dictionary",
+    "url": "https://www.merriam-webster.com/dictionary/source",
+    "domain": "Language / Definition",
+    "supportsConcepts": [
+      "source",
+      "origin",
+      "reference"
+    ],
+    "supportsFields": [
+      "shortDefinition",
+      "plainEnglish",
+      "origin"
+    ],
+    "qualityTier": "definition",
+    "notes": "Use for common-language definition support for source and origin."
+  },
+  {
+    "id": "merriam-webster-knowledge",
+    "name": "Merriam-Webster — Knowledge",
+    "publisher": "Merriam-Webster",
+    "type": "Dictionary",
+    "url": "https://www.merriam-webster.com/dictionary/knowledge",
+    "domain": "Language / Definition",
+    "supportsConcepts": [
+      "knowledge"
+    ],
+    "supportsFields": [
+      "shortDefinition",
+      "plainEnglish",
+      "origin"
+    ],
+    "qualityTier": "definition",
+    "notes": "Use for common-language definition support for knowledge."
+  },
+  {
+    "id": "merriam-webster-fact",
+    "name": "Merriam-Webster — Fact",
+    "publisher": "Merriam-Webster",
+    "type": "Dictionary",
+    "url": "https://www.merriam-webster.com/dictionary/fact",
+    "domain": "Language / Definition",
+    "supportsConcepts": [
+      "fact",
+      "truth"
+    ],
+    "supportsFields": [
+      "shortDefinition",
+      "plainEnglish",
+      "origin"
+    ],
+    "qualityTier": "definition",
+    "notes": "Use for common-language definition support for fact."
+  },
+  {
+    "id": "merriam-webster-reliability",
+    "name": "Merriam-Webster — Reliability",
+    "publisher": "Merriam-Webster",
+    "type": "Dictionary",
+    "url": "https://www.merriam-webster.com/dictionary/reliability",
+    "domain": "Language / Definition",
+    "supportsConcepts": [
+      "reliability",
+      "trust"
+    ],
+    "supportsFields": [
+      "shortDefinition",
+      "plainEnglish",
+      "origin"
+    ],
+    "qualityTier": "definition",
+    "notes": "Use for common-language definition support for reliability."
+  },
+  {
+    "id": "merriam-webster-validity",
+    "name": "Merriam-Webster — Validity",
+    "publisher": "Merriam-Webster",
+    "type": "Dictionary",
+    "url": "https://www.merriam-webster.com/dictionary/validity",
+    "domain": "Language / Definition",
+    "supportsConcepts": [
+      "validity"
+    ],
+    "supportsFields": [
+      "shortDefinition",
+      "plainEnglish",
+      "origin"
+    ],
+    "qualityTier": "definition",
+    "notes": "Use for common-language definition support for validity."
+  },
+  {
+    "id": "merriam-webster-accuracy",
+    "name": "Merriam-Webster — Accuracy",
+    "publisher": "Merriam-Webster",
+    "type": "Dictionary",
+    "url": "https://www.merriam-webster.com/dictionary/accuracy",
+    "domain": "Language / Definition",
+    "supportsConcepts": [
+      "accuracy"
+    ],
+    "supportsFields": [
+      "shortDefinition",
+      "plainEnglish",
+      "origin"
+    ],
+    "qualityTier": "definition",
+    "notes": "Use for common-language definition support for accuracy."
+  },
+  {
+    "id": "merriam-webster-context",
+    "name": "Merriam-Webster — Context",
+    "publisher": "Merriam-Webster",
+    "type": "Dictionary",
+    "url": "https://www.merriam-webster.com/dictionary/context",
+    "domain": "Language / Definition",
+    "supportsConcepts": [
+      "context",
+      "meaning",
+      "interpretation"
+    ],
+    "supportsFields": [
+      "shortDefinition",
+      "plainEnglish",
+      "origin"
+    ],
+    "qualityTier": "definition",
+    "notes": "Use for common-language definition support for context."
+  },
+  {
+    "id": "merriam-webster-definition",
+    "name": "Merriam-Webster — Definition",
+    "publisher": "Merriam-Webster",
+    "type": "Dictionary",
+    "url": "https://www.merriam-webster.com/dictionary/definition",
+    "domain": "Language / Definition",
+    "supportsConcepts": [
+      "definition",
+      "meaning",
+      "concept"
+    ],
+    "supportsFields": [
+      "shortDefinition",
+      "plainEnglish",
+      "origin"
+    ],
+    "qualityTier": "definition",
+    "notes": "Use for common-language definition support for definition."
+  },
+  {
+    "id": "w3c-prov-overview",
+    "name": "W3C — PROV Overview",
+    "publisher": "World Wide Web Consortium",
+    "type": "Technical Standard / Overview",
+    "url": "https://www.w3.org/TR/prov-overview/",
+    "domain": "Data Provenance / Web Standards",
+    "supportsConcepts": [
+      "provenance",
+      "source",
+      "origin",
+      "revision",
+      "trust"
+    ],
+    "supportsFields": [
+      "technicalDefinition",
+      "relationships"
+    ],
+    "qualityTier": "foundation",
+    "notes": "Use for provenance as a formal web/data concept."
+  },
+  {
+    "id": "w3c-prov-o",
+    "name": "W3C — PROV-O: The PROV Ontology",
+    "publisher": "World Wide Web Consortium",
+    "type": "Technical Standard / Ontology",
+    "url": "https://www.w3.org/TR/prov-o/",
+    "domain": "Data Provenance / Ontology",
+    "supportsConcepts": [
+      "provenance",
+      "source",
+      "origin",
+      "relationship",
+      "revision"
+    ],
+    "supportsFields": [
+      "technicalDefinition",
+      "relationships"
+    ],
+    "qualityTier": "foundation",
+    "notes": "Use for formal provenance relationships and ontology-style source trails."
+  },
+  {
+    "id": "iso-8000-data-quality-overview",
+    "name": "ISO — ISO 8000 Data Quality Overview",
+    "publisher": "International Organization for Standardization",
+    "type": "Standards Overview",
+    "url": "https://www.iso.org/standard/81745.html",
+    "domain": "Data Quality",
+    "supportsConcepts": [
+      "data",
+      "information",
+      "accuracy",
+      "reliability",
+      "quality"
+    ],
+    "supportsFields": [
+      "technicalDefinition",
+      "relationships"
+    ],
+    "qualityTier": "standards",
+    "notes": "Use for data quality concepts where standards-based support is needed."
+  }
+]
