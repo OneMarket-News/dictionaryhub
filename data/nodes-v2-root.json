@@ -1672,5 +1672,571 @@
         "date": "2026-07-03"
       }
     ]
+  }, 
+  [
+  {
+    "id": "origin",
+    "name": "Origin",
+    "type": "Core Concept",
+    "domain": "Knowledge",
+    "status": "v2-draft",
+    "shortDefinition": "Origin is the beginning, source, starting point, or first known cause of something.",
+    "fullDefinition": "Origin is where something begins or first comes from. In SourceRoot, origin can refer to the beginning of a word, claim, concept, source, object, event, or knowledge trail. Origin helps explain how something entered the knowledge system and where its earliest trace can be found.",
+    "plainEnglish": "Origin means where something started.",
+    "technicalDefinition": "Within SourceRoot, origin is a provenance field that identifies the earliest known source, root, cause, or starting point of a knowledge object.",
+    "whyItMatters": "Origin matters because trust often depends on knowing where something started before evaluating how it changed over time.",
+    "origin": {
+      "root": "Latin origo",
+      "language": "Latin",
+      "meaning": "Beginning, source, descent, or rise",
+      "notes": "Origin is historically tied to beginning and source."
+    },
+    "examples": [
+      {
+        "label": "Everyday example",
+        "text": "The origin of a rumor is the first person, place, or event where the rumor began."
+      },
+      {
+        "label": "SourceRoot example",
+        "text": "The origin of a concept entry may include its word root, first known use, or earliest supporting source."
+      }
+    ],
+    "commonConfusions": [
+      {
+        "term": "Source",
+        "difference": "A source can support information at any point. Origin refers to the starting point or earliest trace."
+      },
+      {
+        "term": "Provenance",
+        "difference": "Origin is where something begins. Provenance includes origin plus the chain of history and changes after it."
+      }
+    ],
+    "opposites": [
+      "unknown beginning",
+      "untraceable start",
+      "unclear source"
+    ],
+    "relatedTerms": [
+      "source",
+      "provenance",
+      "reference",
+      "revision",
+      "history",
+      "root"
+    ],
+    "relationships": [
+      {
+        "target": "provenance",
+        "type": "FOUNDATION_FOR",
+        "direction": "Origin is foundational to provenance",
+        "strength": 5,
+        "explanation": "Provenance begins with origin because a traceable history needs a starting point before later movement, revision, or transformation can be understood.",
+        "bridge": "History",
+        "sourceIds": [
+          "source-placeholder-origin-provenance"
+        ]
+      },
+      {
+        "target": "source",
+        "type": "MAY_BE_IDENTIFIED_BY",
+        "direction": "Origin may be identified by a source",
+        "strength": 4,
+        "explanation": "A source can help establish where a claim, concept, record, or piece of information first came from.",
+        "bridge": "Reference",
+        "sourceIds": [
+          "source-placeholder-origin-source"
+        ]
+      },
+      {
+        "target": "revision",
+        "type": "PRECEDES",
+        "direction": "Origin precedes revision",
+        "strength": 4,
+        "explanation": "A revision is a change from an earlier state, so the origin helps define what existed before the change.",
+        "bridge": "Version History",
+        "sourceIds": [
+          "source-placeholder-origin-revision"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "source-placeholder-origin-definition",
+        "name": "Source needed: definition of origin",
+        "type": "Source Placeholder",
+        "url": "",
+        "supports": [
+          "shortDefinition",
+          "fullDefinition"
+        ],
+        "notes": "Replace with a reliable dictionary, etymology, archival, or information science source."
+      }
+    ],
+    "revisions": [
+      {
+        "version": "v2.0",
+        "type": "Created Entry",
+        "summary": "Created V2 Origin entry with relationship details.",
+        "changedFields": [
+          "shortDefinition",
+          "fullDefinition",
+          "relationships"
+        ],
+        "reason": "Batch 4 root concept upgrade.",
+        "date": "2026-07-03"
+      }
+    ]
+  },
+  {
+    "id": "revision",
+    "name": "Revision",
+    "type": "Core Concept",
+    "domain": "Knowledge",
+    "status": "v2-draft",
+    "shortDefinition": "A revision is a recorded change, correction, update, or improvement to something over time.",
+    "fullDefinition": "A revision is a change made to a document, definition, claim, source record, relationship, or knowledge object. In SourceRoot, revisions are tracked so users can see what changed, when it changed, why it changed, and which fields were affected.",
+    "plainEnglish": "A revision is a change that gets recorded.",
+    "technicalDefinition": "Within SourceRoot, a revision is a versioned change event that records modifications to a knowledge object, including changed fields, reasons, dates, and supporting context.",
+    "whyItMatters": "Revision history makes knowledge transparent. It shows that knowledge can improve while preserving a trail of how it changed.",
+    "origin": {
+      "root": "Latin revisere",
+      "language": "Latin",
+      "meaning": "To look at again, revisit, or review",
+      "notes": "Revision is historically connected to seeing or examining again."
+    },
+    "examples": [
+      {
+        "label": "Everyday example",
+        "text": "Editing a report after receiving feedback creates a revision."
+      },
+      {
+        "label": "SourceRoot example",
+        "text": "When a definition is improved with better sources, SourceRoot records that change as a revision."
+      }
+    ],
+    "commonConfusions": [
+      {
+        "term": "Correction",
+        "difference": "A correction fixes an error. A revision can fix errors, improve clarity, add sources, or change structure."
+      },
+      {
+        "term": "Version",
+        "difference": "A version is a state of something. A revision is the change event that moves it from one state to another."
+      }
+    ],
+    "opposites": [
+      "unchanged state",
+      "static record",
+      "untracked change"
+    ],
+    "relatedTerms": [
+      "provenance",
+      "origin",
+      "history",
+      "version",
+      "correction",
+      "accuracy"
+    ],
+    "relationships": [
+      {
+        "target": "provenance",
+        "type": "PART_OF",
+        "direction": "Revisions are part of provenance",
+        "strength": 5,
+        "explanation": "A provenance trail is stronger when it includes not only where knowledge came from, but also how it changed over time.",
+        "bridge": "History",
+        "sourceIds": [
+          "source-placeholder-revision-provenance"
+        ]
+      },
+      {
+        "target": "accuracy",
+        "type": "CAN_IMPROVE",
+        "direction": "Revisions can improve accuracy",
+        "strength": 4,
+        "explanation": "Revisions may correct errors, clarify meaning, add better sources, or improve how accurately knowledge is represented.",
+        "bridge": "Correction",
+        "sourceIds": [
+          "source-placeholder-revision-accuracy"
+        ]
+      },
+      {
+        "target": "trust",
+        "type": "SUPPORTS",
+        "direction": "Revision history supports trust",
+        "strength": 4,
+        "explanation": "Visible revision history helps users trust a system because they can inspect what changed and why.",
+        "bridge": "Transparency",
+        "sourceIds": [
+          "source-placeholder-revision-trust"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "source-placeholder-revision-definition",
+        "name": "Source needed: definition of revision",
+        "type": "Source Placeholder",
+        "url": "",
+        "supports": [
+          "shortDefinition",
+          "fullDefinition"
+        ],
+        "notes": "Replace with a reliable dictionary, publishing, software versioning, archival, or documentation source."
+      }
+    ],
+    "revisions": [
+      {
+        "version": "v2.0",
+        "type": "Created Entry",
+        "summary": "Created V2 Revision entry with relationship details.",
+        "changedFields": [
+          "shortDefinition",
+          "fullDefinition",
+          "relationships"
+        ],
+        "reason": "Batch 4 root concept upgrade.",
+        "date": "2026-07-03"
+      }
+    ]
+  },
+  {
+    "id": "authority",
+    "name": "Authority",
+    "type": "Core Concept",
+    "domain": "Knowledge",
+    "status": "v2-draft",
+    "shortDefinition": "Authority is recognized credibility, expertise, permission, or power to speak, decide, define, or verify.",
+    "fullDefinition": "Authority is the recognized ability of a person, institution, source, system, or record to make claims, define terms, issue guidance, or verify information. In SourceRoot, authority can support trust, but it must still be evaluated through sources, evidence, reliability, context, and revision history.",
+    "plainEnglish": "Authority means someone or something is treated as credible or qualified on a topic.",
+    "technicalDefinition": "Within SourceRoot, authority is a credibility signal that may increase confidence in a source or claim but does not replace evidence or verification.",
+    "whyItMatters": "Authority influences what people trust. SourceRoot must show authority as a factor, not as automatic proof.",
+    "origin": {
+      "root": "Latin auctoritas",
+      "language": "Latin",
+      "meaning": "Influence, command, judgment, or recognized power",
+      "notes": "Authority is historically connected to authorship, influence, and recognized power."
+    },
+    "examples": [
+      {
+        "label": "Everyday example",
+        "text": "A licensed engineer may be treated as an authority on structural design."
+      },
+      {
+        "label": "SourceRoot example",
+        "text": "A standards organization may be an authority source for technical definitions, but SourceRoot still tracks the specific source and revision."
+      }
+    ],
+    "commonConfusions": [
+      {
+        "term": "Reliability",
+        "difference": "Authority is recognized credibility or status. Reliability is whether something consistently deserves trust."
+      },
+      {
+        "term": "Truth",
+        "difference": "An authority can support a truth claim, but authority alone does not make something true."
+      }
+    ],
+    "opposites": [
+      "unauthorized source",
+      "nonexpert",
+      "unsupported authority"
+    ],
+    "relatedTerms": [
+      "source",
+      "trust",
+      "reliability",
+      "verification",
+      "expertise",
+      "evidence"
+    ],
+    "relationships": [
+      {
+        "target": "trust",
+        "type": "CAN_SUPPORT",
+        "direction": "Authority can support trust",
+        "strength": 4,
+        "explanation": "Recognized authority may increase trust, especially when combined with evidence, transparency, and reliable source history.",
+        "bridge": "Reliability",
+        "sourceIds": [
+          "source-placeholder-authority-trust"
+        ]
+      },
+      {
+        "target": "source",
+        "type": "DESCRIBES_QUALITY_OF",
+        "direction": "Authority describes source quality",
+        "strength": 4,
+        "explanation": "A source may carry authority if it comes from a qualified person, institution, standard, or recognized domain expert.",
+        "bridge": "Expertise",
+        "sourceIds": [
+          "source-placeholder-authority-source"
+        ]
+      },
+      {
+        "target": "verification",
+        "type": "DOES_NOT_REPLACE",
+        "direction": "Authority does not replace verification",
+        "strength": 5,
+        "explanation": "Even authoritative sources should be checked for accuracy, relevance, currency, and correct interpretation.",
+        "bridge": "Evidence",
+        "sourceIds": [
+          "source-placeholder-authority-verification"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "source-placeholder-authority-definition",
+        "name": "Source needed: definition of authority",
+        "type": "Source Placeholder",
+        "url": "",
+        "supports": [
+          "shortDefinition",
+          "fullDefinition"
+        ],
+        "notes": "Replace with a reliable dictionary, epistemology, information literacy, or source-evaluation reference."
+      }
+    ],
+    "revisions": [
+      {
+        "version": "v2.0",
+        "type": "Created Entry",
+        "summary": "Created V2 Authority entry with relationship details.",
+        "changedFields": [
+          "shortDefinition",
+          "fullDefinition",
+          "relationships"
+        ],
+        "reason": "Batch 4 root concept upgrade.",
+        "date": "2026-07-03"
+      }
+    ]
+  },
+  {
+    "id": "reliability",
+    "name": "Reliability",
+    "type": "Core Concept",
+    "domain": "Knowledge",
+    "status": "v2-draft",
+    "shortDefinition": "Reliability is the quality of being consistent, dependable, accurate enough, or worthy of confidence over time.",
+    "fullDefinition": "Reliability is the degree to which a source, system, process, claim, measurement, or method can be depended on. In SourceRoot, reliability is evaluated through evidence, source quality, verification, consistency, revision history, and transparency.",
+    "plainEnglish": "Reliability means something can be counted on.",
+    "technicalDefinition": "Within SourceRoot, reliability is a trust-quality measure applied to sources, claims, relationships, and knowledge objects based on consistency and support.",
+    "whyItMatters": "Reliability helps users decide whether knowledge should be trusted, questioned, revised, or rejected.",
+    "origin": {
+      "root": "Latin religare / Old French relier",
+      "language": "Latin / Old French",
+      "meaning": "To bind, fasten, or depend on",
+      "notes": "Reliability is connected to the idea of depending on something securely."
+    },
+    "examples": [
+      {
+        "label": "Everyday example",
+        "text": "A scale is reliable if it gives the same accurate weight under the same conditions."
+      },
+      {
+        "label": "SourceRoot example",
+        "text": "A source becomes more reliable when its claims are consistent, sourced, verified, and transparently revised."
+      }
+    ],
+    "commonConfusions": [
+      {
+        "term": "Authority",
+        "difference": "Authority is recognized credibility. Reliability is demonstrated dependability or consistency."
+      },
+      {
+        "term": "Accuracy",
+        "difference": "Accuracy is closeness to truth or correctness. Reliability is consistency and dependability over time."
+      }
+    ],
+    "opposites": [
+      "unreliability",
+      "inconsistency",
+      "instability"
+    ],
+    "relatedTerms": [
+      "trust",
+      "accuracy",
+      "validity",
+      "authority",
+      "source",
+      "verification"
+    ],
+    "relationships": [
+      {
+        "target": "trust",
+        "type": "BUILDS",
+        "direction": "Reliability builds trust",
+        "strength": 5,
+        "explanation": "Users are more likely to trust knowledge when its sources, methods, and claims are consistently dependable.",
+        "bridge": "Consistency",
+        "sourceIds": [
+          "source-placeholder-reliability-trust"
+        ]
+      },
+      {
+        "target": "accuracy",
+        "type": "RELATED_TO",
+        "direction": "Reliability relates to accuracy",
+        "strength": 4,
+        "explanation": "Reliable systems or sources are more useful when they are also accurate, but something can be consistent without being correct.",
+        "bridge": "Measurement",
+        "sourceIds": [
+          "source-placeholder-reliability-accuracy"
+        ]
+      },
+      {
+        "target": "source",
+        "type": "QUALITY_OF",
+        "direction": "Reliability is a quality of sources",
+        "strength": 5,
+        "explanation": "A source's reliability affects whether its claims and evidence should be depended on.",
+        "bridge": "Verification",
+        "sourceIds": [
+          "source-placeholder-reliability-source"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "source-placeholder-reliability-definition",
+        "name": "Source needed: definition of reliability",
+        "type": "Source Placeholder",
+        "url": "",
+        "supports": [
+          "shortDefinition",
+          "fullDefinition"
+        ],
+        "notes": "Replace with a reliable dictionary, measurement, research methods, or information literacy source."
+      }
+    ],
+    "revisions": [
+      {
+        "version": "v2.0",
+        "type": "Created Entry",
+        "summary": "Created V2 Reliability entry with relationship details.",
+        "changedFields": [
+          "shortDefinition",
+          "fullDefinition",
+          "relationships"
+        ],
+        "reason": "Batch 4 root concept upgrade.",
+        "date": "2026-07-03"
+      }
+    ]
+  },
+  {
+    "id": "validity",
+    "name": "Validity",
+    "type": "Core Concept",
+    "domain": "Knowledge",
+    "status": "v2-draft",
+    "shortDefinition": "Validity is the quality of being logically sound, well-founded, relevant, or fit for its intended purpose.",
+    "fullDefinition": "Validity is the degree to which a claim, argument, measurement, source, method, or conclusion is sound and appropriate for what it is meant to establish. In SourceRoot, validity helps evaluate whether support actually applies to the claim or relationship it is being used to justify.",
+    "plainEnglish": "Validity means something is sound and actually supports what it is supposed to support.",
+    "technicalDefinition": "Within SourceRoot, validity is a quality check that asks whether evidence, reasoning, measurement, or source support is appropriate and logically relevant to the claim.",
+    "whyItMatters": "Validity prevents misleading support. A source may exist and data may be accurate, but the support may still not be valid for the claim being made.",
+    "origin": {
+      "root": "Latin validus",
+      "language": "Latin",
+      "meaning": "Strong, effective, powerful, or sound",
+      "notes": "Validity is historically connected to strength and soundness."
+    },
+    "examples": [
+      {
+        "label": "Everyday example",
+        "text": "A test is valid if it actually measures what it claims to measure."
+      },
+      {
+        "label": "SourceRoot example",
+        "text": "A source is valid support for a definition only if it actually addresses the meaning being claimed."
+      }
+    ],
+    "commonConfusions": [
+      {
+        "term": "Accuracy",
+        "difference": "Accuracy is closeness to correctness. Validity asks whether the method, support, or reasoning is appropriate for the claim."
+      },
+      {
+        "term": "Reliability",
+        "difference": "Reliability is consistency. Validity is soundness or fitness for purpose."
+      }
+    ],
+    "opposites": [
+      "invalidity",
+      "irrelevance",
+      "unsoundness"
+    ],
+    "relatedTerms": [
+      "accuracy",
+      "reliability",
+      "verification",
+      "evidence",
+      "claim",
+      "reasoning"
+    ],
+    "relationships": [
+      {
+        "target": "claim",
+        "type": "EVALUATES",
+        "direction": "Validity evaluates claims",
+        "strength": 5,
+        "explanation": "Validity helps determine whether the reasoning or evidence used for a claim actually supports that claim.",
+        "bridge": "Reasoning",
+        "sourceIds": [
+          "source-placeholder-validity-claim"
+        ]
+      },
+      {
+        "target": "evidence",
+        "type": "CHECKS_RELEVANCE_OF",
+        "direction": "Validity checks whether evidence is relevant",
+        "strength": 5,
+        "explanation": "Evidence may exist, but validity asks whether that evidence is appropriate and relevant to the specific claim.",
+        "bridge": "Context",
+        "sourceIds": [
+          "source-placeholder-validity-evidence"
+        ]
+      },
+      {
+        "target": "verification",
+        "type": "PART_OF",
+        "direction": "Validity is part of verification",
+        "strength": 4,
+        "explanation": "Verification is stronger when it checks not only whether support exists, but whether that support is valid for the claim.",
+        "bridge": "Method",
+        "sourceIds": [
+          "source-placeholder-validity-verification"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "source-placeholder-validity-definition",
+        "name": "Source needed: definition of validity",
+        "type": "Source Placeholder",
+        "url": "",
+        "supports": [
+          "shortDefinition",
+          "fullDefinition"
+        ],
+        "notes": "Replace with a reliable dictionary, logic, research methods, measurement, or philosophy source."
+      }
+    ],
+    "revisions": [
+      {
+        "version": "v2.0",
+        "type": "Created Entry",
+        "summary": "Created V2 Validity entry with relationship details.",
+        "changedFields": [
+          "shortDefinition",
+          "fullDefinition",
+          "relationships"
+        ],
+        "reason": "Batch 4 root concept upgrade.",
+        "date": "2026-07-03"
+      }
+    ]
   }
 ]
