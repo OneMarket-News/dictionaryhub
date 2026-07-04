@@ -41,7 +41,7 @@
   </header>
 
   <main class="page" id="page">
-    <div class="warning">V2 test page. This page reads <strong>data/nodes-v2-root.json</strong> and <strong>data/sources-v2.json</strong>. It does not replace the live V1 concept page.</div>
+    <div class="warning">V2 test page. This page reads <strong>data/nodes-v2-root.json</strong> and <strong>data/sources-v2.json</strong>, prioritizing each concept’s exact <strong>sourceIds</strong>.</div>
 
     <section class="hero">
       <div>
@@ -183,19 +183,26 @@
     function renderConfusions(items){document.getElementById("confusions-grid").innerHTML=items.length?items.map(x=>`<div class="mini"><h3>${escapeHtml(x.term||"Related concept")}</h3><p>${escapeHtml(x.difference||"")}</p></div>`).join(""):'<div class="empty">No common confusions yet.</div>'}
     function registrySourcesForCurrentNode(){
       const id=getNodeId(currentNode);
-      return sourcesRegistry.filter(source=>{
+      const explicitIds=Array.isArray(currentNode.sourceIds)?currentNode.sourceIds:[];
+      const explicitSet=new Set(explicitIds);
+
+      const exactMatches=sourcesRegistry.filter(source=>explicitSet.has(source.id));
+
+      const fallbackMatches=sourcesRegistry.filter(source=>{
+        if(explicitSet.has(source.id)) return false;
         const concepts=Array.isArray(source.supportsConcepts)?source.supportsConcepts:[];
         return concepts.map(slugify).includes(id);
       });
-    }
 
+      return [...exactMatches, ...fallbackMatches];
+    }
     function renderSources(items){
       const registryItems=registrySourcesForCurrentNode();
       const localItems=Array.isArray(items)?items:[];
       const blocks=[];
 
       if(registryItems.length){
-        blocks.push(`<div class="mini"><h3>Source Registry Matches</h3><p>These sources come from <strong>data/sources-v2.json</strong> and are connected to this concept by source ID and supported concept fields.</p><div class="pill-row"><span class="pill">${registryItems.length} registry sources</span></div></div>`);
+        blocks.push(`<div class="mini"><h3>Source Registry Matches</h3><p>These sources come from <strong>data/sources-v2.json</strong>. Exact <strong>sourceIds</strong> from this concept are shown first, followed by any additional registry matches.</p><div class="pill-row"><span class="pill">${registryItems.length} registry sources</span>${(currentNode.sourceIds||[]).map(x=>`<span class="pill">${escapeHtml(x)}</span>`).join("")}</div></div>`);
         registryItems.forEach(s=>{
           const fields=Array.isArray(s.supportsFields)?s.supportsFields:[];
           const concepts=Array.isArray(s.supportsConcepts)?s.supportsConcepts:[];
