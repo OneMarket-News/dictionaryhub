@@ -30,6 +30,78 @@
     .pill{border-radius:999px;background:#ecfdf5;color:#059669;border:1px solid #bbf7d0;padding:6px 9px;font-size:11px;font-weight:900}.pill-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
     .link-list{display:grid;gap:10px}.link-list a{display:flex;justify-content:space-between;gap:12px;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fbfdff;color:var(--text);text-decoration:none;font-weight:900}.link-list a:hover{background:#f0f7ff;border-color:#bfdbfe}.link-list span{color:var(--blue);font-size:12px}
     .rel-title{margin:0;font-family:Georgia,serif;font-size:28px;line-height:1.08}.rel-text{color:#475569;line-height:1.65;font-size:14px;margin:12px 0 0}.empty{background:#fff;border:1px solid var(--line);border-radius:18px;padding:28px;color:var(--muted);box-shadow:var(--soft)}
+
+    .source-card {
+      border: 1px solid #dbeafe;
+      border-radius: 18px;
+      padding: 20px;
+      background: linear-gradient(180deg, #ffffff, #f8fbff);
+      box-shadow: var(--soft);
+    }
+
+    .source-card h3 {
+      margin: 0 0 8px;
+      font-family: Georgia, serif;
+      font-size: 22px;
+    }
+
+    .source-meta {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+
+    .source-card p {
+      margin: 10px 0 0;
+      color: #475569;
+      line-height: 1.62;
+      font-size: 14px;
+    }
+
+    .source-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+      align-items: center;
+    }
+
+    .source-open {
+      border-radius: 999px;
+      border: 1px solid #bfdbfe;
+      background: #eff6ff;
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 900;
+      padding: 8px 11px;
+      text-decoration: none;
+      display: inline-flex;
+    }
+
+    .tier-badge {
+      border-radius: 999px;
+      border: 1px solid #bbf7d0;
+      background: #ecfdf5;
+      color: #047857;
+      font-size: 11px;
+      font-weight: 900;
+      padding: 7px 10px;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+    }
+
+    .legacy-note {
+      border: 1px dashed #cbd5e1;
+      background: #f8fafc;
+      opacity: .82;
+    }
+
+    .legacy-note h3 {
+      font-size: 18px;
+    }
+
     @media(max-width:1050px){.layout{grid-template-columns:1fr}.side-panel{position:static}}@media(max-width:760px){.site-header{height:auto;padding:18px 24px;flex-direction:column;gap:16px}nav{flex-wrap:wrap;justify-content:center}.page{padding:28px 16px 60px}.hero{grid-template-columns:1fr;padding:30px 24px}.stats,.def-grid{grid-template-columns:1fr}.primary-link,.secondary-link{width:100%}}
   </style>
 </head>
@@ -89,7 +161,7 @@
         <section class="panel"><div class="label">Relationships</div><h2>Why this concept connects to other ideas.</h2><div class="cards" id="relationships-grid"></div></section>
         <section class="panel"><div class="label">Examples</div><h2>How this concept appears in use.</h2><div class="cards" id="examples-grid"></div></section>
         <section class="panel"><div class="label">Common Confusions</div><h2>What this concept is not.</h2><div class="cards" id="confusions-grid"></div></section>
-        <section class="panel"><div class="label">Sources</div><h2>What supports this entry.</h2><div class="cards" id="sources-grid"></div></section>
+        <section class="panel"><div class="label">Source Support</div><h2>Where this concept gets its support.</h2><div class="cards" id="sources-grid"></div></section>
         <section class="panel"><div class="label">Revisions</div><h2>How this entry changed.</h2><div class="cards" id="revisions-grid"></div></section>
       </div>
 
@@ -200,21 +272,46 @@
       const registryItems=registrySourcesForCurrentNode();
       const localItems=Array.isArray(items)?items:[];
       const blocks=[];
+      const exactIds=Array.isArray(currentNode.sourceIds)?currentNode.sourceIds:[];
 
       if(registryItems.length){
-        blocks.push(`<div class="mini"><h3>Source Registry Matches</h3><p>These sources come from <strong>data/sources-v2.json</strong>. Exact <strong>sourceIds</strong> from this concept are shown first, followed by any additional registry matches.</p><div class="pill-row"><span class="pill">${registryItems.length} registry sources</span>${(currentNode.sourceIds||[]).map(x=>`<span class="pill">${escapeHtml(x)}</span>`).join("")}</div></div>`);
+        blocks.push(`<div class="mini"><h3>Verified Source Registry</h3><p>These source records come from <strong>data/sources-v2.json</strong>. Exact source IDs connected to this concept are prioritized first.</p><div class="pill-row"><span class="pill">${registryItems.length} registry sources</span>${exactIds.map(x=>`<span class="pill">${escapeHtml(x)}</span>`).join("")}</div></div>`);
+
         registryItems.forEach(s=>{
           const fields=Array.isArray(s.supportsFields)?s.supportsFields:[];
           const concepts=Array.isArray(s.supportsConcepts)?s.supportsConcepts:[];
-          const sourceLink=s.url?`<p style="margin-top:10px"><a href="${escapeHtml(s.url)}" target="_blank" rel="noopener">Open source →</a></p>`:"";
-          blocks.push(`<div class="mini"><h3>${escapeHtml(s.name||"Source")}</h3><p><strong>${escapeHtml(s.publisher||"")}</strong>${s.type?` · ${escapeHtml(s.type)}`:""}</p><p>${escapeHtml(s.notes||"")}</p>${sourceLink}<div class="pill-row">${fields.map(x=>`<span class="pill">${escapeHtml(x)}</span>`).join("")}${concepts.map(x=>`<span class="pill">${escapeHtml(x)}</span>`).join("")}</div></div>`);
+          const isExact=exactIds.includes(s.id);
+          const sourceLink=s.url?`<a class="source-open" href="${escapeHtml(s.url)}" target="_blank" rel="noopener">Open source →</a>`:"";
+          const tier=s.qualityTier?`<span class="tier-badge">${escapeHtml(s.qualityTier)}</span>`:"";
+          const exactBadge=isExact?`<span class="tier-badge">Exact ID Match</span>`:`<span class="tier-badge">Registry Match</span>`;
+
+          blocks.push(`
+            <article class="source-card">
+              <h3>${escapeHtml(s.name||"Source")}</h3>
+              <div class="source-meta">
+                ${escapeHtml(s.publisher||"Unknown publisher")}
+                ${s.type?` · ${escapeHtml(s.type)}`:""}
+                ${s.domain?` · ${escapeHtml(s.domain)}`:""}
+              </div>
+              <p>${escapeHtml(s.notes||"")}</p>
+              <div class="source-actions">
+                ${sourceLink}
+                ${tier}
+                ${exactBadge}
+              </div>
+              <div class="pill-row">
+                ${fields.map(x=>`<span class="pill">${escapeHtml(x)}</span>`).join("")}
+                ${concepts.map(x=>`<span class="pill">${escapeHtml(x)}</span>`).join("")}
+              </div>
+            </article>
+          `);
         });
       }
 
       if(localItems.length){
-        blocks.push(`<div class="mini"><h3>Entry-Level Source Notes</h3><p>These are source notes stored directly inside this concept entry. Some may still be placeholders until replaced by registry source IDs.</p></div>`);
+        blocks.push(`<div class="mini legacy-note"><h3>Legacy Entry Notes</h3><p>These notes are stored directly inside the concept entry. They are kept for context while the V2 source registry becomes the primary source layer.</p></div>`);
         localItems.forEach(s=>{
-          blocks.push(`<div class="mini"><h3>${escapeHtml(s.name||"Source")}</h3><p>${escapeHtml(s.notes||s.type||"")}</p><div class="pill-row">${(s.supports||[]).map(x=>`<span class="pill">${escapeHtml(x)}</span>`).join("")}</div></div>`);
+          blocks.push(`<div class="mini legacy-note"><h3>${escapeHtml(s.name||"Source note")}</h3><p>${escapeHtml(s.notes||s.type||"")}</p><div class="pill-row">${(s.supports||[]).map(x=>`<span class="pill">${escapeHtml(x)}</span>`).join("")}</div></div>`);
         });
       }
 
