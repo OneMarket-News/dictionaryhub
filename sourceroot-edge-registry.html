@@ -190,6 +190,10 @@
       background: #111827;
     }
 
+    .domain-wiki {
+      background: #065f46;
+    }
+
     .node-pill {
       display: inline-block;
       background: #fff8e6;
@@ -301,7 +305,7 @@
   <header>
     <h1>SourceRoot Edge Registry</h1>
     <div class="subtitle">
-      Master relationship view for SourceRoot. Inspect every edge across DictionaryHub, BibleRoot, and cross-hub SourceRoot connections.
+      Master relationship view for SourceRoot. Inspect every edge across DictionaryHub, BibleRoot, WikidataRoot, and cross-hub SourceRoot connections.
     </div>
 
     <div class="top-links">
@@ -354,6 +358,12 @@
     import { adaptBibleNodes } from "./engine/adapters/bibleAdapter.js";
     import { combineNodes } from "./engine/sourceRootEngine.js";
 
+    import {
+      adaptWikidataNodes,
+      adaptWikidataEdges,
+      adaptWikidataSources
+    } from "./engine/adapters/wikidataAdapter.js";
+
     let allNodes = [];
     let allEdges = [];
     let allSources = [];
@@ -366,14 +376,20 @@
           bibleSourcesResponse,
           dictionaryConceptsResponse,
           dictionarySourcesResponse,
-          crossHubEdgesResponse
+          crossHubEdgesResponse,
+          wikidataNodesResponse,
+          wikidataEdgesResponse,
+          wikidataSourcesResponse
         ] = await Promise.all([
           fetch("data/bible-root-nodes.json"),
           fetch("data/bible-root-edges.json"),
           fetch("data/bible-root-sources.json"),
           fetch("data/nodes-v2-root.json"),
           fetch("data/sources-v2.json"),
-          fetch("data/sourceroot-cross-hub-edges.json")
+          fetch("data/sourceroot-cross-hub-edges.json"),
+          fetch("data/wikidata-root-nodes.json"),
+          fetch("data/wikidata-root-edges.json"),
+          fetch("data/wikidata-root-sources.json")
         ]);
 
         const bibleNodesRaw = await bibleNodesResponse.json();
@@ -382,21 +398,34 @@
         const dictionaryConceptsRaw = await dictionaryConceptsResponse.json();
         const dictionarySourcesRaw = await dictionarySourcesResponse.json();
         const crossHubEdgesRaw = await crossHubEdgesResponse.json();
+        const wikidataNodesRaw = await wikidataNodesResponse.json();
+        const wikidataEdgesRaw = await wikidataEdgesResponse.json();
+        const wikidataSourcesRaw = await wikidataSourcesResponse.json();
 
         const bibleNodes = adaptBibleNodes(bibleNodesRaw);
         const dictionaryNodes = adaptDictionaryConcepts(dictionaryConceptsRaw);
+        const wikidataNodes = adaptWikidataNodes(wikidataNodesRaw);
 
-        allNodes = combineNodes(bibleNodes, dictionaryNodes);
+        allNodes = combineNodes(
+          bibleNodes,
+          dictionaryNodes,
+          wikidataNodes
+        );
 
         allEdges = [
           ...adaptBibleEdges(bibleEdgesRaw),
           ...adaptDictionaryEdges(dictionaryConceptsRaw),
-          ...adaptCrossHubEdges(crossHubEdgesRaw)
+          ...adaptCrossHubEdges(crossHubEdgesRaw),
+          ...adaptWikidataEdges(wikidataEdgesRaw).map(edge => ({
+  ...edge,
+  domain: "Wiki"
+}))
         ];
 
         allSources = [
           ...adaptBibleSources(bibleSourcesRaw),
-          ...adaptDictionarySources(dictionarySourcesRaw)
+          ...adaptDictionarySources(dictionarySourcesRaw),
+          ...adaptWikidataSources(wikidataSourcesRaw)
         ];
 
         populateFilters();
@@ -547,6 +576,7 @@
         filteredEdges = filteredEdges.filter(edge => {
           const fromNode = getNodeById(edge.fromNodeId);
           const toNode = getNodeById(edge.toNodeId);
+
           const searchableText = [
             edge.id,
             edge.fromNodeId,
@@ -713,16 +743,18 @@
     }
 
     function renderDomainLabel(domain = "SourceRoot") {
-      const className = domain === "SourceRoot"
-        ? "domain-source-root"
-        : domain === "BibleRoot"
-          ? "domain-bible-root"
-          : domain === "DictionaryHub"
-            ? "domain-dictionary-hub"
-            : "";
+  const className = domain === "SourceRoot"
+    ? "domain-source-root"
+    : domain === "BibleRoot"
+      ? "domain-bible-root"
+      : domain === "DictionaryHub"
+        ? "domain-dictionary-hub"
+        : domain === "Wiki"
+          ? "domain-wiki"
+          : "";
 
-      return `<span class="hub-label ${className}">${domain}</span>`;
-    }
+  return `<span class="hub-label ${className}">${domain}</span>`;
+}
 
     function renderSourceList(sourceIds = []) {
       if (!sourceIds.length) {

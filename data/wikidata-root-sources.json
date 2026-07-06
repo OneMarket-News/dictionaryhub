@@ -1,0 +1,30 @@
+[
+  {
+    "id": "wikidata-q9128",
+    "name": "Wikidata — Light (Q9128)",
+    "type": "Structured Knowledge Graph",
+    "domain": "WikidataRoot",
+    "qualityTier": "community-maintained",
+    "credibilityTier": "medium",
+    "verificationStatus": "community maintained",
+    "sourceClass": "structured-public-dataset",
+    "publisher": "Wikimedia Foundation / Wikidata contributors",
+    "license": "CC0 public domain dedication",
+    "url": "https://www.wikidata.org/wiki/Q9128",
+    "notes": "External structured item record for light. Used as a public dataset integration test for SourceRoot."
+  },
+  {
+    "id": "wikidata-identifier-model",
+    "name": "Wikidata — Identifier Model",
+    "type": "Documentation",
+    "domain": "WikidataRoot",
+    "qualityTier": "official-documentation",
+    "credibilityTier": "high",
+    "verificationStatus": "official documentation",
+    "sourceClass": "technical-documentation",
+    "publisher": "Wikidata",
+    "license": "linked reference",
+    "url": "https://www.wikidata.org/wiki/Wikidata:Identifiers",
+    "notes": "Used to document that Wikidata entities use identifiers such as Q IDs for items."
+  }
+]

@@ -1,0 +1,51 @@
+[
+  {
+    "id": "wikidata-light-same-as-bible-light",
+    "fromNodeId": "wikidata-light",
+    "toNodeId": "bible-symbol-light",
+    "relationshipType": "SAME_AS_RELATED_CONCEPT",
+    "label": "maps to symbolic concept",
+    "summary": "WikidataRoot defines light as a structured public entity. BibleRoot uses light as a symbolic and theological concept. These are not identical meanings, but they are connected views of the same term.",
+    "sourceIds": [
+      "wikidata-q9128",
+      "bibleroot-alpha-notes"
+    ],
+    "domain": "SourceRoot"
+  },
+  {
+    "id": "wikidata-light-relates-to-dictionary-knowledge",
+    "fromNodeId": "wikidata-light",
+    "toNodeId": "dictionary-knowledge",
+    "relationshipType": "RELATES_TO",
+    "label": "relates to",
+    "summary": "Light relates to knowledge through the metaphor of illumination: making something visible, knowable, or understandable.",
+    "sourceIds": [
+      "wikidata-q9128"
+    ],
+    "domain": "SourceRoot"
+  },
+  {
+    "id": "wikidata-light-relates-to-dictionary-evidence",
+    "fromNodeId": "wikidata-light",
+    "toNodeId": "dictionary-evidence",
+    "relationshipType": "RELATES_TO",
+    "label": "relates to",
+    "summary": "Light relates to evidence because visibility and observation are often required before something can be inspected or confirmed.",
+    "sourceIds": [
+      "wikidata-q9128"
+    ],
+    "domain": "SourceRoot"
+  },
+  {
+    "id": "wikidata-light-relates-to-dictionary-truth",
+    "fromNodeId": "wikidata-light",
+    "toNodeId": "dictionary-truth",
+    "relationshipType": "RELATES_TO",
+    "label": "relates to",
+    "summary": "Light relates to truth through the symbolic idea of revealing what is hidden or making reality visible.",
+    "sourceIds": [
+      "wikidata-q9128"
+    ],
+    "domain": "SourceRoot"
+  }
+]

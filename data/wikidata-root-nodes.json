@@ -1,0 +1,72 @@
+[
+  {
+    "id": "light",
+    "externalId": "Q9128",
+    "externalUri": "https://www.wikidata.org/entity/Q9128",
+    "label": "light",
+    "title": "Light",
+    "type": "Wikidata Item",
+    "domain": "WikidataRoot",
+    "description": "electromagnetic radiation at or near visible wavelengths",
+    "summary": "Wikidata structured item for light as electromagnetic radiation near visible wavelengths.",
+    "aliases": [
+      "lights",
+      "near-visible light",
+      "near-visible spectrum",
+      "near-visible electromagnetic radiation",
+      "light wave"
+    ],
+    "sourceIds": [
+      "wikidata-q9128",
+      "wikidata-identifier-model"
+    ],
+    "statements": [
+      {
+        "property": "instance of",
+        "value": "production environment factor",
+        "relationshipType": "INSTANCE_OF"
+      },
+      {
+        "property": "subclass of",
+        "value": "electromagnetic wave",
+        "relationshipType": "SUBCLASS_OF"
+      },
+      {
+        "property": "has use",
+        "value": "visual system",
+        "relationshipType": "HAS_USE"
+      },
+      {
+        "property": "has use",
+        "value": "photosynthesis",
+        "relationshipType": "HAS_USE"
+      },
+      {
+        "property": "studied by",
+        "value": "optics",
+        "relationshipType": "STUDIED_BY"
+      },
+      {
+        "property": "speed",
+        "value": "299,792,458 metre per second",
+        "relationshipType": "HAS_MEASUREMENT"
+      },
+      {
+        "property": "has part",
+        "value": "photon",
+        "relationshipType": "HAS_PART"
+      },
+      {
+        "property": "opposite of",
+        "value": "darkness",
+        "relationshipType": "OPPOSITE_OF"
+      }
+    ],
+    "revisions": [
+      {
+        "version": "0.1",
+        "summary": "Initial manual WikidataRoot sample based on Wikidata item Q9128."
+      }
+    ]
+  }
+]

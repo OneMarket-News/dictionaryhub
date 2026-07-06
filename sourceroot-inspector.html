@@ -364,6 +364,13 @@
     import { adaptBibleNodes } from "./engine/adapters/bibleAdapter.js";
     import { combineNodes, searchNodes } from "./engine/sourceRootEngine.js";
 
+    import {
+      adaptWikidataNodes,
+      adaptWikidataAssertions,
+      adaptWikidataEdges,
+      adaptWikidataSources
+    } from "./engine/adapters/wikidataAdapter.js";
+
     let allNodes = [];
     let allEdges = [];
     let allAssertions = [];
@@ -373,50 +380,67 @@
     async function loadSourceRootInspector() {
       try {
         const [
-  bibleNodesResponse,
-  bibleEdgesResponse,
-  bibleAssertionsResponse,
-  bibleSourcesResponse,
-  dictionaryConceptsResponse,
-  dictionarySourcesResponse,
-  crossHubEdgesResponse
-] = await Promise.all([
-  fetch("data/bible-root-nodes.json"),
-  fetch("data/bible-root-edges.json"),
-  fetch("data/bible-root-assertions.json"),
-  fetch("data/bible-root-sources.json"),
-  fetch("data/nodes-v2-root.json"),
-  fetch("data/sources-v2.json"),
-  fetch("data/sourceroot-cross-hub-edges.json")
-]);
+          bibleNodesResponse,
+          bibleEdgesResponse,
+          bibleAssertionsResponse,
+          bibleSourcesResponse,
+          dictionaryConceptsResponse,
+          dictionarySourcesResponse,
+          crossHubEdgesResponse,
+          wikidataNodesResponse,
+          wikidataEdgesResponse,
+          wikidataSourcesResponse
+        ] = await Promise.all([
+          fetch("data/bible-root-nodes.json"),
+          fetch("data/bible-root-edges.json"),
+          fetch("data/bible-root-assertions.json"),
+          fetch("data/bible-root-sources.json"),
+          fetch("data/nodes-v2-root.json"),
+          fetch("data/sources-v2.json"),
+          fetch("data/sourceroot-cross-hub-edges.json"),
+          fetch("data/wikidata-root-nodes.json"),
+          fetch("data/wikidata-root-edges.json"),
+          fetch("data/wikidata-root-sources.json")
+        ]);
 
         const bibleNodesRaw = await bibleNodesResponse.json();
         const bibleEdgesRaw = await bibleEdgesResponse.json();
         const bibleAssertionsRaw = await bibleAssertionsResponse.json();
         const bibleSourcesRaw = await bibleSourcesResponse.json();
         const dictionaryConceptsRaw = await dictionaryConceptsResponse.json();
-const dictionarySourcesRaw = await dictionarySourcesResponse.json();
-const crossHubEdgesRaw = await crossHubEdgesResponse.json();
+        const dictionarySourcesRaw = await dictionarySourcesResponse.json();
+        const crossHubEdgesRaw = await crossHubEdgesResponse.json();
+        const wikidataNodesRaw = await wikidataNodesResponse.json();
+        const wikidataEdgesRaw = await wikidataEdgesResponse.json();
+        const wikidataSourcesRaw = await wikidataSourcesResponse.json();
 
         const bibleNodes = adaptBibleNodes(bibleNodesRaw);
         const dictionaryNodes = adaptDictionaryConcepts(dictionaryConceptsRaw);
+        const wikidataNodes = adaptWikidataNodes(wikidataNodesRaw);
 
-        allNodes = combineNodes(bibleNodes, dictionaryNodes);
+        allNodes = combineNodes(
+          bibleNodes,
+          dictionaryNodes,
+          wikidataNodes
+        );
 
         allEdges = [
-  ...adaptBibleEdges(bibleEdgesRaw),
-  ...adaptDictionaryEdges(dictionaryConceptsRaw),
-  ...adaptCrossHubEdges(crossHubEdgesRaw)
-];
+          ...adaptBibleEdges(bibleEdgesRaw),
+          ...adaptDictionaryEdges(dictionaryConceptsRaw),
+          ...adaptCrossHubEdges(crossHubEdgesRaw),
+          ...adaptWikidataEdges(wikidataEdgesRaw)
+        ];
 
         allAssertions = [
           ...adaptBibleAssertions(bibleAssertionsRaw),
-          ...adaptDictionaryAssertions(dictionaryConceptsRaw)
+          ...adaptDictionaryAssertions(dictionaryConceptsRaw),
+          ...adaptWikidataAssertions(wikidataNodesRaw)
         ];
 
         allSources = [
           ...adaptBibleSources(bibleSourcesRaw),
-          ...adaptDictionarySources(dictionarySourcesRaw)
+          ...adaptDictionarySources(dictionarySourcesRaw),
+          ...adaptWikidataSources(wikidataSourcesRaw)
         ];
 
         renderEngineStatus();
@@ -532,17 +556,17 @@ const crossHubEdgesRaw = await crossHubEdgesResponse.json();
     }
 
     function adaptCrossHubEdges(edges = []) {
-  return edges.map(edge => ({
-    id: edge.id,
-    fromNodeId: edge.fromNodeId,
-    toNodeId: edge.toNodeId,
-    relationshipType: edge.relationshipType || edge.type || "CROSS_HUB_RELATIONSHIP",
-    label: edge.label || edge.relationshipType || "relates to",
-    summary: edge.summary || edge.explanation || "",
-    sourceIds: edge.sourceIds || [],
-    domain: edge.domain || "SourceRoot"
-  }));
-}
+      return edges.map(edge => ({
+        id: edge.id,
+        fromNodeId: edge.fromNodeId,
+        toNodeId: edge.toNodeId,
+        relationshipType: edge.relationshipType || edge.type || "CROSS_HUB_RELATIONSHIP",
+        label: edge.label || edge.relationshipType || "relates to",
+        summary: edge.summary || edge.explanation || "",
+        sourceIds: edge.sourceIds || [],
+        domain: edge.domain || "SourceRoot"
+      }));
+    }
 
     function adaptBibleAssertions(assertions = []) {
       return assertions.map(assertion => ({
@@ -727,8 +751,8 @@ const crossHubEdgesRaw = await crossHubEdgesResponse.json();
           </div>
 
           ${groupedNodes[hubName].map(node => `
-            <div 
-              class="node-card ${node.id === selectedNodeId ? "active" : ""}" 
+            <div
+              class="node-card ${node.id === selectedNodeId ? "active" : ""}"
               onclick="window.selectNode('${node.id}')"
             >
               <span class="hub-label">${node.domain}</span>
