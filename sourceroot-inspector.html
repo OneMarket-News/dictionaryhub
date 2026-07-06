@@ -27,13 +27,15 @@
     .subtitle {
       color: #d1d5db;
       margin-top: 8px;
+      max-width: 900px;
+      line-height: 1.5;
     }
 
     main {
       display: grid;
-      grid-template-columns: 360px 1fr;
+      grid-template-columns: 380px 1fr;
       gap: 20px;
-      max-width: 1300px;
+      max-width: 1400px;
       margin: 0 auto;
       padding: 24px;
     }
@@ -44,6 +46,61 @@
       border-radius: 14px;
       padding: 18px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .left-panel {
+      align-self: start;
+      position: sticky;
+      top: 18px;
+      max-height: calc(100vh - 36px);
+      overflow: auto;
+    }
+
+    .controls {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #cfc7b8;
+      font-size: 14px;
+      box-sizing: border-box;
+      background: white;
+    }
+
+    button {
+      font-family: inherit;
+    }
+
+    .clear-button {
+      border: 1px solid #cfc7b8;
+      background: #fff8e6;
+      color: #1f2933;
+      border-radius: 10px;
+      padding: 9px 10px;
+      font-size: 13px;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .clear-button:hover {
+      background: #efe7d3;
+      border-color: #b78a2f;
+    }
+
+    .status-box {
+      background: #fff8e6;
+      border: 1px solid #ead59a;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 14px;
+      font-size: 13px;
+      line-height: 1.5;
     }
 
     .hub-group {
@@ -83,10 +140,18 @@
       border-color: #b78a2f;
     }
 
+    .node-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
     .meta {
       color: #6b7280;
       font-size: 13px;
       margin-bottom: 8px;
+      line-height: 1.4;
     }
 
     .hub-label {
@@ -99,24 +164,64 @@
       margin-bottom: 8px;
     }
 
-    .status-box {
-      background: #fff8e6;
-      border: 1px solid #ead59a;
-      border-radius: 12px;
-      padding: 12px;
-      margin-bottom: 14px;
-      font-size: 13px;
-      line-height: 1.5;
-    }
-
-    .tag {
+    .type-pill {
       display: inline-block;
       background: #efe7d3;
       color: #4b3b16;
-      padding: 5px 8px;
+      padding: 4px 8px;
       border-radius: 999px;
-      font-size: 12px;
+      font-size: 11px;
       margin: 3px 4px 3px 0;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(90px, 1fr));
+      gap: 10px;
+      margin: 18px 0;
+    }
+
+    .stat-card {
+      background: #f7f4ee;
+      border: 1px solid #ddd6c8;
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .stat-number {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 3px;
+    }
+
+    .stat-label {
+      color: #6b7280;
+      font-size: 12px;
+    }
+
+    .section {
+      margin-top: 24px;
+      padding-top: 14px;
+      border-top: 1px solid #ddd6c8;
+    }
+
+    .section h3 {
+      margin-bottom: 12px;
+    }
+
+    .assertion-card,
+    .relationship-card,
+    .source-card {
+      border: 1px solid #eee2c7;
+      background: #fffdf8;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+
+    .assertion-card h4,
+    .source-card h4 {
+      margin: 0 0 6px;
     }
 
     .relationship-button {
@@ -135,12 +240,24 @@
       border-color: #b78a2f;
     }
 
-    .relationship-card {
-      border: 1px solid #eee2c7;
-      background: #fffdf8;
-      border-radius: 12px;
-      padding: 12px;
-      margin-bottom: 10px;
+    .relationship-line {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      line-height: 1.7;
+    }
+
+    .open-source-link {
+      display: inline-block;
+      margin-top: 6px;
+      color: #8a5a00;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    .open-source-link:hover {
+      text-decoration: underline;
     }
 
     code {
@@ -149,30 +266,47 @@
       border-radius: 4px;
     }
 
-    .section {
-      margin-top: 24px;
-      padding-top: 14px;
-      border-top: 1px solid #ddd6c8;
-    }
-
     .empty {
       color: #6b7280;
       font-style: italic;
     }
 
-    input {
-      width: 100%;
-      padding: 10px;
-      border-radius: 10px;
-      border: 1px solid #cfc7b8;
-      margin-bottom: 14px;
-      font-size: 14px;
-      box-sizing: border-box;
+    details {
+      border: 1px solid #ddd6c8;
+      background: #fffdf8;
+      border-radius: 12px;
+      padding: 12px;
+      margin-top: 12px;
     }
 
-    @media (max-width: 800px) {
+    summary {
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #f3f4f6;
+      border-radius: 10px;
+      padding: 12px;
+      overflow: auto;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 900px) {
       main {
         grid-template-columns: 1fr;
+      }
+
+      .left-panel {
+        position: static;
+        max-height: none;
+      }
+
+      .stat-grid {
+        grid-template-columns: repeat(2, 1fr);
       }
     }
   </style>
@@ -183,14 +317,29 @@
     <h1>SourceRoot Inspector</h1>
     <div class="subtitle">
       Master prototype view for SourceRoot: DictionaryHub + BibleRoot through one adapter layer.
+      Search, filter, inspect, follow relationships, verify assertions, and open source records from one universal engine.
     </div>
   </header>
 
   <main>
-    <section class="panel">
+    <section class="panel left-panel">
       <h2>Universal Nodes</h2>
 
-      <input id="searchInput" type="text" placeholder="Search SourceRoot..." />
+      <div class="controls">
+        <input id="searchInput" type="text" placeholder="Search SourceRoot..." />
+
+        <select id="hubFilter">
+          <option value="all">All Hubs</option>
+        </select>
+
+        <select id="typeFilter">
+          <option value="all">All Types</option>
+        </select>
+
+        <button id="clearFiltersButton" class="clear-button" type="button">
+          Clear search and filters
+        </button>
+      </div>
 
       <div id="engineStatus" class="status-box">
         Loading engine status...
@@ -204,7 +353,7 @@
       <div id="inspector">
         <h2>Select a node</h2>
         <p class="empty">
-          Click a node on the left to inspect its assertions, relationships, sources, and revisions.
+          Click a node on the left to inspect its assertions, relationships, sources, revisions, and raw SourceRoot data.
         </p>
       </div>
     </section>
@@ -262,31 +411,40 @@
         ];
 
         allSources = [
-          ...bibleSourcesRaw,
+          ...adaptBibleSources(bibleSourcesRaw),
           ...adaptDictionarySources(dictionarySourcesRaw)
         ];
 
         renderEngineStatus();
-        renderNodeList(allNodes);
+        populateFilters();
+        applyFilters();
 
-        document.getElementById("searchInput").addEventListener("input", event => {
-          const filteredNodes = searchNodes(allNodes, event.target.value);
-          renderNodeList(filteredNodes);
+        document.getElementById("searchInput").addEventListener("input", applyFilters);
+        document.getElementById("hubFilter").addEventListener("change", applyFilters);
+        document.getElementById("typeFilter").addEventListener("change", applyFilters);
+
+        document.getElementById("clearFiltersButton").addEventListener("click", () => {
+          document.getElementById("searchInput").value = "";
+          document.getElementById("hubFilter").value = "all";
+          document.getElementById("typeFilter").value = "all";
+          applyFilters();
         });
 
       } catch (error) {
         document.getElementById("nodeList").innerHTML =
-          "<p class='empty'>Could not load SourceRoot data.</p>";
+          "<p class='empty'>Could not load SourceRoot data. Check file paths and browser console.</p>";
         console.error(error);
       }
     }
 
     function renderEngineStatus() {
       const hubs = new Set(allNodes.map(node => node.domain));
+      const nodeTypes = new Set(allNodes.map(node => node.type));
 
       document.getElementById("engineStatus").innerHTML = `
         <strong>SourceRoot Engine Status</strong><br>
         Loaded Hubs: ${hubs.size}<br>
+        Node Types: ${nodeTypes.size}<br>
         Nodes: ${allNodes.length}<br>
         Assertions: ${allAssertions.length}<br>
         Relationships: ${allEdges.length}<br>
@@ -294,11 +452,77 @@
       `;
     }
 
+    function populateFilters() {
+      const hubFilter = document.getElementById("hubFilter");
+      const typeFilter = document.getElementById("typeFilter");
+
+      const hubs = [...new Set(allNodes.map(node => node.domain || "Unknown Hub"))].sort();
+      const types = [...new Set(allNodes.map(node => node.type || "Unknown Type"))].sort();
+
+      hubFilter.innerHTML = `
+        <option value="all">All Hubs</option>
+        ${hubs.map(hub => `<option value="${hub}">${hub}</option>`).join("")}
+      `;
+
+      typeFilter.innerHTML = `
+        <option value="all">All Types</option>
+        ${types.map(type => `<option value="${type}">${type}</option>`).join("")}
+      `;
+    }
+
+    function applyFilters() {
+      const searchTerm = document.getElementById("searchInput").value;
+      const selectedHub = document.getElementById("hubFilter").value;
+      const selectedType = document.getElementById("typeFilter").value;
+
+      let filteredNodes = searchNodes(allNodes, searchTerm);
+
+      if (selectedHub !== "all") {
+        filteredNodes = filteredNodes.filter(node => node.domain === selectedHub);
+      }
+
+      if (selectedType !== "all") {
+        filteredNodes = filteredNodes.filter(node => node.type === selectedType);
+      }
+
+      renderNodeList(filteredNodes);
+    }
+
+    function adaptBibleSources(sources = []) {
+      return sources.map(source => ({
+        id: source.id,
+        name: source.name || source.title || source.id,
+        type: source.type || "BibleRoot Source",
+        domain: "BibleRoot",
+        qualityTier: source.qualityTier || source.tier || "Working Source",
+        url: source.url || "",
+        notes: source.notes || source.description || "",
+        raw: source
+      }));
+    }
+
+    function adaptDictionarySources(sources = []) {
+      return sources.map(source => ({
+        id: source.id,
+        name: source.name || source.title || source.id,
+        type: source.type || "DictionaryHub Source",
+        domain: "DictionaryHub",
+        qualityTier: source.qualityTier || source.tier || "Working Source",
+        url: source.url || "",
+        notes: source.notes || source.description || "",
+        raw: source
+      }));
+    }
+
     function adaptBibleEdges(edges = []) {
       return edges.map(edge => ({
         ...edge,
         fromNodeId: `bible-${edge.fromNodeId}`,
         toNodeId: `bible-${edge.toNodeId}`,
+        relationshipType: edge.relationshipType || edge.type || "RELATED_TO",
+        label: edge.label || edge.relationshipType || edge.type || "related to",
+        summary: edge.summary || edge.explanation || "",
+        sourceIds: edge.sourceIds || [],
         domain: "BibleRoot"
       }));
     }
@@ -307,6 +531,13 @@
       return assertions.map(assertion => ({
         ...assertion,
         nodeId: `bible-${assertion.nodeId}`,
+        assertionType: assertion.assertionType || assertion.type || "assertion",
+        label: assertion.label || assertion.assertionType || assertion.type || "Assertion",
+        summary: assertion.summary || "",
+        body: assertion.body || assertion.description || assertion.summary || "",
+        sourceIds: assertion.sourceIds || [],
+        confidence: assertion.confidence || "working",
+        status: assertion.status || "alpha",
         domain: "BibleRoot"
       }));
     }
@@ -322,7 +553,7 @@
             toNodeId: `dictionary-${relationship.target}`,
             relationshipType: relationship.type || "RELATED_TO",
             label: relationship.direction || relationship.type || "related to",
-            summary: relationship.explanation || "",
+            summary: relationship.explanation || relationship.bridge || "",
             sourceIds: relationship.sourceIds || [],
             domain: "DictionaryHub"
           });
@@ -381,6 +612,21 @@
           });
         }
 
+        if (concept.technicalDefinition) {
+          assertions.push({
+            id: `dictionary-assertion-${concept.id}-technical-definition`,
+            nodeId: `dictionary-${concept.id}`,
+            assertionType: "technical-definition",
+            label: "Technical Definition",
+            summary: concept.technicalDefinition,
+            body: concept.technicalDefinition,
+            sourceIds: concept.sourceIds || [],
+            confidence: "working",
+            status: concept.status || "v2-draft",
+            domain: "DictionaryHub"
+          });
+        }
+
         if (concept.whyItMatters) {
           assertions.push({
             id: `dictionary-assertion-${concept.id}-why-it-matters`,
@@ -395,29 +641,55 @@
             domain: "DictionaryHub"
           });
         }
+
+        if (Array.isArray(concept.examples) && concept.examples.length) {
+          assertions.push({
+            id: `dictionary-assertion-${concept.id}-examples`,
+            nodeId: `dictionary-${concept.id}`,
+            assertionType: "examples",
+            label: "Examples",
+            summary: `${concept.examples.length} example(s) available`,
+            body: concept.examples.map(example => `• ${example}`).join("<br>"),
+            sourceIds: concept.sourceIds || [],
+            confidence: "working",
+            status: concept.status || "v2-draft",
+            domain: "DictionaryHub"
+          });
+        }
+
+        if (Array.isArray(concept.commonConfusions) && concept.commonConfusions.length) {
+          assertions.push({
+            id: `dictionary-assertion-${concept.id}-common-confusions`,
+            nodeId: `dictionary-${concept.id}`,
+            assertionType: "common-confusions",
+            label: "Common Confusions",
+            summary: `${concept.commonConfusions.length} confusion note(s) available`,
+            body: concept.commonConfusions.map(confusion => `• ${confusion}`).join("<br>"),
+            sourceIds: concept.sourceIds || [],
+            confidence: "working",
+            status: concept.status || "v2-draft",
+            domain: "DictionaryHub"
+          });
+        }
       });
 
       return assertions;
-    }
-
-    function adaptDictionarySources(sources = []) {
-      return sources.map(source => ({
-        id: source.id,
-        name: source.name || source.title || source.id,
-        type: source.type || "DictionaryHub Source",
-        domain: "DictionaryHub",
-        qualityTier: source.qualityTier || source.tier || "Working Source",
-        url: source.url || "",
-        notes: source.notes || source.description || "",
-        raw: source
-      }));
     }
 
     function renderNodeList(nodes) {
       const nodeList = document.getElementById("nodeList");
       const nodeCount = document.getElementById("nodeCount");
 
-      nodeCount.textContent = `${nodes.length} nodes loaded`;
+      nodeCount.textContent = `${nodes.length} node${nodes.length === 1 ? "" : "s"} shown`;
+
+      if (!nodes.length) {
+        nodeList.innerHTML = `
+          <p class="empty">
+            No nodes match this search/filter combination.
+          </p>
+        `;
+        return;
+      }
 
       const groupedNodes = nodes.reduce((groups, node) => {
         const hubName = node.domain || "Unknown Hub";
@@ -443,7 +715,9 @@
               onclick="window.selectNode('${node.id}')"
             >
               <span class="hub-label">${node.domain}</span>
-              <strong>${node.title}</strong>
+              <div class="node-title-row">
+                <strong>${node.title}</strong>
+              </div>
               <div class="meta">${node.type}</div>
               <div>${node.summary || ""}</div>
             </div>
@@ -457,17 +731,28 @@
       return foundNode ? foundNode.title : nodeId;
     }
 
+    function getNodeById(nodeId) {
+      return allNodes.find(node => node.id === nodeId);
+    }
+
+    function getSourceIdsForNode(node, assertions, outgoingEdges, incomingEdges) {
+      return new Set([
+        ...(node.sourceIds || []),
+        ...assertions.flatMap(assertion => assertion.sourceIds || []),
+        ...outgoingEdges.flatMap(edge => edge.sourceIds || []),
+        ...incomingEdges.flatMap(edge => edge.sourceIds || [])
+      ]);
+    }
+
     window.selectNode = function(nodeId) {
       selectedNodeId = nodeId;
 
-      const selectedNode = allNodes.find(node => node.id === nodeId);
+      const selectedNode = getNodeById(nodeId);
       const nodeAssertions = allAssertions.filter(assertion => assertion.nodeId === nodeId);
-
       const outgoingEdges = allEdges.filter(edge => edge.fromNodeId === nodeId);
       const incomingEdges = allEdges.filter(edge => edge.toNodeId === nodeId);
 
-      const currentSearch = document.getElementById("searchInput").value;
-      renderNodeList(searchNodes(allNodes, currentSearch));
+      applyFilters();
       renderInspector(selectedNode, nodeAssertions, outgoingEdges, incomingEdges);
     };
 
@@ -479,14 +764,9 @@
         return;
       }
 
-      const sourceIds = new Set([
-        ...(node.sourceIds || []),
-        ...assertions.flatMap(assertion => assertion.sourceIds || []),
-        ...outgoingEdges.flatMap(edge => edge.sourceIds || []),
-        ...incomingEdges.flatMap(edge => edge.sourceIds || [])
-      ]);
-
+      const sourceIds = getSourceIdsForNode(node, assertions, outgoingEdges, incomingEdges);
       const matchingSources = allSources.filter(source => sourceIds.has(source.id));
+      const revisionCount = (node.revisions || []).length;
 
       inspector.innerHTML = `
         <span class="hub-label">${node.domain}</span>
@@ -498,17 +778,50 @@
 
         <p><strong>Node ID:</strong> <code>${node.id}</code></p>
 
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-number">${assertions.length}</div>
+            <div class="stat-label">Assertions</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-number">${outgoingEdges.length}</div>
+            <div class="stat-label">Outgoing</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-number">${incomingEdges.length}</div>
+            <div class="stat-label">Incoming</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-number">${matchingSources.length}</div>
+            <div class="stat-label">Sources</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-number">${revisionCount}</div>
+            <div class="stat-label">Revisions</div>
+          </div>
+        </div>
+
         <div class="section">
           <h3>Assertions</h3>
           ${assertions.length ? assertions.map(assertion => `
-            <article>
+            <article class="assertion-card">
               <h4>${assertion.label}</h4>
               <div class="meta">
                 ${assertion.assertionType} · ${assertion.status || "working"} · ${assertion.confidence || "working"}
               </div>
               <p><strong>Summary:</strong> ${assertion.summary || ""}</p>
               <p>${assertion.body || ""}</p>
-              <p><strong>Source IDs:</strong> ${(assertion.sourceIds || []).map(id => `<code>${id}</code>`).join(" ")}</p>
+              <p>
+                <strong>Source IDs:</strong>
+                ${(assertion.sourceIds || []).length
+                  ? assertion.sourceIds.map(id => `<code>${id}</code>`).join(" ")
+                  : "None yet"
+                }
+              </p>
             </article>
           `).join("") : `<p class="empty">No assertions yet.</p>`}
         </div>
@@ -517,15 +830,22 @@
           <h3>Outgoing Relationships</h3>
           ${outgoingEdges.length ? outgoingEdges.map(edge => `
             <div class="relationship-card">
-              <p>
+              <div class="relationship-line">
                 <strong>${node.title}</strong>
-                ${edge.label}
+                <span>${edge.label}</span>
                 <button class="relationship-button" onclick="window.selectNode('${edge.toNodeId}')">
                   ${getNodeTitle(edge.toNodeId)}
                 </button>
-              </p>
+              </div>
               <p>${edge.summary || ""}</p>
               <div class="meta">${edge.relationshipType || "relationship"} · ${edge.domain || "SourceRoot"}</div>
+              <p>
+                <strong>Source IDs:</strong>
+                ${(edge.sourceIds || []).length
+                  ? edge.sourceIds.map(id => `<code>${id}</code>`).join(" ")
+                  : "None yet"
+                }
+              </p>
             </div>
           `).join("") : `<p class="empty">No outgoing relationships yet.</p>`}
         </div>
@@ -534,15 +854,22 @@
           <h3>Incoming Relationships</h3>
           ${incomingEdges.length ? incomingEdges.map(edge => `
             <div class="relationship-card">
-              <p>
+              <div class="relationship-line">
                 <button class="relationship-button" onclick="window.selectNode('${edge.fromNodeId}')">
                   ${getNodeTitle(edge.fromNodeId)}
                 </button>
-                ${edge.label}
+                <span>${edge.label}</span>
                 <strong>${node.title}</strong>
-              </p>
+              </div>
               <p>${edge.summary || ""}</p>
               <div class="meta">${edge.relationshipType || "relationship"} · ${edge.domain || "SourceRoot"}</div>
+              <p>
+                <strong>Source IDs:</strong>
+                ${(edge.sourceIds || []).length
+                  ? edge.sourceIds.map(id => `<code>${id}</code>`).join(" ")
+                  : "None yet"
+                }
+              </p>
             </div>
           `).join("") : `<p class="empty">No incoming relationships yet.</p>`}
         </div>
@@ -550,20 +877,41 @@
         <div class="section">
           <h3>Sources</h3>
           ${matchingSources.length ? matchingSources.map(source => `
-            <article>
+            <article class="source-card">
               <h4>${source.name}</h4>
-              <div class="meta">${source.type} · ${source.qualityTier}</div>
-              <p>${source.notes}</p>
-              ${source.url ? `<p><a href="${source.url}" target="_blank" rel="noopener">Open source</a></p>` : ""}
+              <div class="meta">
+                ${source.domain || "SourceRoot"} · ${source.type || "Source"} · ${source.qualityTier || "Working Source"}
+              </div>
+              <p>${source.notes || ""}</p>
+              <p><strong>Source ID:</strong> <code>${source.id}</code></p>
+              ${source.url ? `<a class="open-source-link" href="${source.url}" target="_blank" rel="noopener">Open source</a>` : ""}
             </article>
-          `).join("") : `<p class="empty">No full source cards found yet. Source IDs may still be attached to this node or its assertions.</p>`}
+          `).join("") : `
+            <p class="empty">No full source cards found yet.</p>
+            <p><strong>Referenced Source IDs:</strong> ${Array.from(sourceIds).map(id => `<code>${id}</code>`).join(" ") || "None yet"}</p>
+          `}
         </div>
 
         <div class="section">
           <h3>Revisions</h3>
           ${(node.revisions || []).length ? node.revisions.map(revision => `
-            <p><strong>${revision.version}</strong> — ${revision.summary || revision.note || ""}</p>
+            <p><strong>${revision.version || "Revision"}</strong> — ${revision.summary || revision.note || ""}</p>
           `).join("") : `<p class="empty">No revisions yet.</p>`}
+        </div>
+
+        <div class="section">
+          <h3>Raw Node Data</h3>
+          <details>
+            <summary>View raw adapted node object</summary>
+            <pre>${JSON.stringify(node, null, 2)}</pre>
+          </details>
+
+          ${node.raw ? `
+            <details>
+              <summary>View original source object</summary>
+              <pre>${JSON.stringify(node.raw, null, 2)}</pre>
+            </details>
+          ` : ""}
         </div>
       `;
     }
