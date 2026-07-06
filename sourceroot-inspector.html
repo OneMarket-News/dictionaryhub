@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SourceRoot Inspector Prototype</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f4ee;
+      color: #1f2933;
+      margin: 0;
+    }
+
+    header {
+      background: #111827;
+      color: white;
+      padding: 24px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 30px;
+    }
+
+    .subtitle {
+      color: #d1d5db;
+      margin-top: 8px;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 20px;
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .panel {
+      background: white;
+      border: 1px solid #ddd6c8;
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .node-card {
+      border: 1px solid #ddd6c8;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      background: #fff;
+    }
+
+    .node-card:hover {
+      background: #fff8e6;
+    }
+
+    .node-card.active {
+      border-color: #b78a2f;
+      background: #fff8e6;
+    }
+
+    .meta {
+      color: #6b7280;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .tag {
+      display: inline-block;
+      background: #efe7d3;
+      color: #4b3b16;
+      padding: 5px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      margin: 3px 4px 3px 0;
+    }
+
+    code {
+      background: #eee;
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+
+    .section {
+      margin-top: 24px;
+      padding-top: 14px;
+      border-top: 1px solid #ddd6c8;
+    }
+
+    .empty {
+      color: #6b7280;
+      font-style: italic;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #cfc7b8;
+      margin-bottom: 14px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    @media (max-width: 800px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>SourceRoot Inspector</h1>
+    <div class="subtitle">
+      Prototype view for the V3 engine: Node → Edge → Assertion → Source.
+    </div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <h2>Nodes</h2>
+      <input id="searchInput" type="text" placeholder="Search nodes..." />
+      <div id="nodeList"></div>
+    </section>
+
+    <section class="panel">
+      <div id="inspector">
+        <h2>Select a node</h2>
+        <p class="empty">Click a node on the left to inspect its assertions, relationships, and sources.</p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    let allNodes = [];
+    let allEdges = [];
+    let allAssertions = [];
+    let allSources = [];
+    let selectedNodeId = null;
+
+    async function loadSourceRootInspector() {
+      try {
+        const [
+          nodesResponse,
+          edgesResponse,
+          assertionsResponse,
+          sourcesResponse
+        ] = await Promise.all([
+          fetch("data/bible-root-nodes.json"),
+          fetch("data/bible-root-edges.json"),
+          fetch("data/bible-root-assertions.json"),
+          fetch("data/bible-root-sources.json"),
+          fetch("data/nodes-v2-root.json")
+        ]);
+
+        allNodes = await nodesResponse.json();
+        allEdges = await edgesResponse.json();
+        allAssertions = await assertionsResponse.json();
+        allSources = await sourcesResponse.json();
+
+        renderNodeList(allNodes);
+
+        document.getElementById("searchInput").addEventListener("input", event => {
+          const searchTerm = event.target.value.toLowerCase();
+
+          const filteredNodes = allNodes.filter(node =>
+            node.title.toLowerCase().includes(searchTerm) ||
+            node.type.toLowerCase().includes(searchTerm) ||
+            node.summary.toLowerCase().includes(searchTerm)
+          );
+
+          renderNodeList(filteredNodes);
+        });
+
+      } catch (error) {
+        document.getElementById("nodeList").innerHTML =
+          "<p class='empty'>Could not load SourceRoot data.</p>";
+        console.error(error);
+      }
+    }
+
+    function renderNodeList(nodes) {
+      const nodeList = document.getElementById("nodeList");
+
+      nodeList.innerHTML = nodes.map(node => `
+        <div 
+          class="node-card ${node.id === selectedNodeId ? "active" : ""}" 
+          onclick="selectNode('${node.id}')"
+        >
+          <strong>${node.title}</strong>
+          <div class="meta">${node.type} · ${node.domain}</div>
+          <div>${node.summary}</div>
+        </div>
+      `).join("");
+    }
+
+    function selectNode(nodeId) {
+      selectedNodeId = nodeId;
+
+      const selectedNode = allNodes.find(node => node.id === nodeId);
+      const nodeAssertions = allAssertions.filter(assertion => assertion.nodeId === nodeId);
+
+      const outgoingEdges = allEdges.filter(edge => edge.fromNodeId === nodeId);
+      const incomingEdges = allEdges.filter(edge => edge.toNodeId === nodeId);
+
+      renderNodeList(getFilteredNodes());
+      renderInspector(selectedNode, nodeAssertions, outgoingEdges, incomingEdges);
+    }
+
+    function getFilteredNodes() {
+      const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+
+      return allNodes.filter(node =>
+        node.title.toLowerCase().includes(searchTerm) ||
+        node.type.toLowerCase().includes(searchTerm) ||
+        node.summary.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    function renderInspector(node, assertions, outgoingEdges, incomingEdges) {
+      const inspector = document.getElementById("inspector");
+
+      const sourceIds = new Set([
+        ...(node.sourceIds || []),
+        ...assertions.flatMap(assertion => assertion.sourceIds || []),
+        ...outgoingEdges.flatMap(edge => edge.sourceIds || []),
+        ...incomingEdges.flatMap(edge => edge.sourceIds || [])
+      ]);
+
+      const matchingSources = allSources.filter(source => sourceIds.has(source.id));
+
+      inspector.innerHTML = `
+        <h2>${node.title}</h2>
+        <div class="meta">${node.type} · ${node.domain}</div>
+
+        <p><strong>Summary:</strong> ${node.summary}</p>
+        <p>${node.description}</p>
+
+        <p><strong>Node ID:</strong> <code>${node.id}</code></p>
+
+        <div class="section">
+          <h3>Assertions</h3>
+          ${assertions.length ? assertions.map(assertion => `
+            <article>
+              <h4>${assertion.label}</h4>
+              <div class="meta">${assertion.assertionType} · ${assertion.status} · ${assertion.confidence}</div>
+              <p><strong>Summary:</strong> ${assertion.summary}</p>
+              <p>${assertion.body}</p>
+              <p><strong>Source IDs:</strong> ${(assertion.sourceIds || []).map(id => `<code>${id}</code>`).join(" ")}</p>
+            </article>
+          `).join("") : `<p class="empty">No assertions yet.</p>`}
+        </div>
+
+        <div class="section">
+          <h3>Outgoing Relationships</h3>
+          ${outgoingEdges.length ? outgoingEdges.map(edge => {
+            const targetNode = allNodes.find(node => node.id === edge.toNodeId);
+            return `
+              <p>
+                <code>${node.title}</code>
+                ${edge.label}
+                <code>${targetNode ? targetNode.title : edge.toNodeId}</code>
+              </p>
+              <p>${edge.summary}</p>
+            `;
+          }).join("") : `<p class="empty">No outgoing relationships yet.</p>`}
+        </div>
+
+        <div class="section">
+          <h3>Incoming Relationships</h3>
+          ${incomingEdges.length ? incomingEdges.map(edge => {
+            const sourceNode = allNodes.find(node => node.id === edge.fromNodeId);
+            return `
+              <p>
+                <code>${sourceNode ? sourceNode.title : edge.fromNodeId}</code>
+                ${edge.label}
+                <code>${node.title}</code>
+              </p>
+              <p>${edge.summary}</p>
+            `;
+          }).join("") : `<p class="empty">No incoming relationships yet.</p>`}
+        </div>
+
+        <div class="section">
+          <h3>Sources</h3>
+          ${matchingSources.length ? matchingSources.map(source => `
+            <article>
+              <h4>${source.name}</h4>
+              <div class="meta">${source.type} · ${source.qualityTier}</div>
+              <p>${source.notes}</p>
+              ${source.url ? `<p><a href="${source.url}" target="_blank" rel="noopener">Open source</a></p>` : ""}
+            </article>
+          `).join("") : `<p class="empty">No sources attached yet.</p>`}
+        </div>
+
+        <div class="section">
+          <h3>Revisions</h3>
+          ${(node.revisions || []).length ? node.revisions.map(revision => `
+            <p><strong>${revision.version}</strong> — ${revision.note}</p>
+          `).join("") : `<p class="empty">No revisions yet.</p>`}
+        </div>
+      `;
+    }
+
+    loadSourceRootInspector();
+  </script>
+</body>
+</html>
