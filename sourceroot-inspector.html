@@ -77,6 +77,16 @@
       margin-bottom: 8px;
     }
 
+    .status-box {
+        background: #fff8e6;
+        border: 1px solid #ead59a;
+         border-radius: 12px;
+        padding: 12px;
+        margin-bottom: 14px;
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
     .tag {
       display: inline-block;
       background: #efe7d3;
@@ -134,7 +144,12 @@
     <section class="panel">
       <h2>Universal Nodes</h2>
       <input id="searchInput" type="text" placeholder="Search SourceRoot..." />
-      <div id="nodeCount" class="meta"></div>
+
+    <div id="engineStatus" class="status-box">
+  Loading engine status...
+    </div>
+
+    <div id="nodeCount" class="meta"></div>
       <div id="nodeList"></div>
     </section>
 
@@ -195,7 +210,8 @@
         ];
 
         allSources = bibleSourcesRaw;
-
+        
+        renderEngineStatus();
         renderNodeList(allNodes);
 
         document.getElementById("searchInput").addEventListener("input", event => {
@@ -210,6 +226,18 @@
       }
     }
 
+    function renderEngineStatus() {
+    const hubs = new Set(allNodes.map(node => node.domain));
+
+     document.getElementById("engineStatus").innerHTML = `
+      <strong>SourceRoot Engine Status</strong><br>
+      Loaded Hubs: ${hubs.size}<br>
+      Nodes: ${allNodes.length}<br>
+      Assertions: ${allAssertions.length}<br>
+      Relationships: ${allEdges.length}<br>
+      Sources: ${allSources.length}
+    `;
+  }
     function adaptBibleEdges(edges = []) {
       return edges.map(edge => ({
         ...edge,
