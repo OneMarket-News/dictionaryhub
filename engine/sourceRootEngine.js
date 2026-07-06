@@ -2,7 +2,7 @@ export function combineNodes(...nodeGroups) {
   return nodeGroups.flat();
 }
 
-export function searchNodes(nodes, searchTerm) {
+export function searchNodes(nodes, searchTerm = "") {
   const term = searchTerm.toLowerCase();
 
   return nodes.filter(node =>
