@@ -55,18 +55,25 @@
       background: #fff;
     }
 
-    .node-card:hover {
-      background: #fff8e6;
-    }
-
+    .node-card:hover,
     .node-card.active {
-      border-color: #b78a2f;
       background: #fff8e6;
+      border-color: #b78a2f;
     }
 
     .meta {
       color: #6b7280;
       font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .hub-label {
+      display: inline-block;
+      background: #111827;
+      color: white;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 11px;
       margin-bottom: 8px;
     }
 
@@ -119,26 +126,31 @@
   <header>
     <h1>SourceRoot Inspector</h1>
     <div class="subtitle">
-      Prototype view for the V3 engine: Node → Edge → Assertion → Source.
+      Master prototype view for SourceRoot: DictionaryHub + BibleRoot through one adapter layer.
     </div>
   </header>
 
   <main>
     <section class="panel">
-      <h2>Nodes</h2>
-      <input id="searchInput" type="text" placeholder="Search nodes..." />
+      <h2>Universal Nodes</h2>
+      <input id="searchInput" type="text" placeholder="Search SourceRoot..." />
+      <div id="nodeCount" class="meta"></div>
       <div id="nodeList"></div>
     </section>
 
     <section class="panel">
       <div id="inspector">
         <h2>Select a node</h2>
-        <p class="empty">Click a node on the left to inspect its assertions, relationships, and sources.</p>
+        <p class="empty">Click a node on the left to inspect its assertions, relationships, sources, and revisions.</p>
       </div>
     </section>
   </main>
 
-  <script>
+  <script type="module">
+    import { adaptDictionaryConcepts } from "./engine/adapters/dictionaryAdapter.js";
+    import { adaptBibleNodes } from "./engine/adapters/bibleAdapter.js";
+    import { combineNodes, searchNodes } from "./engine/sourceRootEngine.js";
+
     let allNodes = [];
     let allEdges = [];
     let allAssertions = [];
@@ -148,10 +160,11 @@
     async function loadSourceRootInspector() {
       try {
         const [
-          nodesResponse,
-          edgesResponse,
-          assertionsResponse,
-          sourcesResponse
+          bibleNodesResponse,
+          bibleEdgesResponse,
+          bibleAssertionsResponse,
+          bibleSourcesResponse,
+          dictionaryConceptsResponse
         ] = await Promise.all([
           fetch("data/bible-root-nodes.json"),
           fetch("data/bible-root-edges.json"),
@@ -160,22 +173,33 @@
           fetch("data/nodes-v2-root.json")
         ]);
 
-        allNodes = await nodesResponse.json();
-        allEdges = await edgesResponse.json();
-        allAssertions = await assertionsResponse.json();
-        allSources = await sourcesResponse.json();
+        const bibleNodesRaw = await bibleNodesResponse.json();
+        const bibleEdgesRaw = await bibleEdgesResponse.json();
+        const bibleAssertionsRaw = await bibleAssertionsResponse.json();
+        const bibleSourcesRaw = await bibleSourcesResponse.json();
+        const dictionaryConceptsRaw = await dictionaryConceptsResponse.json();
+
+        const bibleNodes = adaptBibleNodes(bibleNodesRaw);
+        const dictionaryNodes = adaptDictionaryConcepts(dictionaryConceptsRaw);
+
+        allNodes = combineNodes(bibleNodes, dictionaryNodes);
+
+        allEdges = [
+          ...adaptBibleEdges(bibleEdgesRaw),
+          ...adaptDictionaryEdges(dictionaryConceptsRaw)
+        ];
+
+        allAssertions = [
+          ...adaptBibleAssertions(bibleAssertionsRaw),
+          ...adaptDictionaryAssertions(dictionaryConceptsRaw)
+        ];
+
+        allSources = bibleSourcesRaw;
 
         renderNodeList(allNodes);
 
         document.getElementById("searchInput").addEventListener("input", event => {
-          const searchTerm = event.target.value.toLowerCase();
-
-          const filteredNodes = allNodes.filter(node =>
-            node.title.toLowerCase().includes(searchTerm) ||
-            node.type.toLowerCase().includes(searchTerm) ||
-            node.summary.toLowerCase().includes(searchTerm)
-          );
-
+          const filteredNodes = searchNodes(allNodes, event.target.value);
           renderNodeList(filteredNodes);
         });
 
@@ -186,22 +210,132 @@
       }
     }
 
+    function adaptBibleEdges(edges = []) {
+      return edges.map(edge => ({
+        ...edge,
+        fromNodeId: `bible-${edge.fromNodeId}`,
+        toNodeId: `bible-${edge.toNodeId}`,
+        domain: "BibleRoot"
+      }));
+    }
+
+    function adaptBibleAssertions(assertions = []) {
+      return assertions.map(assertion => ({
+        ...assertion,
+        nodeId: `bible-${assertion.nodeId}`,
+        domain: "BibleRoot"
+      }));
+    }
+
+    function adaptDictionaryEdges(concepts = []) {
+      const edges = [];
+
+      concepts.forEach(concept => {
+        (concept.relationships || []).forEach((relationship, index) => {
+          edges.push({
+            id: `dictionary-edge-${concept.id}-${relationship.target}-${index}`,
+            fromNodeId: `dictionary-${concept.id}`,
+            toNodeId: `dictionary-${relationship.target}`,
+            relationshipType: relationship.type || "RELATED_TO",
+            label: relationship.direction || relationship.type || "related to",
+            summary: relationship.explanation || "",
+            sourceIds: relationship.sourceIds || [],
+            domain: "DictionaryHub"
+          });
+        });
+      });
+
+      return edges;
+    }
+
+    function adaptDictionaryAssertions(concepts = []) {
+      const assertions = [];
+
+      concepts.forEach(concept => {
+        if (concept.shortDefinition) {
+          assertions.push({
+            id: `dictionary-assertion-${concept.id}-short-definition`,
+            nodeId: `dictionary-${concept.id}`,
+            assertionType: "short-definition",
+            label: "Short Definition",
+            summary: concept.shortDefinition,
+            body: concept.shortDefinition,
+            sourceIds: concept.sourceIds || [],
+            confidence: "working",
+            status: concept.status || "v2-draft",
+            domain: "DictionaryHub"
+          });
+        }
+
+        if (concept.fullDefinition) {
+          assertions.push({
+            id: `dictionary-assertion-${concept.id}-full-definition`,
+            nodeId: `dictionary-${concept.id}`,
+            assertionType: "full-definition",
+            label: "Full Definition",
+            summary: concept.shortDefinition || "",
+            body: concept.fullDefinition,
+            sourceIds: concept.sourceIds || [],
+            confidence: "working",
+            status: concept.status || "v2-draft",
+            domain: "DictionaryHub"
+          });
+        }
+
+        if (concept.plainEnglish) {
+          assertions.push({
+            id: `dictionary-assertion-${concept.id}-plain-english`,
+            nodeId: `dictionary-${concept.id}`,
+            assertionType: "plain-english",
+            label: "Plain English",
+            summary: concept.plainEnglish,
+            body: concept.plainEnglish,
+            sourceIds: concept.sourceIds || [],
+            confidence: "working",
+            status: concept.status || "v2-draft",
+            domain: "DictionaryHub"
+          });
+        }
+
+        if (concept.whyItMatters) {
+          assertions.push({
+            id: `dictionary-assertion-${concept.id}-why-it-matters`,
+            nodeId: `dictionary-${concept.id}`,
+            assertionType: "why-it-matters",
+            label: "Why It Matters",
+            summary: concept.whyItMatters,
+            body: concept.whyItMatters,
+            sourceIds: concept.sourceIds || [],
+            confidence: "working",
+            status: concept.status || "v2-draft",
+            domain: "DictionaryHub"
+          });
+        }
+      });
+
+      return assertions;
+    }
+
     function renderNodeList(nodes) {
       const nodeList = document.getElementById("nodeList");
+      const nodeCount = document.getElementById("nodeCount");
+
+      nodeCount.textContent = `${nodes.length} nodes loaded`;
 
       nodeList.innerHTML = nodes.map(node => `
         <div 
           class="node-card ${node.id === selectedNodeId ? "active" : ""}" 
-          onclick="selectNode('${node.id}')"
+          onclick="window.selectNode('${node.id}')"
         >
+          <span class="hub-label">${node.domain}</span>
           <strong>${node.title}</strong>
-          <div class="meta">${node.type} · ${node.domain}</div>
-          <div>${node.summary}</div>
+          <div class="meta">${node.type}</div>
+          <div>${node.summary || ""}</div>
         </div>
       `).join("");
     }
 
-    function selectNode(nodeId) {
+    window.selectNode = function(nodeId) {
       selectedNodeId = nodeId;
 
       const selectedNode = allNodes.find(node => node.id === nodeId);
@@ -210,22 +344,18 @@
       const outgoingEdges = allEdges.filter(edge => edge.fromNodeId === nodeId);
       const incomingEdges = allEdges.filter(edge => edge.toNodeId === nodeId);
 
-      renderNodeList(getFilteredNodes());
+      const currentSearch = document.getElementById("searchInput").value;
+      renderNodeList(searchNodes(allNodes, currentSearch));
       renderInspector(selectedNode, nodeAssertions, outgoingEdges, incomingEdges);
-    }
-
-    function getFilteredNodes() {
-      const searchTerm = document.getElementById("searchInput").value.toLowerCase();
-
-      return allNodes.filter(node =>
-        node.title.toLowerCase().includes(searchTerm) ||
-        node.type.toLowerCase().includes(searchTerm) ||
-        node.summary.toLowerCase().includes(searchTerm)
-      );
-    }
+    };
 
     function renderInspector(node, assertions, outgoingEdges, incomingEdges) {
       const inspector = document.getElementById("inspector");
+
+      if (!node) {
+        inspector.innerHTML = `<p class="empty">Node not found.</p>`;
+        return;
+      }
 
       const sourceIds = new Set([
         ...(node.sourceIds || []),
@@ -237,11 +367,12 @@
       const matchingSources = allSources.filter(source => sourceIds.has(source.id));
 
       inspector.innerHTML = `
+        <span class="hub-label">${node.domain}</span>
         <h2>${node.title}</h2>
-        <div class="meta">${node.type} · ${node.domain}</div>
+        <div class="meta">${node.type}</div>
 
-        <p><strong>Summary:</strong> ${node.summary}</p>
-        <p>${node.description}</p>
+        <p><strong>Summary:</strong> ${node.summary || ""}</p>
+        <p>${node.description || ""}</p>
 
         <p><strong>Node ID:</strong> <code>${node.id}</code></p>
 
@@ -250,9 +381,9 @@
           ${assertions.length ? assertions.map(assertion => `
             <article>
               <h4>${assertion.label}</h4>
-              <div class="meta">${assertion.assertionType} · ${assertion.status} · ${assertion.confidence}</div>
-              <p><strong>Summary:</strong> ${assertion.summary}</p>
-              <p>${assertion.body}</p>
+              <div class="meta">${assertion.assertionType} · ${assertion.status || "working"} · ${assertion.confidence || "working"}</div>
+              <p><strong>Summary:</strong> ${assertion.summary || ""}</p>
+              <p>${assertion.body || ""}</p>
               <p><strong>Source IDs:</strong> ${(assertion.sourceIds || []).map(id => `<code>${id}</code>`).join(" ")}</p>
             </article>
           `).join("") : `<p class="empty">No assertions yet.</p>`}
@@ -268,7 +399,7 @@
                 ${edge.label}
                 <code>${targetNode ? targetNode.title : edge.toNodeId}</code>
               </p>
-              <p>${edge.summary}</p>
+              <p>${edge.summary || ""}</p>
             `;
           }).join("") : `<p class="empty">No outgoing relationships yet.</p>`}
         </div>
@@ -283,7 +414,7 @@
                 ${edge.label}
                 <code>${node.title}</code>
               </p>
-              <p>${edge.summary}</p>
+              <p>${edge.summary || ""}</p>
             `;
           }).join("") : `<p class="empty">No incoming relationships yet.</p>`}
         </div>
@@ -297,13 +428,13 @@
               <p>${source.notes}</p>
               ${source.url ? `<p><a href="${source.url}" target="_blank" rel="noopener">Open source</a></p>` : ""}
             </article>
-          `).join("") : `<p class="empty">No sources attached yet.</p>`}
+          `).join("") : `<p class="empty">Sources referenced by ID. Full DictionaryHub source registry connection comes next.</p>`}
         </div>
 
         <div class="section">
           <h3>Revisions</h3>
           ${(node.revisions || []).length ? node.revisions.map(revision => `
-            <p><strong>${revision.version}</strong> — ${revision.note}</p>
+            <p><strong>${revision.version}</strong> — ${revision.summary || revision.note || ""}</p>
           `).join("") : `<p class="empty">No revisions yet.</p>`}
         </div>
       `;
