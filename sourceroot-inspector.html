@@ -373,27 +373,30 @@
     async function loadSourceRootInspector() {
       try {
         const [
-          bibleNodesResponse,
-          bibleEdgesResponse,
-          bibleAssertionsResponse,
-          bibleSourcesResponse,
-          dictionaryConceptsResponse,
-          dictionarySourcesResponse
-        ] = await Promise.all([
-          fetch("data/bible-root-nodes.json"),
-          fetch("data/bible-root-edges.json"),
-          fetch("data/bible-root-assertions.json"),
-          fetch("data/bible-root-sources.json"),
-          fetch("data/nodes-v2-root.json"),
-          fetch("data/sources-v2.json")
-        ]);
+  bibleNodesResponse,
+  bibleEdgesResponse,
+  bibleAssertionsResponse,
+  bibleSourcesResponse,
+  dictionaryConceptsResponse,
+  dictionarySourcesResponse,
+  crossHubEdgesResponse
+] = await Promise.all([
+  fetch("data/bible-root-nodes.json"),
+  fetch("data/bible-root-edges.json"),
+  fetch("data/bible-root-assertions.json"),
+  fetch("data/bible-root-sources.json"),
+  fetch("data/nodes-v2-root.json"),
+  fetch("data/sources-v2.json"),
+  fetch("data/sourceroot-cross-hub-edges.json")
+]);
 
         const bibleNodesRaw = await bibleNodesResponse.json();
         const bibleEdgesRaw = await bibleEdgesResponse.json();
         const bibleAssertionsRaw = await bibleAssertionsResponse.json();
         const bibleSourcesRaw = await bibleSourcesResponse.json();
         const dictionaryConceptsRaw = await dictionaryConceptsResponse.json();
-        const dictionarySourcesRaw = await dictionarySourcesResponse.json();
+const dictionarySourcesRaw = await dictionarySourcesResponse.json();
+const crossHubEdgesRaw = await crossHubEdgesResponse.json();
 
         const bibleNodes = adaptBibleNodes(bibleNodesRaw);
         const dictionaryNodes = adaptDictionaryConcepts(dictionaryConceptsRaw);
@@ -401,9 +404,10 @@
         allNodes = combineNodes(bibleNodes, dictionaryNodes);
 
         allEdges = [
-          ...adaptBibleEdges(bibleEdgesRaw),
-          ...adaptDictionaryEdges(dictionaryConceptsRaw)
-        ];
+  ...adaptBibleEdges(bibleEdgesRaw),
+  ...adaptDictionaryEdges(dictionaryConceptsRaw),
+  ...adaptCrossHubEdges(crossHubEdgesRaw)
+];
 
         allAssertions = [
           ...adaptBibleAssertions(bibleAssertionsRaw),
@@ -526,6 +530,19 @@
         domain: "BibleRoot"
       }));
     }
+
+    function adaptCrossHubEdges(edges = []) {
+  return edges.map(edge => ({
+    id: edge.id,
+    fromNodeId: edge.fromNodeId,
+    toNodeId: edge.toNodeId,
+    relationshipType: edge.relationshipType || edge.type || "CROSS_HUB_RELATIONSHIP",
+    label: edge.label || edge.relationshipType || "relates to",
+    summary: edge.summary || edge.explanation || "",
+    sourceIds: edge.sourceIds || [],
+    domain: edge.domain || "SourceRoot"
+  }));
+}
 
     function adaptBibleAssertions(assertions = []) {
       return assertions.map(assertion => ({

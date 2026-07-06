@@ -1,0 +1,52 @@
+[
+  {
+    "id": "cross-bible-light-to-dictionary-truth",
+    "fromNodeId": "bible-symbol-light",
+    "toNodeId": "dictionary-truth",
+    "relationshipType": "SYMBOLICALLY_RELATES_TO",
+    "label": "symbolically relates to",
+    "summary": "In BibleRoot, light often represents revelation, clarity, and divine disclosure. In DictionaryHub, truth represents alignment between claim, belief, and reality.",
+    "sourceIds": ["kjv-public-domain", "bibleroot-alpha-notes"],
+    "domain": "SourceRoot"
+  },
+  {
+    "id": "cross-bible-light-to-dictionary-knowledge",
+    "fromNodeId": "bible-symbol-light",
+    "toNodeId": "dictionary-knowledge",
+    "relationshipType": "ILLUMINATES",
+    "label": "illuminates",
+    "summary": "Light connects to knowledge because illumination makes something knowable, visible, or understandable.",
+    "sourceIds": ["kjv-public-domain", "bibleroot-alpha-notes"],
+    "domain": "SourceRoot"
+  },
+  {
+    "id": "cross-bible-creation-to-dictionary-source",
+    "fromNodeId": "bible-theme-creation",
+    "toNodeId": "dictionary-source",
+    "relationshipType": "POINTS_TO_ORIGIN",
+    "label": "points to origin through",
+    "summary": "Creation introduces the question of origin. SourceRoot connects that idea to the concept of a source as the point from which something begins or is supported.",
+    "sourceIds": ["kjv-public-domain", "bibleroot-alpha-notes"],
+    "domain": "SourceRoot"
+  },
+  {
+    "id": "cross-bible-beginning-to-dictionary-source",
+    "fromNodeId": "bible-theme-beginning",
+    "toNodeId": "dictionary-source",
+    "relationshipType": "HAS_ORIGIN_CONCEPT",
+    "label": "has origin concept",
+    "summary": "Beginning is connected to Source because both deal with origin, first point, reference point, and where something starts.",
+    "sourceIds": ["kjv-public-domain", "bibleroot-alpha-notes"],
+    "domain": "SourceRoot"
+  },
+  {
+    "id": "cross-bible-let-light-to-dictionary-evidence",
+    "fromNodeId": "bible-phrase-let-there-be-light",
+    "toNodeId": "dictionary-evidence",
+    "relationshipType": "MAKES_VISIBLE",
+    "label": "makes visible",
+    "summary": "The phrase 'Let there be light' connects to evidence because light makes things visible, inspectable, and able to be observed.",
+    "sourceIds": ["kjv-public-domain", "bibleroot-alpha-notes"],
+    "domain": "SourceRoot"
+  }
+]
