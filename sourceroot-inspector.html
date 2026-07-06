@@ -78,13 +78,13 @@
     }
 
     .status-box {
-        background: #fff8e6;
-        border: 1px solid #ead59a;
-         border-radius: 12px;
-        padding: 12px;
-        margin-bottom: 14px;
-        font-size: 13px;
-        line-height: 1.5;
+      background: #fff8e6;
+      border: 1px solid #ead59a;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 14px;
+      font-size: 13px;
+      line-height: 1.5;
     }
 
     .tag {
@@ -95,6 +95,30 @@
       border-radius: 999px;
       font-size: 12px;
       margin: 3px 4px 3px 0;
+    }
+
+    .relationship-button {
+      border: 1px solid #cfc7b8;
+      background: #fff8e6;
+      color: #1f2933;
+      border-radius: 999px;
+      padding: 5px 9px;
+      font-size: 12px;
+      cursor: pointer;
+      margin: 2px 4px;
+    }
+
+    .relationship-button:hover {
+      background: #efe7d3;
+      border-color: #b78a2f;
+    }
+
+    .relationship-card {
+      border: 1px solid #eee2c7;
+      background: #fffdf8;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 10px;
     }
 
     code {
@@ -143,20 +167,23 @@
   <main>
     <section class="panel">
       <h2>Universal Nodes</h2>
+
       <input id="searchInput" type="text" placeholder="Search SourceRoot..." />
 
-    <div id="engineStatus" class="status-box">
-  Loading engine status...
-    </div>
+      <div id="engineStatus" class="status-box">
+        Loading engine status...
+      </div>
 
-    <div id="nodeCount" class="meta"></div>
+      <div id="nodeCount" class="meta"></div>
       <div id="nodeList"></div>
     </section>
 
     <section class="panel">
       <div id="inspector">
         <h2>Select a node</h2>
-        <p class="empty">Click a node on the left to inspect its assertions, relationships, sources, and revisions.</p>
+        <p class="empty">
+          Click a node on the left to inspect its assertions, relationships, sources, and revisions.
+        </p>
       </div>
     </section>
   </main>
@@ -210,7 +237,7 @@
         ];
 
         allSources = bibleSourcesRaw;
-        
+
         renderEngineStatus();
         renderNodeList(allNodes);
 
@@ -227,17 +254,18 @@
     }
 
     function renderEngineStatus() {
-    const hubs = new Set(allNodes.map(node => node.domain));
+      const hubs = new Set(allNodes.map(node => node.domain));
 
-     document.getElementById("engineStatus").innerHTML = `
-      <strong>SourceRoot Engine Status</strong><br>
-      Loaded Hubs: ${hubs.size}<br>
-      Nodes: ${allNodes.length}<br>
-      Assertions: ${allAssertions.length}<br>
-      Relationships: ${allEdges.length}<br>
-      Sources: ${allSources.length}
-    `;
-  }
+      document.getElementById("engineStatus").innerHTML = `
+        <strong>SourceRoot Engine Status</strong><br>
+        Loaded Hubs: ${hubs.size}<br>
+        Nodes: ${allNodes.length}<br>
+        Assertions: ${allAssertions.length}<br>
+        Relationships: ${allEdges.length}<br>
+        Sources: ${allSources.length}
+      `;
+    }
+
     function adaptBibleEdges(edges = []) {
       return edges.map(edge => ({
         ...edge,
@@ -363,6 +391,11 @@
       `).join("");
     }
 
+    function getNodeTitle(nodeId) {
+      const foundNode = allNodes.find(node => node.id === nodeId);
+      return foundNode ? foundNode.title : nodeId;
+    }
+
     window.selectNode = function(nodeId) {
       selectedNodeId = nodeId;
 
@@ -409,7 +442,9 @@
           ${assertions.length ? assertions.map(assertion => `
             <article>
               <h4>${assertion.label}</h4>
-              <div class="meta">${assertion.assertionType} · ${assertion.status || "working"} · ${assertion.confidence || "working"}</div>
+              <div class="meta">
+                ${assertion.assertionType} · ${assertion.status || "working"} · ${assertion.confidence || "working"}
+              </div>
               <p><strong>Summary:</strong> ${assertion.summary || ""}</p>
               <p>${assertion.body || ""}</p>
               <p><strong>Source IDs:</strong> ${(assertion.sourceIds || []).map(id => `<code>${id}</code>`).join(" ")}</p>
@@ -419,32 +454,36 @@
 
         <div class="section">
           <h3>Outgoing Relationships</h3>
-          ${outgoingEdges.length ? outgoingEdges.map(edge => {
-            const targetNode = allNodes.find(node => node.id === edge.toNodeId);
-            return `
+          ${outgoingEdges.length ? outgoingEdges.map(edge => `
+            <div class="relationship-card">
               <p>
-                <code>${node.title}</code>
+                <strong>${node.title}</strong>
                 ${edge.label}
-                <code>${targetNode ? targetNode.title : edge.toNodeId}</code>
+                <button class="relationship-button" onclick="window.selectNode('${edge.toNodeId}')">
+                  ${getNodeTitle(edge.toNodeId)}
+                </button>
               </p>
               <p>${edge.summary || ""}</p>
-            `;
-          }).join("") : `<p class="empty">No outgoing relationships yet.</p>`}
+              <div class="meta">${edge.relationshipType || "relationship"} · ${edge.domain || "SourceRoot"}</div>
+            </div>
+          `).join("") : `<p class="empty">No outgoing relationships yet.</p>`}
         </div>
 
         <div class="section">
           <h3>Incoming Relationships</h3>
-          ${incomingEdges.length ? incomingEdges.map(edge => {
-            const sourceNode = allNodes.find(node => node.id === edge.fromNodeId);
-            return `
+          ${incomingEdges.length ? incomingEdges.map(edge => `
+            <div class="relationship-card">
               <p>
-                <code>${sourceNode ? sourceNode.title : edge.fromNodeId}</code>
+                <button class="relationship-button" onclick="window.selectNode('${edge.fromNodeId}')">
+                  ${getNodeTitle(edge.fromNodeId)}
+                </button>
                 ${edge.label}
-                <code>${node.title}</code>
+                <strong>${node.title}</strong>
               </p>
               <p>${edge.summary || ""}</p>
-            `;
-          }).join("") : `<p class="empty">No incoming relationships yet.</p>`}
+              <div class="meta">${edge.relationshipType || "relationship"} · ${edge.domain || "SourceRoot"}</div>
+            </div>
+          `).join("") : `<p class="empty">No incoming relationships yet.</p>`}
         </div>
 
         <div class="section">
