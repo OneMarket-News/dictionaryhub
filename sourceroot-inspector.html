@@ -202,24 +202,27 @@
     async function loadSourceRootInspector() {
       try {
         const [
-          bibleNodesResponse,
-          bibleEdgesResponse,
-          bibleAssertionsResponse,
-          bibleSourcesResponse,
-          dictionaryConceptsResponse
-        ] = await Promise.all([
-          fetch("data/bible-root-nodes.json"),
-          fetch("data/bible-root-edges.json"),
-          fetch("data/bible-root-assertions.json"),
-          fetch("data/bible-root-sources.json"),
-          fetch("data/nodes-v2-root.json")
-        ]);
+  bibleNodesResponse,
+  bibleEdgesResponse,
+  bibleAssertionsResponse,
+  bibleSourcesResponse,
+  dictionaryConceptsResponse,
+  dictionarySourcesResponse
+] = await Promise.all([
+  fetch("data/bible-root-nodes.json"),
+  fetch("data/bible-root-edges.json"),
+  fetch("data/bible-root-assertions.json"),
+  fetch("data/bible-root-sources.json"),
+  fetch("data/nodes-v2-root.json"),
+  fetch("data/sources-v2.json")
+]);
 
         const bibleNodesRaw = await bibleNodesResponse.json();
         const bibleEdgesRaw = await bibleEdgesResponse.json();
         const bibleAssertionsRaw = await bibleAssertionsResponse.json();
         const bibleSourcesRaw = await bibleSourcesResponse.json();
-        const dictionaryConceptsRaw = await dictionaryConceptsResponse.json();
+const dictionaryConceptsRaw = await dictionaryConceptsResponse.json();
+const dictionarySourcesRaw = await dictionarySourcesResponse.json();
 
         const bibleNodes = adaptBibleNodes(bibleNodesRaw);
         const dictionaryNodes = adaptDictionaryConcepts(dictionaryConceptsRaw);
@@ -236,7 +239,10 @@
           ...adaptDictionaryAssertions(dictionaryConceptsRaw)
         ];
 
-        allSources = bibleSourcesRaw;
+        allSources = [
+  ...bibleSourcesRaw,
+  ...adaptDictionarySources(dictionarySourcesRaw)
+];
 
         renderEngineStatus();
         renderNodeList(allNodes);
@@ -283,6 +289,18 @@
       }));
     }
 
+    function adaptDictionarySources(sources = []) {
+  return sources.map(source => ({
+    id: source.id,
+    name: source.name || source.title || source.id,
+    type: source.type || "DictionaryHub Source",
+    domain: "DictionaryHub",
+    qualityTier: source.qualityTier || source.tier || "Working Source",
+    url: source.url || "",
+    notes: source.notes || source.description || "",
+    raw: source
+  }));
+}
     function adaptDictionaryEdges(concepts = []) {
       const edges = [];
 
