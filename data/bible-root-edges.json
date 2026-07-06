@@ -1,0 +1,38 @@
+[
+  {
+    "id": "edge-in-beginning-to-beginning",
+    "fromNodeId": "phrase-in-the-beginning",
+    "toNodeId": "theme-beginning",
+    "relationshipType": "contains-theme",
+    "label": "contains theme",
+    "summary": "The phrase contains the theme of beginning.",
+    "sourceIds": ["bibleroot-alpha-notes"]
+  },
+  {
+    "id": "edge-in-beginning-to-creation",
+    "fromNodeId": "phrase-in-the-beginning",
+    "toNodeId": "theme-creation",
+    "relationshipType": "contains-theme",
+    "label": "contains theme",
+    "summary": "The phrase introduces the theme of creation.",
+    "sourceIds": ["bibleroot-alpha-notes"]
+  },
+  {
+    "id": "edge-let-light-to-light",
+    "fromNodeId": "phrase-let-there-be-light",
+    "toNodeId": "symbol-light",
+    "relationshipType": "contains-symbol",
+    "label": "contains symbol",
+    "summary": "The phrase contains the symbol of light.",
+    "sourceIds": ["bibleroot-alpha-notes"]
+  },
+  {
+    "id": "edge-creation-to-light",
+    "fromNodeId": "theme-creation",
+    "toNodeId": "symbol-light",
+    "relationshipType": "related-to",
+    "label": "related to",
+    "summary": "Light is part of the creation sequence.",
+    "sourceIds": ["kjv-public-domain", "bibleroot-alpha-notes"]
+  }
+]

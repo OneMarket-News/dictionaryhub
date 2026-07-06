@@ -1,0 +1,151 @@
+[
+  {
+    "id": "creation",
+    "title": "Creation",
+    "type": "Theme",
+    "summary": "The act of bringing existence into being by God.",
+    "description": "Creation represents the beginning of the ordered universe and establishes God as Creator.",
+    "connectedPhrases": [
+      "in-the-beginning",
+      "let-there-be-light"
+    ],
+    "relatedNodes": [
+      "beginning",
+      "order",
+      "light",
+      "life"
+    ],
+    "sourceIds": [
+      "kjv-public-domain",
+      "bibleroot-alpha-notes"
+    ]
+  },
+  {
+    "id": "beginning",
+    "title": "Beginning",
+    "type": "Theme",
+    "summary": "The origin or first point of something.",
+    "description": "Beginning establishes a starting point for history, creation, and purpose.",
+    "connectedPhrases": [
+      "in-the-beginning",
+      "the-word"
+    ],
+    "relatedNodes": [
+      "creation",
+      "time",
+      "order"
+    ],
+    "sourceIds": [
+      "kjv-public-domain"
+    ]
+  },
+  {
+    "id": "light",
+    "title": "Light",
+    "type": "Symbol",
+    "summary": "Represents illumination, life, revelation, and divine order.",
+    "description": "Throughout Scripture light becomes a recurring symbol connected to God, truth, and life.",
+    "connectedPhrases": [
+      "let-there-be-light"
+    ],
+    "relatedNodes": [
+      "creation",
+      "life",
+      "truth",
+      "order"
+    ],
+    "sourceIds": [
+      "kjv-public-domain"
+    ]
+  },
+  {
+    "id": "word",
+    "title": "Word",
+    "type": "Concept",
+    "summary": "God's self-expression through speech and Logos.",
+    "description": "The Word connects divine communication, creation, and revelation.",
+    "connectedPhrases": [
+      "the-word"
+    ],
+    "relatedNodes": [
+      "creation",
+      "truth",
+      "life"
+    ],
+    "sourceIds": [
+      "kjv-public-domain"
+    ]
+  },
+  {
+    "id": "order",
+    "title": "Order",
+    "type": "Theme",
+    "summary": "The structured arrangement established during creation.",
+    "description": "Order contrasts with chaos and becomes a recurring biblical pattern.",
+    "connectedPhrases": [
+      "in-the-beginning",
+      "let-there-be-light"
+    ],
+    "relatedNodes": [
+      "creation",
+      "light",
+      "time"
+    ],
+    "sourceIds": [
+      "kjv-public-domain"
+    ]
+  },
+  {
+    "id": "life",
+    "title": "Life",
+    "type": "Theme",
+    "summary": "Existence sustained by God.",
+    "description": "Life is both physical and spiritual throughout Scripture.",
+    "connectedPhrases": [
+      "the-word"
+    ],
+    "relatedNodes": [
+      "creation",
+      "light",
+      "truth"
+    ],
+    "sourceIds": [
+      "kjv-public-domain"
+    ]
+  },
+  {
+    "id": "truth",
+    "title": "Truth",
+    "type": "Theme",
+    "summary": "That which corresponds to God's character and reality.",
+    "description": "Truth becomes increasingly important throughout the New Testament.",
+    "connectedPhrases": [
+      "the-word"
+    ],
+    "relatedNodes": [
+      "word",
+      "light",
+      "life"
+    ],
+    "sourceIds": [
+      "kjv-public-domain"
+    ]
+  },
+  {
+    "id": "time",
+    "title": "Time",
+    "type": "Theme",
+    "summary": "The ordered progression of creation and history.",
+    "description": "Time provides the framework in which biblical events unfold.",
+    "connectedPhrases": [
+      "in-the-beginning"
+    ],
+    "relatedNodes": [
+      "beginning",
+      "order"
+    ],
+    "sourceIds": [
+      "kjv-public-domain"
+    ]
+  }
+]

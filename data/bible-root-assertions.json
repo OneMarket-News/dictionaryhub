@@ -1,0 +1,60 @@
+[
+  {
+    "id": "assertion-light-symbolic",
+    "nodeId": "symbol-light",
+    "assertionType": "symbolic-meaning",
+    "label": "Symbolic Meaning",
+    "summary": "Light symbolizes revelation, life, truth, and divine order.",
+    "body": "Throughout Scripture light consistently represents revelation, life, divine presence, and the ordering of creation.",
+    "sourceIds": [
+      "kjv-public-domain",
+      "bibleroot-alpha-notes"
+    ],
+    "confidence": "working",
+    "status": "alpha",
+    "revisions": [
+      {
+        "version": "0.1",
+        "note": "Initial assertion."
+      }
+    ]
+  },
+  {
+    "id": "assertion-beginning-literal",
+    "nodeId": "theme-beginning",
+    "assertionType": "literal-meaning",
+    "label": "Literal Meaning",
+    "summary": "Beginning identifies the first point in time or sequence.",
+    "body": "Genesis introduces beginning as the start of creation and history.",
+    "sourceIds": [
+      "kjv-public-domain"
+    ],
+    "confidence": "high",
+    "status": "alpha",
+    "revisions": [
+      {
+        "version": "0.1",
+        "note": "Initial assertion."
+      }
+    ]
+  },
+  {
+    "id": "assertion-creation-definition",
+    "nodeId": "theme-creation",
+    "assertionType": "definition",
+    "label": "Definition",
+    "summary": "Creation is the act of bringing existence into being.",
+    "body": "Creation refers to God's act of bringing the heavens, earth, and all living things into existence.",
+    "sourceIds": [
+      "kjv-public-domain"
+    ],
+    "confidence": "high",
+    "status": "alpha",
+    "revisions": [
+      {
+        "version": "0.1",
+        "note": "Initial assertion."
+      }
+    ]
+  }
+]

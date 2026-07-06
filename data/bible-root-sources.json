@@ -1,0 +1,54 @@
+[
+  {
+    "id": "kjv-public-domain",
+    "name": "King James Version",
+    "publisher": "Public Domain in the United States",
+    "type": "Primary Text",
+    "domain": "Bible",
+    "qualityTier": "Primary",
+    "url": "https://www.gutenberg.org/ebooks/10",
+    "supportsPassages": [
+      "genesis-1",
+      "john-1",
+      "psalm-23",
+      "ecclesiastes-3"
+    ],
+    "supportsPhrases": [
+      "in-the-beginning",
+      "let-there-be-light",
+      "the-word",
+      "the-word-was-with-god",
+      "the-word-was-god",
+      "still-waters",
+      "valley-of-the-shadow-of-death",
+      "a-time-to-be-born",
+      "a-time-to-die"
+    ],
+    "supportsFields": [
+      "passageText",
+      "plainMeaning",
+      "literaryContext",
+      "crossReferences"
+    ],
+    "notes": "Primary public-domain text base for the BibleRoot Alpha."
+  },
+  {
+    "id": "bibleroot-alpha-notes",
+    "name": "BibleRoot Alpha Notes",
+    "publisher": "SourceRoot / BibleRoot",
+    "type": "Original Explanation",
+    "domain": "BibleRoot",
+    "qualityTier": "Working Interpretation",
+    "url": "",
+    "supportsPassages": [],
+    "supportsPhrases": [],
+    "supportsFields": [
+      "plainMeaning",
+      "symbolicMeaning",
+      "theologicalThemes",
+      "literaryContext",
+      "relatedPhrases"
+    ],
+    "notes": "Original explanatory notes written for Alpha testing. Not a replacement for Bible publishers, scholars, churches, or traditions."
+  }
+]

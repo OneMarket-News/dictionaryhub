@@ -1,0 +1,66 @@
+[
+  {
+    "id": "origin-creation-order",
+    "label": "Origin → Creation → Order",
+    "type": "Theme Chain",
+    "description": "Connects beginning, divine action, light, and ordered reality.",
+    "phraseIds": [
+      "in-the-beginning",
+      "let-there-be-light",
+      "the-word"
+    ],
+    "concepts": [
+      "Origin",
+      "Creation",
+      "Order",
+      "Light",
+      "Meaning"
+    ],
+    "sourceIds": [
+      "kjv-public-domain",
+      "bibleroot-alpha-notes"
+    ]
+  },
+  {
+    "id": "speech-creates-reality",
+    "label": "Speech Creates Reality",
+    "type": "Meaning Pattern",
+    "description": "Shows how divine speech, word, command, and existence are connected.",
+    "phraseIds": [
+      "let-there-be-light",
+      "the-word"
+    ],
+    "concepts": [
+      "Speech",
+      "Word",
+      "Command",
+      "Creation",
+      "Reality"
+    ],
+    "sourceIds": [
+      "kjv-public-domain",
+      "bibleroot-alpha-notes"
+    ]
+  },
+  {
+    "id": "genesis-john-beginning-link",
+    "label": "Genesis 1 ↔ John 1",
+    "type": "Cross-Reference Bridge",
+    "description": "Connects Genesis' creation beginning with John's Logos beginning.",
+    "phraseIds": [
+      "in-the-beginning",
+      "the-word"
+    ],
+    "concepts": [
+      "Beginning",
+      "Creation",
+      "Word",
+      "Logos",
+      "Divinity"
+    ],
+    "sourceIds": [
+      "kjv-public-domain",
+      "bibleroot-alpha-notes"
+    ]
+  }
+]

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>BibleRoot Alpha</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f4ee;
+      color: #1f2933;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background: #111827;
+      color: white;
+      padding: 28px 20px;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 20px 60px;
+    }
+
+    .eyebrow {
+      color: #d6b36a;
+      font-size: 14px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 34px;
+    }
+
+    .subtitle {
+      margin-top: 10px;
+      max-width: 780px;
+      color: #d1d5db;
+      line-height: 1.5;
+    }
+
+    .notice {
+      background: #fff8e6;
+      border: 1px solid #ead59a;
+      border-radius: 12px;
+      padding: 16px;
+      margin: 24px 0;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid #ddd6c8;
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .card h2 {
+      margin-top: 0;
+      font-size: 22px;
+    }
+
+    .meta {
+      color: #6b7280;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    .tag {
+      display: inline-block;
+      background: #efe7d3;
+      color: #4b3b16;
+      padding: 5px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      margin: 3px 4px 3px 0;
+    }
+
+    .section-title {
+      margin-top: 34px;
+      margin-bottom: 12px;
+    }
+
+    code {
+      background: #eee;
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+
+    footer {
+      border-top: 1px solid #ddd6c8;
+      margin-top: 40px;
+      padding-top: 20px;
+      color: #6b7280;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="eyebrow">SourceRoot Alpha App</div>
+    <h1>BibleRoot</h1>
+    <p class="subtitle">
+      A public-domain-first Bible meaning engine for phrases, passages, themes,
+      interpretation layers, cross-references, and source trails.
+    </p>
+  </header>
+
+  <main>
+    <div class="notice">
+      <strong>Alpha Scope:</strong>
+      BibleRoot is starting small with phrase-level entries from Genesis 1,
+      John 1, Psalm 23, and Ecclesiastes 3. This Alpha uses KJV/public-domain-first assumptions.
+    </div>
+
+    <h2 class="section-title">Phrase Nodes</h2>
+    <div id="phraseGrid" class="grid"></div>
+
+    <h2 class="section-title">Meaning Nodes</h2>
+    <div id="meaningNodeGrid" class="grid"></div>
+
+    <h2 class="section-title">Relationship Engine</h2>
+    <div id="relationshipGrid" class="grid"></div>
+
+<h2 class="section-title">Source Registry</h2>
+<div id="sourceGrid" class="grid"></div>
+
+    <footer>
+      BibleRoot Alpha is powered by SourceRoot. This page does not replace Bible publishers,
+      scholars, churches, or traditions. It cites sources, tracks interpretation, and explains meaning.
+    </footer>
+  </main>
+
+  <script>
+    async function loadBibleRoot() {
+      const phraseGrid = document.getElementById("phraseGrid");
+      const relationshipGrid = document.getElementById("relationshipGrid");
+
+      try {
+        const [phrasesResponse, sourcesResponse, relationshipsResponse] = await Promise.all([
+  fetch("data/bible-root-phrases.json"),
+  fetch("data/bible-root-sources.json"),
+  fetch("data/bible-root-relationships.json"),
+  fetch("data/bible-root-meaning-nodes.json")
+]);
+
+const phrases = await phrasesResponse.json();
+const sources = await sourcesResponse.json();
+const relationships = await relationshipsResponse.json();
+
+        phraseGrid.innerHTML = phrases.map(phrase => `
+          <article class="card">
+            <h2>${phrase.phrase}</h2>
+            <div class="meta">
+              ${phrase.book} ${phrase.chapter}:${phrase.verseStart}${phrase.verseEnd !== phrase.verseStart ? "-" + phrase.verseEnd : ""}
+              · ${phrase.translation}
+            </div>
+            <p><strong>Text:</strong> ${phrase.passageText}</p>
+            <p><strong>Plain Meaning:</strong> ${phrase.plainMeaning}</p>
+            <p><strong>Symbolic Meaning:</strong> ${phrase.symbolicMeaning}</p>
+            <div>
+              ${(phrase.theologicalThemes || []).map(theme => `<span class="tag">${theme}</span>`).join("")}
+            </div>
+            <p><strong>Cross References:</strong> ${(phrase.crossReferences || []).join(", ") || "None yet"}</p>
+            <p><strong>Source IDs:</strong> ${(phrase.sourceIds || []).map(id => `<code>${id}</code>`).join(" ")}</p>
+          </article>
+        `).join("");
+
+        relationshipGrid.innerHTML = relationships.map(relationship => `
+  <article class="card">
+    <h2>${relationship.label}</h2>
+    <div class="meta">${relationship.type}</div>
+    <p>${relationship.description}</p>
+    <p><strong>Concepts:</strong></p>
+    <div>
+      ${(relationship.concepts || []).map(concept => `<span class="tag">${concept}</span>`).join("")}
+    </div>
+    <p><strong>Connected Phrase IDs:</strong> ${(relationship.phraseIds || []).map(id => `<code>${id}</code>`).join(" ")}</p>
+    <p><strong>Source IDs:</strong> ${(relationship.sourceIds || []).map(id => `<code>${id}</code>`).join(" ")}</p>
+  </article>
+`).join("");
+
+        sourceGrid.innerHTML = sources.map(source => `
+          <article class="card">
+            <h2>${source.name}</h2>
+            <div class="meta">${source.type} · ${source.qualityTier}</div>
+            <p>${source.notes}</p>
+            <p><strong>Supports Fields:</strong> ${(source.supportsFields || []).join(", ")}</p>
+            ${source.url ? `<p><a href="${source.url}" target="_blank" rel="noopener">Open source</a></p>` : ""}
+          </article>
+        `).join("");
+
+      } catch (error) {
+        phraseGrid.innerHTML = "<p>Could not load BibleRoot Alpha data.</p>";
+        sourceGrid.innerHTML = "";
+        console.error(error);
+      }
+    }
+
+    loadBibleRoot();
+  </script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+[
+  {
+    "id": "phrase-in-the-beginning",
+    "title": "In the beginning",
+    "type": "Phrase",
+    "domain": "BibleRoot",
+    "summary": "Opening phrase of Genesis 1:1.",
+    "description": "Introduces creation, origin, time, and God as prior to the created order.",
+    "sourceIds": ["kjv-public-domain"],
+    "revisions": [{ "version": "0.1", "note": "Initial V3 node test." }]
+  },
+  {
+    "id": "theme-beginning",
+    "title": "Beginning",
+    "type": "Theme",
+    "domain": "BibleRoot",
+    "summary": "The first point or origin of something.",
+    "description": "Beginning creates the frame for creation, time, and purpose.",
+    "sourceIds": ["bibleroot-alpha-notes"],
+    "revisions": [{ "version": "0.1", "note": "Initial V3 node test." }]
+  },
+  {
+    "id": "theme-creation",
+    "title": "Creation",
+    "type": "Theme",
+    "domain": "BibleRoot",
+    "summary": "The act of bringing existence into being.",
+    "description": "Creation connects divine action, order, light, life, and the material world.",
+    "sourceIds": ["bibleroot-alpha-notes"],
+    "revisions": [{ "version": "0.1", "note": "Initial V3 node test." }]
+  },
+  {
+    "id": "symbol-light",
+    "title": "Light",
+    "type": "Symbol",
+    "domain": "BibleRoot",
+    "summary": "A symbol of illumination, revelation, life, and order.",
+    "description": "Light appears at the start of creation and later becomes connected to truth and life.",
+    "sourceIds": ["bibleroot-alpha-notes"],
+    "revisions": [{ "version": "0.1", "note": "Initial V3 node test." }]
+  },
+  {
+    "id": "phrase-let-there-be-light",
+    "title": "Let there be light",
+    "type": "Phrase",
+    "domain": "BibleRoot",
+    "summary": "Divine command from Genesis 1:3.",
+    "description": "Shows creation through speech and the appearance of light.",
+    "sourceIds": ["kjv-public-domain"],
+    "revisions": [{ "version": "0.1", "note": "Initial V3 node test." }]
+  }
+]
