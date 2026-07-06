@@ -46,6 +46,28 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     }
 
+    .hub-group {
+      margin-bottom: 18px;
+    }
+
+    .hub-group-title {
+      font-size: 13px;
+      font-weight: bold;
+      color: #4b5563;
+      margin: 18px 0 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #ddd6c8;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .hub-count {
+      color: #6b7280;
+      font-weight: normal;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
     .node-card {
       border: 1px solid #ddd6c8;
       border-radius: 12px;
@@ -202,27 +224,27 @@
     async function loadSourceRootInspector() {
       try {
         const [
-  bibleNodesResponse,
-  bibleEdgesResponse,
-  bibleAssertionsResponse,
-  bibleSourcesResponse,
-  dictionaryConceptsResponse,
-  dictionarySourcesResponse
-] = await Promise.all([
-  fetch("data/bible-root-nodes.json"),
-  fetch("data/bible-root-edges.json"),
-  fetch("data/bible-root-assertions.json"),
-  fetch("data/bible-root-sources.json"),
-  fetch("data/nodes-v2-root.json"),
-  fetch("data/sources-v2.json")
-]);
+          bibleNodesResponse,
+          bibleEdgesResponse,
+          bibleAssertionsResponse,
+          bibleSourcesResponse,
+          dictionaryConceptsResponse,
+          dictionarySourcesResponse
+        ] = await Promise.all([
+          fetch("data/bible-root-nodes.json"),
+          fetch("data/bible-root-edges.json"),
+          fetch("data/bible-root-assertions.json"),
+          fetch("data/bible-root-sources.json"),
+          fetch("data/nodes-v2-root.json"),
+          fetch("data/sources-v2.json")
+        ]);
 
         const bibleNodesRaw = await bibleNodesResponse.json();
         const bibleEdgesRaw = await bibleEdgesResponse.json();
         const bibleAssertionsRaw = await bibleAssertionsResponse.json();
         const bibleSourcesRaw = await bibleSourcesResponse.json();
-const dictionaryConceptsRaw = await dictionaryConceptsResponse.json();
-const dictionarySourcesRaw = await dictionarySourcesResponse.json();
+        const dictionaryConceptsRaw = await dictionaryConceptsResponse.json();
+        const dictionarySourcesRaw = await dictionarySourcesResponse.json();
 
         const bibleNodes = adaptBibleNodes(bibleNodesRaw);
         const dictionaryNodes = adaptDictionaryConcepts(dictionaryConceptsRaw);
@@ -240,9 +262,9 @@ const dictionarySourcesRaw = await dictionarySourcesResponse.json();
         ];
 
         allSources = [
-  ...bibleSourcesRaw,
-  ...adaptDictionarySources(dictionarySourcesRaw)
-];
+          ...bibleSourcesRaw,
+          ...adaptDictionarySources(dictionarySourcesRaw)
+        ];
 
         renderEngineStatus();
         renderNodeList(allNodes);
@@ -289,18 +311,6 @@ const dictionarySourcesRaw = await dictionarySourcesResponse.json();
       }));
     }
 
-    function adaptDictionarySources(sources = []) {
-  return sources.map(source => ({
-    id: source.id,
-    name: source.name || source.title || source.id,
-    type: source.type || "DictionaryHub Source",
-    domain: "DictionaryHub",
-    qualityTier: source.qualityTier || source.tier || "Working Source",
-    url: source.url || "",
-    notes: source.notes || source.description || "",
-    raw: source
-  }));
-}
     function adaptDictionaryEdges(concepts = []) {
       const edges = [];
 
@@ -390,21 +400,54 @@ const dictionarySourcesRaw = await dictionarySourcesResponse.json();
       return assertions;
     }
 
+    function adaptDictionarySources(sources = []) {
+      return sources.map(source => ({
+        id: source.id,
+        name: source.name || source.title || source.id,
+        type: source.type || "DictionaryHub Source",
+        domain: "DictionaryHub",
+        qualityTier: source.qualityTier || source.tier || "Working Source",
+        url: source.url || "",
+        notes: source.notes || source.description || "",
+        raw: source
+      }));
+    }
+
     function renderNodeList(nodes) {
       const nodeList = document.getElementById("nodeList");
       const nodeCount = document.getElementById("nodeCount");
 
       nodeCount.textContent = `${nodes.length} nodes loaded`;
 
-      nodeList.innerHTML = nodes.map(node => `
-        <div 
-          class="node-card ${node.id === selectedNodeId ? "active" : ""}" 
-          onclick="window.selectNode('${node.id}')"
-        >
-          <span class="hub-label">${node.domain}</span>
-          <strong>${node.title}</strong>
-          <div class="meta">${node.type}</div>
-          <div>${node.summary || ""}</div>
+      const groupedNodes = nodes.reduce((groups, node) => {
+        const hubName = node.domain || "Unknown Hub";
+
+        if (!groups[hubName]) {
+          groups[hubName] = [];
+        }
+
+        groups[hubName].push(node);
+        return groups;
+      }, {});
+
+      nodeList.innerHTML = Object.keys(groupedNodes).sort().map(hubName => `
+        <div class="hub-group">
+          <div class="hub-group-title">
+            ${hubName}
+            <span class="hub-count">(${groupedNodes[hubName].length})</span>
+          </div>
+
+          ${groupedNodes[hubName].map(node => `
+            <div 
+              class="node-card ${node.id === selectedNodeId ? "active" : ""}" 
+              onclick="window.selectNode('${node.id}')"
+            >
+              <span class="hub-label">${node.domain}</span>
+              <strong>${node.title}</strong>
+              <div class="meta">${node.type}</div>
+              <div>${node.summary || ""}</div>
+            </div>
+          `).join("")}
         </div>
       `).join("");
     }
@@ -513,7 +556,7 @@ const dictionarySourcesRaw = await dictionarySourcesResponse.json();
               <p>${source.notes}</p>
               ${source.url ? `<p><a href="${source.url}" target="_blank" rel="noopener">Open source</a></p>` : ""}
             </article>
-          `).join("") : `<p class="empty">Sources referenced by ID. Full DictionaryHub source registry connection comes next.</p>`}
+          `).join("") : `<p class="empty">No full source cards found yet. Source IDs may still be attached to this node or its assertions.</p>`}
         </div>
 
         <div class="section">
