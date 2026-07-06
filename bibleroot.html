@@ -133,11 +133,14 @@
     <h2 class="section-title">Meaning Nodes</h2>
     <div id="meaningNodeGrid" class="grid"></div>
 
+    <h2 class="section-title">Assertions</h2>
+    <div id="assertionGrid" class="grid"></div>
+
     <h2 class="section-title">Relationship Engine</h2>
     <div id="relationshipGrid" class="grid"></div>
 
-<h2 class="section-title">Source Registry</h2>
-<div id="sourceGrid" class="grid"></div>
+    <h2 class="section-title">Source Registry</h2>
+    <div id="sourceGrid" class="grid"></div>
 
     <footer>
       BibleRoot Alpha is powered by SourceRoot. This page does not replace Bible publishers,
@@ -148,19 +151,31 @@
   <script>
     async function loadBibleRoot() {
       const phraseGrid = document.getElementById("phraseGrid");
+      const meaningNodeGrid = document.getElementById("meaningNodeGrid");
+      const assertionGrid = document.getElementById("assertionGrid");
       const relationshipGrid = document.getElementById("relationshipGrid");
+      const sourceGrid = document.getElementById("sourceGrid");
 
       try {
-        const [phrasesResponse, sourcesResponse, relationshipsResponse] = await Promise.all([
-  fetch("data/bible-root-phrases.json"),
-  fetch("data/bible-root-sources.json"),
-  fetch("data/bible-root-relationships.json"),
-  fetch("data/bible-root-meaning-nodes.json")
-]);
+        const [
+          phrasesResponse,
+          sourcesResponse,
+          relationshipsResponse,
+          meaningNodesResponse,
+          assertionsResponse
+        ] = await Promise.all([
+          fetch("data/bible-root-phrases.json"),
+          fetch("data/bible-root-sources.json"),
+          fetch("data/bible-root-relationships.json"),
+          fetch("data/bible-root-meaning-nodes.json"),
+          fetch("data/bible-root-assertions.json")
+        ]);
 
-const phrases = await phrasesResponse.json();
-const sources = await sourcesResponse.json();
-const relationships = await relationshipsResponse.json();
+        const phrases = await phrasesResponse.json();
+        const sources = await sourcesResponse.json();
+        const relationships = await relationshipsResponse.json();
+        const meaningNodes = await meaningNodesResponse.json();
+        const assertions = await assertionsResponse.json();
 
         phraseGrid.innerHTML = phrases.map(phrase => `
           <article class="card">
@@ -180,19 +195,45 @@ const relationships = await relationshipsResponse.json();
           </article>
         `).join("");
 
+        meaningNodeGrid.innerHTML = meaningNodes.map(node => `
+          <article class="card">
+            <h2>${node.title}</h2>
+            <div class="meta">${node.type} · ${node.domain}</div>
+            <p><strong>Summary:</strong> ${node.summary}</p>
+            <p>${node.description}</p>
+            <p><strong>Connected Phrases:</strong> ${(node.connectedPhrases || []).map(id => `<code>${id}</code>`).join(" ") || "None yet"}</p>
+            <p><strong>Related Nodes:</strong></p>
+            <div>
+              ${(node.relatedNodes || []).map(id => `<span class="tag">${id}</span>`).join("")}
+            </div>
+            <p><strong>Source IDs:</strong> ${(node.sourceIds || []).map(id => `<code>${id}</code>`).join(" ")}</p>
+          </article>
+        `).join("");
+
+        assertionGrid.innerHTML = assertions.map(assertion => `
+          <article class="card">
+            <h2>${assertion.label}</h2>
+            <div class="meta">${assertion.assertionType} · ${assertion.status} · ${assertion.confidence}</div>
+            <p><strong>Node ID:</strong> <code>${assertion.nodeId}</code></p>
+            <p><strong>Summary:</strong> ${assertion.summary}</p>
+            <p>${assertion.body}</p>
+            <p><strong>Source IDs:</strong> ${(assertion.sourceIds || []).map(id => `<code>${id}</code>`).join(" ")}</p>
+          </article>
+        `).join("");
+
         relationshipGrid.innerHTML = relationships.map(relationship => `
-  <article class="card">
-    <h2>${relationship.label}</h2>
-    <div class="meta">${relationship.type}</div>
-    <p>${relationship.description}</p>
-    <p><strong>Concepts:</strong></p>
-    <div>
-      ${(relationship.concepts || []).map(concept => `<span class="tag">${concept}</span>`).join("")}
-    </div>
-    <p><strong>Connected Phrase IDs:</strong> ${(relationship.phraseIds || []).map(id => `<code>${id}</code>`).join(" ")}</p>
-    <p><strong>Source IDs:</strong> ${(relationship.sourceIds || []).map(id => `<code>${id}</code>`).join(" ")}</p>
-  </article>
-`).join("");
+          <article class="card">
+            <h2>${relationship.label}</h2>
+            <div class="meta">${relationship.type}</div>
+            <p>${relationship.description}</p>
+            <p><strong>Concepts:</strong></p>
+            <div>
+              ${(relationship.concepts || []).map(concept => `<span class="tag">${concept}</span>`).join("")}
+            </div>
+            <p><strong>Connected Phrase IDs:</strong> ${(relationship.phraseIds || []).map(id => `<code>${id}</code>`).join(" ")}</p>
+            <p><strong>Source IDs:</strong> ${(relationship.sourceIds || []).map(id => `<code>${id}</code>`).join(" ")}</p>
+          </article>
+        `).join("");
 
         sourceGrid.innerHTML = sources.map(source => `
           <article class="card">
@@ -206,6 +247,9 @@ const relationships = await relationshipsResponse.json();
 
       } catch (error) {
         phraseGrid.innerHTML = "<p>Could not load BibleRoot Alpha data.</p>";
+        meaningNodeGrid.innerHTML = "";
+        assertionGrid.innerHTML = "";
+        relationshipGrid.innerHTML = "";
         sourceGrid.innerHTML = "";
         console.error(error);
       }
