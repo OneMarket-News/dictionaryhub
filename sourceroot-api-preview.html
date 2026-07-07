@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SourceRoot API Preview</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f4ee;
+      color: #1f2933;
+      margin: 0;
+    }
+
+    header {
+      background: #111827;
+      color: white;
+      padding: 28px 24px;
+    }
+
+    .header-inner {
+      max-width: 1250px;
+      margin: 0 auto;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 34px;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      color: #d1d5db;
+      margin-top: 10px;
+      max-width: 980px;
+      line-height: 1.55;
+    }
+
+    .top-links {
+      margin-top: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .top-links a {
+      color: white;
+      border: 1px solid #374151;
+      background: #1f2937;
+      border-radius: 999px;
+      padding: 7px 11px;
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    .top-links a:hover {
+      background: #374151;
+    }
+
+    main {
+      max-width: 1250px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .panel {
+      background: white;
+      border: 1px solid #ddd6c8;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      margin-bottom: 22px;
+    }
+
+    .panel h2 {
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+
+    .overview-text {
+      color: #374151;
+      line-height: 1.6;
+      max-width: 980px;
+    }
+
+    .endpoint-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .endpoint-card {
+      background: #fffdf8;
+      border: 1px solid #eee2c7;
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .method-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .method {
+      display: inline-block;
+      background: #065f46;
+      color: white;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    .endpoint-path {
+      font-family: Consolas, Monaco, monospace;
+      background: #111827;
+      color: white;
+      border-radius: 999px;
+      padding: 5px 9px;
+      font-size: 13px;
+    }
+
+    .endpoint-card h3 {
+      margin: 0 0 8px;
+      font-size: 19px;
+    }
+
+    .endpoint-card p {
+      color: #4b5563;
+      line-height: 1.5;
+      margin: 0 0 12px;
+      font-size: 14px;
+    }
+
+    .field-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 10px 0 12px;
+    }
+
+    .field-pill {
+      display: inline-block;
+      background: #fff8e6;
+      border: 1px solid #ead59a;
+      color: #1f2933;
+      border-radius: 999px;
+      padding: 4px 7px;
+      font-size: 11px;
+      font-family: Consolas, Monaco, monospace;
+    }
+
+    details {
+      border: 1px solid #eee2c7;
+      background: white;
+      border-radius: 12px;
+      padding: 10px;
+      margin-top: 10px;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 13px;
+      color: #4b5563;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #f3f4f6;
+      border-radius: 10px;
+      padding: 12px;
+      overflow: auto;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    code {
+      background: #eee;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+
+    .model-box {
+      background: #111827;
+      color: white;
+      border-radius: 16px;
+      padding: 18px;
+      margin-top: 16px;
+      overflow-x: auto;
+    }
+
+    .model-box code {
+      color: #f9fafb;
+      background: transparent;
+      font-size: 14px;
+      line-height: 1.7;
+      white-space: pre;
+      padding: 0;
+    }
+
+    .flow-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .flow-card {
+      background: #fff8e6;
+      border: 1px solid #ead59a;
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .flow-card strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .flow-card span {
+      color: #6b7280;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    footer {
+      max-width: 1250px;
+      margin: 0 auto;
+      padding: 0 24px 28px;
+      color: #6b7280;
+      font-size: 13px;
+    }
+
+    @media (max-width: 750px) {
+      main {
+        padding: 18px 14px;
+      }
+
+      header {
+        padding: 24px 14px;
+      }
+
+      header h1 {
+        font-size: 29px;
+      }
+
+      .endpoint-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="header-inner">
+      <h1>SourceRoot API Preview</h1>
+
+      <div class="subtitle">
+        A prototype view of how SourceRoot could expose nodes, assertions, edges, sources, search, citations, and revisions through an API layer.
+        This is not a live backend yet. It is the product contract for what the engine is becoming.
+      </div>
+
+      <div class="top-links">
+        <a href="sourceroot.html">SourceRoot Home</a>
+        <a href="sourceroot-inspector.html">Open Inspector</a>
+        <a href="sourceroot-edge-registry.html">Open Edge Registry</a>
+        <a href="sourceroot-source-registry.html">Open Source Registry</a>
+        <a href="graph-v2.html">Open DictionaryHub Graph</a>
+        <a href="bibleroot.html">Open BibleRoot</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <h2>API Purpose</h2>
+
+      <p class="overview-text">
+        SourceRoot’s API would let apps, AI systems, search tools, partner companies, and future hubs retrieve structured knowledge with provenance.
+        The key idea is simple: every answer should be traceable back to nodes, assertions, relationships, sources, and revisions.
+      </p>
+
+      <div class="model-box">
+        <code>Application / AI / Partner Tool
+  ↓
+SourceRoot API
+  ↓
+Search → Nodes → Assertions → Edges → Sources → Citations
+  ↓
+Verified, inspectable, source-aware knowledge</code>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Core Endpoints</h2>
+
+      <div class="endpoint-grid">
+        <article class="endpoint-card">
+          <div class="method-row">
+            <span class="method">GET</span>
+            <span class="endpoint-path">/nodes</span>
+          </div>
+
+          <h3>List Universal Nodes</h3>
+          <p>
+            Returns concept, phrase, symbol, external entity, or business-document nodes from all connected hubs.
+          </p>
+
+          <div class="field-list">
+            <span class="field-pill">id</span>
+            <span class="field-pill">title</span>
+            <span class="field-pill">type</span>
+            <span class="field-pill">domain</span>
+            <span class="field-pill">summary</span>
+            <span class="field-pill">sourceIds</span>
+          </div>
+
+          <details>
+            <summary>Example response</summary>
+            <pre>{
+  "nodes": [
+    {
+      "id": "wikidata-light",
+      "title": "Light",
+      "type": "Wikidata Item",
+      "domain": "Wiki",
+      "summary": "Structured public entity record for light.",
+      "sourceIds": ["wikidata-q9128"]
+    }
+  ]
+}</pre>
+          </details>
+        </article>
+
+        <article class="endpoint-card">
+          <div class="method-row">
+            <span class="method">GET</span>
+            <span class="endpoint-path">/nodes/:id</span>
+          </div>
+
+          <h3>Get One Node</h3>
+          <p>
+            Returns a full node inspection payload, including assertions, incoming relationships, outgoing relationships, sources, and revisions.
+          </p>
+
+          <div class="field-list">
+            <span class="field-pill">node</span>
+            <span class="field-pill">assertions</span>
+            <span class="field-pill">outgoingEdges</span>
+            <span class="field-pill">incomingEdges</span>
+            <span class="field-pill">sources</span>
+            <span class="field-pill">revisions</span>
+          </div>
+
+          <details>
+            <summary>Example response</summary>
+            <pre>{
+  "node": {
+    "id": "bible-symbol-light",
+    "title": "Light",
+    "domain": "BibleRoot"
+  },
+  "assertions": [],
+  "outgoingEdges": [],
+  "incomingEdges": [
+    {
+      "id": "wikidata-light-same-as-bible-light",
+      "fromNodeId": "wikidata-light",
+      "toNodeId": "bible-symbol-light",
+      "relationshipType": "SAME_AS_RELATED_CONCEPT"
+    }
+  ],
+  "sources": [],
+  "revisions": []
+}</pre>
+          </details>
+        </article>
+
+        <article class="endpoint-card">
+          <div class="method-row">
+            <span class="method">GET</span>
+            <span class="endpoint-path">/assertions</span>
+          </div>
+
+          <h3>List Assertions</h3>
+          <p>
+            Returns claims, definitions, summaries, explanations, examples, symbolic meanings, and external statements attached to nodes.
+          </p>
+
+          <div class="field-list">
+            <span class="field-pill">id</span>
+            <span class="field-pill">nodeId</span>
+            <span class="field-pill">assertionType</span>
+            <span class="field-pill">label</span>
+            <span class="field-pill">body</span>
+            <span class="field-pill">confidence</span>
+            <span class="field-pill">sourceIds</span>
+          </div>
+
+          <details>
+            <summary>Example response</summary>
+            <pre>{
+  "assertions": [
+    {
+      "id": "wikidata-assertion-light-description",
+      "nodeId": "wikidata-light",
+      "assertionType": "wikidata-description",
+      "label": "Wikidata Description",
+      "body": "electromagnetic radiation at or near visible wavelengths",
+      "confidence": "community-maintained",
+      "sourceIds": ["wikidata-q9128"]
+    }
+  ]
+}</pre>
+          </details>
+        </article>
+
+        <article class="endpoint-card">
+          <div class="method-row">
+            <span class="method">GET</span>
+            <span class="endpoint-path">/edges</span>
+          </div>
+
+          <h3>List Relationships</h3>
+          <p>
+            Returns same-hub and cross-hub relationships between nodes, including relationship type, summary, and supporting sources.
+          </p>
+
+          <div class="field-list">
+            <span class="field-pill">id</span>
+            <span class="field-pill">fromNodeId</span>
+            <span class="field-pill">toNodeId</span>
+            <span class="field-pill">relationshipType</span>
+            <span class="field-pill">domain</span>
+            <span class="field-pill">sourceIds</span>
+          </div>
+
+          <details>
+            <summary>Example response</summary>
+            <pre>{
+  "edges": [
+    {
+      "id": "wikidata-light-relates-to-dictionary-truth",
+      "fromNodeId": "wikidata-light",
+      "toNodeId": "dictionary-truth",
+      "relationshipType": "RELATES_TO",
+      "domain": "Wiki",
+      "sourceIds": ["wikidata-q9128"]
+    }
+  ]
+}</pre>
+          </details>
+        </article>
+
+        <article class="endpoint-card">
+          <div class="method-row">
+            <span class="method">GET</span>
+            <span class="endpoint-path">/sources</span>
+          </div>
+
+          <h3>List Sources</h3>
+          <p>
+            Returns provenance records used by nodes, assertions, and relationships. This is the core of SourceRoot’s trust layer.
+          </p>
+
+          <div class="field-list">
+            <span class="field-pill">id</span>
+            <span class="field-pill">name</span>
+            <span class="field-pill">domain</span>
+            <span class="field-pill">type</span>
+            <span class="field-pill">publisher</span>
+            <span class="field-pill">license</span>
+            <span class="field-pill">url</span>
+          </div>
+
+          <details>
+            <summary>Example response</summary>
+            <pre>{
+  "sources": [
+    {
+      "id": "wikidata-q9128",
+      "name": "Wikidata — Light (Q9128)",
+      "domain": "Wiki",
+      "type": "Structured Knowledge Graph",
+      "publisher": "Wikimedia Foundation / Wikidata contributors",
+      "license": "CC0 public domain dedication",
+      "url": "https://www.wikidata.org/wiki/Q9128"
+    }
+  ]
+}</pre>
+          </details>
+        </article>
+
+        <article class="endpoint-card">
+          <div class="method-row">
+            <span class="method">GET</span>
+            <span class="endpoint-path">/search?q=light</span>
+          </div>
+
+          <h3>Search SourceRoot</h3>
+          <p>
+            Searches across nodes, assertions, edges, and sources. Future versions could rank by credibility, citation usage, recency, and domain.
+          </p>
+
+          <div class="field-list">
+            <span class="field-pill">query</span>
+            <span class="field-pill">nodes</span>
+            <span class="field-pill">assertions</span>
+            <span class="field-pill">edges</span>
+            <span class="field-pill">sources</span>
+          </div>
+
+          <details>
+            <summary>Example response</summary>
+            <pre>{
+  "query": "light",
+  "results": {
+    "nodes": [
+      "wikidata-light",
+      "bible-symbol-light"
+    ],
+    "assertions": [],
+    "edges": [
+      "wikidata-light-same-as-bible-light"
+    ],
+    "sources": [
+      "wikidata-q9128"
+    ]
+  }
+}</pre>
+          </details>
+        </article>
+
+        <article class="endpoint-card">
+          <div class="method-row">
+            <span class="method">POST</span>
+            <span class="endpoint-path">/citations</span>
+          </div>
+
+          <h3>Log Citation Event</h3>
+          <p>
+            Records when an app, AI, user, or partner cites a source-backed assertion. This becomes the future citation economy layer.
+          </p>
+
+          <div class="field-list">
+            <span class="field-pill">citationId</span>
+            <span class="field-pill">sourceId</span>
+            <span class="field-pill">assertionId</span>
+            <span class="field-pill">consumerId</span>
+            <span class="field-pill">timestamp</span>
+            <span class="field-pill">usageType</span>
+          </div>
+
+          <details>
+            <summary>Example request</summary>
+            <pre>{
+  "consumerId": "ai-assistant-example",
+  "nodeId": "wikidata-light",
+  "assertionId": "wikidata-assertion-light-description",
+  "sourceId": "wikidata-q9128",
+  "usageType": "answer-citation",
+  "context": "User asked what light means across public data and symbolic sources."
+}</pre>
+          </details>
+        </article>
+
+        <article class="endpoint-card">
+          <div class="method-row">
+            <span class="method">GET</span>
+            <span class="endpoint-path">/revisions</span>
+          </div>
+
+          <h3>List Revisions</h3>
+          <p>
+            Returns change history for nodes, assertions, edges, and sources so knowledge can be audited over time.
+          </p>
+
+          <div class="field-list">
+            <span class="field-pill">revisionId</span>
+            <span class="field-pill">objectId</span>
+            <span class="field-pill">objectType</span>
+            <span class="field-pill">summary</span>
+            <span class="field-pill">changedAt</span>
+            <span class="field-pill">changedBy</span>
+          </div>
+
+          <details>
+            <summary>Example response</summary>
+            <pre>{
+  "revisions": [
+    {
+      "revisionId": "rev-wikidata-light-0-1",
+      "objectId": "wikidata-light",
+      "objectType": "node",
+      "summary": "Initial manual WikidataRoot sample based on Wikidata item Q9128.",
+      "changedAt": "prototype",
+      "changedBy": "SourceRoot build"
+    }
+  ]
+}</pre>
+          </details>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>How an AI Would Use SourceRoot</h2>
+
+      <div class="flow-grid">
+        <div class="flow-card">
+          <strong>1. Identify Query</strong>
+          <span>The AI detects the user is asking about a concept, source, relationship, or claim.</span>
+        </div>
+
+        <div class="flow-card">
+          <strong>2. Search Nodes</strong>
+          <span>It searches SourceRoot for matching nodes across DictionaryHub, BibleRoot, Wiki, and future hubs.</span>
+        </div>
+
+        <div class="flow-card">
+          <strong>3. Retrieve Assertions</strong>
+          <span>It pulls definitions, statements, explanations, examples, and symbolic meanings.</span>
+        </div>
+
+        <div class="flow-card">
+          <strong>4. Check Sources</strong>
+          <span>It verifies which sources support each assertion and whether those sources have licenses or credibility metadata.</span>
+        </div>
+
+        <div class="flow-card">
+          <strong>5. Follow Edges</strong>
+          <span>It follows relationships to related concepts, supporting nodes, opposing views, or cross-domain meanings.</span>
+        </div>
+
+        <div class="flow-card">
+          <strong>6. Cite and Log</strong>
+          <span>It cites the source-backed assertion and can log a citation event for credit, audit, or payment.</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    SourceRoot API Preview. Current status: static product contract, not a live backend API yet.
+  </footer>
+</body>
+</html>
