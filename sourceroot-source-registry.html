@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SourceRoot Source Registry</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f4ee;
+      color: #1f2933;
+      margin: 0;
+    }
+
+    header {
+      background: #111827;
+      color: white;
+      padding: 24px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 30px;
+    }
+
+    .subtitle {
+      color: #d1d5db;
+      margin-top: 8px;
+      max-width: 980px;
+      line-height: 1.5;
+    }
+
+    .top-links {
+      margin-top: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .top-links a {
+      color: white;
+      border: 1px solid #374151;
+      background: #1f2937;
+      border-radius: 999px;
+      padding: 7px 11px;
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    .top-links a:hover {
+      background: #374151;
+    }
+
+    main {
+      max-width: 1450px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .panel {
+      background: white;
+      border: 1px solid #ddd6c8;
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      margin-bottom: 20px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #cfc7b8;
+      font-size: 14px;
+      box-sizing: border-box;
+      background: white;
+    }
+
+    button {
+      font-family: inherit;
+    }
+
+    .clear-button {
+      border: 1px solid #cfc7b8;
+      background: #fff8e6;
+      color: #1f2933;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .clear-button:hover {
+      background: #efe7d3;
+      border-color: #b78a2f;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(120px, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .stat-card {
+      background: #fff8e6;
+      border: 1px solid #ead59a;
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .stat-number {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 3px;
+    }
+
+    .stat-label {
+      color: #6b7280;
+      font-size: 12px;
+    }
+
+    .registry-count {
+      color: #6b7280;
+      font-size: 13px;
+      margin: 12px 0 0;
+    }
+
+    .source-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 14px;
+    }
+
+    .source-card {
+      border: 1px solid #eee2c7;
+      background: #fffdf8;
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .source-card h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+      line-height: 1.3;
+    }
+
+    .hub-label {
+      display: inline-block;
+      background: #111827;
+      color: white;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 11px;
+      margin-bottom: 8px;
+    }
+
+    .domain-source-root {
+      background: #7c2d12;
+    }
+
+    .domain-bible-root {
+      background: #1e3a8a;
+    }
+
+    .domain-dictionary-hub {
+      background: #111827;
+    }
+
+    .domain-wiki {
+      background: #065f46;
+    }
+
+    .meta {
+      color: #6b7280;
+      font-size: 13px;
+      line-height: 1.45;
+      margin-bottom: 8px;
+    }
+
+    .source-id {
+      margin: 10px 0;
+    }
+
+    code {
+      background: #eee;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    .usage-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .usage-card {
+      background: #f7f4ee;
+      border: 1px solid #ddd6c8;
+      border-radius: 10px;
+      padding: 9px;
+      text-align: center;
+    }
+
+    .usage-number {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .usage-label {
+      color: #6b7280;
+      font-size: 11px;
+      margin-top: 2px;
+    }
+
+    .open-source-link {
+      display: inline-block;
+      margin-top: 8px;
+      color: #8a5a00;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    .open-source-link:hover {
+      text-decoration: underline;
+    }
+
+    .empty {
+      color: #6b7280;
+      font-style: italic;
+      padding: 20px;
+    }
+
+    details {
+      margin-top: 10px;
+      border: 1px solid #eee2c7;
+      background: #fffdf8;
+      border-radius: 10px;
+      padding: 8px;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 12px;
+      color: #4b5563;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #f3f4f6;
+      border-radius: 10px;
+      padding: 10px;
+      overflow: auto;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 950px) {
+      .controls {
+        grid-template-columns: 1fr;
+      }
+
+      .stat-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .usage-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .source-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>SourceRoot Source Registry</h1>
+    <div class="subtitle">
+      Master provenance view for SourceRoot. Inspect every loaded source, its domain, type, quality, license metadata, notes, URL, and how often it is referenced by nodes, assertions, and relationships.
+    </div>
+
+    <div class="top-links">
+      <a href="sourceroot-inspector.html">Open Inspector</a>
+      <a href="sourceroot-edge-registry.html">Open Edge Registry</a>
+      <a href="graph-v2.html">Open DictionaryHub Graph</a>
+      <a href="bibleroot.html">Open BibleRoot</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <h2>Source Registry</h2>
+
+      <div class="controls">
+        <input id="searchInput" type="text" placeholder="Search source names, IDs, domains, types, notes, licenses, or publishers..." />
+
+        <select id="domainFilter">
+          <option value="all">All Domains</option>
+        </select>
+
+        <select id="typeFilter">
+          <option value="all">All Source Types</option>
+        </select>
+
+        <select id="usageFilter">
+          <option value="all">All Sources</option>
+          <option value="used">Used only</option>
+          <option value="unused">Unused only</option>
+        </select>
+
+        <button id="clearFiltersButton" class="clear-button" type="button">
+          Clear filters
+        </button>
+      </div>
+
+      <div id="registryStats" class="stat-grid"></div>
+      <div id="sourceCount" class="registry-count"></div>
+    </section>
+
+    <section class="panel">
+      <div id="sourceRegistry">
+        Loading source registry...
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { adaptDictionaryConcepts } from "./engine/adapters/dictionaryAdapter.js";
+    import { adaptBibleNodes } from "./engine/adapters/bibleAdapter.js";
+    import { combineNodes } from "./engine/sourceRootEngine.js";
+
+    import {
+      adaptWikidataNodes,
+      adaptWikidataAssertions,
+      adaptWikidataEdges,
+      adaptWikidataSources
+    } from "./engine/adapters/wikidataAdapter.js";
+
+    let allNodes = [];
+    let allEdges = [];
+    let allAssertions = [];
+    let allSources = [];
+
+    async function loadSourceRegistry() {
+      try {
+        const [
+          bibleNodesResponse,
+          bibleEdgesResponse,
+          bibleAssertionsResponse,
+          bibleSourcesResponse,
+          dictionaryConceptsResponse,
+          dictionarySourcesResponse,
+          crossHubEdgesResponse,
+          wikidataNodesResponse,
+          wikidataEdgesResponse,
+          wikidataSourcesResponse
+        ] = await Promise.all([
+          fetch("data/bible-root-nodes.json"),
+          fetch("data/bible-root-edges.json"),
+          fetch("data/bible-root-assertions.json"),
+          fetch("data/bible-root-sources.json"),
+          fetch("data/nodes-v2-root.json"),
+          fetch("data/sources-v2.json"),
+          fetch("data/sourceroot-cross-hub-edges.json"),
+          fetch("data/wikidata-root-nodes.json"),
+          fetch("data/wikidata-root-edges.json"),
+          fetch("data/wikidata-root-sources.json")
+        ]);
+
+        const bibleNodesRaw = await bibleNodesResponse.json();
+        const bibleEdgesRaw = await bibleEdgesResponse.json();
+        const bibleAssertionsRaw = await bibleAssertionsResponse.json();
+        const bibleSourcesRaw = await bibleSourcesResponse.json();
+        const dictionaryConceptsRaw = await dictionaryConceptsResponse.json();
+        const dictionarySourcesRaw = await dictionarySourcesResponse.json();
+        const crossHubEdgesRaw = await crossHubEdgesResponse.json();
+        const wikidataNodesRaw = await wikidataNodesResponse.json();
+        const wikidataEdgesRaw = await wikidataEdgesResponse.json();
+        const wikidataSourcesRaw = await wikidataSourcesResponse.json();
+
+        const bibleNodes = adaptBibleNodes(bibleNodesRaw);
+        const dictionaryNodes = adaptDictionaryConcepts(dictionaryConceptsRaw);
+        const wikidataNodes = adaptWikidataNodes(wikidataNodesRaw);
+
+        allNodes = combineNodes(
+          bibleNodes,
+          dictionaryNodes,
+          wikidataNodes
+        );
+
+        allEdges = [
+          ...adaptBibleEdges(bibleEdgesRaw),
+          ...adaptDictionaryEdges(dictionaryConceptsRaw),
+          ...adaptCrossHubEdges(crossHubEdgesRaw),
+          ...adaptWikidataEdges(wikidataEdgesRaw).map(edge => ({
+            ...edge,
+            domain: "Wiki"
+          }))
+        ];
+
+        allAssertions = [
+          ...adaptBibleAssertions(bibleAssertionsRaw),
+          ...adaptDictionaryAssertions(dictionaryConceptsRaw),
+          ...adaptWikidataAssertions(wikidataNodesRaw)
+        ];
+
+        allSources = [
+          ...adaptBibleSources(bibleSourcesRaw),
+          ...adaptDictionarySources(dictionarySourcesRaw),
+          ...adaptWikidataSources(wikidataSourcesRaw)
+        ];
+
+        populateFilters();
+        applyFilters();
+
+        document.getElementById("searchInput").addEventListener("input", applyFilters);
+        document.getElementById("domainFilter").addEventListener("change", applyFilters);
+        document.getElementById("typeFilter").addEventListener("change", applyFilters);
+        document.getElementById("usageFilter").addEventListener("change", applyFilters);
+
+        document.getElementById("clearFiltersButton").addEventListener("click", () => {
+          document.getElementById("searchInput").value = "";
+          document.getElementById("domainFilter").value = "all";
+          document.getElementById("typeFilter").value = "all";
+          document.getElementById("usageFilter").value = "all";
+          applyFilters();
+        });
+
+      } catch (error) {
+        document.getElementById("sourceRegistry").innerHTML = `
+          <p class="empty">Could not load source registry. Check file paths and browser console.</p>
+        `;
+        console.error(error);
+      }
+    }
+
+    function adaptBibleSources(sources = []) {
+      return sources.map(source => ({
+        id: source.id,
+        name: source.name || source.title || source.id,
+        type: source.type || "BibleRoot Source",
+        domain: "BibleRoot",
+        qualityTier: source.qualityTier || source.tier || "Working Source",
+        credibilityTier: source.credibilityTier || "",
+        verificationStatus: source.verificationStatus || "",
+        sourceClass: source.sourceClass || "",
+        publisher: source.publisher || "",
+        license: source.license || "",
+        url: source.url || "",
+        notes: source.notes || source.description || "",
+        raw: source
+      }));
+    }
+
+    function adaptDictionarySources(sources = []) {
+      return sources.map(source => ({
+        id: source.id,
+        name: source.name || source.title || source.id,
+        type: source.type || "DictionaryHub Source",
+        domain: "DictionaryHub",
+        qualityTier: source.qualityTier || source.tier || "Working Source",
+        credibilityTier: source.credibilityTier || "",
+        verificationStatus: source.verificationStatus || "",
+        sourceClass: source.sourceClass || "",
+        publisher: source.publisher || "",
+        license: source.license || "",
+        url: source.url || "",
+        notes: source.notes || source.description || "",
+        raw: source
+      }));
+    }
+
+    function adaptBibleEdges(edges = []) {
+      return edges.map(edge => ({
+        ...edge,
+        fromNodeId: `bible-${edge.fromNodeId}`,
+        toNodeId: `bible-${edge.toNodeId}`,
+        relationshipType: edge.relationshipType || edge.type || "RELATED_TO",
+        label: edge.label || edge.relationshipType || edge.type || "related to",
+        summary: edge.summary || edge.explanation || "",
+        sourceIds: edge.sourceIds || [],
+        domain: "BibleRoot",
+        raw: edge
+      }));
+    }
+
+    function adaptDictionaryEdges(concepts = []) {
+      const edges = [];
+
+      concepts.forEach(concept => {
+        (concept.relationships || []).forEach((relationship, index) => {
+          edges.push({
+            id: `dictionary-edge-${concept.id}-${relationship.target}-${index}`,
+            fromNodeId: `dictionary-${concept.id}`,
+            toNodeId: `dictionary-${relationship.target}`,
+            relationshipType: relationship.type || "RELATED_TO",
+            label: relationship.direction || relationship.type || "related to",
+            summary: relationship.explanation || relationship.bridge || "",
+            sourceIds: relationship.sourceIds || [],
+            domain: "DictionaryHub",
+            raw: relationship
+          });
+        });
+      });
+
+      return edges;
+    }
+
+    function adaptCrossHubEdges(edges = []) {
+      return edges.map(edge => ({
+        id: edge.id,
+        fromNodeId: edge.fromNodeId,
+        toNodeId: edge.toNodeId,
+        relationshipType: edge.relationshipType || edge.type || "CROSS_HUB_RELATIONSHIP",
+        label: edge.label || edge.relationshipType || "relates to",
+        summary: edge.summary || edge.explanation || "",
+        sourceIds: edge.sourceIds || [],
+        domain: edge.domain || "SourceRoot",
+        raw: edge
+      }));
+    }
+
+    function adaptBibleAssertions(assertions = []) {
+      return assertions.map(assertion => ({
+        ...assertion,
+        nodeId: `bible-${assertion.nodeId}`,
+        assertionType: assertion.assertionType || assertion.type || "assertion",
+        label: assertion.label || assertion.assertionType || assertion.type || "Assertion",
+        summary: assertion.summary || "",
+        body: assertion.body || assertion.description || assertion.summary || "",
+        sourceIds: assertion.sourceIds || [],
+        confidence: assertion.confidence || "working",
+        status: assertion.status || "alpha",
+        domain: "BibleRoot"
+      }));
+    }
+
+    function adaptDictionaryAssertions(concepts = []) {
+      const assertions = [];
+
+      concepts.forEach(concept => {
+        if (concept.shortDefinition) {
+          assertions.push({
+            id: `dictionary-assertion-${concept.id}-short-definition`,
+            nodeId: `dictionary-${concept.id}`,
+            assertionType: "short-definition",
+            label: "Short Definition",
+            summary: concept.shortDefinition,
+            body: concept.shortDefinition,
+            sourceIds: concept.sourceIds || [],
+            confidence: "working",
+            status: concept.status || "v2-draft",
+            domain: "DictionaryHub"
+          });
+        }
+
+        if (concept.fullDefinition) {
+          assertions.push({
+            id: `dictionary-assertion-${concept.id}-full-definition`,
+            nodeId: `dictionary-${concept.id}`,
+            assertionType: "full-definition",
+            label: "Full Definition",
+            summary: concept.shortDefinition || "",
+            body: concept.fullDefinition,
+            sourceIds: concept.sourceIds || [],
+            confidence: "working",
+            status: concept.status || "v2-draft",
+            domain: "DictionaryHub"
+          });
+        }
+
+        if (concept.plainEnglish) {
+          assertions.push({
+            id: `dictionary-assertion-${concept.id}-plain-english`,
+            nodeId: `dictionary-${concept.id}`,
+            assertionType: "plain-english",
+            label: "Plain English",
+            summary: concept.plainEnglish,
+            body: concept.plainEnglish,
+            sourceIds: concept.sourceIds || [],
+            confidence: "working",
+            status: concept.status || "v2-draft",
+            domain: "DictionaryHub"
+          });
+        }
+
+        if (concept.technicalDefinition) {
+          assertions.push({
+            id: `dictionary-assertion-${concept.id}-technical-definition`,
+            nodeId: `dictionary-${concept.id}`,
+            assertionType: "technical-definition",
+            label: "Technical Definition",
+            summary: concept.technicalDefinition,
+            body: concept.technicalDefinition,
+            sourceIds: concept.sourceIds || [],
+            confidence: "working",
+            status: concept.status || "v2-draft",
+            domain: "DictionaryHub"
+          });
+        }
+
+        if (concept.whyItMatters) {
+          assertions.push({
+            id: `dictionary-assertion-${concept.id}-why-it-matters`,
+            nodeId: `dictionary-${concept.id}`,
+            assertionType: "why-it-matters",
+            label: "Why It Matters",
+            summary: concept.whyItMatters,
+            body: concept.whyItMatters,
+            sourceIds: concept.sourceIds || [],
+            confidence: "working",
+            status: concept.status || "v2-draft",
+            domain: "DictionaryHub"
+          });
+        }
+
+        if (Array.isArray(concept.examples) && concept.examples.length) {
+          assertions.push({
+            id: `dictionary-assertion-${concept.id}-examples`,
+            nodeId: `dictionary-${concept.id}`,
+            assertionType: "examples",
+            label: "Examples",
+            summary: `${concept.examples.length} example(s) available`,
+            body: concept.examples.map(example => `• ${example}`).join("<br>"),
+            sourceIds: concept.sourceIds || [],
+            confidence: "working",
+            status: concept.status || "v2-draft",
+            domain: "DictionaryHub"
+          });
+        }
+
+        if (Array.isArray(concept.commonConfusions) && concept.commonConfusions.length) {
+          assertions.push({
+            id: `dictionary-assertion-${concept.id}-common-confusions`,
+            nodeId: `dictionary-${concept.id}`,
+            assertionType: "common-confusions",
+            label: "Common Confusions",
+            summary: `${concept.commonConfusions.length} confusion note(s) available`,
+            body: concept.commonConfusions.map(confusion => `• ${confusion}`).join("<br>"),
+            sourceIds: concept.sourceIds || [],
+            confidence: "working",
+            status: concept.status || "v2-draft",
+            domain: "DictionaryHub"
+          });
+        }
+      });
+
+      return assertions;
+    }
+
+    function populateFilters() {
+      const domainFilter = document.getElementById("domainFilter");
+      const typeFilter = document.getElementById("typeFilter");
+
+      const domains = [
+        ...new Set(allSources.map(source => getDisplayDomain(source.domain || "Unknown Domain")))
+      ].sort();
+
+      const types = [
+        ...new Set(allSources.map(source => source.type || "Unknown Type"))
+      ].sort();
+
+      domainFilter.innerHTML = `
+        <option value="all">All Domains</option>
+        ${domains.map(domain => `<option value="${domain}">${domain}</option>`).join("")}
+      `;
+
+      typeFilter.innerHTML = `
+        <option value="all">All Source Types</option>
+        ${types.map(type => `<option value="${type}">${type}</option>`).join("")}
+      `;
+    }
+
+    function applyFilters() {
+      const searchTerm = document.getElementById("searchInput").value.toLowerCase().trim();
+      const selectedDomain = document.getElementById("domainFilter").value;
+      const selectedType = document.getElementById("typeFilter").value;
+      const selectedUsage = document.getElementById("usageFilter").value;
+
+      let filteredSources = [...allSources];
+
+      if (selectedDomain !== "all") {
+        filteredSources = filteredSources.filter(source =>
+          getDisplayDomain(source.domain) === selectedDomain
+        );
+      }
+
+      if (selectedType !== "all") {
+        filteredSources = filteredSources.filter(source => source.type === selectedType);
+      }
+
+      if (selectedUsage === "used") {
+        filteredSources = filteredSources.filter(source => getSourceUsage(source.id).total > 0);
+      }
+
+      if (selectedUsage === "unused") {
+        filteredSources = filteredSources.filter(source => getSourceUsage(source.id).total === 0);
+      }
+
+      if (searchTerm) {
+        filteredSources = filteredSources.filter(source => {
+          const searchableText = [
+            source.id,
+            source.name,
+            source.type,
+            source.domain,
+            getDisplayDomain(source.domain),
+            source.qualityTier,
+            source.credibilityTier,
+            source.verificationStatus,
+            source.sourceClass,
+            source.publisher,
+            source.license,
+            source.url,
+            source.notes
+          ].join(" ").toLowerCase();
+
+          return searchableText.includes(searchTerm);
+        });
+      }
+
+      renderStats(filteredSources);
+      renderSourceRegistry(filteredSources);
+    }
+
+    function renderStats(sources) {
+      const domainCount = new Set(sources.map(source => getDisplayDomain(source.domain))).size;
+      const typeCount = new Set(sources.map(source => source.type)).size;
+      const usedCount = sources.filter(source => getSourceUsage(source.id).total > 0).length;
+      const linkedCount = sources.filter(source => source.url).length;
+
+      document.getElementById("registryStats").innerHTML = `
+        <div class="stat-card">
+          <div class="stat-number">${sources.length}</div>
+          <div class="stat-label">Visible Sources</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-number">${domainCount}</div>
+          <div class="stat-label">Domains</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-number">${typeCount}</div>
+          <div class="stat-label">Source Types</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-number">${usedCount}</div>
+          <div class="stat-label">Used Sources</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-number">${linkedCount}</div>
+          <div class="stat-label">With URLs</div>
+        </div>
+      `;
+    }
+
+    function renderSourceRegistry(sources) {
+      const sourceRegistry = document.getElementById("sourceRegistry");
+      const sourceCount = document.getElementById("sourceCount");
+
+      sourceCount.textContent = `${sources.length} source${sources.length === 1 ? "" : "s"} shown`;
+
+      if (!sources.length) {
+        sourceRegistry.innerHTML = `
+          <p class="empty">No sources match this search/filter combination.</p>
+        `;
+        return;
+      }
+
+      sourceRegistry.innerHTML = `
+        <div class="source-grid">
+          ${sources.map(source => {
+            const usage = getSourceUsage(source.id);
+
+            return `
+              <article class="source-card">
+                ${renderDomainLabel(getDisplayDomain(source.domain))}
+                <h3>${source.name}</h3>
+
+                <div class="meta">
+                  ${source.type || "Source"} · ${source.qualityTier || "Working Source"}
+                </div>
+
+                <div class="source-id">
+                  <strong>Source ID:</strong> <code>${source.id}</code>
+                </div>
+
+                <div class="usage-grid">
+                  <div class="usage-card">
+                    <div class="usage-number">${usage.nodes}</div>
+                    <div class="usage-label">Nodes</div>
+                  </div>
+
+                  <div class="usage-card">
+                    <div class="usage-number">${usage.assertions}</div>
+                    <div class="usage-label">Assertions</div>
+                  </div>
+
+                  <div class="usage-card">
+                    <div class="usage-number">${usage.edges}</div>
+                    <div class="usage-label">Edges</div>
+                  </div>
+
+                  <div class="usage-card">
+                    <div class="usage-number">${usage.total}</div>
+                    <div class="usage-label">Total Uses</div>
+                  </div>
+                </div>
+
+                <p>${source.notes || "<span class='empty'>No notes yet.</span>"}</p>
+
+                ${source.publisher ? `<div class="meta"><strong>Publisher:</strong> ${source.publisher}</div>` : ""}
+                ${source.credibilityTier ? `<div class="meta"><strong>Credibility:</strong> ${source.credibilityTier}</div>` : ""}
+                ${source.verificationStatus ? `<div class="meta"><strong>Verification:</strong> ${source.verificationStatus}</div>` : ""}
+                ${source.sourceClass ? `<div class="meta"><strong>Class:</strong> ${source.sourceClass}</div>` : ""}
+                ${source.license ? `<div class="meta"><strong>License:</strong> ${source.license}</div>` : ""}
+
+                ${source.url ? `<a class="open-source-link" href="${source.url}" target="_blank" rel="noopener">Open source</a>` : ""}
+
+                <details>
+                  <summary>Raw Source Data</summary>
+                  <pre>${JSON.stringify(source.raw || source, null, 2)}</pre>
+                </details>
+              </article>
+            `;
+          }).join("")}
+        </div>
+      `;
+    }
+
+    function getSourceUsage(sourceId) {
+      const nodeUses = allNodes.filter(node =>
+        (node.sourceIds || []).includes(sourceId)
+      ).length;
+
+      const assertionUses = allAssertions.filter(assertion =>
+        (assertion.sourceIds || []).includes(sourceId)
+      ).length;
+
+      const edgeUses = allEdges.filter(edge =>
+        (edge.sourceIds || []).includes(sourceId)
+      ).length;
+
+      return {
+        nodes: nodeUses,
+        assertions: assertionUses,
+        edges: edgeUses,
+        total: nodeUses + assertionUses + edgeUses
+      };
+    }
+
+    function renderDomainLabel(domain = "SourceRoot") {
+      const className = domain === "SourceRoot"
+        ? "domain-source-root"
+        : domain === "BibleRoot"
+          ? "domain-bible-root"
+          : domain === "DictionaryHub"
+            ? "domain-dictionary-hub"
+            : domain === "Wiki"
+              ? "domain-wiki"
+              : "";
+
+      return `<span class="hub-label ${className}">${domain}</span>`;
+    }
+
+    function getDisplayDomain(domain = "") {
+      if (domain === "WikidataRoot") {
+        return "Wiki";
+      }
+
+      return domain;
+    }
+
+    loadSourceRegistry();
+  </script>
+</body>
+</html>
