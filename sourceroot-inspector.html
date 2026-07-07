@@ -31,6 +31,27 @@
       line-height: 1.5;
     }
 
+    .top-links {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.top-links a {
+  color: white;
+  border: 1px solid #374151;
+  background: #1f2937;
+  border-radius: 999px;
+  padding: 7px 11px;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.top-links a:hover {
+  background: #374151;
+}
+
     main {
       display: grid;
       grid-template-columns: 380px 1fr;
@@ -316,9 +337,16 @@
   <header>
     <h1>SourceRoot Inspector</h1>
     <div class="subtitle">
-      Master prototype view for SourceRoot: DictionaryHub + BibleRoot through one adapter layer.
-      Search, filter, inspect, follow relationships, verify assertions, and open source records from one universal engine.
-    </div>
+  Master prototype view for SourceRoot: DictionaryHub + BibleRoot + Wiki through one adapter layer.
+  Search, filter, inspect, follow relationships, verify assertions, and open source records from one universal engine.
+</div>
+
+<div class="top-links">
+  <a href="sourceroot-edge-registry.html">Open Edge Registry</a>
+  <a href="sourceroot-source-registry.html">Open Source Registry</a>
+  <a href="graph-v2.html">Open DictionaryHub Graph</a>
+  <a href="bibleroot.html">Open BibleRoot</a>
+</div>
   </header>
 
   <main>
