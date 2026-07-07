@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SourceRoot Identity Registry</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f4ee;
+      color: #1f2933;
+      margin: 0;
+    }
+
+    header {
+      background: #111827;
+      color: white;
+      padding: 24px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 30px;
+    }
+
+    .subtitle {
+      color: #d1d5db;
+      margin-top: 8px;
+      max-width: 980px;
+      line-height: 1.5;
+    }
+
+    .top-links {
+      margin-top: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .top-links a {
+      color: white;
+      border: 1px solid #374151;
+      background: #1f2937;
+      border-radius: 999px;
+      padding: 7px 11px;
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    .top-links a:hover {
+      background: #374151;
+    }
+
+    main {
+      max-width: 1450px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .panel {
+      background: white;
+      border: 1px solid #ddd6c8;
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      margin-bottom: 20px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #cfc7b8;
+      font-size: 14px;
+      box-sizing: border-box;
+      background: white;
+    }
+
+    button {
+      font-family: inherit;
+    }
+
+    .clear-button {
+      border: 1px solid #cfc7b8;
+      background: #fff8e6;
+      color: #1f2933;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .clear-button:hover {
+      background: #efe7d3;
+      border-color: #b78a2f;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(120px, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .stat-card {
+      background: #fff8e6;
+      border: 1px solid #ead59a;
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .stat-number {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 3px;
+    }
+
+    .stat-label {
+      color: #6b7280;
+      font-size: 12px;
+    }
+
+    .registry-count {
+      color: #6b7280;
+      font-size: 13px;
+      margin: 12px 0 0;
+    }
+
+    .identity-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+      gap: 14px;
+    }
+
+    .identity-card {
+      border: 1px solid #eee2c7;
+      background: #fffdf8;
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .identity-card h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+      line-height: 1.3;
+    }
+
+    .relationship-pill {
+      display: inline-block;
+      background: #efe7d3;
+      color: #4b3b16;
+      border-radius: 999px;
+      padding: 5px 9px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .hub-label {
+      display: inline-block;
+      background: #111827;
+      color: white;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 11px;
+      margin-bottom: 8px;
+    }
+
+    .domain-source-root {
+      background: #7c2d12;
+    }
+
+    .domain-bible-root {
+      background: #1e3a8a;
+    }
+
+    .domain-dictionary-hub {
+      background: #111827;
+    }
+
+    .domain-wiki {
+      background: #065f46;
+    }
+
+    .node-row {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 10px;
+      align-items: center;
+      margin: 12px 0;
+    }
+
+    .node-box {
+      background: #fff8e6;
+      border: 1px solid #ead59a;
+      border-radius: 12px;
+      padding: 11px;
+    }
+
+    .node-title {
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    .arrow {
+      color: #6b7280;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .meta {
+      color: #6b7280;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .summary {
+      color: #374151;
+      line-height: 1.5;
+      margin: 12px 0;
+    }
+
+    code {
+      background: #eee;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    .source-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 8px;
+    }
+
+    .source-chip {
+      display: inline-block;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      color: #374151;
+      border-radius: 999px;
+      padding: 4px 7px;
+      font-size: 11px;
+      cursor: help;
+    }
+
+    .empty {
+      color: #6b7280;
+      font-style: italic;
+      padding: 20px;
+    }
+
+    details {
+      margin-top: 10px;
+      border: 1px solid #eee2c7;
+      background: white;
+      border-radius: 10px;
+      padding: 8px;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 12px;
+      color: #4b5563;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #f3f4f6;
+      border-radius: 10px;
+      padding: 10px;
+      overflow: auto;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .note-box {
+      background: #fff8e6;
+      border: 1px solid #ead59a;
+      border-radius: 12px;
+      padding: 13px;
+      color: #374151;
+      line-height: 1.5;
+      margin-top: 12px;
+    }
+
+    @media (max-width: 950px) {
+      .controls {
+        grid-template-columns: 1fr;
+      }
+
+      .stat-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .identity-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .node-row {
+        grid-template-columns: 1fr;
+      }
+
+      .arrow {
+        transform: rotate(90deg);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>SourceRoot Identity Registry</h1>
+    <div class="subtitle">
+      Meaning-resolution view for SourceRoot. Inspect identity edges that explain whether nodes are the same thing, the same term in different contexts, symbolic mappings, related concepts, derived meanings, contrasts, or disambiguation links.
+    </div>
+
+    <div class="top-links">
+      <a href="sourceroot.html">SourceRoot Home</a>
+      <a href="sourceroot-inspector.html">Open Inspector</a>
+      <a href="sourceroot-edge-registry.html">Open Edge Registry</a>
+      <a href="sourceroot-source-registry.html">Open Source Registry</a>
+      <a href="sourceroot-api-preview.html">Open API Preview</a>
+      <a href="graph-v2.html">Open DictionaryHub Graph</a>
+      <a href="bibleroot.html">Open BibleRoot</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <h2>Identity Relationships</h2>
+
+      <div class="controls">
+        <input id="searchInput" type="text" placeholder="Search identity edges, nodes, summaries, relationship types, or source IDs..." />
+
+        <select id="identityTypeFilter">
+          <option value="all">All Identity Types</option>
+        </select>
+
+        <select id="domainFilter">
+          <option value="all">All Domains</option>
+        </select>
+
+        <select id="crossHubFilter">
+          <option value="all">All Identity Edges</option>
+          <option value="cross">Cross-hub only</option>
+          <option value="same">Same-hub only</option>
+        </select>
+
+        <button id="clearFiltersButton" class="clear-button" type="button">
+          Clear filters
+        </button>
+      </div>
+
+      <div id="identityStats" class="stat-grid"></div>
+      <div id="identityCount" class="registry-count"></div>
+
+      <div class="note-box">
+        Identity edges help SourceRoot connect meanings without incorrectly merging them.
+        Example: <strong>Wiki Light</strong> and <strong>BibleRoot Light</strong> share a term, but they are not the same meaning.
+      </div>
+    </section>
+
+    <section class="panel">
+      <div id="identityRegistry">
+        Loading identity registry...
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { adaptDictionaryConcepts } from "./engine/adapters/dictionaryAdapter.js";
+    import { adaptBibleNodes } from "./engine/adapters/bibleAdapter.js";
+    import { combineNodes } from "./engine/sourceRootEngine.js";
+
+    import {
+      adaptWikidataNodes,
+      adaptWikidataEdges,
+      adaptWikidataSources
+    } from "./engine/adapters/wikidataAdapter.js";
+
+    let allNodes = [];
+    let allEdges = [];
+    let allSources = [];
+
+    const identityRelationshipTypes = [
+      "SAME_AS",
+      "SAME_TERM_DIFFERENT_CONTEXT",
+      "SYMBOLIC_OF",
+      "RELATED_CONCEPT",
+      "DERIVED_FROM",
+      "CONTRASTS_WITH",
+      "DISAMBIGUATES",
+      "SAME_AS_RELATED_CONCEPT",
+      "RELATES_TO"
+    ];
+
+    async function loadIdentityRegistry() {
+      try {
+        const [
+          bibleNodesResponse,
+          bibleEdgesResponse,
+          bibleSourcesResponse,
+          dictionaryConceptsResponse,
+          dictionarySourcesResponse,
+          crossHubEdgesResponse,
+          wikidataNodesResponse,
+          wikidataEdgesResponse,
+          wikidataSourcesResponse
+        ] = await Promise.all([
+          fetch("data/bible-root-nodes.json"),
+          fetch("data/bible-root-edges.json"),
+          fetch("data/bible-root-sources.json"),
+          fetch("data/nodes-v2-root.json"),
+          fetch("data/sources-v2.json"),
+          fetch("data/sourceroot-cross-hub-edges.json"),
+          fetch("data/wikidata-root-nodes.json"),
+          fetch("data/wikidata-root-edges.json"),
+          fetch("data/wikidata-root-sources.json")
+        ]);
+
+        const bibleNodesRaw = await bibleNodesResponse.json();
+        const bibleEdgesRaw = await bibleEdgesResponse.json();
+        const bibleSourcesRaw = await bibleSourcesResponse.json();
+        const dictionaryConceptsRaw = await dictionaryConceptsResponse.json();
+        const dictionarySourcesRaw = await dictionarySourcesResponse.json();
+        const crossHubEdgesRaw = await crossHubEdgesResponse.json();
+        const wikidataNodesRaw = await wikidataNodesResponse.json();
+        const wikidataEdgesRaw = await wikidataEdgesResponse.json();
+        const wikidataSourcesRaw = await wikidataSourcesResponse.json();
+
+        const bibleNodes = adaptBibleNodes(bibleNodesRaw);
+        const dictionaryNodes = adaptDictionaryConcepts(dictionaryConceptsRaw);
+        const wikidataNodes = adaptWikidataNodes(wikidataNodesRaw);
+
+        allNodes = combineNodes(
+          bibleNodes,
+          dictionaryNodes,
+          wikidataNodes
+        );
+
+        allEdges = [
+          ...adaptBibleEdges(bibleEdgesRaw),
+          ...adaptDictionaryEdges(dictionaryConceptsRaw),
+          ...adaptCrossHubEdges(crossHubEdgesRaw),
+          ...adaptWikidataEdges(wikidataEdgesRaw).map(edge => ({
+            ...edge,
+            domain: "Wiki"
+          }))
+        ];
+
+        allSources = [
+          ...adaptBibleSources(bibleSourcesRaw),
+          ...adaptDictionarySources(dictionarySourcesRaw),
+          ...adaptWikidataSources(wikidataSourcesRaw)
+        ];
+
+        populateFilters();
+        applyFilters();
+
+        document.getElementById("searchInput").addEventListener("input", applyFilters);
+        document.getElementById("identityTypeFilter").addEventListener("change", applyFilters);
+        document.getElementById("domainFilter").addEventListener("change", applyFilters);
+        document.getElementById("crossHubFilter").addEventListener("change", applyFilters);
+
+        document.getElementById("clearFiltersButton").addEventListener("click", () => {
+          document.getElementById("searchInput").value = "";
+          document.getElementById("identityTypeFilter").value = "all";
+          document.getElementById("domainFilter").value = "all";
+          document.getElementById("crossHubFilter").value = "all";
+          applyFilters();
+        });
+
+      } catch (error) {
+        document.getElementById("identityRegistry").innerHTML = `
+          <p class="empty">Could not load identity registry. Check file paths and browser console.</p>
+        `;
+        console.error(error);
+      }
+    }
+
+    function adaptBibleEdges(edges = []) {
+      return edges.map(edge => ({
+        ...edge,
+        fromNodeId: `bible-${edge.fromNodeId}`,
+        toNodeId: `bible-${edge.toNodeId}`,
+        relationshipType: edge.relationshipType || edge.type || "RELATED_TO",
+        label: edge.label || edge.relationshipType || edge.type || "related to",
+        summary: edge.summary || edge.explanation || "",
+        sourceIds: edge.sourceIds || [],
+        domain: "BibleRoot",
+        raw: edge
+      }));
+    }
+
+    function adaptDictionaryEdges(concepts = []) {
+      const edges = [];
+
+      concepts.forEach(concept => {
+        (concept.relationships || []).forEach((relationship, index) => {
+          edges.push({
+            id: `dictionary-edge-${concept.id}-${relationship.target}-${index}`,
+            fromNodeId: `dictionary-${concept.id}`,
+            toNodeId: `dictionary-${relationship.target}`,
+            relationshipType: relationship.type || "RELATED_TO",
+            label: relationship.direction || relationship.type || "related to",
+            summary: relationship.explanation || relationship.bridge || "",
+            sourceIds: relationship.sourceIds || [],
+            domain: "DictionaryHub",
+            raw: relationship
+          });
+        });
+      });
+
+      return edges;
+    }
+
+    function adaptCrossHubEdges(edges = []) {
+      return edges.map(edge => ({
+        id: edge.id,
+        fromNodeId: edge.fromNodeId,
+        toNodeId: edge.toNodeId,
+        relationshipType: edge.relationshipType || edge.type || "CROSS_HUB_RELATIONSHIP",
+        label: edge.label || edge.relationshipType || "relates to",
+        summary: edge.summary || edge.explanation || "",
+        sourceIds: edge.sourceIds || [],
+        domain: edge.domain || "SourceRoot",
+        raw: edge
+      }));
+    }
+
+    function adaptBibleSources(sources = []) {
+      return sources.map(source => ({
+        id: source.id,
+        name: source.name || source.title || source.id,
+        type: source.type || "BibleRoot Source",
+        domain: "BibleRoot",
+        qualityTier: source.qualityTier || source.tier || "Working Source",
+        url: source.url || "",
+        notes: source.notes || source.description || "",
+        raw: source
+      }));
+    }
+
+    function adaptDictionarySources(sources = []) {
+      return sources.map(source => ({
+        id: source.id,
+        name: source.name || source.title || source.id,
+        type: source.type || "DictionaryHub Source",
+        domain: "DictionaryHub",
+        qualityTier: source.qualityTier || source.tier || "Working Source",
+        url: source.url || "",
+        notes: source.notes || source.description || "",
+        raw: source
+      }));
+    }
+
+    function populateFilters() {
+      const identityTypeFilter = document.getElementById("identityTypeFilter");
+      const domainFilter = document.getElementById("domainFilter");
+
+      const identityEdges = getIdentityEdges();
+
+      const relationshipTypes = [
+        ...new Set(identityEdges.map(edge => edge.relationshipType || "UNKNOWN"))
+      ].sort();
+
+      const domains = [
+        ...new Set(identityEdges.map(edge => getDisplayDomain(edge.domain || "Unknown Domain")))
+      ].sort();
+
+      identityTypeFilter.innerHTML = `
+        <option value="all">All Identity Types</option>
+        ${relationshipTypes.map(type => `<option value="${type}">${type}</option>`).join("")}
+      `;
+
+      domainFilter.innerHTML = `
+        <option value="all">All Domains</option>
+        ${domains.map(domain => `<option value="${domain}">${domain}</option>`).join("")}
+      `;
+    }
+
+    function applyFilters() {
+      const searchTerm = document.getElementById("searchInput").value.toLowerCase().trim();
+      const selectedIdentityType = document.getElementById("identityTypeFilter").value;
+      const selectedDomain = document.getElementById("domainFilter").value;
+      const selectedCrossHub = document.getElementById("crossHubFilter").value;
+
+      let filteredEdges = getIdentityEdges();
+
+      if (selectedIdentityType !== "all") {
+        filteredEdges = filteredEdges.filter(edge => edge.relationshipType === selectedIdentityType);
+      }
+
+      if (selectedDomain !== "all") {
+        filteredEdges = filteredEdges.filter(edge =>
+          getDisplayDomain(edge.domain) === selectedDomain
+        );
+      }
+
+      if (selectedCrossHub === "cross") {
+        filteredEdges = filteredEdges.filter(edge => isCrossHubEdge(edge));
+      }
+
+      if (selectedCrossHub === "same") {
+        filteredEdges = filteredEdges.filter(edge => !isCrossHubEdge(edge));
+      }
+
+      if (searchTerm) {
+        filteredEdges = filteredEdges.filter(edge => {
+          const fromNode = getNodeById(edge.fromNodeId);
+          const toNode = getNodeById(edge.toNodeId);
+
+          const searchableText = [
+            edge.id,
+            edge.fromNodeId,
+            edge.toNodeId,
+            edge.relationshipType,
+            edge.label,
+            edge.summary,
+            edge.domain,
+            getDisplayDomain(edge.domain),
+            ...(edge.sourceIds || []),
+            fromNode ? fromNode.title : "",
+            fromNode ? fromNode.domain : "",
+            fromNode ? getDisplayDomain(fromNode.domain) : "",
+            fromNode ? fromNode.type : "",
+            toNode ? toNode.title : "",
+            toNode ? toNode.domain : "",
+            toNode ? getDisplayDomain(toNode.domain) : "",
+            toNode ? toNode.type : ""
+          ].join(" ").toLowerCase();
+
+          return searchableText.includes(searchTerm);
+        });
+      }
+
+      renderStats(filteredEdges);
+      renderIdentityRegistry(filteredEdges);
+    }
+
+    function getIdentityEdges() {
+      return allEdges.filter(edge =>
+        identityRelationshipTypes.includes(edge.relationshipType)
+      );
+    }
+
+    function renderStats(edges) {
+      const crossHubCount = edges.filter(edge => isCrossHubEdge(edge)).length;
+      const sourcedCount = edges.filter(edge => (edge.sourceIds || []).length > 0).length;
+      const relationshipTypeCount = new Set(edges.map(edge => edge.relationshipType)).size;
+      const domainCount = new Set(edges.map(edge => getDisplayDomain(edge.domain))).size;
+
+      document.getElementById("identityStats").innerHTML = `
+        <div class="stat-card">
+          <div class="stat-number">${edges.length}</div>
+          <div class="stat-label">Visible Identity Edges</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-number">${crossHubCount}</div>
+          <div class="stat-label">Cross-Hub Identity</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-number">${sourcedCount}</div>
+          <div class="stat-label">With Sources</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-number">${relationshipTypeCount}</div>
+          <div class="stat-label">Identity Types</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-number">${domainCount}</div>
+          <div class="stat-label">Domains</div>
+        </div>
+      `;
+    }
+
+    function renderIdentityRegistry(edges) {
+      const identityRegistry = document.getElementById("identityRegistry");
+      const identityCount = document.getElementById("identityCount");
+
+      identityCount.textContent = `${edges.length} identity edge${edges.length === 1 ? "" : "s"} shown`;
+
+      if (!edges.length) {
+        identityRegistry.innerHTML = `
+          <p class="empty">No identity edges match this search/filter combination.</p>
+        `;
+        return;
+      }
+
+      identityRegistry.innerHTML = `
+        <div class="identity-grid">
+          ${edges.map(edge => {
+            const fromNode = getNodeById(edge.fromNodeId);
+            const toNode = getNodeById(edge.toNodeId);
+
+            return `
+              <article class="identity-card">
+                ${renderDomainLabel(getDisplayDomain(edge.domain))}
+                <br>
+                <span class="relationship-pill">${edge.relationshipType || "relationship"}</span>
+
+                <h3>${edge.label || "Identity relationship"}</h3>
+
+                <div class="node-row">
+                  ${renderNodeBox(fromNode, edge.fromNodeId)}
+                  <div class="arrow">→</div>
+                  ${renderNodeBox(toNode, edge.toNodeId)}
+                </div>
+
+                <div class="summary">
+                  ${edge.summary || "<span class='empty'>No summary yet.</span>"}
+                </div>
+
+                <div class="meta">
+                  <strong>Edge ID:</strong> <code>${edge.id}</code>
+                </div>
+
+                <div class="meta">
+                  <strong>Cross-hub:</strong> ${isCrossHubEdge(edge) ? "Yes" : "No"}
+                </div>
+
+                <div class="meta">
+                  <strong>Source IDs:</strong>
+                </div>
+
+                ${renderSourceList(edge.sourceIds || [])}
+
+                <details>
+                  <summary>Raw Identity Edge Data</summary>
+                  <pre>${JSON.stringify(edge.raw || edge, null, 2)}</pre>
+                </details>
+              </article>
+            `;
+          }).join("")}
+        </div>
+      `;
+    }
+
+    function renderNodeBox(node, fallbackId) {
+      if (!node) {
+        return `
+          <div class="node-box">
+            <div class="node-title">Missing node</div>
+            <div class="meta"><code>${fallbackId}</code></div>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="node-box">
+          <div class="node-title">${node.title}</div>
+          <div class="meta">${getDisplayDomain(node.domain)} · ${node.type}</div>
+          <div class="meta"><code>${node.id}</code></div>
+        </div>
+      `;
+    }
+
+    function renderSourceList(sourceIds = []) {
+      if (!sourceIds.length) {
+        return `<p class="empty">No sources yet.</p>`;
+      }
+
+      return `
+        <div class="source-list">
+          ${sourceIds.map(sourceId => {
+            const source = getSourceById(sourceId);
+            const title = source
+              ? `${source.name} | ${source.type} | ${getDisplayDomain(source.domain)}`
+              : "Source ID not found in loaded registry";
+
+            return `<span class="source-chip" title="${title}">${sourceId}</span>`;
+          }).join("")}
+        </div>
+      `;
+    }
+
+    function renderDomainLabel(domain = "SourceRoot") {
+      const className = domain === "SourceRoot"
+        ? "domain-source-root"
+        : domain === "BibleRoot"
+          ? "domain-bible-root"
+          : domain === "DictionaryHub"
+            ? "domain-dictionary-hub"
+            : domain === "Wiki"
+              ? "domain-wiki"
+              : "";
+
+      return `<span class="hub-label ${className}">${domain}</span>`;
+    }
+
+    function getNodeById(nodeId) {
+      return allNodes.find(node => node.id === nodeId);
+    }
+
+    function getSourceById(sourceId) {
+      return allSources.find(source => source.id === sourceId);
+    }
+
+    function isCrossHubEdge(edge) {
+      const fromNode = getNodeById(edge.fromNodeId);
+      const toNode = getNodeById(edge.toNodeId);
+
+      if (!fromNode || !toNode) {
+        return false;
+      }
+
+      return getDisplayDomain(fromNode.domain) !== getDisplayDomain(toNode.domain);
+    }
+
+    function getDisplayDomain(domain = "") {
+      if (domain === "WikidataRoot") {
+        return "Wiki";
+      }
+
+      return domain;
+    }
+
+    loadIdentityRegistry();
+  </script>
+</body>
+</html>

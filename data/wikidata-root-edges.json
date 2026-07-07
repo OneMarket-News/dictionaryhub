@@ -4,7 +4,7 @@
     "fromNodeId": "wikidata-light",
     "toNodeId": "bible-symbol-light",
     "relationshipType": "SAME_TERM_DIFFERENT_CONTEXT",
-    "label": "same term, different context"
+    "label": "same term, different context",
     "summary": "WikidataRoot defines light as a structured public entity. BibleRoot uses light as a symbolic and theological concept. These are not identical meanings, but they are connected views of the same term.",
     "sourceIds": [
       "wikidata-q9128",
