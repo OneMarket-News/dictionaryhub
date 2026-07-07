@@ -726,6 +726,14 @@
         </table>
       `;
     }
+    
+function getDisplayDomain(domain = "") {
+  if (domain === "WikidataRoot") {
+    return "Wiki";
+  }
+
+  return domain;
+}
 
     function renderNodeCell(node, fallbackId) {
       if (!node) {
@@ -737,7 +745,7 @@
 
       return `
         <span class="node-pill">${node.title}</span>
-        <div class="meta">${node.domain} · ${node.type}</div>
+        <div class="meta">${getDisplayDomain(node.domain)} · ${node.type}</div>
         <div class="meta"><code>${node.id}</code></div>
       `;
     }
