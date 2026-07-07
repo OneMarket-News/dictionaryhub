@@ -466,7 +466,7 @@
     }
 
     function renderEngineStatus() {
-      const hubs = new Set(allNodes.map(node => node.domain));
+      const hubs = new Set(allNodes.map(node => getDisplayDomain(node.domain)));
       const nodeTypes = new Set(allNodes.map(node => node.type));
 
       document.getElementById("engineStatus").innerHTML = `
@@ -481,22 +481,27 @@
     }
 
     function populateFilters() {
-      const hubFilter = document.getElementById("hubFilter");
-      const typeFilter = document.getElementById("typeFilter");
+  const hubFilter = document.getElementById("hubFilter");
+  const typeFilter = document.getElementById("typeFilter");
 
-      const hubs = [...new Set(allNodes.map(node => node.domain || "Unknown Hub"))].sort();
-      const types = [...new Set(allNodes.map(node => node.type || "Unknown Type"))].sort();
+  const hubs = [
+    ...new Set(allNodes.map(node => getDisplayDomain(node.domain || "Unknown Hub")))
+  ].sort();
 
-      hubFilter.innerHTML = `
-        <option value="all">All Hubs</option>
-        ${hubs.map(hub => `<option value="${hub}">${hub}</option>`).join("")}
-      `;
+  const types = [
+    ...new Set(allNodes.map(node => node.type || "Unknown Type"))
+  ].sort();
 
-      typeFilter.innerHTML = `
-        <option value="all">All Types</option>
-        ${types.map(type => `<option value="${type}">${type}</option>`).join("")}
-      `;
-    }
+  hubFilter.innerHTML = `
+    <option value="all">All Hubs</option>
+    ${hubs.map(hub => `<option value="${hub}">${hub}</option>`).join("")}
+  `;
+
+  typeFilter.innerHTML = `
+    <option value="all">All Types</option>
+    ${types.map(type => `<option value="${type}">${type}</option>`).join("")}
+  `;
+}
 
     function applyFilters() {
       const searchTerm = document.getElementById("searchInput").value;
@@ -506,7 +511,7 @@
       let filteredNodes = searchNodes(allNodes, searchTerm);
 
       if (selectedHub !== "all") {
-        filteredNodes = filteredNodes.filter(node => node.domain === selectedHub);
+        filteredNodes = filteredNodes.filter(node => getDisplayDomain(node.domain) === selectedHub);
       }
 
       if (selectedType !== "all") {
@@ -733,7 +738,7 @@
       }
 
       const groupedNodes = nodes.reduce((groups, node) => {
-        const hubName = node.domain || "Unknown Hub";
+        const hubName = getDisplayDomain(node.domain || "Unknown Hub");
 
         if (!groups[hubName]) {
           groups[hubName] = [];
@@ -755,7 +760,7 @@
               class="node-card ${node.id === selectedNodeId ? "active" : ""}"
               onclick="window.selectNode('${node.id}')"
             >
-              <span class="hub-label">${node.domain}</span>
+              <span class="hub-label">${getDisplayDomain(node.domain)}</span>
               <div class="node-title-row">
                 <strong>${node.title}</strong>
               </div>
@@ -767,11 +772,17 @@
       `).join("");
     }
 
-    function getNodeTitle(nodeId) {
-      const foundNode = allNodes.find(node => node.id === nodeId);
-      return foundNode ? foundNode.title : nodeId;
-    }
+    function getDisplayDomain(domain = "") {
+  if (domain === "WikidataRoot") {
+    return "Wiki";
+  }
 
+  return domain;
+}
+    function getNodeTitle(nodeId) {
+  const foundNode = allNodes.find(node => node.id === nodeId);
+  return foundNode ? foundNode.title : nodeId;
+}
     function getNodeById(nodeId) {
       return allNodes.find(node => node.id === nodeId);
     }
@@ -810,7 +821,7 @@
       const revisionCount = (node.revisions || []).length;
 
       inspector.innerHTML = `
-        <span class="hub-label">${node.domain}</span>
+        <span class="hub-label">${getDisplayDomain(node.domain)}</span>
         <h2>${node.title}</h2>
         <div class="meta">${node.type}</div>
 
@@ -879,7 +890,7 @@
                 </button>
               </div>
               <p>${edge.summary || ""}</p>
-              <div class="meta">${edge.relationshipType || "relationship"} · ${edge.domain || "SourceRoot"}</div>
+             <div class="meta">${edge.relationshipType || "relationship"} · ${getDisplayDomain(edge.domain || "SourceRoot")}</div>
               <p>
                 <strong>Source IDs:</strong>
                 ${(edge.sourceIds || []).length
@@ -902,8 +913,8 @@
                 <span>${edge.label}</span>
                 <strong>${node.title}</strong>
               </div>
-              <p>${edge.summary || ""}</p>
-              <div class="meta">${edge.relationshipType || "relationship"} · ${edge.domain || "SourceRoot"}</div>
+              <p>${edge.summary || ""}</p<div class="meta">${edge.relationshipType || "relationship"} · ${getDisplayDomain(edge.domain || "SourceRoot")}</div>
+              
               <p>
                 <strong>Source IDs:</strong>
                 ${(edge.sourceIds || []).length
@@ -921,7 +932,7 @@
             <article class="source-card">
               <h4>${source.name}</h4>
               <div class="meta">
-                ${source.domain || "SourceRoot"} · ${source.type || "Source"} · ${source.qualityTier || "Working Source"}
+                ${getDisplayDomain(source.domain || "SourceRoot")} · ${source.type || "Source"} · ${source.qualityTier || "Working Source"}
               </div>
               <p>${source.notes || ""}</p>
               <p><strong>Source ID:</strong> <code>${source.id}</code></p>
