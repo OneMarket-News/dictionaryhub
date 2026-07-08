@@ -53,7 +53,7 @@
     }
 
     main {
-      max-width: 1400px;
+      max-width: 1500px;
       margin: 0 auto;
       padding: 24px;
     }
@@ -69,7 +69,7 @@
 
     .controls {
       display: grid;
-      grid-template-columns: 2fr 1fr 1fr 1fr auto;
+      grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr auto;
       gap: 10px;
       align-items: center;
     }
@@ -107,7 +107,7 @@
 
     .stat-grid {
       display: grid;
-      grid-template-columns: repeat(5, minmax(120px, 1fr));
+      grid-template-columns: repeat(6, minmax(120px, 1fr));
       gap: 10px;
       margin-top: 16px;
     }
@@ -217,6 +217,21 @@
       margin-bottom: 6px;
     }
 
+    .trust-box {
+      background: #fffdf8;
+      border: 1px solid #eee2c7;
+      border-radius: 10px;
+      padding: 8px;
+      margin-top: 8px;
+    }
+
+    .trust-title {
+      font-weight: bold;
+      font-size: 12px;
+      color: #4b5563;
+      margin-bottom: 4px;
+    }
+
     .meta {
       color: #6b7280;
       font-size: 12px;
@@ -289,7 +304,7 @@
       line-height: 1.5;
     }
 
-    @media (max-width: 950px) {
+    @media (max-width: 1100px) {
       .controls {
         grid-template-columns: 1fr;
       }
@@ -305,19 +320,19 @@
   <header>
     <h1>SourceRoot Edge Registry</h1>
     <div class="subtitle">
-      Master relationship view for SourceRoot. Inspect every edge across DictionaryHub, BibleRoot, WikidataRoot, and cross-hub SourceRoot connections.
+      Master relationship view for SourceRoot. Inspect every edge across DictionaryHub, BibleRoot, Wiki, and cross-hub SourceRoot connections.
+      Relationships now include credibility, verification, support, strength, and interpretation metadata.
     </div>
 
     <div class="top-links">
-  <a href="sourceroot.html">SourceRoot Home</a>
-  <a href="sourceroot-inspector.html">Open Inspector</a>
-  <a href="sourceroot-source-registry.html">Open Source Registry</a>
-  <a href="sourceroot-identity-registry.html">Open Identity Registry</a>
-  <a href="sourceroot-api-preview.html">Open API Preview</a>
-  <a href="graph-v2.html">Open DictionaryHub Graph</a>
-  <a href="bibleroot.html">Open BibleRoot</a>
-</div>
-
+      <a href="sourceroot.html">SourceRoot Home</a>
+      <a href="sourceroot-inspector.html">Open Inspector</a>
+      <a href="sourceroot-source-registry.html">Open Source Registry</a>
+      <a href="sourceroot-identity-registry.html">Open Identity Registry</a>
+      <a href="sourceroot-api-preview.html">Open API Preview</a>
+      <a href="graph-v2.html">Open DictionaryHub Graph</a>
+      <a href="bibleroot.html">Open BibleRoot</a>
+    </div>
   </header>
 
   <main>
@@ -325,7 +340,7 @@
       <h2>Relationship Registry</h2>
 
       <div class="controls">
-        <input id="searchInput" type="text" placeholder="Search edges, nodes, relationship types, summaries, or source IDs..." />
+        <input id="searchInput" type="text" placeholder="Search edges, nodes, relationship types, trust fields, summaries, or source IDs..." />
 
         <select id="domainFilter">
           <option value="all">All Domains</option>
@@ -339,6 +354,14 @@
           <option value="all">All Edges</option>
           <option value="cross">Cross-hub only</option>
           <option value="same">Same-hub only</option>
+        </select>
+
+        <select id="credibilityFilter">
+          <option value="all">All Credibility</option>
+        </select>
+
+        <select id="verificationFilter">
+          <option value="all">All Verification</option>
         </select>
 
         <button id="clearFiltersButton" class="clear-button" type="button">
@@ -422,9 +445,9 @@
           ...adaptDictionaryEdges(dictionaryConceptsRaw),
           ...adaptCrossHubEdges(crossHubEdgesRaw),
           ...adaptWikidataEdges(wikidataEdgesRaw).map(edge => ({
-  ...edge,
-  domain: "Wiki"
-}))
+            ...edge,
+            domain: "Wiki"
+          }))
         ];
 
         allSources = [
@@ -442,12 +465,16 @@
         document.getElementById("domainFilter").addEventListener("change", applyFilters);
         document.getElementById("relationshipFilter").addEventListener("change", applyFilters);
         document.getElementById("crossHubFilter").addEventListener("change", applyFilters);
+        document.getElementById("credibilityFilter").addEventListener("change", applyFilters);
+        document.getElementById("verificationFilter").addEventListener("change", applyFilters);
 
         document.getElementById("clearFiltersButton").addEventListener("click", () => {
           document.getElementById("searchInput").value = "";
           document.getElementById("domainFilter").value = "all";
           document.getElementById("relationshipFilter").value = "all";
           document.getElementById("crossHubFilter").value = "all";
+          document.getElementById("credibilityFilter").value = "all";
+          document.getElementById("verificationFilter").value = "all";
           applyFilters();
         });
 
@@ -468,6 +495,15 @@
         label: edge.label || edge.relationshipType || edge.type || "related to",
         summary: edge.summary || edge.explanation || "",
         sourceIds: edge.sourceIds || [],
+
+        credibilityTier: edge.credibilityTier || "medium",
+        confidence: edge.confidence || "moderate",
+        verificationStatus: edge.verificationStatus || "interpretive",
+        reviewStatus: edge.reviewStatus || "needs-review",
+        supportLevel: edge.supportLevel || "contextual",
+        relationshipStrength: edge.relationshipStrength || "contextual",
+        interpretationLevel: edge.interpretationLevel || "medium",
+
         domain: "BibleRoot",
         raw: edge
       }));
@@ -486,6 +522,15 @@
             label: relationship.direction || relationship.type || "related to",
             summary: relationship.explanation || relationship.bridge || "",
             sourceIds: relationship.sourceIds || [],
+
+            credibilityTier: relationship.credibilityTier || "high",
+            confidence: relationship.confidence || "strong",
+            verificationStatus: relationship.verificationStatus || "source-backed",
+            reviewStatus: relationship.reviewStatus || "reviewed",
+            supportLevel: relationship.supportLevel || "derived",
+            relationshipStrength: relationship.relationshipStrength || "strong",
+            interpretationLevel: relationship.interpretationLevel || "low",
+
             domain: "DictionaryHub",
             raw: relationship
           });
@@ -504,6 +549,15 @@
         label: edge.label || edge.relationshipType || "relates to",
         summary: edge.summary || edge.explanation || "",
         sourceIds: edge.sourceIds || [],
+
+        credibilityTier: edge.credibilityTier || "medium",
+        confidence: edge.confidence || "moderate",
+        verificationStatus: edge.verificationStatus || "inferred",
+        reviewStatus: edge.reviewStatus || "needs-review",
+        supportLevel: edge.supportLevel || "contextual",
+        relationshipStrength: edge.relationshipStrength || "contextual",
+        interpretationLevel: edge.interpretationLevel || "medium",
+
         domain: edge.domain || "SourceRoot",
         raw: edge
       }));
@@ -516,6 +570,10 @@
         type: source.type || "BibleRoot Source",
         domain: "BibleRoot",
         qualityTier: source.qualityTier || source.tier || "Working Source",
+        credibilityTier: source.credibilityTier || "",
+        verificationStatus: source.verificationStatus || "",
+        licenseStatus: source.licenseStatus || "",
+        reviewStatus: source.reviewStatus || "",
         url: source.url || "",
         notes: source.notes || source.description || "",
         raw: source
@@ -529,6 +587,10 @@
         type: source.type || "DictionaryHub Source",
         domain: "DictionaryHub",
         qualityTier: source.qualityTier || source.tier || "Working Source",
+        credibilityTier: source.credibilityTier || "",
+        verificationStatus: source.verificationStatus || "",
+        licenseStatus: source.licenseStatus || "",
+        reviewStatus: source.reviewStatus || "",
         url: source.url || "",
         notes: source.notes || source.description || "",
         raw: source
@@ -538,18 +600,32 @@
     function populateFilters() {
       const domainFilter = document.getElementById("domainFilter");
       const relationshipFilter = document.getElementById("relationshipFilter");
+      const credibilityFilter = document.getElementById("credibilityFilter");
+      const verificationFilter = document.getElementById("verificationFilter");
 
       const domains = [...new Set(allEdges.map(edge => edge.domain || "Unknown Domain"))].sort();
       const relationshipTypes = [...new Set(allEdges.map(edge => edge.relationshipType || "UNKNOWN"))].sort();
+      const credibilityTiers = [...new Set(allEdges.map(edge => edge.credibilityTier || "unclassified"))].sort();
+      const verificationStatuses = [...new Set(allEdges.map(edge => edge.verificationStatus || "unclassified"))].sort();
 
       domainFilter.innerHTML = `
         <option value="all">All Domains</option>
-        ${domains.map(domain => `<option value="${domain}">${domain}</option>`).join("")}
+        ${domains.map(domain => `<option value="${domain}">${getDisplayDomain(domain)}</option>`).join("")}
       `;
 
       relationshipFilter.innerHTML = `
         <option value="all">All Relationship Types</option>
         ${relationshipTypes.map(type => `<option value="${type}">${type}</option>`).join("")}
+      `;
+
+      credibilityFilter.innerHTML = `
+        <option value="all">All Credibility</option>
+        ${credibilityTiers.map(tier => `<option value="${tier}">${tier}</option>`).join("")}
+      `;
+
+      verificationFilter.innerHTML = `
+        <option value="all">All Verification</option>
+        ${verificationStatuses.map(status => `<option value="${status}">${status}</option>`).join("")}
       `;
     }
 
@@ -558,6 +634,8 @@
       const selectedDomain = document.getElementById("domainFilter").value;
       const selectedRelationship = document.getElementById("relationshipFilter").value;
       const selectedCrossHub = document.getElementById("crossHubFilter").value;
+      const selectedCredibility = document.getElementById("credibilityFilter").value;
+      const selectedVerification = document.getElementById("verificationFilter").value;
 
       let filteredEdges = [...allEdges];
 
@@ -577,6 +655,14 @@
         filteredEdges = filteredEdges.filter(edge => !isCrossHubEdge(edge));
       }
 
+      if (selectedCredibility !== "all") {
+        filteredEdges = filteredEdges.filter(edge => (edge.credibilityTier || "unclassified") === selectedCredibility);
+      }
+
+      if (selectedVerification !== "all") {
+        filteredEdges = filteredEdges.filter(edge => (edge.verificationStatus || "unclassified") === selectedVerification);
+      }
+
       if (searchTerm) {
         filteredEdges = filteredEdges.filter(edge => {
           const fromNode = getNodeById(edge.fromNodeId);
@@ -590,6 +676,13 @@
             edge.label,
             edge.summary,
             edge.domain,
+            edge.credibilityTier,
+            edge.confidence,
+            edge.verificationStatus,
+            edge.reviewStatus,
+            edge.supportLevel,
+            edge.relationshipStrength,
+            edge.interpretationLevel,
             ...(edge.sourceIds || []),
             fromNode ? fromNode.title : "",
             fromNode ? fromNode.domain : "",
@@ -610,6 +703,8 @@
     function renderStats(edges) {
       const crossHubCount = edges.filter(edge => isCrossHubEdge(edge)).length;
       const sourcedCount = edges.filter(edge => (edge.sourceIds || []).length > 0).length;
+      const reviewedCount = edges.filter(edge => edge.reviewStatus === "reviewed").length;
+      const needsReviewCount = edges.filter(edge => edge.reviewStatus === "needs-review").length;
       const relationshipTypeCount = new Set(edges.map(edge => edge.relationshipType)).size;
       const domainCount = new Set(edges.map(edge => edge.domain)).size;
 
@@ -630,13 +725,18 @@
         </div>
 
         <div class="stat-card">
-          <div class="stat-number">${relationshipTypeCount}</div>
-          <div class="stat-label">Relationship Types</div>
+          <div class="stat-number">${reviewedCount}</div>
+          <div class="stat-label">Reviewed Edges</div>
         </div>
 
         <div class="stat-card">
-          <div class="stat-number">${domainCount}</div>
-          <div class="stat-label">Domains</div>
+          <div class="stat-number">${needsReviewCount}</div>
+          <div class="stat-label">Needs Review</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-number">${relationshipTypeCount}</div>
+          <div class="stat-label">Relationship Types</div>
         </div>
       `;
     }
@@ -680,6 +780,7 @@
               <th>From Node</th>
               <th>Relationship</th>
               <th>To Node</th>
+              <th>Trust</th>
               <th>Domain</th>
               <th>Sources</th>
               <th>Details</th>
@@ -708,6 +809,10 @@
                   </td>
 
                   <td>
+                    ${renderRelationshipTrust(edge)}
+                  </td>
+
+                  <td>
                     ${renderDomainLabel(edge.domain)}
                     <div class="meta">${edge.id}</div>
                   </td>
@@ -732,13 +837,28 @@
       `;
     }
 
-function getDisplayDomain(domain = "") {
-  if (domain === "WikidataRoot") {
-    return "Wiki";
-  }
+    function renderRelationshipTrust(edge) {
+      return `
+        <div class="trust-box">
+          <div class="trust-title">Relationship Credibility</div>
+          <div class="meta"><strong>Credibility:</strong> ${edge.credibilityTier || "unclassified"}</div>
+          <div class="meta"><strong>Confidence:</strong> ${edge.confidence || "unclassified"}</div>
+          <div class="meta"><strong>Verification:</strong> ${edge.verificationStatus || "unclassified"}</div>
+          <div class="meta"><strong>Review:</strong> ${edge.reviewStatus || "not-reviewed"}</div>
+          <div class="meta"><strong>Support:</strong> ${edge.supportLevel || "unclassified"}</div>
+          <div class="meta"><strong>Strength:</strong> ${edge.relationshipStrength || "unclassified"}</div>
+          <div class="meta"><strong>Interpretation:</strong> ${edge.interpretationLevel || "unclassified"}</div>
+        </div>
+      `;
+    }
 
-  return domain;
-}
+    function getDisplayDomain(domain = "") {
+      if (domain === "WikidataRoot") {
+        return "Wiki";
+      }
+
+      return domain;
+    }
 
     function renderNodeCell(node, fallbackId) {
       if (!node) {
@@ -756,18 +876,20 @@ function getDisplayDomain(domain = "") {
     }
 
     function renderDomainLabel(domain = "SourceRoot") {
-  const className = domain === "SourceRoot"
-    ? "domain-source-root"
-    : domain === "BibleRoot"
-      ? "domain-bible-root"
-      : domain === "DictionaryHub"
-        ? "domain-dictionary-hub"
-        : domain === "Wiki"
-          ? "domain-wiki"
-          : "";
+      const displayDomain = getDisplayDomain(domain);
 
-  return `<span class="hub-label ${className}">${domain}</span>`;
-}
+      const className = displayDomain === "SourceRoot"
+        ? "domain-source-root"
+        : displayDomain === "BibleRoot"
+          ? "domain-bible-root"
+          : displayDomain === "DictionaryHub"
+            ? "domain-dictionary-hub"
+            : displayDomain === "Wiki"
+              ? "domain-wiki"
+              : "";
+
+      return `<span class="hub-label ${className}">${displayDomain}</span>`;
+    }
 
     function renderSourceList(sourceIds = []) {
       if (!sourceIds.length) {
@@ -779,7 +901,7 @@ function getDisplayDomain(domain = "") {
           ${sourceIds.map(sourceId => {
             const source = getSourceById(sourceId);
             const title = source
-              ? `${source.name} | ${source.type} | ${source.domain}`
+              ? `${source.name} | ${source.type} | ${source.domain} | ${source.credibilityTier || "unclassified"}`
               : "Source ID not found in loaded registry";
 
             return `<span class="source-chip" title="${title}">${sourceId}</span>`;
