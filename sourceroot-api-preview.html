@@ -265,19 +265,19 @@
       <h1>SourceRoot API Preview</h1>
 
       <div class="subtitle">
-        A prototype view of how SourceRoot could expose nodes, assertions, edges, sources, search, citations, and revisions through an API layer.
+        A prototype view of how SourceRoot could expose nodes, assertions, assertion credibility, edges, sources, search, citations, and revisions through an API layer.
         This is not a live backend yet. It is the product contract for what the engine is becoming.
       </div>
 
       <div class="top-links">
-  <a href="sourceroot.html">SourceRoot Home</a>
-  <a href="sourceroot-inspector.html">Open Inspector</a>
-  <a href="sourceroot-edge-registry.html">Open Edge Registry</a>
-  <a href="sourceroot-source-registry.html">Open Source Registry</a>
-  <a href="sourceroot-identity-registry.html">Open Identity Registry</a>
-  <a href="graph-v2.html">Open DictionaryHub Graph</a>
-  <a href="bibleroot.html">Open BibleRoot</a>
-</div>
+        <a href="sourceroot.html">SourceRoot Home</a>
+        <a href="sourceroot-inspector.html">Open Inspector</a>
+        <a href="sourceroot-edge-registry.html">Open Edge Registry</a>
+        <a href="sourceroot-source-registry.html">Open Source Registry</a>
+        <a href="sourceroot-identity-registry.html">Open Identity Registry</a>
+        <a href="graph-v2.html">Open DictionaryHub Graph</a>
+        <a href="bibleroot.html">Open BibleRoot</a>
+      </div>
     </div>
   </header>
 
@@ -286,8 +286,8 @@
       <h2>API Purpose</h2>
 
       <p class="overview-text">
-        SourceRoot’s API would let apps, AI systems, search tools, partner companies, and future hubs retrieve structured knowledge with provenance.
-        The key idea is simple: every answer should be traceable back to nodes, assertions, relationships, sources, and revisions.
+        SourceRoot’s API would let apps, AI systems, search tools, partner companies, and future hubs retrieve structured knowledge with provenance and claim-level trust context.
+        The key idea is simple: every answer should be traceable back to nodes, assertions, assertion credibility, relationships, sources, and revisions.
       </p>
 
       <div class="model-box">
@@ -295,7 +295,7 @@
   ↓
 SourceRoot API
   ↓
-Search → Nodes → Assertions → Edges → Sources → Citations
+Search → Nodes → Assertions → Assertion Credibility → Edges → Sources → Citations
   ↓
 Verified, inspectable, source-aware knowledge</code>
       </div>
@@ -350,7 +350,7 @@ Verified, inspectable, source-aware knowledge</code>
 
           <h3>Get One Node</h3>
           <p>
-            Returns a full node inspection payload, including assertions, incoming relationships, outgoing relationships, sources, and revisions.
+            Returns a full node inspection payload, including assertions, assertion credibility, incoming relationships, outgoing relationships, sources, and revisions.
           </p>
 
           <div class="field-list">
@@ -370,14 +370,26 @@ Verified, inspectable, source-aware knowledge</code>
     "title": "Light",
     "domain": "BibleRoot"
   },
-  "assertions": [],
+  "assertions": [
+    {
+      "id": "bibleroot-assertion-light-symbolic-meaning",
+      "assertionType": "symbolic-meaning",
+      "summary": "Light is often used symbolically for truth, creation, guidance, and divine presence.",
+      "credibilityTier": "medium",
+      "confidence": "moderate",
+      "verificationStatus": "interpretive",
+      "reviewStatus": "needs-review",
+      "supportLevel": "interpretive",
+      "interpretationLevel": "high"
+    }
+  ],
   "outgoingEdges": [],
   "incomingEdges": [
     {
-      "id": "wikidata-light-same-as-bible-light",
+      "id": "wikidata-light-same-term-bible-light",
       "fromNodeId": "wikidata-light",
       "toNodeId": "bible-symbol-light",
-      "relationshipType": "SAME_AS_RELATED_CONCEPT"
+      "relationshipType": "SAME_TERM_DIFFERENT_CONTEXT"
     }
   ],
   "sources": [],
@@ -394,7 +406,7 @@ Verified, inspectable, source-aware knowledge</code>
 
           <h3>List Assertions</h3>
           <p>
-            Returns claims, definitions, summaries, explanations, examples, symbolic meanings, and external statements attached to nodes.
+            Returns claims, definitions, summaries, explanations, examples, symbolic meanings, and external statements attached to nodes, including claim-level credibility fields.
           </p>
 
           <div class="field-list">
@@ -403,7 +415,12 @@ Verified, inspectable, source-aware knowledge</code>
             <span class="field-pill">assertionType</span>
             <span class="field-pill">label</span>
             <span class="field-pill">body</span>
+            <span class="field-pill">credibilityTier</span>
             <span class="field-pill">confidence</span>
+            <span class="field-pill">verificationStatus</span>
+            <span class="field-pill">reviewStatus</span>
+            <span class="field-pill">supportLevel</span>
+            <span class="field-pill">interpretationLevel</span>
             <span class="field-pill">sourceIds</span>
           </div>
 
@@ -412,15 +429,68 @@ Verified, inspectable, source-aware knowledge</code>
             <pre>{
   "assertions": [
     {
-      "id": "wikidata-assertion-light-description",
-      "nodeId": "wikidata-light",
-      "assertionType": "wikidata-description",
-      "label": "Wikidata Description",
-      "body": "electromagnetic radiation at or near visible wavelengths",
-      "confidence": "community-maintained",
-      "sourceIds": ["wikidata-q9128"]
+      "id": "dictionary-assertion-truth-short-definition",
+      "nodeId": "dictionary-truth",
+      "assertionType": "short-definition",
+      "label": "Short Definition",
+      "summary": "Truth is what corresponds to reality or fact.",
+      "body": "Truth is what corresponds to reality or fact.",
+      "domain": "DictionaryHub",
+      "sourceIds": [
+        "merriam-webster-truth",
+        "sep-truth"
+      ],
+      "credibilityTier": "high",
+      "confidence": "strong",
+      "verificationStatus": "source-backed",
+      "reviewStatus": "reviewed",
+      "supportLevel": "derived",
+      "interpretationLevel": "low",
+      "status": "v2-draft"
     }
   ]
+}</pre>
+          </details>
+        </article>
+
+        <article class="endpoint-card">
+          <div class="method-row">
+            <span class="method">GET</span>
+            <span class="endpoint-path">/assertions/:id/credibility</span>
+          </div>
+
+          <h3>Get Assertion Credibility</h3>
+          <p>
+            Returns the trust context for a single assertion. This helps AI systems determine whether a claim is directly supported, derived, inferred, interpretive, prototype-level, disputed, or unsupported.
+          </p>
+
+          <div class="field-list">
+            <span class="field-pill">assertionId</span>
+            <span class="field-pill">credibilityTier</span>
+            <span class="field-pill">confidence</span>
+            <span class="field-pill">verificationStatus</span>
+            <span class="field-pill">reviewStatus</span>
+            <span class="field-pill">supportLevel</span>
+            <span class="field-pill">interpretationLevel</span>
+            <span class="field-pill">sourceIds</span>
+            <span class="field-pill">trustSummary</span>
+          </div>
+
+          <details open>
+            <summary>Example response</summary>
+            <pre>{
+  "assertionId": "dictionary-assertion-truth-short-definition",
+  "credibilityTier": "high",
+  "confidence": "strong",
+  "verificationStatus": "source-backed",
+  "reviewStatus": "reviewed",
+  "supportLevel": "derived",
+  "interpretationLevel": "low",
+  "sourceIds": [
+    "merriam-webster-truth",
+    "sep-truth"
+  ],
+  "trustSummary": "This assertion is derived from reviewed reference and academic sources and is suitable for normal source-backed use."
 }</pre>
           </details>
         </article>
@@ -479,7 +549,11 @@ Verified, inspectable, source-aware knowledge</code>
             <span class="field-pill">domain</span>
             <span class="field-pill">type</span>
             <span class="field-pill">publisher</span>
-            <span class="field-pill">license</span>
+            <span class="field-pill">qualityTier</span>
+            <span class="field-pill">credibilityTier</span>
+            <span class="field-pill">verificationStatus</span>
+            <span class="field-pill">licenseStatus</span>
+            <span class="field-pill">reviewStatus</span>
             <span class="field-pill">url</span>
           </div>
 
@@ -493,7 +567,13 @@ Verified, inspectable, source-aware knowledge</code>
       "domain": "Wiki",
       "type": "Structured Knowledge Graph",
       "publisher": "Wikimedia Foundation / Wikidata contributors",
+      "qualityTier": "structured-public-dataset",
+      "credibilityTier": "medium",
+      "verificationStatus": "community-maintained",
       "license": "CC0 public domain dedication",
+      "licenseStatus": "public-domain",
+      "reviewStatus": "reviewed",
+      "lastReviewed": "2026-07-07",
       "url": "https://www.wikidata.org/wiki/Q9128"
     }
   ]
@@ -518,6 +598,7 @@ Verified, inspectable, source-aware knowledge</code>
             <span class="field-pill">assertions</span>
             <span class="field-pill">edges</span>
             <span class="field-pill">sources</span>
+            <span class="field-pill">credibilitySignals</span>
           </div>
 
           <details>
@@ -529,13 +610,23 @@ Verified, inspectable, source-aware knowledge</code>
       "wikidata-light",
       "bible-symbol-light"
     ],
-    "assertions": [],
+    "assertions": [
+      "wikidata-assertion-light-description",
+      "bibleroot-assertion-light-symbolic-meaning"
+    ],
     "edges": [
-      "wikidata-light-same-as-bible-light"
+      "wikidata-light-same-term-bible-light"
     ],
     "sources": [
-      "wikidata-q9128"
-    ]
+      "wikidata-q9128",
+      "kjv-public-domain",
+      "bibleroot-alpha-notes"
+    ],
+    "credibilitySignals": {
+      "directClaims": 1,
+      "interpretiveClaims": 1,
+      "needsReview": 1
+    }
   }
 }</pre>
           </details>
@@ -569,6 +660,12 @@ Verified, inspectable, source-aware knowledge</code>
   "assertionId": "wikidata-assertion-light-description",
   "sourceId": "wikidata-q9128",
   "usageType": "answer-citation",
+  "assertionCredibilityAtUse": {
+    "credibilityTier": "medium",
+    "confidence": "moderate",
+    "verificationStatus": "community-maintained",
+    "supportLevel": "direct"
+  },
   "context": "User asked what light means across public data and symbolic sources."
 }</pre>
           </details>
@@ -633,19 +730,41 @@ Verified, inspectable, source-aware knowledge</code>
         </div>
 
         <div class="flow-card">
-          <strong>4. Check Sources</strong>
-          <span>It verifies which sources support each assertion and whether those sources have licenses or credibility metadata.</span>
+          <strong>4. Check Assertion Credibility</strong>
+          <span>It reviews credibility tier, confidence, verification status, support level, and interpretation level before treating a claim as reliable.</span>
         </div>
 
         <div class="flow-card">
-          <strong>5. Follow Edges</strong>
+          <strong>5. Check Sources</strong>
+          <span>It verifies which sources support each assertion and whether those sources have license, publisher, review, and credibility metadata.</span>
+        </div>
+
+        <div class="flow-card">
+          <strong>6. Follow Edges</strong>
           <span>It follows relationships to related concepts, supporting nodes, opposing views, or cross-domain meanings.</span>
         </div>
 
         <div class="flow-card">
-          <strong>6. Cite and Log</strong>
+          <strong>7. Cite and Log</strong>
           <span>It cites the source-backed assertion and can log a citation event for credit, audit, or payment.</span>
         </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Assertion Credibility Rule</h2>
+
+      <p class="overview-text">
+        SourceRoot should never treat every assertion as equally reliable. The API must expose how each claim is supported.
+        A source can be credible while a specific claim built from that source may still be direct, derived, inferred, interpretive, disputed, or prototype-only.
+      </p>
+
+      <div class="model-box">
+        <code>High-quality source + direct support = high assertion credibility
+High-quality source + loose interpretation = medium assertion credibility
+Prototype note + no external review = prototype or needs-review
+Community-maintained source + direct statement = medium assertion credibility
+Disputed source support = disputed assertion credibility</code>
       </div>
     </section>
   </main>
