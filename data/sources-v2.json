@@ -5,7 +5,15 @@
     "publisher": "Stanford Encyclopedia of Philosophy",
     "type": "Academic Encyclopedia",
     "url": "https://plato.stanford.edu/entries/truth/",
-    "domain": "Philosophy / Epistemology",
+    "domain": "DictionaryHub",
+    "qualityTier": "academic-source",
+    "credibilityTier": "high",
+    "verificationStatus": "reviewed",
+    "sourceClass": "encyclopedia-entry",
+    "license": "linked reference",
+    "licenseStatus": "linked-reference-only",
+    "reviewStatus": "reviewed",
+    "lastReviewed": "2026-07-07",
     "supportsConcepts": [
       "truth",
       "fact",
@@ -18,7 +26,6 @@
       "technicalDefinition",
       "relationships"
     ],
-    "qualityTier": "foundation",
     "notes": "Use for philosophical theories of truth and the relationship between truth, claims, reality, and belief."
   },
   {
@@ -27,7 +34,15 @@
     "publisher": "Stanford Encyclopedia of Philosophy",
     "type": "Academic Encyclopedia",
     "url": "https://plato.stanford.edu/entries/knowledge-analysis/",
-    "domain": "Epistemology",
+    "domain": "DictionaryHub",
+    "qualityTier": "academic-source",
+    "credibilityTier": "high",
+    "verificationStatus": "reviewed",
+    "sourceClass": "encyclopedia-entry",
+    "license": "linked reference",
+    "licenseStatus": "linked-reference-only",
+    "reviewStatus": "reviewed",
+    "lastReviewed": "2026-07-07",
     "supportsConcepts": [
       "knowledge",
       "belief",
@@ -40,7 +55,6 @@
       "technicalDefinition",
       "relationships"
     ],
-    "qualityTier": "foundation",
     "notes": "Use for the relationship between knowledge, belief, truth, evidence, and justification."
   },
   {
@@ -49,7 +63,15 @@
     "publisher": "Stanford Encyclopedia of Philosophy",
     "type": "Academic Encyclopedia",
     "url": "https://plato.stanford.edu/entries/epistemology/",
-    "domain": "Epistemology",
+    "domain": "DictionaryHub",
+    "qualityTier": "academic-source",
+    "credibilityTier": "high",
+    "verificationStatus": "reviewed",
+    "sourceClass": "encyclopedia-entry",
+    "license": "linked reference",
+    "licenseStatus": "linked-reference-only",
+    "reviewStatus": "reviewed",
+    "lastReviewed": "2026-07-07",
     "supportsConcepts": [
       "knowledge",
       "belief",
@@ -62,7 +84,6 @@
       "technicalDefinition",
       "relationships"
     ],
-    "qualityTier": "foundation",
     "notes": "Use as a broad epistemology source for knowledge, belief, evidence, reliability, and justification."
   },
   {
@@ -71,7 +92,15 @@
     "publisher": "Stanford Encyclopedia of Philosophy",
     "type": "Academic Encyclopedia",
     "url": "https://plato.stanford.edu/entries/evidence/",
-    "domain": "Epistemology",
+    "domain": "DictionaryHub",
+    "qualityTier": "academic-source",
+    "credibilityTier": "high",
+    "verificationStatus": "reviewed",
+    "sourceClass": "encyclopedia-entry",
+    "license": "linked reference",
+    "licenseStatus": "linked-reference-only",
+    "reviewStatus": "reviewed",
+    "lastReviewed": "2026-07-07",
     "supportsConcepts": [
       "evidence",
       "knowledge",
@@ -84,7 +113,6 @@
       "technicalDefinition",
       "relationships"
     ],
-    "qualityTier": "foundation",
     "notes": "Use for evidence as a concept in epistemology and its role in justification and knowledge."
   },
   {
@@ -93,7 +121,15 @@
     "publisher": "Internet Encyclopedia of Philosophy",
     "type": "Academic Encyclopedia",
     "url": "https://iep.utm.edu/evidence/",
-    "domain": "Epistemology / Philosophy of Science",
+    "domain": "DictionaryHub",
+    "qualityTier": "academic-source",
+    "credibilityTier": "high",
+    "verificationStatus": "reviewed",
+    "sourceClass": "encyclopedia-entry",
+    "license": "linked reference",
+    "licenseStatus": "linked-reference-only",
+    "reviewStatus": "reviewed",
+    "lastReviewed": "2026-07-07",
     "supportsConcepts": [
       "evidence",
       "knowledge",
@@ -105,7 +141,6 @@
       "fullDefinition",
       "relationships"
     ],
-    "qualityTier": "foundation",
     "notes": "Use as a readable supporting source for how evidence relates to justified belief and knowledge."
   },
   {
@@ -114,7 +149,15 @@
     "publisher": "Internet Encyclopedia of Philosophy",
     "type": "Academic Encyclopedia",
     "url": "https://iep.utm.edu/epistemo/",
-    "domain": "Epistemology",
+    "domain": "DictionaryHub",
+    "qualityTier": "academic-source",
+    "credibilityTier": "high",
+    "verificationStatus": "reviewed",
+    "sourceClass": "encyclopedia-entry",
+    "license": "linked reference",
+    "licenseStatus": "linked-reference-only",
+    "reviewStatus": "reviewed",
+    "lastReviewed": "2026-07-07",
     "supportsConcepts": [
       "knowledge",
       "belief",
@@ -126,7 +169,6 @@
       "fullDefinition",
       "relationships"
     ],
-    "qualityTier": "foundation",
     "notes": "Use as a broad source for the study of knowledge and core epistemology concepts."
   },
   {
@@ -135,7 +177,15 @@
     "publisher": "Merriam-Webster",
     "type": "Dictionary",
     "url": "https://www.merriam-webster.com/dictionary/truth",
-    "domain": "Language / Definition",
+    "domain": "DictionaryHub",
+    "qualityTier": "reference-source",
+    "credibilityTier": "high",
+    "verificationStatus": "reviewed",
+    "sourceClass": "dictionary-entry",
+    "license": "linked reference",
+    "licenseStatus": "linked-reference-only",
+    "reviewStatus": "reviewed",
+    "lastReviewed": "2026-07-07",
     "supportsConcepts": [
       "truth"
     ],
@@ -144,7 +194,6 @@
       "plainEnglish",
       "origin"
     ],
-    "qualityTier": "definition",
     "notes": "Use for common-language definitions and quick definition support."
   },
   {
@@ -153,7 +202,15 @@
     "publisher": "Merriam-Webster",
     "type": "Dictionary",
     "url": "https://www.merriam-webster.com/dictionary/evidence",
-    "domain": "Language / Definition",
+    "domain": "DictionaryHub",
+    "qualityTier": "reference-source",
+    "credibilityTier": "high",
+    "verificationStatus": "reviewed",
+    "sourceClass": "dictionary-entry",
+    "license": "linked reference",
+    "licenseStatus": "linked-reference-only",
+    "reviewStatus": "reviewed",
+    "lastReviewed": "2026-07-07",
     "supportsConcepts": [
       "evidence"
     ],
@@ -162,7 +219,6 @@
       "plainEnglish",
       "origin"
     ],
-    "qualityTier": "definition",
     "notes": "Use for common-language definitions of evidence and examples of usage."
   },
   {
@@ -171,7 +227,15 @@
     "publisher": "Merriam-Webster",
     "type": "Dictionary",
     "url": "https://www.merriam-webster.com/dictionary/verification",
-    "domain": "Language / Definition",
+    "domain": "DictionaryHub",
+    "qualityTier": "reference-source",
+    "credibilityTier": "high",
+    "verificationStatus": "reviewed",
+    "sourceClass": "dictionary-entry",
+    "license": "linked reference",
+    "licenseStatus": "linked-reference-only",
+    "reviewStatus": "reviewed",
+    "lastReviewed": "2026-07-07",
     "supportsConcepts": [
       "verification"
     ],
@@ -180,7 +244,6 @@
       "plainEnglish",
       "origin"
     ],
-    "qualityTier": "definition",
     "notes": "Use for common-language definition support for verification."
   },
   {
@@ -189,7 +252,15 @@
     "publisher": "Merriam-Webster",
     "type": "Dictionary",
     "url": "https://www.merriam-webster.com/dictionary/source",
-    "domain": "Language / Definition",
+    "domain": "DictionaryHub",
+    "qualityTier": "reference-source",
+    "credibilityTier": "high",
+    "verificationStatus": "reviewed",
+    "sourceClass": "dictionary-entry",
+    "license": "linked reference",
+    "licenseStatus": "linked-reference-only",
+    "reviewStatus": "reviewed",
+    "lastReviewed": "2026-07-07",
     "supportsConcepts": [
       "source",
       "origin",
@@ -200,7 +271,6 @@
       "plainEnglish",
       "origin"
     ],
-    "qualityTier": "definition",
     "notes": "Use for common-language definition support for source and origin."
   },
   {
@@ -209,7 +279,15 @@
     "publisher": "Merriam-Webster",
     "type": "Dictionary",
     "url": "https://www.merriam-webster.com/dictionary/knowledge",
-    "domain": "Language / Definition",
+    "domain": "DictionaryHub",
+    "qualityTier": "reference-source",
+    "credibilityTier": "high",
+    "verificationStatus": "reviewed",
+    "sourceClass": "dictionary-entry",
+    "license": "linked reference",
+    "licenseStatus": "linked-reference-only",
+    "reviewStatus": "reviewed",
+    "lastReviewed": "2026-07-07",
     "supportsConcepts": [
       "knowledge"
     ],
@@ -218,7 +296,6 @@
       "plainEnglish",
       "origin"
     ],
-    "qualityTier": "definition",
     "notes": "Use for common-language definition support for knowledge."
   },
   {
@@ -227,7 +304,15 @@
     "publisher": "Merriam-Webster",
     "type": "Dictionary",
     "url": "https://www.merriam-webster.com/dictionary/fact",
-    "domain": "Language / Definition",
+    "domain": "DictionaryHub",
+    "qualityTier": "reference-source",
+    "credibilityTier": "high",
+    "verificationStatus": "reviewed",
+    "sourceClass": "dictionary-entry",
+    "license": "linked reference",
+    "licenseStatus": "linked-reference-only",
+    "reviewStatus": "reviewed",
+    "lastReviewed": "2026-07-07",
     "supportsConcepts": [
       "fact",
       "truth"
@@ -237,7 +322,6 @@
       "plainEnglish",
       "origin"
     ],
-    "qualityTier": "definition",
     "notes": "Use for common-language definition support for fact."
   },
   {
@@ -246,7 +330,15 @@
     "publisher": "Merriam-Webster",
     "type": "Dictionary",
     "url": "https://www.merriam-webster.com/dictionary/reliability",
-    "domain": "Language / Definition",
+    "domain": "DictionaryHub",
+    "qualityTier": "reference-source",
+    "credibilityTier": "high",
+    "verificationStatus": "reviewed",
+    "sourceClass": "dictionary-entry",
+    "license": "linked reference",
+    "licenseStatus": "linked-reference-only",
+    "reviewStatus": "reviewed",
+    "lastReviewed": "2026-07-07",
     "supportsConcepts": [
       "reliability",
       "trust"
@@ -256,7 +348,6 @@
       "plainEnglish",
       "origin"
     ],
-    "qualityTier": "definition",
     "notes": "Use for common-language definition support for reliability."
   },
   {
@@ -265,7 +356,15 @@
     "publisher": "Merriam-Webster",
     "type": "Dictionary",
     "url": "https://www.merriam-webster.com/dictionary/validity",
-    "domain": "Language / Definition",
+    "domain": "DictionaryHub",
+    "qualityTier": "reference-source",
+    "credibilityTier": "high",
+    "verificationStatus": "reviewed",
+    "sourceClass": "dictionary-entry",
+    "license": "linked reference",
+    "licenseStatus": "linked-reference-only",
+    "reviewStatus": "reviewed",
+    "lastReviewed": "2026-07-07",
     "supportsConcepts": [
       "validity"
     ],
@@ -274,7 +373,6 @@
       "plainEnglish",
       "origin"
     ],
-    "qualityTier": "definition",
     "notes": "Use for common-language definition support for validity."
   },
   {
@@ -283,7 +381,15 @@
     "publisher": "Merriam-Webster",
     "type": "Dictionary",
     "url": "https://www.merriam-webster.com/dictionary/accuracy",
-    "domain": "Language / Definition",
+    "domain": "DictionaryHub",
+    "qualityTier": "reference-source",
+    "credibilityTier": "high",
+    "verificationStatus": "reviewed",
+    "sourceClass": "dictionary-entry",
+    "license": "linked reference",
+    "licenseStatus": "linked-reference-only",
+    "reviewStatus": "reviewed",
+    "lastReviewed": "2026-07-07",
     "supportsConcepts": [
       "accuracy"
     ],
@@ -292,7 +398,6 @@
       "plainEnglish",
       "origin"
     ],
-    "qualityTier": "definition",
     "notes": "Use for common-language definition support for accuracy."
   },
   {
@@ -301,7 +406,15 @@
     "publisher": "Merriam-Webster",
     "type": "Dictionary",
     "url": "https://www.merriam-webster.com/dictionary/context",
-    "domain": "Language / Definition",
+    "domain": "DictionaryHub",
+    "qualityTier": "reference-source",
+    "credibilityTier": "high",
+    "verificationStatus": "reviewed",
+    "sourceClass": "dictionary-entry",
+    "license": "linked reference",
+    "licenseStatus": "linked-reference-only",
+    "reviewStatus": "reviewed",
+    "lastReviewed": "2026-07-07",
     "supportsConcepts": [
       "context",
       "meaning",
@@ -312,7 +425,6 @@
       "plainEnglish",
       "origin"
     ],
-    "qualityTier": "definition",
     "notes": "Use for common-language definition support for context."
   },
   {
@@ -321,7 +433,15 @@
     "publisher": "Merriam-Webster",
     "type": "Dictionary",
     "url": "https://www.merriam-webster.com/dictionary/definition",
-    "domain": "Language / Definition",
+    "domain": "DictionaryHub",
+    "qualityTier": "reference-source",
+    "credibilityTier": "high",
+    "verificationStatus": "reviewed",
+    "sourceClass": "dictionary-entry",
+    "license": "linked reference",
+    "licenseStatus": "linked-reference-only",
+    "reviewStatus": "reviewed",
+    "lastReviewed": "2026-07-07",
     "supportsConcepts": [
       "definition",
       "meaning",
@@ -332,7 +452,6 @@
       "plainEnglish",
       "origin"
     ],
-    "qualityTier": "definition",
     "notes": "Use for common-language definition support for definition."
   },
   {
@@ -341,7 +460,15 @@
     "publisher": "World Wide Web Consortium",
     "type": "Technical Standard / Overview",
     "url": "https://www.w3.org/TR/prov-overview/",
-    "domain": "Data Provenance / Web Standards",
+    "domain": "DictionaryHub",
+    "qualityTier": "official-documentation",
+    "credibilityTier": "high",
+    "verificationStatus": "official-documentation",
+    "sourceClass": "technical-documentation",
+    "license": "linked reference",
+    "licenseStatus": "linked-reference-only",
+    "reviewStatus": "reviewed",
+    "lastReviewed": "2026-07-07",
     "supportsConcepts": [
       "provenance",
       "source",
@@ -353,7 +480,6 @@
       "technicalDefinition",
       "relationships"
     ],
-    "qualityTier": "foundation",
     "notes": "Use for provenance as a formal web/data concept."
   },
   {
@@ -362,7 +488,15 @@
     "publisher": "World Wide Web Consortium",
     "type": "Technical Standard / Ontology",
     "url": "https://www.w3.org/TR/prov-o/",
-    "domain": "Data Provenance / Ontology",
+    "domain": "DictionaryHub",
+    "qualityTier": "official-documentation",
+    "credibilityTier": "high",
+    "verificationStatus": "official-documentation",
+    "sourceClass": "technical-documentation",
+    "license": "linked reference",
+    "licenseStatus": "linked-reference-only",
+    "reviewStatus": "reviewed",
+    "lastReviewed": "2026-07-07",
     "supportsConcepts": [
       "provenance",
       "source",
@@ -374,7 +508,6 @@
       "technicalDefinition",
       "relationships"
     ],
-    "qualityTier": "foundation",
     "notes": "Use for formal provenance relationships and ontology-style source trails."
   },
   {
@@ -383,7 +516,15 @@
     "publisher": "International Organization for Standardization",
     "type": "Standards Overview",
     "url": "https://www.iso.org/standard/81745.html",
-    "domain": "Data Quality",
+    "domain": "DictionaryHub",
+    "qualityTier": "official-documentation",
+    "credibilityTier": "high",
+    "verificationStatus": "official-documentation",
+    "sourceClass": "standard",
+    "license": "linked reference",
+    "licenseStatus": "linked-reference-only",
+    "reviewStatus": "reviewed",
+    "lastReviewed": "2026-07-07",
     "supportsConcepts": [
       "data",
       "information",
@@ -395,7 +536,6 @@
       "technicalDefinition",
       "relationships"
     ],
-    "qualityTier": "standards",
     "notes": "Use for data quality concepts where standards-based support is needed."
   }
 ]
