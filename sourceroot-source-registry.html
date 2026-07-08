@@ -69,7 +69,7 @@
 
     .controls {
       display: grid;
-      grid-template-columns: 2fr 1fr 1fr 1fr auto;
+      grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr auto;
       gap: 10px;
       align-items: center;
     }
@@ -107,7 +107,7 @@
 
     .stat-grid {
       display: grid;
-      grid-template-columns: repeat(5, minmax(120px, 1fr));
+      grid-template-columns: repeat(6, minmax(120px, 1fr));
       gap: 10px;
       margin-top: 16px;
     }
@@ -292,20 +292,21 @@
 <body>
   <header>
     <h1>SourceRoot Source Registry</h1>
-    <<div class="subtitle">
-  Master relationship view for SourceRoot. Inspect every edge across DictionaryHub, BibleRoot, Wiki, and cross-hub SourceRoot connections.
-</div>
 
-<div class="top-links">
-  <a href="sourceroot.html">SourceRoot Home</a>
-  <a href="sourceroot-inspector.html">Open Inspector</a>
-  <a href="sourceroot-edge-registry.html">Open Edge Registry</a>
-  <a href="sourceroot-identity-registry.html">Open Identity Registry</a>
-  <a href="sourceroot-api-preview.html">Open API Preview</a>
-  <a href="graph-v2.html">Open DictionaryHub Graph</a>
-  <a href="bibleroot.html">Open BibleRoot</a>
-</div>
+    <div class="subtitle">
+      Master provenance view for SourceRoot. Inspect every loaded source across DictionaryHub, BibleRoot, Wiki, and SourceRoot connections.
+      Filter by domain, type, usage, credibility, and verification status.
+    </div>
 
+    <div class="top-links">
+      <a href="sourceroot.html">SourceRoot Home</a>
+      <a href="sourceroot-inspector.html">Open Inspector</a>
+      <a href="sourceroot-edge-registry.html">Open Edge Registry</a>
+      <a href="sourceroot-identity-registry.html">Open Identity Registry</a>
+      <a href="sourceroot-api-preview.html">Open API Preview</a>
+      <a href="graph-v2.html">Open DictionaryHub Graph</a>
+      <a href="bibleroot.html">Open BibleRoot</a>
+    </div>
   </header>
 
   <main>
@@ -327,6 +328,14 @@
           <option value="all">All Sources</option>
           <option value="used">Used only</option>
           <option value="unused">Unused only</option>
+        </select>
+
+        <select id="credibilityFilter">
+          <option value="all">All Credibility</option>
+        </select>
+
+        <select id="verificationFilter">
+          <option value="all">All Verification</option>
         </select>
 
         <button id="clearFiltersButton" class="clear-button" type="button">
@@ -438,12 +447,16 @@
         document.getElementById("domainFilter").addEventListener("change", applyFilters);
         document.getElementById("typeFilter").addEventListener("change", applyFilters);
         document.getElementById("usageFilter").addEventListener("change", applyFilters);
+        document.getElementById("credibilityFilter").addEventListener("change", applyFilters);
+        document.getElementById("verificationFilter").addEventListener("change", applyFilters);
 
         document.getElementById("clearFiltersButton").addEventListener("click", () => {
           document.getElementById("searchInput").value = "";
           document.getElementById("domainFilter").value = "all";
           document.getElementById("typeFilter").value = "all";
           document.getElementById("usageFilter").value = "all";
+          document.getElementById("credibilityFilter").value = "all";
+          document.getElementById("verificationFilter").value = "all";
           applyFilters();
         });
 
@@ -467,6 +480,8 @@
         sourceClass: source.sourceClass || "",
         publisher: source.publisher || "",
         license: source.license || "",
+        licenseStatus: source.licenseStatus || "",
+        reviewStatus: source.reviewStatus || "",
         url: source.url || "",
         notes: source.notes || source.description || "",
         raw: source
@@ -485,6 +500,8 @@
         sourceClass: source.sourceClass || "",
         publisher: source.publisher || "",
         license: source.license || "",
+        licenseStatus: source.licenseStatus || "",
+        reviewStatus: source.reviewStatus || "",
         url: source.url || "",
         notes: source.notes || source.description || "",
         raw: source
@@ -672,6 +689,8 @@
     function populateFilters() {
       const domainFilter = document.getElementById("domainFilter");
       const typeFilter = document.getElementById("typeFilter");
+      const credibilityFilter = document.getElementById("credibilityFilter");
+      const verificationFilter = document.getElementById("verificationFilter");
 
       const domains = [
         ...new Set(allSources.map(source => getDisplayDomain(source.domain || "Unknown Domain")))
@@ -679,6 +698,14 @@
 
       const types = [
         ...new Set(allSources.map(source => source.type || "Unknown Type"))
+      ].sort();
+
+      const credibilityTiers = [
+        ...new Set(allSources.map(source => source.credibilityTier || "Unclassified"))
+      ].sort();
+
+      const verificationStatuses = [
+        ...new Set(allSources.map(source => source.verificationStatus || "Unclassified"))
       ].sort();
 
       domainFilter.innerHTML = `
@@ -690,6 +717,16 @@
         <option value="all">All Source Types</option>
         ${types.map(type => `<option value="${type}">${type}</option>`).join("")}
       `;
+
+      credibilityFilter.innerHTML = `
+        <option value="all">All Credibility</option>
+        ${credibilityTiers.map(tier => `<option value="${tier}">${tier}</option>`).join("")}
+      `;
+
+      verificationFilter.innerHTML = `
+        <option value="all">All Verification</option>
+        ${verificationStatuses.map(status => `<option value="${status}">${status}</option>`).join("")}
+      `;
     }
 
     function applyFilters() {
@@ -697,6 +734,8 @@
       const selectedDomain = document.getElementById("domainFilter").value;
       const selectedType = document.getElementById("typeFilter").value;
       const selectedUsage = document.getElementById("usageFilter").value;
+      const selectedCredibility = document.getElementById("credibilityFilter").value;
+      const selectedVerification = document.getElementById("verificationFilter").value;
 
       let filteredSources = [...allSources];
 
@@ -718,6 +757,18 @@
         filteredSources = filteredSources.filter(source => getSourceUsage(source.id).total === 0);
       }
 
+      if (selectedCredibility !== "all") {
+        filteredSources = filteredSources.filter(source =>
+          (source.credibilityTier || "Unclassified") === selectedCredibility
+        );
+      }
+
+      if (selectedVerification !== "all") {
+        filteredSources = filteredSources.filter(source =>
+          (source.verificationStatus || "Unclassified") === selectedVerification
+        );
+      }
+
       if (searchTerm) {
         filteredSources = filteredSources.filter(source => {
           const searchableText = [
@@ -732,6 +783,8 @@
             source.sourceClass,
             source.publisher,
             source.license,
+            source.licenseStatus,
+            source.reviewStatus,
             source.url,
             source.notes
           ].join(" ").toLowerCase();
@@ -749,6 +802,12 @@
       const typeCount = new Set(sources.map(source => source.type)).size;
       const usedCount = sources.filter(source => getSourceUsage(source.id).total > 0).length;
       const linkedCount = sources.filter(source => source.url).length;
+      const reviewedCount = sources.filter(source =>
+        source.reviewStatus === "reviewed" ||
+        source.reviewStatus === "approved" ||
+        source.verificationStatus === "verified" ||
+        source.verificationStatus === "official-documentation"
+      ).length;
 
       document.getElementById("registryStats").innerHTML = `
         <div class="stat-card">
@@ -774,6 +833,11 @@
         <div class="stat-card">
           <div class="stat-number">${linkedCount}</div>
           <div class="stat-label">With URLs</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-number">${reviewedCount}</div>
+          <div class="stat-label">Reviewed / Verified</div>
         </div>
       `;
     }
@@ -833,11 +897,14 @@
 
                 <p>${source.notes || "<span class='empty'>No notes yet.</span>"}</p>
 
-                ${source.publisher ? `<div class="meta"><strong>Publisher:</strong> ${source.publisher}</div>` : ""}
-                ${source.credibilityTier ? `<div class="meta"><strong>Credibility:</strong> ${source.credibilityTier}</div>` : ""}
-                ${source.verificationStatus ? `<div class="meta"><strong>Verification:</strong> ${source.verificationStatus}</div>` : ""}
-                ${source.sourceClass ? `<div class="meta"><strong>Class:</strong> ${source.sourceClass}</div>` : ""}
-                ${source.license ? `<div class="meta"><strong>License:</strong> ${source.license}</div>` : ""}
+                <div class="meta"><strong>Publisher:</strong> ${source.publisher || "Not listed"}</div>
+                <div class="meta"><strong>Credibility:</strong> ${source.credibilityTier || "Unclassified"}</div>
+                <div class="meta"><strong>Verification:</strong> ${source.verificationStatus || "Unclassified"}</div>
+                <div class="meta"><strong>Quality Tier:</strong> ${source.qualityTier || "Working Source"}</div>
+                <div class="meta"><strong>Class:</strong> ${source.sourceClass || "Unclassified"}</div>
+                <div class="meta"><strong>License:</strong> ${source.license || "Not listed"}</div>
+                <div class="meta"><strong>License Status:</strong> ${source.licenseStatus || "Unclassified"}</div>
+                <div class="meta"><strong>Review Status:</strong> ${source.reviewStatus || "Not reviewed"}</div>
 
                 ${source.url ? `<a class="open-source-link" href="${source.url}" target="_blank" rel="noopener">Open source</a>` : ""}
 
