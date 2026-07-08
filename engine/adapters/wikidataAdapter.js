@@ -32,7 +32,12 @@ export function adaptWikidataAssertions(items = []) {
         summary: item.description,
         body: item.description,
         sourceIds: item.sourceIds || [],
-        confidence: "community-maintained",
+        credibilityTier: "medium",
+        confidence: "moderate",
+        verificationStatus: "community-maintained",
+        reviewStatus: "reviewed",
+        supportLevel: "direct",
+        interpretationLevel: "none",
         status: "external-dataset-sample",
         domain: "WikidataRoot"
       });
@@ -47,7 +52,12 @@ export function adaptWikidataAssertions(items = []) {
         summary: `${item.aliases.length} alias(es) listed`,
         body: item.aliases.map(alias => `• ${alias}`).join("<br>"),
         sourceIds: item.sourceIds || [],
-        confidence: "community-maintained",
+        credibilityTier: "medium",
+        confidence: "moderate",
+        verificationStatus: "community-maintained",
+        reviewStatus: "reviewed",
+        supportLevel: "direct",
+        interpretationLevel: "none",
         status: "external-dataset-sample",
         domain: "WikidataRoot"
       });
@@ -64,7 +74,12 @@ export function adaptWikidataAssertions(items = []) {
           .map(statement => `• ${statement.property}: ${statement.value}`)
           .join("<br>"),
         sourceIds: item.sourceIds || [],
-        confidence: "community-maintained",
+        credibilityTier: "medium",
+        confidence: "moderate",
+        verificationStatus: "community-maintained",
+        reviewStatus: "reviewed",
+        supportLevel: "direct",
+        interpretationLevel: "none",
         status: "external-dataset-sample",
         domain: "WikidataRoot"
       });
@@ -82,7 +97,12 @@ export function adaptWikidataAssertions(items = []) {
           <strong>External URI:</strong> ${item.externalUri || "None"}
         `,
         sourceIds: item.sourceIds || [],
-        confidence: "high",
+        credibilityTier: "high",
+        confidence: "strong",
+        verificationStatus: "source-backed",
+        reviewStatus: "reviewed",
+        supportLevel: "direct",
+        interpretationLevel: "none",
         status: "external-dataset-sample",
         domain: "WikidataRoot"
       });
@@ -118,6 +138,9 @@ export function adaptWikidataSources(sources = []) {
     sourceClass: source.sourceClass || "",
     publisher: source.publisher || "",
     license: source.license || "",
+    licenseStatus: source.licenseStatus || "",
+    reviewStatus: source.reviewStatus || "",
+    lastReviewed: source.lastReviewed || "",
     url: source.url || "",
     notes: source.notes || source.description || "",
     raw: source

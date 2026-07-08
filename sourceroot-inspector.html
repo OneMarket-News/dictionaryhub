@@ -32,25 +32,25 @@
     }
 
     .top-links {
-  margin-top: 14px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
+      margin-top: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
 
-.top-links a {
-  color: white;
-  border: 1px solid #374151;
-  background: #1f2937;
-  border-radius: 999px;
-  padding: 7px 11px;
-  text-decoration: none;
-  font-size: 13px;
-}
+    .top-links a {
+      color: white;
+      border: 1px solid #374151;
+      background: #1f2937;
+      border-radius: 999px;
+      padding: 7px 11px;
+      text-decoration: none;
+      font-size: 13px;
+    }
 
-.top-links a:hover {
-  background: #374151;
-}
+    .top-links a:hover {
+      background: #374151;
+    }
 
     main {
       display: grid;
@@ -336,20 +336,21 @@
 <body>
   <header>
     <h1>SourceRoot Inspector</h1>
-    <div class="subtitle">
-  Master prototype view for SourceRoot: DictionaryHub + BibleRoot + Wiki through one adapter layer.
-  Search, filter, inspect, follow relationships, verify assertions, and open source records from one universal engine.
-</div>
 
-<div class="top-links">
-  <a href="sourceroot.html">SourceRoot Home</a>
-  <a href="sourceroot-edge-registry.html">Open Edge Registry</a>
-  <a href="sourceroot-source-registry.html">Open Source Registry</a>
-  <a href="sourceroot-identity-registry.html">Open Identity Registry</a>
-  <a href="sourceroot-api-preview.html">Open API Preview</a>
-  <a href="graph-v2.html">Open DictionaryHub Graph</a>
-  <a href="bibleroot.html">Open BibleRoot</a>
-</div>
+    <div class="subtitle">
+      Master prototype view for SourceRoot: DictionaryHub + BibleRoot + Wiki through one adapter layer.
+      Search, filter, inspect, follow relationships, verify assertions, and open source records from one universal engine.
+    </div>
+
+    <div class="top-links">
+      <a href="sourceroot.html">SourceRoot Home</a>
+      <a href="sourceroot-edge-registry.html">Open Edge Registry</a>
+      <a href="sourceroot-source-registry.html">Open Source Registry</a>
+      <a href="sourceroot-identity-registry.html">Open Identity Registry</a>
+      <a href="sourceroot-api-preview.html">Open API Preview</a>
+      <a href="graph-v2.html">Open DictionaryHub Graph</a>
+      <a href="bibleroot.html">Open BibleRoot</a>
+    </div>
   </header>
 
   <main>
@@ -512,27 +513,27 @@
     }
 
     function populateFilters() {
-  const hubFilter = document.getElementById("hubFilter");
-  const typeFilter = document.getElementById("typeFilter");
+      const hubFilter = document.getElementById("hubFilter");
+      const typeFilter = document.getElementById("typeFilter");
 
-  const hubs = [
-    ...new Set(allNodes.map(node => getDisplayDomain(node.domain || "Unknown Hub")))
-  ].sort();
+      const hubs = [
+        ...new Set(allNodes.map(node => getDisplayDomain(node.domain || "Unknown Hub")))
+      ].sort();
 
-  const types = [
-    ...new Set(allNodes.map(node => node.type || "Unknown Type"))
-  ].sort();
+      const types = [
+        ...new Set(allNodes.map(node => node.type || "Unknown Type"))
+      ].sort();
 
-  hubFilter.innerHTML = `
-    <option value="all">All Hubs</option>
-    ${hubs.map(hub => `<option value="${hub}">${hub}</option>`).join("")}
-  `;
+      hubFilter.innerHTML = `
+        <option value="all">All Hubs</option>
+        ${hubs.map(hub => `<option value="${hub}">${hub}</option>`).join("")}
+      `;
 
-  typeFilter.innerHTML = `
-    <option value="all">All Types</option>
-    ${types.map(type => `<option value="${type}">${type}</option>`).join("")}
-  `;
-}
+      typeFilter.innerHTML = `
+        <option value="all">All Types</option>
+        ${types.map(type => `<option value="${type}">${type}</option>`).join("")}
+      `;
+    }
 
     function applyFilters() {
       const searchTerm = document.getElementById("searchInput").value;
@@ -559,6 +560,14 @@
         type: source.type || "BibleRoot Source",
         domain: "BibleRoot",
         qualityTier: source.qualityTier || source.tier || "Working Source",
+        credibilityTier: source.credibilityTier || "",
+        verificationStatus: source.verificationStatus || "",
+        sourceClass: source.sourceClass || "",
+        publisher: source.publisher || "",
+        license: source.license || "",
+        licenseStatus: source.licenseStatus || "",
+        reviewStatus: source.reviewStatus || "",
+        lastReviewed: source.lastReviewed || "",
         url: source.url || "",
         notes: source.notes || source.description || "",
         raw: source
@@ -572,6 +581,14 @@
         type: source.type || "DictionaryHub Source",
         domain: "DictionaryHub",
         qualityTier: source.qualityTier || source.tier || "Working Source",
+        credibilityTier: source.credibilityTier || "",
+        verificationStatus: source.verificationStatus || "",
+        sourceClass: source.sourceClass || "",
+        publisher: source.publisher || "",
+        license: source.license || "",
+        licenseStatus: source.licenseStatus || "",
+        reviewStatus: source.reviewStatus || "",
+        lastReviewed: source.lastReviewed || "",
         url: source.url || "",
         notes: source.notes || source.description || "",
         raw: source
@@ -613,7 +630,12 @@
         summary: assertion.summary || "",
         body: assertion.body || assertion.description || assertion.summary || "",
         sourceIds: assertion.sourceIds || [],
-        confidence: assertion.confidence || "working",
+        credibilityTier: assertion.credibilityTier || "medium",
+        confidence: assertion.confidence || "moderate",
+        verificationStatus: assertion.verificationStatus || "interpretive",
+        reviewStatus: assertion.reviewStatus || "needs-review",
+        supportLevel: assertion.supportLevel || "interpretive",
+        interpretationLevel: assertion.interpretationLevel || "high",
         status: assertion.status || "alpha",
         domain: "BibleRoot"
       }));
@@ -644,6 +666,17 @@
       const assertions = [];
 
       concepts.forEach(concept => {
+        const baseCredibility = {
+          credibilityTier: "high",
+          confidence: "strong",
+          verificationStatus: "source-backed",
+          reviewStatus: "reviewed",
+          supportLevel: "derived",
+          interpretationLevel: "low",
+          status: concept.status || "v2-draft",
+          domain: "DictionaryHub"
+        };
+
         if (concept.shortDefinition) {
           assertions.push({
             id: `dictionary-assertion-${concept.id}-short-definition`,
@@ -653,9 +686,7 @@
             summary: concept.shortDefinition,
             body: concept.shortDefinition,
             sourceIds: concept.sourceIds || [],
-            confidence: "working",
-            status: concept.status || "v2-draft",
-            domain: "DictionaryHub"
+            ...baseCredibility
           });
         }
 
@@ -668,9 +699,7 @@
             summary: concept.shortDefinition || "",
             body: concept.fullDefinition,
             sourceIds: concept.sourceIds || [],
-            confidence: "working",
-            status: concept.status || "v2-draft",
-            domain: "DictionaryHub"
+            ...baseCredibility
           });
         }
 
@@ -683,9 +712,7 @@
             summary: concept.plainEnglish,
             body: concept.plainEnglish,
             sourceIds: concept.sourceIds || [],
-            confidence: "working",
-            status: concept.status || "v2-draft",
-            domain: "DictionaryHub"
+            ...baseCredibility
           });
         }
 
@@ -698,9 +725,7 @@
             summary: concept.technicalDefinition,
             body: concept.technicalDefinition,
             sourceIds: concept.sourceIds || [],
-            confidence: "working",
-            status: concept.status || "v2-draft",
-            domain: "DictionaryHub"
+            ...baseCredibility
           });
         }
 
@@ -713,7 +738,12 @@
             summary: concept.whyItMatters,
             body: concept.whyItMatters,
             sourceIds: concept.sourceIds || [],
-            confidence: "working",
+            credibilityTier: "medium",
+            confidence: "moderate",
+            verificationStatus: "inferred",
+            reviewStatus: "needs-review",
+            supportLevel: "inferred",
+            interpretationLevel: "medium",
             status: concept.status || "v2-draft",
             domain: "DictionaryHub"
           });
@@ -728,7 +758,12 @@
             summary: `${concept.examples.length} example(s) available`,
             body: concept.examples.map(example => `• ${example}`).join("<br>"),
             sourceIds: concept.sourceIds || [],
-            confidence: "working",
+            credibilityTier: "medium",
+            confidence: "moderate",
+            verificationStatus: "source-backed",
+            reviewStatus: "needs-review",
+            supportLevel: "contextual",
+            interpretationLevel: "medium",
             status: concept.status || "v2-draft",
             domain: "DictionaryHub"
           });
@@ -743,7 +778,12 @@
             summary: `${concept.commonConfusions.length} confusion note(s) available`,
             body: concept.commonConfusions.map(confusion => `• ${confusion}`).join("<br>"),
             sourceIds: concept.sourceIds || [],
-            confidence: "working",
+            credibilityTier: "medium",
+            confidence: "moderate",
+            verificationStatus: "inferred",
+            reviewStatus: "needs-review",
+            supportLevel: "inferred",
+            interpretationLevel: "medium",
             status: concept.status || "v2-draft",
             domain: "DictionaryHub"
           });
@@ -804,16 +844,18 @@
     }
 
     function getDisplayDomain(domain = "") {
-  if (domain === "WikidataRoot") {
-    return "Wiki";
-  }
+      if (domain === "WikidataRoot") {
+        return "Wiki";
+      }
 
-  return domain;
-}
+      return domain;
+    }
+
     function getNodeTitle(nodeId) {
-  const foundNode = allNodes.find(node => node.id === nodeId);
-  return foundNode ? foundNode.title : nodeId;
-}
+      const foundNode = allNodes.find(node => node.id === nodeId);
+      return foundNode ? foundNode.title : nodeId;
+    }
+
     function getNodeById(nodeId) {
       return allNodes.find(node => node.id === nodeId);
     }
@@ -893,11 +935,25 @@
           ${assertions.length ? assertions.map(assertion => `
             <article class="assertion-card">
               <h4>${assertion.label}</h4>
+
               <div class="meta">
                 ${assertion.assertionType} · ${assertion.status || "working"} · ${assertion.confidence || "working"}
               </div>
+
+              <div class="meta">
+                <strong>Credibility:</strong> ${assertion.credibilityTier || "Unclassified"} ·
+                <strong>Verification:</strong> ${assertion.verificationStatus || "Unclassified"} ·
+                <strong>Review:</strong> ${assertion.reviewStatus || "Not reviewed"}
+              </div>
+
+              <div class="meta">
+                <strong>Support:</strong> ${assertion.supportLevel || "Unclassified"} ·
+                <strong>Interpretation:</strong> ${assertion.interpretationLevel || "Unclassified"}
+              </div>
+
               <p><strong>Summary:</strong> ${assertion.summary || ""}</p>
               <p>${assertion.body || ""}</p>
+
               <p>
                 <strong>Source IDs:</strong>
                 ${(assertion.sourceIds || []).length
@@ -920,8 +976,13 @@
                   ${getNodeTitle(edge.toNodeId)}
                 </button>
               </div>
+
               <p>${edge.summary || ""}</p>
-             <div class="meta">${edge.relationshipType || "relationship"} · ${getDisplayDomain(edge.domain || "SourceRoot")}</div>
+
+              <div class="meta">
+                ${edge.relationshipType || "relationship"} · ${getDisplayDomain(edge.domain || "SourceRoot")}
+              </div>
+
               <p>
                 <strong>Source IDs:</strong>
                 ${(edge.sourceIds || []).length
@@ -944,8 +1005,13 @@
                 <span>${edge.label}</span>
                 <strong>${node.title}</strong>
               </div>
-              <p>${edge.summary || ""}</p<div class="meta">${edge.relationshipType || "relationship"} · ${getDisplayDomain(edge.domain || "SourceRoot")}</div>
-              
+
+              <p>${edge.summary || ""}</p>
+
+              <div class="meta">
+                ${edge.relationshipType || "relationship"} · ${getDisplayDomain(edge.domain || "SourceRoot")}
+              </div>
+
               <p>
                 <strong>Source IDs:</strong>
                 ${(edge.sourceIds || []).length
@@ -962,11 +1028,25 @@
           ${matchingSources.length ? matchingSources.map(source => `
             <article class="source-card">
               <h4>${source.name}</h4>
+
               <div class="meta">
                 ${getDisplayDomain(source.domain || "SourceRoot")} · ${source.type || "Source"} · ${source.qualityTier || "Working Source"}
               </div>
+
+              <div class="meta">
+                <strong>Credibility:</strong> ${source.credibilityTier || "Unclassified"} ·
+                <strong>Verification:</strong> ${source.verificationStatus || "Unclassified"} ·
+                <strong>Review:</strong> ${source.reviewStatus || "Not reviewed"}
+              </div>
+
+              <div class="meta">
+                <strong>Publisher:</strong> ${source.publisher || "Not listed"} ·
+                <strong>License:</strong> ${source.licenseStatus || source.license || "Not listed"}
+              </div>
+
               <p>${source.notes || ""}</p>
               <p><strong>Source ID:</strong> <code>${source.id}</code></p>
+
               ${source.url ? `<a class="open-source-link" href="${source.url}" target="_blank" rel="noopener">Open source</a>` : ""}
             </article>
           `).join("") : `
@@ -984,6 +1064,7 @@
 
         <div class="section">
           <h3>Raw Node Data</h3>
+
           <details>
             <summary>View raw adapted node object</summary>
             <pre>${JSON.stringify(node, null, 2)}</pre>
