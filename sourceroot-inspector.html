@@ -604,6 +604,13 @@
         label: edge.label || edge.relationshipType || edge.type || "related to",
         summary: edge.summary || edge.explanation || "",
         sourceIds: edge.sourceIds || [],
+        credibilityTier: edge.credibilityTier || "medium",
+        confidence: edge.confidence || "moderate",
+        verificationStatus: edge.verificationStatus || "interpretive",
+        reviewStatus: edge.reviewStatus || "needs-review",
+        supportLevel: edge.supportLevel || "contextual",
+        relationshipStrength: edge.relationshipStrength || "contextual",
+        interpretationLevel: edge.interpretationLevel || "medium",
         domain: "BibleRoot"
       }));
     }
@@ -617,6 +624,13 @@
         label: edge.label || edge.relationshipType || "relates to",
         summary: edge.summary || edge.explanation || "",
         sourceIds: edge.sourceIds || [],
+        credibilityTier: edge.credibilityTier || "medium",
+        confidence: edge.confidence || "moderate",
+        verificationStatus: edge.verificationStatus || "inferred",
+        reviewStatus: edge.reviewStatus || "needs-review",
+        supportLevel: edge.supportLevel || "contextual",
+        relationshipStrength: edge.relationshipStrength || "contextual",
+        interpretationLevel: edge.interpretationLevel || "medium",
         domain: edge.domain || "SourceRoot"
       }));
     }
@@ -654,6 +668,13 @@
             label: relationship.direction || relationship.type || "related to",
             summary: relationship.explanation || relationship.bridge || "",
             sourceIds: relationship.sourceIds || [],
+            credibilityTier: relationship.credibilityTier || "high",
+            confidence: relationship.confidence || "strong",
+            verificationStatus: relationship.verificationStatus || "source-backed",
+            reviewStatus: relationship.reviewStatus || "reviewed",
+            supportLevel: relationship.supportLevel || "derived",
+            relationshipStrength: relationship.relationshipStrength || "strong",
+            interpretationLevel: relationship.interpretationLevel || "low",
             domain: "DictionaryHub"
           });
         });
@@ -983,6 +1004,18 @@
                 ${edge.relationshipType || "relationship"} · ${getDisplayDomain(edge.domain || "SourceRoot")}
               </div>
 
+              <div class="meta">
+                <strong>Credibility:</strong> ${edge.credibilityTier || "Unclassified"} ·
+                <strong>Verification:</strong> ${edge.verificationStatus || "Unclassified"} ·
+                <strong>Review:</strong> ${edge.reviewStatus || "Not reviewed"}
+              </div>
+
+              <div class="meta">
+                <strong>Support:</strong> ${edge.supportLevel || "Unclassified"} ·
+                <strong>Strength:</strong> ${edge.relationshipStrength || "Unclassified"} ·
+                <strong>Interpretation:</strong> ${edge.interpretationLevel || "Unclassified"}
+              </div>
+
               <p>
                 <strong>Source IDs:</strong>
                 ${(edge.sourceIds || []).length
@@ -1010,6 +1043,18 @@
 
               <div class="meta">
                 ${edge.relationshipType || "relationship"} · ${getDisplayDomain(edge.domain || "SourceRoot")}
+              </div>
+
+              <div class="meta">
+                <strong>Credibility:</strong> ${edge.credibilityTier || "Unclassified"} ·
+                <strong>Verification:</strong> ${edge.verificationStatus || "Unclassified"} ·
+                <strong>Review:</strong> ${edge.reviewStatus || "Not reviewed"}
+              </div>
+
+              <div class="meta">
+                <strong>Support:</strong> ${edge.supportLevel || "Unclassified"} ·
+                <strong>Strength:</strong> ${edge.relationshipStrength || "Unclassified"} ·
+                <strong>Interpretation:</strong> ${edge.interpretationLevel || "Unclassified"}
               </div>
 
               <p>

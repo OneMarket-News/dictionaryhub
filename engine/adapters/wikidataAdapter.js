@@ -121,6 +121,15 @@ export function adaptWikidataEdges(edges = []) {
     label: edge.label || edge.relationshipType || "relates to",
     summary: edge.summary || edge.explanation || "",
     sourceIds: edge.sourceIds || [],
+
+    credibilityTier: edge.credibilityTier || "medium",
+    confidence: edge.confidence || "moderate",
+    verificationStatus: edge.verificationStatus || "reviewed",
+    reviewStatus: edge.reviewStatus || "reviewed",
+    supportLevel: edge.supportLevel || "contextual",
+    relationshipStrength: edge.relationshipStrength || "contextual",
+    interpretationLevel: edge.interpretationLevel || "medium",
+
     domain: edge.domain || "WikidataRoot",
     raw: edge
   }));
