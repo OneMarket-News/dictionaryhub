@@ -234,20 +234,21 @@
       <h1>SourceRoot</h1>
 
       <div class="subtitle">
-        A prototype provenance engine for connecting knowledge across hubs, sources, assertions, relationships, and revisions.
+        A prototype provenance engine for connecting knowledge across hubs, sources, assertions, relationships, credibility, identity, and revisions.
         SourceRoot turns separate knowledge systems into one inspectable, source-aware graph.
       </div>
 
       <div class="badge-row">
-  <span class="badge">Node Registry</span>
-  <span class="badge">Edge Registry</span>
-  <span class="badge">Source Registry</span>
-  <span class="badge">Identity Registry</span>
-  <span class="badge">API Preview</span>
-  <span class="badge">DictionaryHub</span>
-  <span class="badge">BibleRoot</span>
-  <span class="badge">Wiki Integration</span>
-</div>
+        <span class="badge">Node Registry</span>
+        <span class="badge">Edge Registry</span>
+        <span class="badge">Source Registry</span>
+        <span class="badge">Identity Registry</span>
+        <span class="badge">Credibility Layer</span>
+        <span class="badge">API Preview</span>
+        <span class="badge">DictionaryHub</span>
+        <span class="badge">BibleRoot</span>
+        <span class="badge">Wiki Integration</span>
+      </div>
     </div>
   </header>
 
@@ -257,7 +258,7 @@
 
       <p class="overview-text">
         SourceRoot is the shared engine layer under DictionaryHub, BibleRoot, Wiki integrations, and future knowledge hubs.
-        It separates concepts, assertions, relationships, sources, and revisions so knowledge can be inspected, verified, connected, and reused.
+        It separates concepts, assertions, relationships, sources, credibility metadata, identity resolution, and revisions so knowledge can be inspected, verified, connected, trusted, and reused.
       </p>
 
       <div class="dashboard-grid">
@@ -285,21 +286,29 @@
           </p>
         </a>
 
+        <a class="dashboard-card" href="sourceroot-source-registry.html">
+          <span class="card-label label-source-root">SourceRoot</span>
+          <h3>Credibility Layer</h3>
+          <p>
+            Review source quality, credibility tier, verification status, license status, review status, and publisher metadata across Wiki, BibleRoot, and DictionaryHub.
+          </p>
+        </a>
+
         <a class="dashboard-card" href="sourceroot-identity-registry.html">
-  <span class="card-label label-source-root">SourceRoot</span>
-  <h3>Identity Registry</h3>
-  <p>
-    Inspect meaning-resolution edges that explain whether nodes are identical, related, symbolic, derived, contrasted, or the same term in different contexts.
-  </p>
-</a>
+          <span class="card-label label-source-root">SourceRoot</span>
+          <h3>Identity Registry</h3>
+          <p>
+            Inspect meaning-resolution edges that explain whether nodes are identical, related, symbolic, derived, contrasted, or the same term in different contexts.
+          </p>
+        </a>
 
         <a class="dashboard-card" href="sourceroot-api-preview.html">
-  <span class="card-label label-source-root">SourceRoot</span>
-  <h3>API Preview</h3>
-  <p>
-    Preview the future SourceRoot API structure for nodes, assertions, edges, sources, search, citations, and revisions.
-  </p>
-</a>
+          <span class="card-label label-source-root">SourceRoot</span>
+          <h3>API Preview</h3>
+          <p>
+            Preview the future SourceRoot API structure for nodes, assertions, edges, sources, search, citations, and revisions.
+          </p>
+        </a>
 
         <a class="dashboard-card" href="graph-v2.html">
           <span class="card-label label-dictionary">DictionaryHub</span>
@@ -339,9 +348,9 @@
   ↓
 Adapters / Connectors
   ↓
-Nodes → Assertions → Edges → Sources → Revisions
+Nodes → Assertions → Edges → Sources → Credibility → Identity → Revisions
   ↓
-Inspector / Edge Registry / Source Registry
+Inspector / Edge Registry / Source Registry / Identity Registry
   ↓
 DictionaryHub / BibleRoot / Wiki / Future Hubs</code>
       </div>
@@ -363,7 +372,17 @@ DictionaryHub / BibleRoot / Wiki / Future Hubs</code>
 
         <div class="status-card">
           <div class="status-title">Source Registry</div>
-          <div class="status-note">Working provenance registry with source usage counts.</div>
+          <div class="status-note">Working provenance registry with source usage counts and credibility filters.</div>
+        </div>
+
+        <div class="status-card">
+          <div class="status-title">Identity Registry</div>
+          <div class="status-note">Working meaning-resolution registry for identity-style relationships.</div>
+        </div>
+
+        <div class="status-card">
+          <div class="status-title">Credibility Layer</div>
+          <div class="status-note">Credibility metadata now added across Wiki, BibleRoot, and DictionaryHub source records.</div>
         </div>
 
         <div class="status-card">
@@ -384,34 +403,64 @@ DictionaryHub / BibleRoot / Wiki / Future Hubs</code>
     </section>
 
     <section class="panel">
+      <h2>Credibility Layer</h2>
+
+      <p class="overview-text">
+        SourceRoot now includes a first-pass credibility model across the connected hubs. Sources can be classified by quality tier, credibility tier, verification status, source class, publisher, license status, review status, and last reviewed date.
+      </p>
+
+      <div class="status-grid">
+        <div class="status-card">
+          <div class="status-title">Wiki</div>
+          <div class="status-note">Wikidata source records include structured public dataset, community-maintained, license, and review metadata.</div>
+        </div>
+
+        <div class="status-card">
+          <div class="status-title">BibleRoot</div>
+          <div class="status-note">BibleRoot source records separate public-domain primary text from prototype interpretive notes.</div>
+        </div>
+
+        <div class="status-card">
+          <div class="status-title">DictionaryHub</div>
+          <div class="status-note">DictionaryHub source records distinguish academic, reference, technical standard, and official documentation sources.</div>
+        </div>
+
+        <div class="status-card">
+          <div class="status-title">Source Registry Filters</div>
+          <div class="status-note">The Source Registry can now filter sources by credibility and verification status.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
       <h2>Next Build Targets</h2>
 
       <div class="next-list">
         <div class="next-item">
-          <strong>1. Add SourceRoot API preview</strong>
-          Create a simple page showing future endpoint shapes like <code>/nodes</code>, <code>/edges</code>, <code>/sources</code>, and <code>/assertions</code>.
+          <strong>1. Add assertion-level credibility</strong>
+          Extend credibility metadata from source records into assertions and relationships so claims and edges can carry trust context directly.
         </div>
 
         <div class="next-item">
-          <strong>2. Add credibility tier system</strong>
-          Make credibility, verification status, license, and source class more visible across all registry pages.
+          <strong>2. Add credibility indicators to Inspector</strong>
+          Show source credibility and verification status when inspecting a node, assertion, or relationship.
         </div>
 
         <div class="next-item">
-          <strong>3. Add identity resolution</strong>
-          Begin modeling when two nodes are the same term, related concepts, symbolic mappings, or separate meanings.
-        </div>
-
-        <div class="next-item">
-          <strong>4. Add BusinessRoot simulation</strong>
+          <strong>3. Add BusinessRoot simulation</strong>
           Create a fake business/product documentation hub to prove SourceRoot can ingest company knowledge.
+        </div>
+
+        <div class="next-item">
+          <strong>4. Add citation event model</strong>
+          Define how AI systems, users, and partner apps would log source-backed citation events.
         </div>
       </div>
     </section>
   </main>
 
   <footer>
-    SourceRoot prototype dashboard. Current hubs: DictionaryHub, BibleRoot, Wiki. Core model: Node → Assertion → Edge → Source → Revision.
+    SourceRoot prototype dashboard. Current hubs: DictionaryHub, BibleRoot, Wiki. Core model: Node → Assertion → Edge → Source → Credibility → Identity → Revision.
   </footer>
 </body>
 </html>
