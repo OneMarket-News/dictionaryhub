@@ -1,0 +1,154 @@
+{
+  "bundleId": "sourceroot-example-light-bundle",
+  "bundleType": "sourceroot-import-bundle",
+  "version": "0.1",
+  "domain": "ExampleHub",
+  "createdAt": "2026-07-11",
+  "createdBy": "SourceRoot prototype",
+  "description": "Small example import bundle showing nodes, assertions, edges, sources, and revisions using the concept of light.",
+  "nodes": [
+    {
+      "id": "example-light",
+      "title": "Light",
+      "type": "Concept",
+      "domain": "ExampleHub",
+      "summary": "Light as a sample concept used to test the SourceRoot import bundle format.",
+      "description": "This node is used as a minimal example for importing a structured SourceRoot knowledge object.",
+      "sourceIds": [
+        "example-source-light-reference"
+      ],
+      "revisions": [
+        {
+          "version": "0.1",
+          "summary": "Initial example light node."
+        }
+      ]
+    },
+    {
+      "id": "example-truth",
+      "title": "Truth",
+      "type": "Concept",
+      "domain": "ExampleHub",
+      "summary": "Truth as a sample related concept for testing edge imports.",
+      "description": "This node is used to demonstrate a relationship from light to truth.",
+      "sourceIds": [
+        "example-source-light-reference"
+      ],
+      "revisions": [
+        {
+          "version": "0.1",
+          "summary": "Initial example truth node."
+        }
+      ]
+    }
+  ],
+  "assertions": [
+    {
+      "id": "example-assertion-light-definition",
+      "nodeId": "example-light",
+      "assertionType": "definition",
+      "label": "Example Definition",
+      "summary": "Light can be understood as something that makes visibility possible.",
+      "body": "Light can be understood as something that makes visibility possible. In SourceRoot, this assertion is used only as a simple import-format example.",
+      "domain": "ExampleHub",
+      "sourceIds": [
+        "example-source-light-reference"
+      ],
+      "credibilityTier": "prototype",
+      "confidence": "working",
+      "verificationStatus": "prototype",
+      "reviewStatus": "needs-review",
+      "supportLevel": "contextual",
+      "interpretationLevel": "low",
+      "status": "example-import"
+    },
+    {
+      "id": "example-assertion-truth-definition",
+      "nodeId": "example-truth",
+      "assertionType": "definition",
+      "label": "Example Definition",
+      "summary": "Truth can be understood as alignment with reality or what is actually the case.",
+      "body": "Truth can be understood as alignment with reality or what is actually the case. In SourceRoot, this assertion is used only as a simple import-format example.",
+      "domain": "ExampleHub",
+      "sourceIds": [
+        "example-source-light-reference"
+      ],
+      "credibilityTier": "prototype",
+      "confidence": "working",
+      "verificationStatus": "prototype",
+      "reviewStatus": "needs-review",
+      "supportLevel": "contextual",
+      "interpretationLevel": "low",
+      "status": "example-import"
+    }
+  ],
+  "edges": [
+    {
+      "id": "example-edge-light-truth",
+      "fromNodeId": "example-light",
+      "toNodeId": "example-truth",
+      "relationshipType": "RELATES_TO",
+      "label": "relates to",
+      "summary": "Light relates to truth through the symbolic idea of revealing what is hidden or making something visible.",
+      "domain": "ExampleHub",
+      "sourceIds": [
+        "example-source-light-reference"
+      ],
+      "credibilityTier": "prototype",
+      "confidence": "working",
+      "verificationStatus": "prototype",
+      "reviewStatus": "needs-review",
+      "supportLevel": "contextual",
+      "relationshipStrength": "contextual",
+      "interpretationLevel": "medium"
+    }
+  ],
+  "sources": [
+    {
+      "id": "example-source-light-reference",
+      "name": "Example Source — Light Reference",
+      "type": "Prototype Reference",
+      "domain": "ExampleHub",
+      "publisher": "SourceRoot prototype",
+      "qualityTier": "working-source",
+      "credibilityTier": "prototype",
+      "verificationStatus": "prototype",
+      "sourceClass": "prototype-note",
+      "license": "internal prototype",
+      "licenseStatus": "internal-use-only",
+      "reviewStatus": "needs-review",
+      "lastReviewed": "2026-07-11",
+      "url": "",
+      "notes": "Example source used only to test the SourceRoot import bundle format."
+    }
+  ],
+  "revisions": [
+    {
+      "revisionId": "rev-example-light-node-0-1",
+      "objectId": "example-light",
+      "objectType": "node",
+      "version": "0.1",
+      "summary": "Initial import of example light node.",
+      "changedAt": "2026-07-11",
+      "changedBy": "SourceRoot prototype"
+    },
+    {
+      "revisionId": "rev-example-truth-node-0-1",
+      "objectId": "example-truth",
+      "objectType": "node",
+      "version": "0.1",
+      "summary": "Initial import of example truth node.",
+      "changedAt": "2026-07-11",
+      "changedBy": "SourceRoot prototype"
+    },
+    {
+      "revisionId": "rev-example-light-truth-edge-0-1",
+      "objectId": "example-edge-light-truth",
+      "objectType": "edge",
+      "version": "0.1",
+      "summary": "Initial import of example light-to-truth relationship.",
+      "changedAt": "2026-07-11",
+      "changedBy": "SourceRoot prototype"
+    }
+  ]
+}
