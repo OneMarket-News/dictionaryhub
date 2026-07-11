@@ -572,6 +572,65 @@
       }
     }
 
+
+    async function handleLocalBundleUpload(event) {
+      const file = event.target.files[0];
+
+      if (!file) {
+        return;
+      }
+
+      clearPreview();
+
+      try {
+        const text = await file.text();
+        const bundle = JSON.parse(text);
+        const result = validateBundle(bundle);
+
+        document.getElementById("loadedFileNote").innerHTML = `
+          Loaded local file: <strong>${file.name}</strong>
+        `;
+
+        renderStatus(result);
+        renderSummary(result);
+        renderIssues(result);
+        renderBundleObjects(bundle);
+        renderRawBundle(bundle);
+      } catch (error) {
+        const result = {
+          bundleId: "local-file",
+          status: "invalid-format",
+          canImport: false,
+          summary: {
+            nodes: 0,
+            assertions: 0,
+            edges: 0,
+            sources: 0,
+            revisions: 0,
+            errors: 1,
+            warnings: 0
+          },
+          errors: [
+            {
+              code: "LOCAL_FILE_PARSE_FAILED",
+              objectType: "bundle",
+              objectId: file.name,
+              message: error.message
+            }
+          ],
+          warnings: []
+        };
+
+        document.getElementById("loadedFileNote").innerHTML = `
+          Failed to load local file: <strong>${file.name}</strong>
+        `;
+
+        renderStatus(result);
+        renderSummary(result);
+        renderIssues(result);
+      }
+    }
+
     function validateBundle(bundle) {
       const errors = [];
       const warnings = [];
@@ -1108,6 +1167,7 @@
       document.getElementById("issueResults").innerHTML = `<p class="empty">No bundle loaded yet.</p>`;
       document.getElementById("bundleObjects").innerHTML = `<p class="empty">No bundle loaded yet.</p>`;
       document.getElementById("rawBundle").innerHTML = `<p class="empty">No bundle loaded yet.</p>`;
+      document.getElementById("loadedFileNote").innerHTML = "";
     }
 
     function formatStatus(status) {
