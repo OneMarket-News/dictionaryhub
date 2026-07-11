@@ -265,7 +265,7 @@
       <h1>SourceRoot API Preview</h1>
 
       <div class="subtitle">
-        A prototype view of how SourceRoot could expose nodes, assertions, assertion credibility, edges, sources, search, citations, and revisions through an API layer.
+        A prototype view of how SourceRoot could expose nodes, assertions, assertion credibility, edges, relationship credibility, sources, search, citations, and revisions through an API layer.
         This is not a live backend yet. It is the product contract for what the engine is becoming.
       </div>
 
@@ -286,8 +286,8 @@
       <h2>API Purpose</h2>
 
       <p class="overview-text">
-        SourceRoot’s API would let apps, AI systems, search tools, partner companies, and future hubs retrieve structured knowledge with provenance and claim-level trust context.
-        The key idea is simple: every answer should be traceable back to nodes, assertions, assertion credibility, relationships, sources, and revisions.
+        SourceRoot’s API would let apps, AI systems, search tools, partner companies, and future hubs retrieve structured knowledge with provenance, claim-level trust context, and relationship-level trust context.
+        The key idea is simple: every answer should be traceable back to nodes, assertions, assertion credibility, relationships, relationship credibility, sources, and revisions.
       </p>
 
       <div class="model-box">
@@ -295,7 +295,7 @@
   ↓
 SourceRoot API
   ↓
-Search → Nodes → Assertions → Assertion Credibility → Edges → Sources → Citations
+Search → Nodes → Assertions → Assertion Credibility → Edges → Relationship Credibility → Sources → Citations
   ↓
 Verified, inspectable, source-aware knowledge</code>
       </div>
@@ -350,7 +350,7 @@ Verified, inspectable, source-aware knowledge</code>
 
           <h3>Get One Node</h3>
           <p>
-            Returns a full node inspection payload, including assertions, assertion credibility, incoming relationships, outgoing relationships, sources, and revisions.
+            Returns a full node inspection payload, including assertions, assertion credibility, incoming relationships, outgoing relationships, relationship credibility, sources, and revisions.
           </p>
 
           <div class="field-list">
@@ -389,7 +389,14 @@ Verified, inspectable, source-aware knowledge</code>
       "id": "wikidata-light-same-term-bible-light",
       "fromNodeId": "wikidata-light",
       "toNodeId": "bible-symbol-light",
-      "relationshipType": "SAME_TERM_DIFFERENT_CONTEXT"
+      "relationshipType": "SAME_TERM_DIFFERENT_CONTEXT",
+      "credibilityTier": "medium",
+      "confidence": "moderate",
+      "verificationStatus": "reviewed",
+      "reviewStatus": "reviewed",
+      "supportLevel": "contextual",
+      "relationshipStrength": "contextual",
+      "interpretationLevel": "medium"
     }
   ],
   "sources": [],
@@ -503,7 +510,7 @@ Verified, inspectable, source-aware knowledge</code>
 
           <h3>List Relationships</h3>
           <p>
-            Returns same-hub and cross-hub relationships between nodes, including relationship type, summary, and supporting sources.
+            Returns same-hub and cross-hub relationships between nodes, including relationship type, summary, supporting sources, and relationship-level credibility fields.
           </p>
 
           <div class="field-list">
@@ -513,6 +520,13 @@ Verified, inspectable, source-aware knowledge</code>
             <span class="field-pill">relationshipType</span>
             <span class="field-pill">domain</span>
             <span class="field-pill">sourceIds</span>
+            <span class="field-pill">credibilityTier</span>
+            <span class="field-pill">confidence</span>
+            <span class="field-pill">verificationStatus</span>
+            <span class="field-pill">reviewStatus</span>
+            <span class="field-pill">supportLevel</span>
+            <span class="field-pill">relationshipStrength</span>
+            <span class="field-pill">interpretationLevel</span>
           </div>
 
           <details>
@@ -524,10 +538,66 @@ Verified, inspectable, source-aware knowledge</code>
       "fromNodeId": "wikidata-light",
       "toNodeId": "dictionary-truth",
       "relationshipType": "RELATES_TO",
+      "label": "relates to",
+      "summary": "Light relates to truth through the symbolic idea of revealing what is hidden or making reality visible.",
       "domain": "Wiki",
-      "sourceIds": ["wikidata-q9128"]
+      "sourceIds": ["wikidata-q9128"],
+      "credibilityTier": "medium",
+      "confidence": "moderate",
+      "verificationStatus": "reviewed",
+      "reviewStatus": "reviewed",
+      "supportLevel": "contextual",
+      "relationshipStrength": "contextual",
+      "interpretationLevel": "medium"
     }
   ]
+}</pre>
+          </details>
+        </article>
+
+        <article class="endpoint-card">
+          <div class="method-row">
+            <span class="method">GET</span>
+            <span class="endpoint-path">/edges/:id/credibility</span>
+          </div>
+
+          <h3>Get Relationship Credibility</h3>
+          <p>
+            Returns the trust context for a single relationship. This helps AI systems decide whether a connection is direct, derived, inferred, symbolic, contextual, disputed, unsupported, or prototype-level.
+          </p>
+
+          <div class="field-list">
+            <span class="field-pill">edgeId</span>
+            <span class="field-pill">credibilityTier</span>
+            <span class="field-pill">confidence</span>
+            <span class="field-pill">verificationStatus</span>
+            <span class="field-pill">reviewStatus</span>
+            <span class="field-pill">supportLevel</span>
+            <span class="field-pill">relationshipStrength</span>
+            <span class="field-pill">interpretationLevel</span>
+            <span class="field-pill">sourceIds</span>
+            <span class="field-pill">trustSummary</span>
+          </div>
+
+          <details open>
+            <summary>Example response</summary>
+            <pre>{
+  "edgeId": "wikidata-light-same-term-bible-light",
+  "fromNodeId": "wikidata-light",
+  "toNodeId": "bible-symbol-light",
+  "relationshipType": "SAME_TERM_DIFFERENT_CONTEXT",
+  "credibilityTier": "medium",
+  "confidence": "moderate",
+  "verificationStatus": "reviewed",
+  "reviewStatus": "reviewed",
+  "supportLevel": "contextual",
+  "relationshipStrength": "contextual",
+  "interpretationLevel": "medium",
+  "sourceIds": [
+    "wikidata-q9128",
+    "bibleroot-alpha-notes"
+  ],
+  "trustSummary": "This relationship is useful for cross-domain navigation, but it should not be treated as identity. The term is shared, while the physical and symbolic meanings remain distinct."
 }</pre>
           </details>
         </article>
@@ -625,6 +695,8 @@ Verified, inspectable, source-aware knowledge</code>
     "credibilitySignals": {
       "directClaims": 1,
       "interpretiveClaims": 1,
+      "reviewedRelationships": 1,
+      "contextualRelationships": 1,
       "needsReview": 1
     }
   }
@@ -640,13 +712,14 @@ Verified, inspectable, source-aware knowledge</code>
 
           <h3>Log Citation Event</h3>
           <p>
-            Records when an app, AI, user, or partner cites a source-backed assertion. This becomes the future citation economy layer.
+            Records when an app, AI, user, or partner cites a source-backed assertion or relationship. This becomes the future citation economy layer.
           </p>
 
           <div class="field-list">
             <span class="field-pill">citationId</span>
             <span class="field-pill">sourceId</span>
             <span class="field-pill">assertionId</span>
+            <span class="field-pill">edgeId</span>
             <span class="field-pill">consumerId</span>
             <span class="field-pill">timestamp</span>
             <span class="field-pill">usageType</span>
@@ -658,6 +731,7 @@ Verified, inspectable, source-aware knowledge</code>
   "consumerId": "ai-assistant-example",
   "nodeId": "wikidata-light",
   "assertionId": "wikidata-assertion-light-description",
+  "edgeId": "wikidata-light-same-term-bible-light",
   "sourceId": "wikidata-q9128",
   "usageType": "answer-citation",
   "assertionCredibilityAtUse": {
@@ -665,6 +739,14 @@ Verified, inspectable, source-aware knowledge</code>
     "confidence": "moderate",
     "verificationStatus": "community-maintained",
     "supportLevel": "direct"
+  },
+  "relationshipCredibilityAtUse": {
+    "credibilityTier": "medium",
+    "confidence": "moderate",
+    "verificationStatus": "reviewed",
+    "supportLevel": "contextual",
+    "relationshipStrength": "contextual",
+    "interpretationLevel": "medium"
   },
   "context": "User asked what light means across public data and symbolic sources."
 }</pre>
@@ -735,18 +817,23 @@ Verified, inspectable, source-aware knowledge</code>
         </div>
 
         <div class="flow-card">
-          <strong>5. Check Sources</strong>
-          <span>It verifies which sources support each assertion and whether those sources have license, publisher, review, and credibility metadata.</span>
-        </div>
-
-        <div class="flow-card">
-          <strong>6. Follow Edges</strong>
+          <strong>5. Follow Edges</strong>
           <span>It follows relationships to related concepts, supporting nodes, opposing views, or cross-domain meanings.</span>
         </div>
 
         <div class="flow-card">
-          <strong>7. Cite and Log</strong>
-          <span>It cites the source-backed assertion and can log a citation event for credit, audit, or payment.</span>
+          <strong>6. Check Relationship Credibility</strong>
+          <span>It reviews whether the connection is direct, derived, inferred, symbolic, contextual, disputed, or needs review before using it in an answer.</span>
+        </div>
+
+        <div class="flow-card">
+          <strong>7. Check Sources</strong>
+          <span>It verifies which sources support each assertion or relationship and whether those sources have license, publisher, review, and credibility metadata.</span>
+        </div>
+
+        <div class="flow-card">
+          <strong>8. Cite and Log</strong>
+          <span>It cites the source-backed assertion or relationship and can log a citation event for credit, audit, or payment.</span>
         </div>
       </div>
     </section>
@@ -765,6 +852,24 @@ High-quality source + loose interpretation = medium assertion credibility
 Prototype note + no external review = prototype or needs-review
 Community-maintained source + direct statement = medium assertion credibility
 Disputed source support = disputed assertion credibility</code>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Relationship Credibility Rule</h2>
+
+      <p class="overview-text">
+        SourceRoot should not treat every edge as equally reliable. A relationship is also a claim.
+        The API must show whether a connection between two nodes is direct, derived, inferred, symbolic, contextual, disputed, unsupported, or prototype-only.
+      </p>
+
+      <div class="model-box">
+        <code>Direct source-backed relationship = high relationship credibility
+Shared term with different context = medium relationship credibility
+Symbolic or theological relationship = interpretive relationship credibility
+Cross-hub relationship without review = needs-review
+Loose metaphorical connection = contextual or weak relationship credibility
+Disputed connection = disputed relationship credibility</code>
       </div>
     </section>
   </main>
