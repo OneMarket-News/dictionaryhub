@@ -234,7 +234,7 @@
       <h1>SourceRoot</h1>
 
       <div class="subtitle">
-        A prototype provenance engine for connecting knowledge across hubs, sources, assertions, relationships, credibility, identity, and revisions.
+        A prototype provenance engine for connecting knowledge across hubs, sources, assertions, relationships, credibility, identity, revisions, and import validation.
         SourceRoot turns separate knowledge systems into one inspectable, source-aware graph.
       </div>
 
@@ -245,6 +245,7 @@
         <span class="badge">Identity Registry</span>
         <span class="badge">Credibility Layer</span>
         <span class="badge">API Preview</span>
+        <span class="badge">Import Preview</span>
         <span class="badge">DictionaryHub</span>
         <span class="badge">BibleRoot</span>
         <span class="badge">Wiki Integration</span>
@@ -258,7 +259,7 @@
 
       <p class="overview-text">
         SourceRoot is the shared engine layer under DictionaryHub, BibleRoot, Wiki integrations, and future knowledge hubs.
-        It separates concepts, assertions, relationships, sources, credibility metadata, identity resolution, and revisions so knowledge can be inspected, verified, connected, trusted, and reused.
+        It separates concepts, assertions, relationships, sources, credibility metadata, identity resolution, revisions, and import validation so knowledge can be inspected, verified, connected, trusted, and reused.
       </p>
 
       <div class="dashboard-grid">
@@ -266,7 +267,7 @@
           <span class="card-label label-source-root">SourceRoot</span>
           <h3>Inspector</h3>
           <p>
-            Inspect universal nodes across DictionaryHub, BibleRoot, and Wiki. View assertions, relationships, sources, revisions, and raw adapted data.
+            Inspect universal nodes across DictionaryHub, BibleRoot, and Wiki. View assertions, relationships, sources, revisions, credibility metadata, and raw adapted data.
           </p>
         </a>
 
@@ -274,7 +275,7 @@
           <span class="card-label label-source-root">SourceRoot</span>
           <h3>Edge Registry</h3>
           <p>
-            Review every relationship across hubs. Search edges, filter by domain or relationship type, and inspect cross-hub connections.
+            Review every relationship across hubs. Search edges, filter by domain, relationship type, credibility, and verification status.
           </p>
         </a>
 
@@ -290,7 +291,7 @@
           <span class="card-label label-source-root">SourceRoot</span>
           <h3>Credibility Layer</h3>
           <p>
-            Review source quality, credibility tier, verification status, license status, review status, and publisher metadata across Wiki, BibleRoot, and DictionaryHub.
+            Review source quality, claim credibility, relationship credibility, verification status, license status, review status, and publisher metadata.
           </p>
         </a>
 
@@ -306,7 +307,15 @@
           <span class="card-label label-source-root">SourceRoot</span>
           <h3>API Preview</h3>
           <p>
-            Preview the future SourceRoot API structure for nodes, assertions, edges, sources, search, citations, and revisions.
+            Preview the future SourceRoot API structure for nodes, assertions, edges, relationship credibility, sources, search, citations, and revisions.
+          </p>
+        </a>
+
+        <a class="dashboard-card" href="sourceroot-import-preview.html">
+          <span class="card-label label-source-root">SourceRoot</span>
+          <h3>Import Preview</h3>
+          <p>
+            Load and validate SourceRoot import bundles before adding larger datasets to the system. Checks nodes, assertions, edges, sources, revisions, credibility metadata, and broken references.
           </p>
         </a>
 
@@ -344,13 +353,13 @@
       </p>
 
       <div class="model-box">
-        <code>Raw Data
+        <code>Raw Data / Import Bundles
   ↓
-Adapters / Connectors
+Adapters / Connectors / Validators
   ↓
 Nodes → Assertions → Edges → Sources → Credibility → Identity → Revisions
   ↓
-Inspector / Edge Registry / Source Registry / Identity Registry
+Inspector / Edge Registry / Source Registry / Identity Registry / Import Preview
   ↓
 DictionaryHub / BibleRoot / Wiki / Future Hubs</code>
       </div>
@@ -362,12 +371,12 @@ DictionaryHub / BibleRoot / Wiki / Future Hubs</code>
       <div class="status-grid">
         <div class="status-card">
           <div class="status-title">Inspector</div>
-          <div class="status-note">Working node-level inspection across multiple hubs.</div>
+          <div class="status-note">Working node-level inspection across multiple hubs with assertions, relationships, sources, and credibility context.</div>
         </div>
 
         <div class="status-card">
           <div class="status-title">Edge Registry</div>
-          <div class="status-note">Working relationship registry with cross-hub visibility.</div>
+          <div class="status-note">Working relationship registry with cross-hub visibility and relationship credibility metadata.</div>
         </div>
 
         <div class="status-card">
@@ -381,8 +390,18 @@ DictionaryHub / BibleRoot / Wiki / Future Hubs</code>
         </div>
 
         <div class="status-card">
+          <div class="status-title">API Preview</div>
+          <div class="status-note">Static API contract now includes source, assertion, and relationship credibility.</div>
+        </div>
+
+        <div class="status-card">
+          <div class="status-title">Import Preview</div>
+          <div class="status-note">Working first-pass import validator for SourceRoot bundles with errors, warnings, and readiness status.</div>
+        </div>
+
+        <div class="status-card">
           <div class="status-title">Credibility Layer</div>
-          <div class="status-note">Credibility metadata now added across Wiki, BibleRoot, and DictionaryHub source records.</div>
+          <div class="status-note">Credibility metadata now applies to sources, assertions, and relationships.</div>
         </div>
 
         <div class="status-card">
@@ -406,28 +425,28 @@ DictionaryHub / BibleRoot / Wiki / Future Hubs</code>
       <h2>Credibility Layer</h2>
 
       <p class="overview-text">
-        SourceRoot now includes a first-pass credibility model across the connected hubs. Sources can be classified by quality tier, credibility tier, verification status, source class, publisher, license status, review status, and last reviewed date.
+        SourceRoot now includes a first-pass credibility model across connected hubs. Sources, assertions, and relationships can be classified by credibility tier, confidence, verification status, support level, interpretation level, review status, and source metadata.
       </p>
 
       <div class="status-grid">
         <div class="status-card">
-          <div class="status-title">Wiki</div>
-          <div class="status-note">Wikidata source records include structured public dataset, community-maintained, license, and review metadata.</div>
+          <div class="status-title">Source Credibility</div>
+          <div class="status-note">Sources include quality tier, publisher, license status, review status, and verification metadata.</div>
         </div>
 
         <div class="status-card">
-          <div class="status-title">BibleRoot</div>
-          <div class="status-note">BibleRoot source records separate public-domain primary text from prototype interpretive notes.</div>
+          <div class="status-title">Assertion Credibility</div>
+          <div class="status-note">Claims can be marked as direct, derived, inferred, interpretive, prototype, or needs-review.</div>
         </div>
 
         <div class="status-card">
-          <div class="status-title">DictionaryHub</div>
-          <div class="status-note">DictionaryHub source records distinguish academic, reference, technical standard, and official documentation sources.</div>
+          <div class="status-title">Relationship Credibility</div>
+          <div class="status-note">Edges can be marked as direct, symbolic, contextual, inferred, reviewed, or needs-review.</div>
         </div>
 
         <div class="status-card">
-          <div class="status-title">Source Registry Filters</div>
-          <div class="status-note">The Source Registry can now filter sources by credibility and verification status.</div>
+          <div class="status-title">Import Validation</div>
+          <div class="status-note">Import Preview checks credibility fields before larger datasets are loaded.</div>
         </div>
       </div>
     </section>
@@ -437,30 +456,30 @@ DictionaryHub / BibleRoot / Wiki / Future Hubs</code>
 
       <div class="next-list">
         <div class="next-item">
-          <strong>1. Add assertion-level credibility</strong>
-          Extend credibility metadata from source records into assertions and relationships so claims and edges can carry trust context directly.
+          <strong>1. Connect Import Preview navigation</strong>
+          Add Import Preview links across SourceRoot pages so the import validation workflow is easy to access from the dashboard and registries.
         </div>
 
         <div class="next-item">
-          <strong>2. Add credibility indicators to Inspector</strong>
-          Show source credibility and verification status when inspecting a node, assertion, or relationship.
+          <strong>2. Build Import Preview v2</strong>
+          Add support for selecting different bundle files, viewing validation groups, and testing intentionally broken bundles.
         </div>
 
         <div class="next-item">
-          <strong>3. Add BusinessRoot simulation</strong>
-          Create a fake business/product documentation hub to prove SourceRoot can ingest company knowledge.
+          <strong>3. Import first larger dataset</strong>
+          Create a larger BibleRoot, DictionaryHub, or Light knowledge map bundle to prove the import system works beyond the small example.
         </div>
 
         <div class="next-item">
-          <strong>4. Add citation event model</strong>
-          Define how AI systems, users, and partner apps would log source-backed citation events.
+          <strong>4. Add Assertion Registry</strong>
+          Create a dedicated registry for claims across hubs with filters for domain, assertion type, credibility, verification, support level, and source.
         </div>
       </div>
     </section>
   </main>
 
   <footer>
-    SourceRoot prototype dashboard. Current hubs: DictionaryHub, BibleRoot, Wiki. Core model: Node → Assertion → Edge → Source → Credibility → Identity → Revision.
+    SourceRoot prototype dashboard. Current hubs: DictionaryHub, BibleRoot, Wiki. Core model: Node → Assertion → Edge → Source → Credibility → Identity → Revision → Import Validation.
   </footer>
 </body>
 </html>
