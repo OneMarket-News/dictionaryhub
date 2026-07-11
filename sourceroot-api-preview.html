@@ -265,7 +265,7 @@
       <h1>SourceRoot API Preview</h1>
 
       <div class="subtitle">
-        A prototype view of how SourceRoot could expose nodes, assertions, assertion credibility, edges, relationship credibility, sources, search, citations, and revisions through an API layer.
+        A prototype view of how SourceRoot could expose import validation, nodes, assertions, assertion credibility, edges, relationship credibility, sources, search, citations, and revisions through an API layer.
         This is not a live backend yet. It is the product contract for what the engine is becoming.
       </div>
 
@@ -287,7 +287,7 @@
       <h2>API Purpose</h2>
 
       <p class="overview-text">
-        SourceRoot’s API would let apps, AI systems, search tools, partner companies, and future hubs retrieve structured knowledge with provenance, claim-level trust context, and relationship-level trust context.
+        SourceRoot’s API would let apps, AI systems, search tools, partner companies, and future hubs validate import bundles and retrieve structured knowledge with provenance, claim-level trust context, and relationship-level trust context.
         The key idea is simple: every answer should be traceable back to nodes, assertions, assertion credibility, relationships, relationship credibility, sources, and revisions.
       </p>
 
@@ -296,7 +296,7 @@
   ↓
 SourceRoot API
   ↓
-Search → Nodes → Assertions → Assertion Credibility → Edges → Relationship Credibility → Sources → Citations
+Import Validation → Search → Nodes → Assertions → Assertion Credibility → Edges → Relationship Credibility → Sources → Citations
   ↓
 Verified, inspectable, source-aware knowledge</code>
       </div>
@@ -306,6 +306,55 @@ Verified, inspectable, source-aware knowledge</code>
       <h2>Core Endpoints</h2>
 
       <div class="endpoint-grid">
+        <article class="endpoint-card">
+          <div class="method-row">
+            <span class="method">POST</span>
+            <span class="endpoint-path">/imports/validate</span>
+          </div>
+
+          <h3>Validate Import Bundle</h3>
+          <p>
+            Validates a SourceRoot import bundle before import. Checks bundle format, duplicate IDs,
+            node references, source references, credibility metadata, allowed trust values, and readiness status.
+          </p>
+
+          <div class="field-list">
+            <span class="field-pill">bundleId</span>
+            <span class="field-pill">status</span>
+            <span class="field-pill">canImport</span>
+            <span class="field-pill">summary</span>
+            <span class="field-pill">errors</span>
+            <span class="field-pill">warnings</span>
+          </div>
+
+          <details open>
+            <summary>Example response</summary>
+            <pre>{
+  "bundleId": "sourceroot-example-light-bundle",
+  "status": "ready-with-warnings",
+  "canImport": true,
+  "summary": {
+    "nodes": 2,
+    "assertions": 2,
+    "edges": 1,
+    "sources": 1,
+    "revisions": 3,
+    "errors": 0,
+    "warnings": 1
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "code": "SOURCE_INTERNAL_ONLY",
+      "objectType": "source",
+      "objectId": "example-source-light-reference",
+      "message": "Source license status is internal-use-only."
+    }
+  ]
+}</pre>
+          </details>
+        </article>
+
         <article class="endpoint-card">
           <div class="method-row">
             <span class="method">GET</span>
@@ -798,44 +847,69 @@ Verified, inspectable, source-aware knowledge</code>
 
       <div class="flow-grid">
         <div class="flow-card">
-          <strong>1. Identify Query</strong>
+          <strong>1. Validate Import Bundle</strong>
+          <span>Before new data enters SourceRoot, the import validator checks the bundle using <code>engine/importValidator.js</code>. Broken data is blocked; reviewable data is marked ready with warnings.</span>
+        </div>
+
+        <div class="flow-card">
+          <strong>2. Identify Query</strong>
           <span>The AI detects the user is asking about a concept, source, relationship, or claim.</span>
         </div>
 
         <div class="flow-card">
-          <strong>2. Search Nodes</strong>
+          <strong>3. Search Nodes</strong>
           <span>It searches SourceRoot for matching nodes across DictionaryHub, BibleRoot, Wiki, and future hubs.</span>
         </div>
 
         <div class="flow-card">
-          <strong>3. Retrieve Assertions</strong>
+          <strong>4. Retrieve Assertions</strong>
           <span>It pulls definitions, statements, explanations, examples, and symbolic meanings.</span>
         </div>
 
         <div class="flow-card">
-          <strong>4. Check Assertion Credibility</strong>
+          <strong>5. Check Assertion Credibility</strong>
           <span>It reviews credibility tier, confidence, verification status, support level, and interpretation level before treating a claim as reliable.</span>
         </div>
 
         <div class="flow-card">
-          <strong>5. Follow Edges</strong>
+          <strong>6. Follow Edges</strong>
           <span>It follows relationships to related concepts, supporting nodes, opposing views, or cross-domain meanings.</span>
         </div>
 
         <div class="flow-card">
-          <strong>6. Check Relationship Credibility</strong>
+          <strong>7. Check Relationship Credibility</strong>
           <span>It reviews whether the connection is direct, derived, inferred, symbolic, contextual, disputed, or needs review before using it in an answer.</span>
         </div>
 
         <div class="flow-card">
-          <strong>7. Check Sources</strong>
+          <strong>8. Check Sources</strong>
           <span>It verifies which sources support each assertion or relationship and whether those sources have license, publisher, review, and credibility metadata.</span>
         </div>
 
         <div class="flow-card">
-          <strong>8. Cite and Log</strong>
+          <strong>9. Cite and Log</strong>
           <span>It cites the source-backed assertion or relationship and can log a citation event for credit, audit, or payment.</span>
         </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Import Validation Rule</h2>
+
+      <p class="overview-text">
+        SourceRoot should not import new knowledge until the bundle has passed validation.
+        The validator must return a readiness status before imported nodes, assertions, edges,
+        sources, or revisions are trusted by the system.
+      </p>
+
+      <div class="model-box">
+        <code>Import Bundle
+  ↓
+engine/importValidator.js
+  ↓
+Validation Result
+  ↓
+Ready / Ready With Warnings / Blocked</code>
       </div>
     </section>
 
