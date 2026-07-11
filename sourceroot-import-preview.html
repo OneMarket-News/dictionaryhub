@@ -107,6 +107,16 @@
       border-color: #b78a2f;
     }
 
+    .danger-button {
+      border-color: #fecaca;
+      background: #fef2f2;
+    }
+
+    .danger-button:hover {
+      background: #fee2e2;
+      border-color: #f87171;
+    }
+
     .status-card {
       border-radius: 14px;
       padding: 16px;
@@ -277,6 +287,13 @@
       line-height: 1.5;
     }
 
+    code {
+      background: #eee;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+
     .empty {
       color: #6b7280;
       font-style: italic;
@@ -322,19 +339,19 @@
       <h1>SourceRoot Import Preview</h1>
 
       <div class="subtitle">
-        Preview and validate a SourceRoot import bundle before loading it into the system.
+        Preview and validate SourceRoot import bundles before loading them into the system.
         This page checks bundle structure, duplicate IDs, broken references, source references, credibility metadata, and import readiness.
       </div>
 
       <div class="top-links">
-  <a href="sourceroot.html">SourceRoot Home</a>
-  <a href="sourceroot-inspector.html">Open Inspector</a>
-  <a href="sourceroot-edge-registry.html">Open Edge Registry</a>
-  <a href="sourceroot-source-registry.html">Open Source Registry</a>
-  <a href="sourceroot-identity-registry.html">Open Identity Registry</a>
-  <a href="sourceroot-api-preview.html">Open API Preview</a>
-  <a href="sourceroot-import-preview.html">Open Import Preview</a>
-</div>
+        <a href="sourceroot.html">SourceRoot Home</a>
+        <a href="sourceroot-inspector.html">Open Inspector</a>
+        <a href="sourceroot-edge-registry.html">Open Edge Registry</a>
+        <a href="sourceroot-source-registry.html">Open Source Registry</a>
+        <a href="sourceroot-identity-registry.html">Open Identity Registry</a>
+        <a href="sourceroot-api-preview.html">Open API Preview</a>
+        <a href="sourceroot-import-preview.html">Open Import Preview</a>
+      </div>
     </div>
   </header>
 
@@ -343,12 +360,13 @@
       <h2>Import Bundle Preview</h2>
 
       <p class="overview-text">
-        This first version loads the example bundle from <code>data/sourceroot-import-bundle-example.json</code>.
+        This version can load either a clean example bundle or an intentionally broken test bundle.
         The validator does not import data yet. It only previews whether the bundle is structurally safe.
       </p>
 
       <div class="button-row">
         <button id="loadExampleButton" type="button">Load Example Bundle</button>
+        <button id="loadBrokenButton" class="danger-button" type="button">Load Broken Test Bundle</button>
         <button id="clearButton" type="button">Clear Preview</button>
       </div>
 
@@ -459,17 +477,24 @@
       ]
     };
 
-    document.getElementById("loadExampleButton").addEventListener("click", loadExampleBundle);
+    document.getElementById("loadExampleButton").addEventListener("click", () => {
+      loadBundle("data/sourceroot-import-bundle-example.json");
+    });
+
+    document.getElementById("loadBrokenButton").addEventListener("click", () => {
+      loadBundle("data/sourceroot-import-bundle-broken-example.json");
+    });
+
     document.getElementById("clearButton").addEventListener("click", clearPreview);
 
-    async function loadExampleBundle() {
+    async function loadBundle(path) {
       clearPreview();
 
       try {
-        const response = await fetch("data/sourceroot-import-bundle-example.json");
+        const response = await fetch(path);
 
         if (!response.ok) {
-          throw new Error(`Could not load example bundle. HTTP ${response.status}`);
+          throw new Error(`Could not load bundle at ${path}. HTTP ${response.status}`);
         }
 
         const bundle = await response.json();
@@ -1005,7 +1030,7 @@
 
       return `
         <div class="object-card">
-          <h3>${title}</h3>
+          <h3>${title || "Untitled"}</h3>
           <div class="meta"><strong>Type:</strong> ${type}</div>
           <div class="meta"><strong>ID:</strong> ${id}</div>
           ${item.domain ? `<div class="meta"><strong>Domain:</strong> ${item.domain}</div>` : ""}

@@ -1,0 +1,161 @@
+{
+  "bundleId": "sourceroot-broken-test-bundle",
+  "bundleType": "sourceroot-import-bundle",
+  "version": "0.1",
+  "domain": "ExampleHub",
+  "createdAt": "2026-07-11",
+  "createdBy": "SourceRoot prototype",
+  "description": "Intentionally broken SourceRoot import bundle used to test validator errors and warnings.",
+  "nodes": [
+    {
+      "id": "broken-light",
+      "title": "Light",
+      "type": "Concept",
+      "domain": "ExampleHub",
+      "summary": "A valid light node used in the broken bundle test.",
+      "sourceIds": [
+        "missing-source-reference"
+      ]
+    },
+    {
+      "id": "broken-light",
+      "title": "Duplicate Light",
+      "type": "Concept",
+      "domain": "ExampleHub",
+      "summary": "This intentionally duplicates the broken-light node ID.",
+      "sourceIds": []
+    },
+    {
+      "id": "broken-truth",
+      "title": "",
+      "type": "",
+      "domain": "ExampleHub",
+      "summary": "",
+      "sourceIds": [
+        ""
+      ]
+    }
+  ],
+  "assertions": [
+    {
+      "id": "broken-assertion-light-definition",
+      "nodeId": "broken-light",
+      "assertionType": "definition",
+      "label": "Broken Definition",
+      "summary": "This assertion is missing credibility metadata.",
+      "body": "This assertion is intentionally incomplete so the validator can flag missing credibility fields.",
+      "domain": "ExampleHub",
+      "sourceIds": [
+        "missing-source-reference"
+      ]
+    },
+    {
+      "id": "broken-assertion-missing-node",
+      "nodeId": "node-that-does-not-exist",
+      "assertionType": "definition",
+      "label": "Missing Node Assertion",
+      "summary": "This assertion points to a missing node.",
+      "body": "This should create an ASSERTION_NODE_NOT_FOUND error.",
+      "domain": "ExampleHub",
+      "sourceIds": [
+        "broken-source"
+      ],
+      "credibilityTier": "prototype",
+      "confidence": "working",
+      "verificationStatus": "prototype",
+      "reviewStatus": "needs-review",
+      "supportLevel": "contextual",
+      "interpretationLevel": "low"
+    },
+    {
+      "id": "broken-assertion-empty-content",
+      "nodeId": "broken-truth",
+      "assertionType": "definition",
+      "label": "Empty Content Assertion",
+      "summary": "",
+      "body": "",
+      "domain": "ExampleHub",
+      "sourceIds": [
+        "broken-source"
+      ],
+      "credibilityTier": "prototype",
+      "confidence": "working",
+      "verificationStatus": "prototype",
+      "reviewStatus": "needs-review",
+      "supportLevel": "contextual",
+      "interpretationLevel": "low"
+    }
+  ],
+  "edges": [
+    {
+      "id": "broken-edge-light-truth",
+      "fromNodeId": "broken-light",
+      "toNodeId": "missing-truth-node",
+      "relationshipType": "RELATES_TO",
+      "label": "relates to",
+      "summary": "This edge points to a missing node.",
+      "domain": "ExampleHub",
+      "sourceIds": [
+        "missing-source-reference"
+      ]
+    },
+    {
+      "id": "broken-edge-light-truth",
+      "fromNodeId": "missing-light-node",
+      "toNodeId": "broken-truth",
+      "relationshipType": "",
+      "label": "broken relationship",
+      "summary": "",
+      "domain": "ExampleHub",
+      "sourceIds": [
+        "broken-source"
+      ],
+      "credibilityTier": "not-a-real-tier",
+      "confidence": "working",
+      "verificationStatus": "prototype",
+      "reviewStatus": "needs-review",
+      "supportLevel": "wrong-support-value",
+      "relationshipStrength": "contextual",
+      "interpretationLevel": "medium"
+    }
+  ],
+  "sources": [
+    {
+      "id": "broken-source",
+      "name": "Broken Test Source",
+      "type": "Prototype Reference",
+      "domain": "ExampleHub",
+      "publisher": "SourceRoot prototype",
+      "qualityTier": "working-source",
+      "credibilityTier": "prototype",
+      "verificationStatus": "prototype",
+      "sourceClass": "prototype-note",
+      "license": "internal prototype",
+      "licenseStatus": "internal-use-only",
+      "reviewStatus": "needs-review",
+      "lastReviewed": "2026-07-11",
+      "url": "",
+      "notes": "This source is valid but internal-only, so it should create a warning."
+    }
+  ],
+  "revisions": [
+    {
+      "revisionId": "rev-broken-light-0-1",
+      "objectId": "broken-light",
+      "objectType": "node",
+      "version": "0.1",
+      "summary": "Initial broken test revision.",
+      "changedAt": "2026-07-11",
+      "changedBy": "SourceRoot prototype"
+    },
+    {
+      "revisionId": "rev-broken-missing-target",
+      "objectId": "object-that-does-not-exist",
+      "objectType": "node",
+      "version": "0.1",
+      "summary": "This revision points to a missing object.",
+      "changedAt": "2026-07-11",
+      "changedBy": "SourceRoot prototype"
+    }
+  ]
+}
