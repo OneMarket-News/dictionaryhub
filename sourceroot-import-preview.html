@@ -117,6 +117,33 @@
       border-color: #f87171;
     }
 
+    .file-upload-label {
+  display: inline-block;
+  font-family: inherit;
+  border: 1px solid #cfc7b8;
+  background: #eef2ff;
+  color: #1f2933;
+  border-radius: 10px;
+  padding: 10px 13px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.file-upload-label:hover {
+  background: #e0e7ff;
+  border-color: #6366f1;
+}
+
+.file-input {
+  display: none;
+}
+
+.loaded-file-note {
+  margin-top: 10px;
+  color: #4b5563;
+  font-size: 13px;
+}
+
     .status-card {
       border-radius: 14px;
       padding: 16px;
@@ -365,10 +392,18 @@
       </p>
 
       <div class="button-row">
-        <button id="loadExampleButton" type="button">Load Example Bundle</button>
-        <button id="loadBrokenButton" class="danger-button" type="button">Load Broken Test Bundle</button>
-        <button id="clearButton" type="button">Clear Preview</button>
-      </div>
+  <button id="loadExampleButton" type="button">Load Example Bundle</button>
+  <button id="loadBrokenButton" class="danger-button" type="button">Load Broken Test Bundle</button>
+
+  <label class="file-upload-label" for="bundleFileInput">
+    Choose Local Bundle JSON
+  </label>
+  <input id="bundleFileInput" class="file-input" type="file" accept=".json,application/json" />
+
+  <button id="clearButton" type="button">Clear Preview</button>
+</div>
+
+<div id="loadedFileNote" class="loaded-file-note"></div>
 
       <div id="statusPanel"></div>
       <div id="summaryStats"></div>
@@ -486,6 +521,7 @@
     });
 
     document.getElementById("clearButton").addEventListener("click", clearPreview);
+    document.getElementById("bundleFileInput").addEventListener("change", handleLocalBundleUpload);
 
     async function loadBundle(path) {
       clearPreview();
