@@ -33,9 +33,107 @@ Import Preview Page
 
 ---
 
+## Implementation Status
+
+The MVP import validator now exists as a reusable SourceRoot engine module:
+
+```text
+engine/importValidator.js
+```
+
+The Import Preview page no longer owns the full validation logic directly. Instead, it imports the validator:
+
+```js
+import { validateBundle } from "./engine/importValidator.js";
+```
+
+Current implementation flow:
+
+```text
+SourceRoot import bundle
+  ↓
+Import Preview loader
+  ↓
+engine/importValidator.js
+  ↓
+Validation result
+  ↓
+Import Preview display
+```
+
+This means the validator can now be reused by future SourceRoot tools, including:
+
+```text
+Import Preview
+API Preview
+future backend import workflows
+future admin review tools
+future dataset ingestion pipelines
+```
+
+Current tested status:
+
+```text
+Clean example bundle → ready-with-warnings
+Broken test bundle → blocked
+Local uploaded bundle → ready-with-warnings
+```
+
+The validator currently checks:
+
+```text
+bundle format
+required arrays
+duplicate IDs
+node requirements
+assertion requirements
+edge requirements
+source requirements
+revision references
+source references
+credibility metadata
+allowed trust values
+errors vs warnings
+import readiness status
+```
+
+The Import Preview page is now responsible for:
+
+```text
+loading built-in bundles
+loading local JSON files
+calling validateBundle()
+rendering status
+rendering summary counts
+rendering errors and warnings
+rendering bundle objects
+rendering raw JSON
+```
+
+The validator module is responsible for:
+
+```text
+checking structure
+checking references
+checking credibility fields
+checking allowed values
+returning errors
+returning warnings
+returning readiness status
+```
+
+This separates the system into two cleaner layers:
+
+```text
+Validation Engine → decides whether data is safe
+Preview Interface → shows the result to the user
+```
+
+---
+
 ## Validation Result Shape
 
-A future validator should return a result like this:
+The current validator returns a result like this:
 
 ```json
 {
@@ -49,7 +147,7 @@ A future validator should return a result like this:
     "sources": 1,
     "revisions": 3,
     "errors": 0,
-    "warnings": 4
+    "warnings": 1
   },
   "errors": [],
   "warnings": [
@@ -80,7 +178,7 @@ A future validator should return a result like this:
 
 ## Error vs Warning
 
-## Errors
+### Errors
 
 Errors block import.
 
@@ -99,7 +197,7 @@ Required arrays are missing
 Invalid JSON
 ```
 
-## Warnings
+### Warnings
 
 Warnings do not always block import, but they should be shown clearly.
 
@@ -941,9 +1039,7 @@ invalid JSON
 
 ## MVP Validator Scope
 
-The first MVP validator does not need to solve everything.
-
-It should check:
+The MVP validator now checks:
 
 ```text
 Valid JSON
@@ -954,12 +1050,14 @@ Assertion node references
 Edge node references
 Source references
 Missing credibility fields
+Allowed trust values
+Revision targets
 Summary counts
 Errors vs warnings
 Import readiness status
 ```
 
-That is enough for the first Import Preview page.
+That is enough for the current Import Preview page and for early reusable validation across future SourceRoot tools.
 
 ---
 
