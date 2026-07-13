@@ -240,6 +240,7 @@
 
       <div class="badge-row">
         <span class="badge">Node Registry</span>
+        <span class="badge">Assertion Registry</span>
         <span class="badge">Edge Registry</span>
         <span class="badge">Source Registry</span>
         <span class="badge">Identity Registry</span>
@@ -268,6 +269,14 @@
           <h3>Inspector</h3>
           <p>
             Inspect universal nodes across DictionaryHub, BibleRoot, and Wiki. View assertions, relationships, sources, revisions, credibility metadata, and raw adapted data.
+          </p>
+        </a>
+
+        <a class="dashboard-card" href="sourceroot-assertion-registry.html">
+          <span class="card-label label-source-root">SourceRoot</span>
+          <h3>Assertion Registry</h3>
+          <p>
+            Inspect claim-level knowledge across hubs. Search and filter assertions by domain, type, credibility, verification, support level, interpretation level, and source support.
           </p>
         </a>
 
@@ -359,7 +368,7 @@ Adapters / Connectors / Validators
   ↓
 Nodes → Assertions → Edges → Sources → Credibility → Identity → Revisions
   ↓
-Inspector / Edge Registry / Source Registry / Identity Registry / Import Preview
+Inspector / Assertion Registry / Edge Registry / Source Registry / Identity Registry / Import Preview
   ↓
 DictionaryHub / BibleRoot / Wiki / Future Hubs</code>
       </div>
@@ -372,6 +381,11 @@ DictionaryHub / BibleRoot / Wiki / Future Hubs</code>
         <div class="status-card">
           <div class="status-title">Inspector</div>
           <div class="status-note">Working node-level inspection across multiple hubs with assertions, relationships, sources, and credibility context.</div>
+        </div>
+
+        <div class="status-card">
+          <div class="status-title">Assertion Registry</div>
+          <div class="status-note">Working claim-level registry with filters for assertion type, domain, credibility, verification, support level, and source-backed status.</div>
         </div>
 
         <div class="status-card">
@@ -456,23 +470,23 @@ DictionaryHub / BibleRoot / Wiki / Future Hubs</code>
 
       <div class="next-list">
         <div class="next-item">
-          <strong>1. Connect Import Preview navigation</strong>
-          Add Import Preview links across SourceRoot pages so the import validation workflow is easy to access from the dashboard and registries.
+          <strong>1. Connect Assertion Registry navigation across all SourceRoot pages</strong>
+          Add the Assertion Registry link to the Inspector, Edge Registry, Source Registry, Identity Registry, API Preview, and Import Preview pages.
         </div>
 
         <div class="next-item">
-          <strong>2. Build Import Preview v2</strong>
-          Add support for selecting different bundle files, viewing validation groups, and testing intentionally broken bundles.
+          <strong>2. Build the larger Light import bundle</strong>
+          Create a stronger MVP demo bundle connecting DictionaryHub, BibleRoot, Wiki, sources, assertions, relationships, credibility, and revisions around the concept of light.
         </div>
 
         <div class="next-item">
-          <strong>3. Import first larger dataset</strong>
-          Create a larger BibleRoot, DictionaryHub, or Light knowledge map bundle to prove the import system works beyond the small example.
+          <strong>3. Improve Inspector for the Light demo</strong>
+          Make the node-level view easier to understand for the main MVP walkthrough.
         </div>
 
         <div class="next-item">
-          <strong>4. Add Assertion Registry</strong>
-          Create a dedicated registry for claims across hubs with filters for domain, assertion type, credibility, verification, support level, and source.
+          <strong>4. Add MVP README and product explanation</strong>
+          Explain what SourceRoot is, what problem it solves, how the prototype works, and how to test the live demo.
         </div>
       </div>
     </section>
