@@ -1,0 +1,785 @@
+{
+  "bundleType": "sourceroot-import-bundle",
+  "bundleId": "sourceroot-light-mvp-bundle",
+  "version": "0.2",
+  "domain": "SourceRoot",
+  "createdAt": "2026-07-13",
+  "createdBy": "SourceRoot prototype build",
+  "summary": "A larger MVP import bundle centered on the concept of light across physical, dictionary, symbolic, biblical, knowledge, truth, and guidance contexts.",
+  "nodes": [
+    {
+      "id": "light-physical-phenomenon",
+      "title": "Light as Physical Phenomenon",
+      "type": "Concept",
+      "domain": "Wiki",
+      "summary": "Light is electromagnetic radiation that can be perceived by the human eye and studied as a physical phenomenon.",
+      "sourceIds": [
+        "source-wikidata-light-q9128",
+        "source-physics-reference-light"
+      ],
+      "credibilityTier": "high",
+      "confidence": "strong",
+      "verificationStatus": "source-backed",
+      "reviewStatus": "reviewed"
+    },
+    {
+      "id": "light-dictionary-meaning",
+      "title": "Light as Dictionary Meaning",
+      "type": "Concept",
+      "domain": "DictionaryHub",
+      "summary": "Light can mean the natural agent that makes things visible, illumination, or something that reveals.",
+      "sourceIds": [
+        "source-dictionary-light-reference"
+      ],
+      "credibilityTier": "high",
+      "confidence": "strong",
+      "verificationStatus": "source-backed",
+      "reviewStatus": "reviewed"
+    },
+    {
+      "id": "light-biblical-symbol",
+      "title": "Light as Biblical Symbol",
+      "type": "Symbol",
+      "domain": "BibleRoot",
+      "summary": "In biblical language, light is often associated with creation, truth, divine presence, guidance, life, and revelation.",
+      "sourceIds": [
+        "source-kjv-genesis-1",
+        "source-kjv-john-1",
+        "source-bibleroot-alpha-notes"
+      ],
+      "credibilityTier": "medium",
+      "confidence": "moderate",
+      "verificationStatus": "interpretive",
+      "reviewStatus": "needs-review"
+    },
+    {
+      "id": "truth-concept",
+      "title": "Truth",
+      "type": "Concept",
+      "domain": "DictionaryHub",
+      "summary": "Truth refers to what corresponds to reality, fact, or what is considered reliable and not false.",
+      "sourceIds": [
+        "source-dictionary-truth-reference"
+      ],
+      "credibilityTier": "high",
+      "confidence": "strong",
+      "verificationStatus": "source-backed",
+      "reviewStatus": "reviewed"
+    },
+    {
+      "id": "knowledge-concept",
+      "title": "Knowledge",
+      "type": "Concept",
+      "domain": "DictionaryHub",
+      "summary": "Knowledge is information, understanding, or awareness gained through experience, study, observation, or instruction.",
+      "sourceIds": [
+        "source-dictionary-knowledge-reference"
+      ],
+      "credibilityTier": "high",
+      "confidence": "strong",
+      "verificationStatus": "source-backed",
+      "reviewStatus": "reviewed"
+    },
+    {
+      "id": "guidance-concept",
+      "title": "Guidance",
+      "type": "Concept",
+      "domain": "DictionaryHub",
+      "summary": "Guidance is direction, advice, or help that allows someone to move, decide, or understand more clearly.",
+      "sourceIds": [
+        "source-dictionary-guidance-reference"
+      ],
+      "credibilityTier": "high",
+      "confidence": "strong",
+      "verificationStatus": "source-backed",
+      "reviewStatus": "reviewed"
+    },
+    {
+      "id": "revelation-concept",
+      "title": "Revelation",
+      "type": "Concept",
+      "domain": "BibleRoot",
+      "summary": "Revelation is the act of making something known that was previously hidden, unknown, or unseen.",
+      "sourceIds": [
+        "source-dictionary-revelation-reference",
+        "source-bibleroot-alpha-notes"
+      ],
+      "credibilityTier": "medium",
+      "confidence": "moderate",
+      "verificationStatus": "source-backed",
+      "reviewStatus": "needs-review"
+    },
+    {
+      "id": "visibility-concept",
+      "title": "Visibility",
+      "type": "Concept",
+      "domain": "SourceRoot",
+      "summary": "Visibility is the condition of being able to be seen, perceived, inspected, or made clear.",
+      "sourceIds": [
+        "source-dictionary-visibility-reference"
+      ],
+      "credibilityTier": "medium",
+      "confidence": "moderate",
+      "verificationStatus": "source-backed",
+      "reviewStatus": "reviewed"
+    }
+  ],
+  "assertions": [
+    {
+      "id": "assertion-light-physical-definition",
+      "nodeId": "light-physical-phenomenon",
+      "assertionType": "definition",
+      "label": "Physical Definition",
+      "summary": "Light is a physical phenomenon associated with electromagnetic radiation and visibility.",
+      "body": "In the physical sciences, light is treated as electromagnetic radiation, especially the portion that can be detected by the human eye.",
+      "sourceIds": [
+        "source-wikidata-light-q9128",
+        "source-physics-reference-light"
+      ],
+      "credibilityTier": "high",
+      "confidence": "strong",
+      "verificationStatus": "source-backed",
+      "reviewStatus": "reviewed",
+      "supportLevel": "direct",
+      "interpretationLevel": "none",
+      "status": "mvp-draft"
+    },
+    {
+      "id": "assertion-light-dictionary-definition",
+      "nodeId": "light-dictionary-meaning",
+      "assertionType": "definition",
+      "label": "Dictionary Meaning",
+      "summary": "Light commonly means illumination or the thing that makes sight possible.",
+      "body": "Dictionary-level meaning connects light to illumination, visibility, and the condition that allows objects to be seen.",
+      "sourceIds": [
+        "source-dictionary-light-reference"
+      ],
+      "credibilityTier": "high",
+      "confidence": "strong",
+      "verificationStatus": "source-backed",
+      "reviewStatus": "reviewed",
+      "supportLevel": "derived",
+      "interpretationLevel": "low",
+      "status": "mvp-draft"
+    },
+    {
+      "id": "assertion-light-biblical-symbolic-meaning",
+      "nodeId": "light-biblical-symbol",
+      "assertionType": "symbolic-meaning",
+      "label": "Biblical Symbolic Meaning",
+      "summary": "Light is symbolically associated with creation, truth, divine presence, guidance, life, and revelation.",
+      "body": "In biblical interpretation, light often functions as a symbolic image for what reveals, guides, gives life, separates from darkness, or represents divine presence.",
+      "sourceIds": [
+        "source-kjv-genesis-1",
+        "source-kjv-john-1",
+        "source-bibleroot-alpha-notes"
+      ],
+      "credibilityTier": "medium",
+      "confidence": "moderate",
+      "verificationStatus": "interpretive",
+      "reviewStatus": "needs-review",
+      "supportLevel": "interpretive",
+      "interpretationLevel": "high",
+      "status": "mvp-draft"
+    },
+    {
+      "id": "assertion-light-creation-context",
+      "nodeId": "light-biblical-symbol",
+      "assertionType": "textual-context",
+      "label": "Creation Context",
+      "summary": "Genesis begins the creation sequence with the appearance of light.",
+      "body": "The creation narrative uses light as one of the first ordered realities, making it useful as a symbolic and structural starting point for BibleRoot analysis.",
+      "sourceIds": [
+        "source-kjv-genesis-1"
+      ],
+      "credibilityTier": "medium",
+      "confidence": "moderate",
+      "verificationStatus": "source-backed",
+      "reviewStatus": "needs-review",
+      "supportLevel": "direct",
+      "interpretationLevel": "medium",
+      "status": "mvp-draft"
+    },
+    {
+      "id": "assertion-light-revelation-bridge",
+      "nodeId": "light-biblical-symbol",
+      "assertionType": "interpretation",
+      "label": "Light Reveals",
+      "summary": "Light can be interpreted as a symbol for revealing what was hidden.",
+      "body": "Because physical light makes things visible, symbolic light often carries the meaning of disclosure, revelation, clarity, and the uncovering of what was hidden.",
+      "sourceIds": [
+        "source-bibleroot-alpha-notes",
+        "source-dictionary-revelation-reference"
+      ],
+      "credibilityTier": "medium",
+      "confidence": "moderate",
+      "verificationStatus": "interpretive",
+      "reviewStatus": "needs-review",
+      "supportLevel": "inferred",
+      "interpretationLevel": "high",
+      "status": "mvp-draft"
+    },
+    {
+      "id": "assertion-truth-definition",
+      "nodeId": "truth-concept",
+      "assertionType": "definition",
+      "label": "Truth Definition",
+      "summary": "Truth is what corresponds to reality or fact.",
+      "body": "Truth is commonly understood as the quality of being in accordance with fact, reality, or what is reliable rather than false.",
+      "sourceIds": [
+        "source-dictionary-truth-reference"
+      ],
+      "credibilityTier": "high",
+      "confidence": "strong",
+      "verificationStatus": "source-backed",
+      "reviewStatus": "reviewed",
+      "supportLevel": "derived",
+      "interpretationLevel": "low",
+      "status": "mvp-draft"
+    },
+    {
+      "id": "assertion-knowledge-definition",
+      "nodeId": "knowledge-concept",
+      "assertionType": "definition",
+      "label": "Knowledge Definition",
+      "summary": "Knowledge is understanding, awareness, or information gained through experience or study.",
+      "body": "Knowledge can refer to facts, information, skills, or awareness acquired through experience, education, observation, or reasoning.",
+      "sourceIds": [
+        "source-dictionary-knowledge-reference"
+      ],
+      "credibilityTier": "high",
+      "confidence": "strong",
+      "verificationStatus": "source-backed",
+      "reviewStatus": "reviewed",
+      "supportLevel": "derived",
+      "interpretationLevel": "low",
+      "status": "mvp-draft"
+    },
+    {
+      "id": "assertion-guidance-definition",
+      "nodeId": "guidance-concept",
+      "assertionType": "definition",
+      "label": "Guidance Definition",
+      "summary": "Guidance is direction or help that supports movement, decision, or understanding.",
+      "body": "Guidance can mean advice, direction, leadership, or assistance that helps someone proceed or understand what to do.",
+      "sourceIds": [
+        "source-dictionary-guidance-reference"
+      ],
+      "credibilityTier": "high",
+      "confidence": "strong",
+      "verificationStatus": "source-backed",
+      "reviewStatus": "reviewed",
+      "supportLevel": "derived",
+      "interpretationLevel": "low",
+      "status": "mvp-draft"
+    },
+    {
+      "id": "assertion-revelation-definition",
+      "nodeId": "revelation-concept",
+      "assertionType": "definition",
+      "label": "Revelation Definition",
+      "summary": "Revelation is the act of making something known or disclosed.",
+      "body": "Revelation is the disclosure of something hidden, unknown, or previously unseen.",
+      "sourceIds": [
+        "source-dictionary-revelation-reference"
+      ],
+      "credibilityTier": "high",
+      "confidence": "strong",
+      "verificationStatus": "source-backed",
+      "reviewStatus": "reviewed",
+      "supportLevel": "derived",
+      "interpretationLevel": "low",
+      "status": "mvp-draft"
+    },
+    {
+      "id": "assertion-visibility-definition",
+      "nodeId": "visibility-concept",
+      "assertionType": "definition",
+      "label": "Visibility Definition",
+      "summary": "Visibility is the state of being seen or able to be inspected.",
+      "body": "Visibility can mean literal seeability or the broader condition of being inspectable, known, noticed, or brought into view.",
+      "sourceIds": [
+        "source-dictionary-visibility-reference"
+      ],
+      "credibilityTier": "medium",
+      "confidence": "moderate",
+      "verificationStatus": "source-backed",
+      "reviewStatus": "reviewed",
+      "supportLevel": "derived",
+      "interpretationLevel": "low",
+      "status": "mvp-draft"
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-light-physical-to-dictionary",
+      "fromNodeId": "light-physical-phenomenon",
+      "toNodeId": "light-dictionary-meaning",
+      "relationshipType": "SAME_TERM_DIFFERENT_CONTEXT",
+      "label": "same term, different context",
+      "summary": "The physical concept of light and dictionary meaning share the same term but operate at different levels of explanation.",
+      "sourceIds": [
+        "source-wikidata-light-q9128",
+        "source-dictionary-light-reference"
+      ],
+      "credibilityTier": "high",
+      "confidence": "strong",
+      "verificationStatus": "reviewed",
+      "reviewStatus": "reviewed",
+      "supportLevel": "direct",
+      "relationshipStrength": "strong",
+      "interpretationLevel": "low",
+      "status": "mvp-draft"
+    },
+    {
+      "id": "edge-light-dictionary-to-biblical",
+      "fromNodeId": "light-dictionary-meaning",
+      "toNodeId": "light-biblical-symbol",
+      "relationshipType": "SAME_TERM_DIFFERENT_CONTEXT",
+      "label": "same term, symbolic context",
+      "summary": "Dictionary light and biblical light share the same term, but biblical usage often carries symbolic and theological meaning.",
+      "sourceIds": [
+        "source-dictionary-light-reference",
+        "source-kjv-genesis-1",
+        "source-kjv-john-1",
+        "source-bibleroot-alpha-notes"
+      ],
+      "credibilityTier": "medium",
+      "confidence": "moderate",
+      "verificationStatus": "reviewed",
+      "reviewStatus": "needs-review",
+      "supportLevel": "contextual",
+      "relationshipStrength": "strong",
+      "interpretationLevel": "medium",
+      "status": "mvp-draft"
+    },
+    {
+      "id": "edge-light-biblical-to-truth",
+      "fromNodeId": "light-biblical-symbol",
+      "toNodeId": "truth-concept",
+      "relationshipType": "SYMBOLIC_OF",
+      "label": "symbolic of",
+      "summary": "Biblical light is often interpreted as symbolically connected to truth because light reveals and exposes what is hidden.",
+      "sourceIds": [
+        "source-kjv-john-1",
+        "source-bibleroot-alpha-notes"
+      ],
+      "credibilityTier": "medium",
+      "confidence": "moderate",
+      "verificationStatus": "interpretive",
+      "reviewStatus": "needs-review",
+      "supportLevel": "interpretive",
+      "relationshipStrength": "medium",
+      "interpretationLevel": "high",
+      "status": "mvp-draft"
+    },
+    {
+      "id": "edge-light-biblical-to-guidance",
+      "fromNodeId": "light-biblical-symbol",
+      "toNodeId": "guidance-concept",
+      "relationshipType": "SYMBOLIC_OF",
+      "label": "symbolic of",
+      "summary": "Light can symbolize guidance because it shows a path, removes obscurity, and enables movement through darkness.",
+      "sourceIds": [
+        "source-bibleroot-alpha-notes",
+        "source-dictionary-guidance-reference"
+      ],
+      "credibilityTier": "medium",
+      "confidence": "moderate",
+      "verificationStatus": "interpretive",
+      "reviewStatus": "needs-review",
+      "supportLevel": "interpretive",
+      "relationshipStrength": "medium",
+      "interpretationLevel": "high",
+      "status": "mvp-draft"
+    },
+    {
+      "id": "edge-light-biblical-to-revelation",
+      "fromNodeId": "light-biblical-symbol",
+      "toNodeId": "revelation-concept",
+      "relationshipType": "SYMBOLIC_OF",
+      "label": "symbolic of",
+      "summary": "Light connects to revelation because both involve making something visible, known, or disclosed.",
+      "sourceIds": [
+        "source-bibleroot-alpha-notes",
+        "source-dictionary-revelation-reference"
+      ],
+      "credibilityTier": "medium",
+      "confidence": "moderate",
+      "verificationStatus": "interpretive",
+      "reviewStatus": "needs-review",
+      "supportLevel": "inferred",
+      "relationshipStrength": "medium",
+      "interpretationLevel": "high",
+      "status": "mvp-draft"
+    },
+    {
+      "id": "edge-light-physical-to-visibility",
+      "fromNodeId": "light-physical-phenomenon",
+      "toNodeId": "visibility-concept",
+      "relationshipType": "SUPPORTS",
+      "label": "supports visibility",
+      "summary": "Physical light supports visibility because light enables objects to be seen.",
+      "sourceIds": [
+        "source-physics-reference-light",
+        "source-dictionary-visibility-reference"
+      ],
+      "credibilityTier": "high",
+      "confidence": "strong",
+      "verificationStatus": "source-backed",
+      "reviewStatus": "reviewed",
+      "supportLevel": "direct",
+      "relationshipStrength": "core",
+      "interpretationLevel": "none",
+      "status": "mvp-draft"
+    },
+    {
+      "id": "edge-visibility-to-knowledge",
+      "fromNodeId": "visibility-concept",
+      "toNodeId": "knowledge-concept",
+      "relationshipType": "RELATES_TO",
+      "label": "relates to",
+      "summary": "Visibility can relate to knowledge because what becomes visible can become inspected, understood, or known.",
+      "sourceIds": [
+        "source-dictionary-visibility-reference",
+        "source-dictionary-knowledge-reference",
+        "source-bibleroot-alpha-notes"
+      ],
+      "credibilityTier": "medium",
+      "confidence": "moderate",
+      "verificationStatus": "inferred",
+      "reviewStatus": "needs-review",
+      "supportLevel": "inferred",
+      "relationshipStrength": "contextual",
+      "interpretationLevel": "medium",
+      "status": "mvp-draft"
+    },
+    {
+      "id": "edge-truth-to-knowledge",
+      "fromNodeId": "truth-concept",
+      "toNodeId": "knowledge-concept",
+      "relationshipType": "RELATES_TO",
+      "label": "relates to",
+      "summary": "Truth relates to knowledge because knowledge is stronger when it is connected to what is real, factual, or reliable.",
+      "sourceIds": [
+        "source-dictionary-truth-reference",
+        "source-dictionary-knowledge-reference"
+      ],
+      "credibilityTier": "medium",
+      "confidence": "moderate",
+      "verificationStatus": "source-backed",
+      "reviewStatus": "reviewed",
+      "supportLevel": "derived",
+      "relationshipStrength": "medium",
+      "interpretationLevel": "low",
+      "status": "mvp-draft"
+    },
+    {
+      "id": "edge-revelation-to-knowledge",
+      "fromNodeId": "revelation-concept",
+      "toNodeId": "knowledge-concept",
+      "relationshipType": "RELATES_TO",
+      "label": "relates to",
+      "summary": "Revelation relates to knowledge because revealing something can transform it from hidden information into known information.",
+      "sourceIds": [
+        "source-dictionary-revelation-reference",
+        "source-dictionary-knowledge-reference"
+      ],
+      "credibilityTier": "medium",
+      "confidence": "moderate",
+      "verificationStatus": "source-backed",
+      "reviewStatus": "reviewed",
+      "supportLevel": "derived",
+      "relationshipStrength": "medium",
+      "interpretationLevel": "low",
+      "status": "mvp-draft"
+    }
+  ],
+  "sources": [
+    {
+      "id": "source-wikidata-light-q9128",
+      "name": "Wikidata — Light (Q9128)",
+      "type": "Structured Knowledge Graph",
+      "domain": "Wiki",
+      "publisher": "Wikimedia Foundation / Wikidata contributors",
+      "qualityTier": "structured-public-dataset",
+      "credibilityTier": "medium",
+      "verificationStatus": "community-maintained",
+      "sourceClass": "external-structured-reference",
+      "license": "CC0 public domain dedication",
+      "licenseStatus": "public-domain",
+      "reviewStatus": "reviewed",
+      "lastReviewed": "2026-07-13",
+      "url": "https://www.wikidata.org/wiki/Q9128",
+      "notes": "Used as a public structured data reference for the Light entity."
+    },
+    {
+      "id": "source-physics-reference-light",
+      "name": "Physics Reference — Light",
+      "type": "Reference Source",
+      "domain": "Wiki",
+      "publisher": "Prototype reference placeholder",
+      "qualityTier": "working-reference",
+      "credibilityTier": "medium",
+      "verificationStatus": "needs-review",
+      "sourceClass": "reference-placeholder",
+      "license": "placeholder",
+      "licenseStatus": "linked-reference-only",
+      "reviewStatus": "needs-review",
+      "lastReviewed": "2026-07-13",
+      "url": "",
+      "notes": "Placeholder source used for MVP modeling. Replace with an approved physics reference before public release."
+    },
+    {
+      "id": "source-dictionary-light-reference",
+      "name": "Dictionary Reference — Light",
+      "type": "Reference Source",
+      "domain": "DictionaryHub",
+      "publisher": "Prototype dictionary reference",
+      "qualityTier": "working-reference",
+      "credibilityTier": "medium",
+      "verificationStatus": "needs-review",
+      "sourceClass": "dictionary-reference-placeholder",
+      "license": "placeholder",
+      "licenseStatus": "linked-reference-only",
+      "reviewStatus": "needs-review",
+      "lastReviewed": "2026-07-13",
+      "url": "",
+      "notes": "Placeholder source used to model dictionary meaning for light."
+    },
+    {
+      "id": "source-dictionary-truth-reference",
+      "name": "Dictionary Reference — Truth",
+      "type": "Reference Source",
+      "domain": "DictionaryHub",
+      "publisher": "Prototype dictionary reference",
+      "qualityTier": "working-reference",
+      "credibilityTier": "medium",
+      "verificationStatus": "needs-review",
+      "sourceClass": "dictionary-reference-placeholder",
+      "license": "placeholder",
+      "licenseStatus": "linked-reference-only",
+      "reviewStatus": "needs-review",
+      "lastReviewed": "2026-07-13",
+      "url": "",
+      "notes": "Placeholder source used to model dictionary meaning for truth."
+    },
+    {
+      "id": "source-dictionary-knowledge-reference",
+      "name": "Dictionary Reference — Knowledge",
+      "type": "Reference Source",
+      "domain": "DictionaryHub",
+      "publisher": "Prototype dictionary reference",
+      "qualityTier": "working-reference",
+      "credibilityTier": "medium",
+      "verificationStatus": "needs-review",
+      "sourceClass": "dictionary-reference-placeholder",
+      "license": "placeholder",
+      "licenseStatus": "linked-reference-only",
+      "reviewStatus": "needs-review",
+      "lastReviewed": "2026-07-13",
+      "url": "",
+      "notes": "Placeholder source used to model dictionary meaning for knowledge."
+    },
+    {
+      "id": "source-dictionary-guidance-reference",
+      "name": "Dictionary Reference — Guidance",
+      "type": "Reference Source",
+      "domain": "DictionaryHub",
+      "publisher": "Prototype dictionary reference",
+      "qualityTier": "working-reference",
+      "credibilityTier": "medium",
+      "verificationStatus": "needs-review",
+      "sourceClass": "dictionary-reference-placeholder",
+      "license": "placeholder",
+      "licenseStatus": "linked-reference-only",
+      "reviewStatus": "needs-review",
+      "lastReviewed": "2026-07-13",
+      "url": "",
+      "notes": "Placeholder source used to model dictionary meaning for guidance."
+    },
+    {
+      "id": "source-dictionary-revelation-reference",
+      "name": "Dictionary Reference — Revelation",
+      "type": "Reference Source",
+      "domain": "DictionaryHub",
+      "publisher": "Prototype dictionary reference",
+      "qualityTier": "working-reference",
+      "credibilityTier": "medium",
+      "verificationStatus": "needs-review",
+      "sourceClass": "dictionary-reference-placeholder",
+      "license": "placeholder",
+      "licenseStatus": "linked-reference-only",
+      "reviewStatus": "needs-review",
+      "lastReviewed": "2026-07-13",
+      "url": "",
+      "notes": "Placeholder source used to model dictionary meaning for revelation."
+    },
+    {
+      "id": "source-dictionary-visibility-reference",
+      "name": "Dictionary Reference — Visibility",
+      "type": "Reference Source",
+      "domain": "DictionaryHub",
+      "publisher": "Prototype dictionary reference",
+      "qualityTier": "working-reference",
+      "credibilityTier": "medium",
+      "verificationStatus": "needs-review",
+      "sourceClass": "dictionary-reference-placeholder",
+      "license": "placeholder",
+      "licenseStatus": "linked-reference-only",
+      "reviewStatus": "needs-review",
+      "lastReviewed": "2026-07-13",
+      "url": "",
+      "notes": "Placeholder source used to model dictionary meaning for visibility."
+    },
+    {
+      "id": "source-kjv-genesis-1",
+      "name": "King James Version — Genesis 1",
+      "type": "Primary Text",
+      "domain": "BibleRoot",
+      "publisher": "Public domain biblical text tradition",
+      "qualityTier": "primary-text",
+      "credibilityTier": "high",
+      "verificationStatus": "source-backed",
+      "sourceClass": "primary-text",
+      "license": "Public domain in the United States",
+      "licenseStatus": "public-domain",
+      "reviewStatus": "reviewed",
+      "lastReviewed": "2026-07-13",
+      "url": "",
+      "notes": "Primary text reference for creation/light context. Exact passage text intentionally not embedded in bundle."
+    },
+    {
+      "id": "source-kjv-john-1",
+      "name": "King James Version — John 1",
+      "type": "Primary Text",
+      "domain": "BibleRoot",
+      "publisher": "Public domain biblical text tradition",
+      "qualityTier": "primary-text",
+      "credibilityTier": "high",
+      "verificationStatus": "source-backed",
+      "sourceClass": "primary-text",
+      "license": "Public domain in the United States",
+      "licenseStatus": "public-domain",
+      "reviewStatus": "reviewed",
+      "lastReviewed": "2026-07-13",
+      "url": "",
+      "notes": "Primary text reference for light/revelation/life symbolism. Exact passage text intentionally not embedded in bundle."
+    },
+    {
+      "id": "source-bibleroot-alpha-notes",
+      "name": "BibleRoot Alpha Notes — Light Symbolism",
+      "type": "Prototype Notes",
+      "domain": "BibleRoot",
+      "publisher": "SourceRoot prototype",
+      "qualityTier": "working-notes",
+      "credibilityTier": "prototype",
+      "verificationStatus": "prototype",
+      "sourceClass": "internal-analysis",
+      "license": "internal prototype",
+      "licenseStatus": "internal-use-only",
+      "reviewStatus": "needs-review",
+      "lastReviewed": "2026-07-13",
+      "url": "",
+      "notes": "Internal prototype interpretation notes. Useful for modeling, not suitable as public release source without review."
+    }
+  ],
+  "revisions": [
+    {
+      "revisionId": "rev-light-mvp-bundle-created",
+      "objectType": "bundle",
+      "objectId": "sourceroot-light-mvp-bundle",
+      "summary": "Created the larger SourceRoot Light MVP import bundle.",
+      "changedAt": "2026-07-13",
+      "changedBy": "SourceRoot prototype build"
+    },
+    {
+      "revisionId": "rev-light-physical-node-created",
+      "objectType": "node",
+      "objectId": "light-physical-phenomenon",
+      "summary": "Added physical light node.",
+      "changedAt": "2026-07-13",
+      "changedBy": "SourceRoot prototype build"
+    },
+    {
+      "revisionId": "rev-light-dictionary-node-created",
+      "objectType": "node",
+      "objectId": "light-dictionary-meaning",
+      "summary": "Added dictionary light node.",
+      "changedAt": "2026-07-13",
+      "changedBy": "SourceRoot prototype build"
+    },
+    {
+      "revisionId": "rev-light-biblical-node-created",
+      "objectType": "node",
+      "objectId": "light-biblical-symbol",
+      "summary": "Added biblical symbolic light node.",
+      "changedAt": "2026-07-13",
+      "changedBy": "SourceRoot prototype build"
+    },
+    {
+      "revisionId": "rev-truth-node-created",
+      "objectType": "node",
+      "objectId": "truth-concept",
+      "summary": "Added truth concept node.",
+      "changedAt": "2026-07-13",
+      "changedBy": "SourceRoot prototype build"
+    },
+    {
+      "revisionId": "rev-knowledge-node-created",
+      "objectType": "node",
+      "objectId": "knowledge-concept",
+      "summary": "Added knowledge concept node.",
+      "changedAt": "2026-07-13",
+      "changedBy": "SourceRoot prototype build"
+    },
+    {
+      "revisionId": "rev-guidance-node-created",
+      "objectType": "node",
+      "objectId": "guidance-concept",
+      "summary": "Added guidance concept node.",
+      "changedAt": "2026-07-13",
+      "changedBy": "SourceRoot prototype build"
+    },
+    {
+      "revisionId": "rev-revelation-node-created",
+      "objectType": "node",
+      "objectId": "revelation-concept",
+      "summary": "Added revelation concept node.",
+      "changedAt": "2026-07-13",
+      "changedBy": "SourceRoot prototype build"
+    },
+    {
+      "revisionId": "rev-visibility-node-created",
+      "objectType": "node",
+      "objectId": "visibility-concept",
+      "summary": "Added visibility concept node.",
+      "changedAt": "2026-07-13",
+      "changedBy": "SourceRoot prototype build"
+    },
+    {
+      "revisionId": "rev-light-assertions-created",
+      "objectType": "assertion",
+      "objectId": "assertion-light-biblical-symbolic-meaning",
+      "summary": "Added symbolic light assertion and supporting claim structure.",
+      "changedAt": "2026-07-13",
+      "changedBy": "SourceRoot prototype build"
+    },
+    {
+      "revisionId": "rev-light-edges-created",
+      "objectType": "edge",
+      "objectId": "edge-light-biblical-to-truth",
+      "summary": "Added symbolic edge between biblical light and truth.",
+      "changedAt": "2026-07-13",
+      "changedBy": "SourceRoot prototype build"
+    },
+    {
+      "revisionId": "rev-light-sources-created",
+      "objectType": "source",
+      "objectId": "source-bibleroot-alpha-notes",
+      "summary": "Added prototype BibleRoot alpha notes source.",
+      "changedAt": "2026-07-13",
+      "changedBy": "SourceRoot prototype build"
+    }
+  ]
+}
