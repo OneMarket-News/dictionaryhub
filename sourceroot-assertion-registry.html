@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SourceRoot Assertion Registry</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f4ee;
+      color: #1f2933;
+      margin: 0;
+    }
+
+    header {
+      background: #111827;
+      color: white;
+      padding: 28px 24px;
+    }
+
+    .header-inner {
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 34px;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      color: #d1d5db;
+      margin-top: 10px;
+      max-width: 980px;
+      line-height: 1.55;
+    }
+
+    .top-links {
+      margin-top: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .top-links a {
+      color: white;
+      border: 1px solid #374151;
+      background: #1f2937;
+      border-radius: 999px;
+      padding: 7px 11px;
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    .top-links a:hover {
+      background: #374151;
+    }
+
+    main {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .panel {
+      background: white;
+      border: 1px solid #ddd6c8;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      margin-bottom: 22px;
+    }
+
+    .panel h2 {
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+
+    .overview-text {
+      color: #374151;
+      line-height: 1.6;
+      max-width: 980px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .summary-card {
+      background: #fff8e6;
+      border: 1px solid #ead59a;
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .summary-card strong {
+      display: block;
+      font-size: 26px;
+      margin-bottom: 3px;
+    }
+
+    .summary-card span {
+      color: #6b7280;
+      font-size: 13px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 2fr repeat(6, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    input,
+    select,
+    button {
+      border: 1px solid #d6cdbd;
+      border-radius: 10px;
+      padding: 10px;
+      background: white;
+      color: #1f2933;
+      font-size: 14px;
+    }
+
+    button {
+      cursor: pointer;
+      background: #111827;
+      color: white;
+      border-color: #111827;
+    }
+
+    button:hover {
+      background: #374151;
+    }
+
+    .results-meta {
+      color: #6b7280;
+      font-size: 13px;
+      margin-top: 12px;
+    }
+
+    .assertion-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .assertion-card {
+      background: #fffdf8;
+      border: 1px solid #eee2c7;
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .assertion-card h3 {
+      margin: 0 0 6px;
+      font-size: 20px;
+    }
+
+    .assertion-id {
+      font-family: Consolas, Monaco, monospace;
+      font-size: 12px;
+      color: #6b7280;
+      word-break: break-word;
+      margin-bottom: 10px;
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 8px 0 12px;
+    }
+
+    .badge {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: bold;
+      border: 1px solid transparent;
+    }
+
+    .badge-domain {
+      background: #e0f2fe;
+      color: #075985;
+      border-color: #bae6fd;
+    }
+
+    .badge-type {
+      background: #fef3c7;
+      color: #92400e;
+      border-color: #fde68a;
+    }
+
+    .badge-trust {
+      background: #dcfce7;
+      color: #166534;
+      border-color: #bbf7d0;
+    }
+
+    .badge-review {
+      background: #f3e8ff;
+      color: #6b21a8;
+      border-color: #e9d5ff;
+    }
+
+    .badge-warning {
+      background: #fee2e2;
+      color: #991b1b;
+      border-color: #fecaca;
+    }
+
+    .section-label {
+      font-size: 12px;
+      font-weight: bold;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-top: 12px;
+      margin-bottom: 5px;
+    }
+
+    .body-text {
+      color: #374151;
+      line-height: 1.55;
+      font-size: 14px;
+    }
+
+    .node-link {
+      font-family: Consolas, Monaco, monospace;
+      background: #f3f4f6;
+      border-radius: 8px;
+      padding: 8px;
+      font-size: 12px;
+      color: #374151;
+      word-break: break-word;
+    }
+
+    .trust-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .trust-item {
+      background: white;
+      border: 1px solid #eee2c7;
+      border-radius: 10px;
+      padding: 8px;
+    }
+
+    .trust-item span {
+      display: block;
+      color: #6b7280;
+      font-size: 11px;
+      margin-bottom: 3px;
+    }
+
+    .trust-item strong {
+      font-size: 13px;
+      word-break: break-word;
+    }
+
+    .source-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .source-pill {
+      background: #eef2ff;
+      border: 1px solid #c7d2fe;
+      color: #3730a3;
+      border-radius: 999px;
+      padding: 4px 7px;
+      font-size: 11px;
+      font-family: Consolas, Monaco, monospace;
+      word-break: break-word;
+    }
+
+    .empty-state {
+      color: #6b7280;
+      padding: 20px;
+      background: #fffdf8;
+      border: 1px dashed #d6cdbd;
+      border-radius: 14px;
+      margin-top: 16px;
+    }
+
+    footer {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 0 24px 28px;
+      color: #6b7280;
+      font-size: 13px;
+    }
+
+    @media (max-width: 950px) {
+      .controls {
+        grid-template-columns: 1fr;
+      }
+
+      .assertion-grid {
+        grid-template-columns: 1fr;
+      }
+
+      main {
+        padding: 18px 14px;
+      }
+
+      header {
+        padding: 24px 14px;
+      }
+
+      header h1 {
+        font-size: 29px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="header-inner">
+      <h1>SourceRoot Assertion Registry</h1>
+
+      <div class="subtitle">
+        A registry of SourceRoot claims across DictionaryHub, BibleRoot, Wiki, and future hubs.
+        Assertions are the claim layer: definitions, summaries, interpretations, examples, symbolic meanings, and external statements connected to nodes and supported by sources.
+      </div>
+
+      <div class="top-links">
+        <a href="sourceroot.html">SourceRoot Home</a>
+        <a href="sourceroot-inspector.html">Open Inspector</a>
+        <a href="sourceroot-edge-registry.html">Open Edge Registry</a>
+        <a href="sourceroot-source-registry.html">Open Source Registry</a>
+        <a href="sourceroot-identity-registry.html">Open Identity Registry</a>
+        <a href="sourceroot-import-preview.html">Open Import Preview</a>
+        <a href="sourceroot-api-preview.html">Open API Preview</a>
+        <a href="graph-v2.html">Open DictionaryHub Graph</a>
+        <a href="bibleroot.html">Open BibleRoot</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <h2>Assertion Layer</h2>
+
+      <p class="overview-text">
+        SourceRoot separates a node from the claims made about that node.
+        This page makes those claims inspectable by showing assertion type, source support, credibility tier, confidence, verification status, review status, support level, and interpretation level.
+      </p>
+
+      <div class="summary-grid" id="summaryGrid"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Filter Assertions</h2>
+
+      <div class="controls">
+        <input id="searchInput" type="text" placeholder="Search assertions, nodes, sources, summaries..." />
+
+        <select id="domainFilter">
+          <option value="">All Domains</option>
+        </select>
+
+        <select id="typeFilter">
+          <option value="">All Assertion Types</option>
+        </select>
+
+        <select id="credibilityFilter">
+          <option value="">All Credibility</option>
+        </select>
+
+        <select id="verificationFilter">
+          <option value="">All Verification</option>
+        </select>
+
+        <select id="supportFilter">
+          <option value="">All Support Levels</option>
+        </select>
+
+        <button id="clearFiltersBtn">Clear</button>
+      </div>
+
+      <div class="results-meta" id="resultsMeta"></div>
+      <div id="assertionGrid" class="assertion-grid"></div>
+    </section>
+  </main>
+
+  <footer>
+    SourceRoot Assertion Registry. Current status: static prototype registry powered by local SourceRoot data files and adapters.
+  </footer>
+
+  <script type="module">
+    import { adaptDictionaryConcepts } from "./engine/adapters/dictionaryAdapter.js";
+    import { adaptBibleNodes } from "./engine/adapters/bibleAdapter.js";
+    import { adaptWikidataNodes, adaptWikidataAssertions } from "./engine/adapters/wikidataAdapter.js";
+
+    const dataPaths = {
+      dictionaryNodes: "./data/nodes-v2-root.json",
+      bibleNodes: "./data/bible-root-nodes.json",
+      bibleAssertions: "./data/bible-root-assertions.json",
+      wikidataNodes: "./data/wikidata-root-nodes.json"
+    };
+
+    let allAssertions = [];
+    let allNodes = [];
+    let filteredAssertions = [];
+
+    const fallbackTrust = {
+      credibilityTier: "prototype",
+      confidence: "working",
+      verificationStatus: "prototype",
+      reviewStatus: "needs-review",
+      supportLevel: "contextual",
+      interpretationLevel: "medium"
+    };
+
+    async function loadJson(path, fallback = []) {
+      try {
+        const response = await fetch(path);
+
+        if (!response.ok) {
+          console.warn(`Could not load ${path}`);
+          return fallback;
+        }
+
+        return await response.json();
+      } catch (error) {
+        console.warn(`Failed to load ${path}`, error);
+        return fallback;
+      }
+    }
+
+    async function init() {
+      const [
+        dictionaryRawNodes,
+        bibleRawNodes,
+        bibleRawAssertions,
+        wikidataRawNodes
+      ] = await Promise.all([
+        loadJson(dataPaths.dictionaryNodes),
+        loadJson(dataPaths.bibleNodes),
+        loadJson(dataPaths.bibleAssertions),
+        loadJson(dataPaths.wikidataNodes)
+      ]);
+
+      const dictionaryNodes = adaptDictionaryConcepts(dictionaryRawNodes);
+      const bibleNodes = adaptBibleNodes(bibleRawNodes);
+      const wikidataNodes = adaptWikidataNodes(wikidataRawNodes);
+
+      allNodes = [
+        ...dictionaryNodes,
+        ...bibleNodes,
+        ...wikidataNodes
+      ];
+
+      const dictionaryAssertions = buildDictionaryAssertions(dictionaryNodes);
+      const bibleAssertions = normalizeAssertions(bibleRawAssertions, "BibleRoot");
+      const wikidataAssertions = adaptWikidataAssertions(wikidataRawNodes);
+
+      allAssertions = [
+        ...dictionaryAssertions,
+        ...bibleAssertions,
+        ...wikidataAssertions
+      ].map(normalizeAssertion);
+
+      filteredAssertions = [...allAssertions];
+
+      populateFilters();
+      renderSummary();
+      renderAssertions();
+
+      document.getElementById("searchInput").addEventListener("input", applyFilters);
+      document.getElementById("domainFilter").addEventListener("change", applyFilters);
+      document.getElementById("typeFilter").addEventListener("change", applyFilters);
+      document.getElementById("credibilityFilter").addEventListener("change", applyFilters);
+      document.getElementById("verificationFilter").addEventListener("change", applyFilters);
+      document.getElementById("supportFilter").addEventListener("change", applyFilters);
+      document.getElementById("clearFiltersBtn").addEventListener("click", clearFilters);
+    }
+
+    function buildDictionaryAssertions(nodes = []) {
+      const assertions = [];
+
+      nodes.forEach(node => {
+        if (node.summary) {
+          assertions.push({
+            id: `assertion-${node.id}-summary`,
+            nodeId: node.id,
+            assertionType: "short-definition",
+            label: "Short Definition",
+            summary: node.summary,
+            body: node.summary,
+            sourceIds: node.sourceIds || [],
+            domain: "DictionaryHub",
+            credibilityTier: "high",
+            confidence: "strong",
+            verificationStatus: "source-backed",
+            reviewStatus: "reviewed",
+            supportLevel: "derived",
+            interpretationLevel: "low"
+          });
+        }
+
+        if (node.description && node.description !== node.summary) {
+          assertions.push({
+            id: `assertion-${node.id}-description`,
+            nodeId: node.id,
+            assertionType: "full-definition",
+            label: "Full Definition",
+            summary: node.description,
+            body: node.description,
+            sourceIds: node.sourceIds || [],
+            domain: "DictionaryHub",
+            credibilityTier: "high",
+            confidence: "strong",
+            verificationStatus: "source-backed",
+            reviewStatus: "reviewed",
+            supportLevel: "derived",
+            interpretationLevel: "low"
+          });
+        }
+      });
+
+      return assertions;
+    }
+
+    function normalizeAssertions(assertions = [], defaultDomain = "SourceRoot") {
+      return assertions.map(assertion => ({
+        ...assertion,
+        domain: assertion.domain || defaultDomain
+      }));
+    }
+
+    function normalizeAssertion(assertion) {
+      const node = findNode(assertion.nodeId);
+
+      return {
+        id: assertion.id || "missing-assertion-id",
+        nodeId: assertion.nodeId || "",
+        nodeTitle: node?.title || assertion.nodeTitle || assertion.nodeId || "Unknown Node",
+        assertionType: assertion.assertionType || assertion.type || "unknown",
+        label: assertion.label || assertion.assertionType || assertion.type || "Assertion",
+        summary: assertion.summary || "",
+        body: assertion.body || assertion.description || assertion.summary || "",
+        sourceIds: Array.isArray(assertion.sourceIds) ? assertion.sourceIds : [],
+        domain: getDisplayDomain(assertion.domain || node?.domain || "SourceRoot"),
+        credibilityTier: assertion.credibilityTier || fallbackTrust.credibilityTier,
+        confidence: assertion.confidence || fallbackTrust.confidence,
+        verificationStatus: assertion.verificationStatus || fallbackTrust.verificationStatus,
+        reviewStatus: assertion.reviewStatus || fallbackTrust.reviewStatus,
+        supportLevel: assertion.supportLevel || fallbackTrust.supportLevel,
+        interpretationLevel: assertion.interpretationLevel || fallbackTrust.interpretationLevel,
+        status: assertion.status || ""
+      };
+    }
+
+    function findNode(nodeId) {
+      return allNodes.find(node => node.id === nodeId || node.originalId === nodeId);
+    }
+
+    function getDisplayDomain(domain) {
+      if (domain === "WikidataRoot") {
+        return "Wiki";
+      }
+
+      return domain || "SourceRoot";
+    }
+
+    function populateFilters() {
+      populateSelect("domainFilter", uniqueValues(allAssertions.map(assertion => assertion.domain)));
+      populateSelect("typeFilter", uniqueValues(allAssertions.map(assertion => assertion.assertionType)));
+      populateSelect("credibilityFilter", uniqueValues(allAssertions.map(assertion => assertion.credibilityTier)));
+      populateSelect("verificationFilter", uniqueValues(allAssertions.map(assertion => assertion.verificationStatus)));
+      populateSelect("supportFilter", uniqueValues(allAssertions.map(assertion => assertion.supportLevel)));
+    }
+
+    function populateSelect(id, values) {
+      const select = document.getElementById(id);
+      const currentFirstOption = select.querySelector("option");
+
+      select.innerHTML = "";
+      select.appendChild(currentFirstOption);
+
+      values.forEach(value => {
+        if (!value) return;
+
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = value;
+        select.appendChild(option);
+      });
+    }
+
+    function uniqueValues(values) {
+      return [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b));
+    }
+
+    function applyFilters() {
+      const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+      const domain = document.getElementById("domainFilter").value;
+      const type = document.getElementById("typeFilter").value;
+      const credibility = document.getElementById("credibilityFilter").value;
+      const verification = document.getElementById("verificationFilter").value;
+      const support = document.getElementById("supportFilter").value;
+
+      filteredAssertions = allAssertions.filter(assertion => {
+        const searchableText = [
+          assertion.id,
+          assertion.nodeId,
+          assertion.nodeTitle,
+          assertion.assertionType,
+          assertion.label,
+          assertion.summary,
+          assertion.body,
+          assertion.domain,
+          assertion.credibilityTier,
+          assertion.confidence,
+          assertion.verificationStatus,
+          assertion.reviewStatus,
+          assertion.supportLevel,
+          assertion.interpretationLevel,
+          assertion.sourceIds.join(" ")
+        ].join(" ").toLowerCase();
+
+        const matchesSearch = !searchTerm || searchableText.includes(searchTerm);
+        const matchesDomain = !domain || assertion.domain === domain;
+        const matchesType = !type || assertion.assertionType === type;
+        const matchesCredibility = !credibility || assertion.credibilityTier === credibility;
+        const matchesVerification = !verification || assertion.verificationStatus === verification;
+        const matchesSupport = !support || assertion.supportLevel === support;
+
+        return (
+          matchesSearch &&
+          matchesDomain &&
+          matchesType &&
+          matchesCredibility &&
+          matchesVerification &&
+          matchesSupport
+        );
+      });
+
+      renderAssertions();
+    }
+
+    function clearFilters() {
+      document.getElementById("searchInput").value = "";
+      document.getElementById("domainFilter").value = "";
+      document.getElementById("typeFilter").value = "";
+      document.getElementById("credibilityFilter").value = "";
+      document.getElementById("verificationFilter").value = "";
+      document.getElementById("supportFilter").value = "";
+
+      filteredAssertions = [...allAssertions];
+      renderAssertions();
+    }
+
+    function renderSummary() {
+      const total = allAssertions.length;
+      const domains = uniqueValues(allAssertions.map(assertion => assertion.domain)).length;
+      const types = uniqueValues(allAssertions.map(assertion => assertion.assertionType)).length;
+      const sourceBacked = allAssertions.filter(assertion => assertion.sourceIds.length > 0).length;
+      const needsReview = allAssertions.filter(assertion => assertion.reviewStatus === "needs-review").length;
+      const interpretive = allAssertions.filter(assertion => assertion.interpretationLevel === "high" || assertion.supportLevel === "interpretive").length;
+
+      document.getElementById("summaryGrid").innerHTML = `
+        <div class="summary-card">
+          <strong>${total}</strong>
+          <span>Total Assertions</span>
+        </div>
+
+        <div class="summary-card">
+          <strong>${domains}</strong>
+          <span>Domains</span>
+        </div>
+
+        <div class="summary-card">
+          <strong>${types}</strong>
+          <span>Assertion Types</span>
+        </div>
+
+        <div class="summary-card">
+          <strong>${sourceBacked}</strong>
+          <span>Source-Backed</span>
+        </div>
+
+        <div class="summary-card">
+          <strong>${needsReview}</strong>
+          <span>Needs Review</span>
+        </div>
+
+        <div class="summary-card">
+          <strong>${interpretive}</strong>
+          <span>Interpretive Claims</span>
+        </div>
+      `;
+    }
+
+    function renderAssertions() {
+      const grid = document.getElementById("assertionGrid");
+      const meta = document.getElementById("resultsMeta");
+
+      meta.textContent = `Showing ${filteredAssertions.length} of ${allAssertions.length} assertions.`;
+
+      if (!filteredAssertions.length) {
+        grid.innerHTML = `
+          <div class="empty-state">
+            No assertions match the current filters.
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = filteredAssertions
+        .map(assertion => renderAssertionCard(assertion))
+        .join("");
+    }
+
+    function renderAssertionCard(assertion) {
+      const warningBadge = getWarningBadge(assertion);
+
+      return `
+        <article class="assertion-card">
+          <h3>${escapeHtml(assertion.label)}</h3>
+          <div class="assertion-id">${escapeHtml(assertion.id)}</div>
+
+          <div class="badge-row">
+            <span class="badge badge-domain">${escapeHtml(assertion.domain)}</span>
+            <span class="badge badge-type">${escapeHtml(assertion.assertionType)}</span>
+            <span class="badge badge-trust">${escapeHtml(assertion.credibilityTier)}</span>
+            <span class="badge badge-review">${escapeHtml(assertion.reviewStatus)}</span>
+            ${warningBadge}
+          </div>
+
+          <div class="section-label">Attached Node</div>
+          <div class="node-link">
+            ${escapeHtml(assertion.nodeTitle)}<br>
+            ${escapeHtml(assertion.nodeId)}
+          </div>
+
+          <div class="section-label">Assertion Summary</div>
+          <div class="body-text">
+            ${formatBody(assertion.summary || assertion.body || "No assertion text provided.")}
+          </div>
+
+          <div class="section-label">Trust Context</div>
+          <div class="trust-grid">
+            <div class="trust-item">
+              <span>Credibility</span>
+              <strong>${escapeHtml(assertion.credibilityTier)}</strong>
+            </div>
+
+            <div class="trust-item">
+              <span>Confidence</span>
+              <strong>${escapeHtml(assertion.confidence)}</strong>
+            </div>
+
+            <div class="trust-item">
+              <span>Verification</span>
+              <strong>${escapeHtml(assertion.verificationStatus)}</strong>
+            </div>
+
+            <div class="trust-item">
+              <span>Review</span>
+              <strong>${escapeHtml(assertion.reviewStatus)}</strong>
+            </div>
+
+            <div class="trust-item">
+              <span>Support</span>
+              <strong>${escapeHtml(assertion.supportLevel)}</strong>
+            </div>
+
+            <div class="trust-item">
+              <span>Interpretation</span>
+              <strong>${escapeHtml(assertion.interpretationLevel)}</strong>
+            </div>
+          </div>
+
+          <div class="section-label">Sources</div>
+          <div class="source-list">
+            ${
+              assertion.sourceIds.length
+                ? assertion.sourceIds.map(sourceId => `<span class="source-pill">${escapeHtml(sourceId)}</span>`).join("")
+                : `<span class="badge badge-warning">No source linked</span>`
+            }
+          </div>
+        </article>
+      `;
+    }
+
+    function getWarningBadge(assertion) {
+      if (!assertion.sourceIds.length) {
+        return `<span class="badge badge-warning">Unsourced</span>`;
+      }
+
+      if (assertion.reviewStatus === "needs-review" || assertion.verificationStatus === "needs-review") {
+        return `<span class="badge badge-warning">Needs Review</span>`;
+      }
+
+      if (assertion.supportLevel === "unsupported") {
+        return `<span class="badge badge-warning">Unsupported</span>`;
+      }
+
+      return "";
+    }
+
+    function formatBody(value) {
+      return escapeHtml(String(value || "")).replace(/\n/g, "<br>");
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    init();
+  </script>
+</body>
+</html>
