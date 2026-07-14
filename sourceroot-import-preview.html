@@ -395,6 +395,7 @@
       <div class="button-row">
   <button id="loadExampleButton" type="button">Load Example Bundle</button>
   <button id="loadBrokenButton" class="danger-button" type="button">Load Broken Test Bundle</button>
+  <button id="loadLightMvpButton" type="button">Load Light MVP Bundle</button>
 
   <label class="file-upload-label" for="bundleFileInput">
     Choose Local Bundle JSON
@@ -448,6 +449,10 @@
   document.getElementById("loadBrokenButton").addEventListener("click", () => {
     loadBundle("data/sourceroot-import-bundle-broken-example.json");
   });
+
+  document.getElementById("loadLightMvpButton").addEventListener("click", () => {
+  loadBundle("data/sourceroot-light-mvp-bundle.json");
+});
 
   document.getElementById("clearButton").addEventListener("click", clearPreview);
   document.getElementById("bundleFileInput").addEventListener("change", handleLocalBundleUpload);
