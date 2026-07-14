@@ -483,28 +483,30 @@
     async function loadSourceRootInspector() {
       try {
         const [
-          bibleNodesResponse,
-          bibleEdgesResponse,
-          bibleAssertionsResponse,
-          bibleSourcesResponse,
-          dictionaryConceptsResponse,
-          dictionarySourcesResponse,
-          crossHubEdgesResponse,
-          wikidataNodesResponse,
-          wikidataEdgesResponse,
-          wikidataSourcesResponse
-        ] = await Promise.all([
-          fetch("data/bible-root-nodes.json"),
-          fetch("data/bible-root-edges.json"),
-          fetch("data/bible-root-assertions.json"),
-          fetch("data/bible-root-sources.json"),
-          fetch("data/nodes-v2-root.json"),
-          fetch("data/sources-v2.json"),
-          fetch("data/sourceroot-cross-hub-edges.json"),
-          fetch("data/wikidata-root-nodes.json"),
-          fetch("data/wikidata-root-edges.json"),
-          fetch("data/wikidata-root-sources.json")
-        ]);
+  bibleNodesResponse,
+  bibleEdgesResponse,
+  bibleAssertionsResponse,
+  bibleSourcesResponse,
+  dictionaryConceptsResponse,
+  dictionarySourcesResponse,
+  crossHubEdgesResponse,
+  wikidataNodesResponse,
+  wikidataEdgesResponse,
+  wikidataSourcesResponse,
+  lightMvpBundleResponse
+] = await Promise.all([
+  fetch("data/bible-root-nodes.json"),
+  fetch("data/bible-root-edges.json"),
+  fetch("data/bible-root-assertions.json"),
+  fetch("data/bible-root-sources.json"),
+  fetch("data/nodes-v2-root.json"),
+  fetch("data/sources-v2.json"),
+  fetch("data/sourceroot-cross-hub-edges.json"),
+  fetch("data/wikidata-root-nodes.json"),
+  fetch("data/wikidata-root-edges.json"),
+  fetch("data/wikidata-root-sources.json"),
+  fetch("data/sourceroot-light-mvp-bundle.json")
+]);
 
         const bibleNodesRaw = await bibleNodesResponse.json();
         const bibleEdgesRaw = await bibleEdgesResponse.json();
@@ -516,35 +518,42 @@
         const wikidataNodesRaw = await wikidataNodesResponse.json();
         const wikidataEdgesRaw = await wikidataEdgesResponse.json();
         const wikidataSourcesRaw = await wikidataSourcesResponse.json();
+        const lightMvpBundleRaw = await lightMvpBundleResponse.json();
 
         const bibleNodes = adaptBibleNodes(bibleNodesRaw);
         const dictionaryNodes = adaptDictionaryConcepts(dictionaryConceptsRaw);
         const wikidataNodes = adaptWikidataNodes(wikidataNodesRaw);
 
-        allNodes = combineNodes(
-          bibleNodes,
-          dictionaryNodes,
-          wikidataNodes
-        );
+        const lightMvpNodes = adaptImportBundleNodes(lightMvpBundleRaw.nodes || []);
+
+allNodes = combineNodes(
+  bibleNodes,
+  dictionaryNodes,
+  wikidataNodes,
+  lightMvpNodes
+);
 
         allEdges = [
-          ...adaptBibleEdges(bibleEdgesRaw),
-          ...adaptDictionaryEdges(dictionaryConceptsRaw),
-          ...adaptCrossHubEdges(crossHubEdgesRaw),
-          ...adaptWikidataEdges(wikidataEdgesRaw)
-        ];
+  ...adaptBibleEdges(bibleEdgesRaw),
+  ...adaptDictionaryEdges(dictionaryConceptsRaw),
+  ...adaptCrossHubEdges(crossHubEdgesRaw),
+  ...adaptWikidataEdges(wikidataEdgesRaw),
+  ...adaptImportBundleEdges(lightMvpBundleRaw.edges || [])
+];
 
         allAssertions = [
-          ...adaptBibleAssertions(bibleAssertionsRaw),
-          ...adaptDictionaryAssertions(dictionaryConceptsRaw),
-          ...adaptWikidataAssertions(wikidataNodesRaw)
-        ];
+  ...adaptBibleAssertions(bibleAssertionsRaw),
+  ...adaptDictionaryAssertions(dictionaryConceptsRaw),
+  ...adaptWikidataAssertions(wikidataNodesRaw),
+  ...adaptImportBundleAssertions(lightMvpBundleRaw.assertions || [])
+];
 
         allSources = [
-          ...adaptBibleSources(bibleSourcesRaw),
-          ...adaptDictionarySources(dictionarySourcesRaw),
-          ...adaptWikidataSources(wikidataSourcesRaw)
-        ];
+  ...adaptBibleSources(bibleSourcesRaw),
+  ...adaptDictionarySources(dictionarySourcesRaw),
+  ...adaptWikidataSources(wikidataSourcesRaw),
+  ...adaptImportBundleSources(lightMvpBundleRaw.sources || [])
+];
 
         renderEngineStatus();
         populateFilters();
@@ -884,6 +893,83 @@
 
       return assertions;
     }
+function adaptImportBundleNodes(nodes = []) {
+  return nodes.map(node => ({
+    id: node.id,
+    originalId: node.originalId || node.id,
+    title: node.title || node.label || node.id,
+    type: node.type || "Import Bundle Node",
+    domain: node.domain || "Light MVP Bundle",
+    summary: node.summary || "",
+    description: node.description || "",
+    sourceIds: node.sourceIds || [],
+    revisions: node.revisions || [],
+    raw: node
+  }));
+}
+
+function adaptImportBundleAssertions(assertions = []) {
+  return assertions.map(assertion => ({
+    id: assertion.id,
+    nodeId: assertion.nodeId,
+    assertionType: assertion.assertionType || assertion.type || "assertion",
+    label: assertion.label || assertion.assertionType || assertion.type || "Assertion",
+    summary: assertion.summary || "",
+    body: assertion.body || assertion.description || assertion.summary || "",
+    sourceIds: assertion.sourceIds || [],
+    credibilityTier: assertion.credibilityTier || "medium",
+    confidence: assertion.confidence || "moderate",
+    verificationStatus: assertion.verificationStatus || "working",
+    reviewStatus: assertion.reviewStatus || "needs-review",
+    supportLevel: assertion.supportLevel || "working",
+    interpretationLevel: assertion.interpretationLevel || "medium",
+    status: assertion.status || "import-bundle-preview",
+    domain: assertion.domain || "Light MVP Bundle",
+    raw: assertion
+  }));
+}
+
+function adaptImportBundleEdges(edges = []) {
+  return edges.map(edge => ({
+    id: edge.id,
+    fromNodeId: edge.fromNodeId,
+    toNodeId: edge.toNodeId,
+    relationshipType: edge.relationshipType || edge.type || "RELATED_TO",
+    label: edge.label || edge.relationshipType || edge.type || "related to",
+    summary: edge.summary || edge.explanation || "",
+    sourceIds: edge.sourceIds || [],
+    credibilityTier: edge.credibilityTier || "medium",
+    confidence: edge.confidence || "moderate",
+    verificationStatus: edge.verificationStatus || "working",
+    reviewStatus: edge.reviewStatus || "needs-review",
+    supportLevel: edge.supportLevel || "working",
+    relationshipStrength: edge.relationshipStrength || "contextual",
+    interpretationLevel: edge.interpretationLevel || "medium",
+    domain: edge.domain || "Light MVP Bundle",
+    raw: edge
+  }));
+}
+
+function adaptImportBundleSources(sources = []) {
+  return sources.map(source => ({
+    id: source.id,
+    name: source.name || source.title || source.id,
+    type: source.type || "Import Bundle Source",
+    domain: source.domain || "Light MVP Bundle",
+    qualityTier: source.qualityTier || source.tier || "Working Source",
+    credibilityTier: source.credibilityTier || "",
+    verificationStatus: source.verificationStatus || "",
+    sourceClass: source.sourceClass || "",
+    publisher: source.publisher || "",
+    license: source.license || "",
+    licenseStatus: source.licenseStatus || "",
+    reviewStatus: source.reviewStatus || "",
+    lastReviewed: source.lastReviewed || "",
+    url: source.url || "",
+    notes: source.notes || source.description || "",
+    raw: source
+  }));
+}
 
     function renderNodeList(nodes) {
       const nodeList = document.getElementById("nodeList");
@@ -965,24 +1051,24 @@
     window.selectDemoNode = function(demoKey) {
       const demoSearchMap = {
         "wikidata-light": {
-          terms: ["light"],
-          domains: ["Wiki", "WikidataRoot"]
+          terms: ["light", "physical"],
+          domains: ["Wiki", "WikidataRoot", "SourceRoot", "Light MVP Bundle"]
         },
         "dictionary-light": {
-          terms: ["light"],
-          domains: ["DictionaryHub"]
+          terms: ["light", "dictionary"],
+          domains: ["DictionaryHub", "SourceRoot", "Light MVP Bundle"]
         },
         "bible-light": {
-          terms: ["light"],
-          domains: ["BibleRoot"]
+          terms: ["light", "biblical"],
+          domains: ["BibleRoot", "SourceRoot", "Light MVP Bundle"]
         },
         "dictionary-truth": {
           terms: ["truth"],
-          domains: ["DictionaryHub"]
+          domains: ["DictionaryHub", "SourceRoot", "Light MVP Bundle"]
         },
         "dictionary-knowledge": {
           terms: ["knowledge"],
-          domains: ["DictionaryHub"]
+          domains: ["DictionaryHub", "SourceRoot", "Light MVP Bundle"]
         }
       };
 
@@ -1008,14 +1094,15 @@
 
         const displayDomain = getDisplayDomain(node.domain || "");
 
-        const matchesTerm = demoSearch.terms.some(term =>
+        const matchesTerms = demoSearch.terms.every(term =>
           searchableText.includes(term.toLowerCase())
         );
 
-        const matchesDomain = demoSearch.domains.includes(displayDomain) ||
+        const matchesDomain =
+          demoSearch.domains.includes(displayDomain) ||
           demoSearch.domains.includes(node.domain);
 
-        return matchesTerm && matchesDomain;
+        return matchesTerms && matchesDomain;
       });
 
       if (foundNode) {
@@ -1043,7 +1130,7 @@
             Search has been set to <strong>${fallbackTerm}</strong> so you can pick the closest available node manually.
           </p>
           <div class="demo-note">
-            This can happen because the Light MVP Bundle validates in Import Preview but has not yet been persisted into the Inspector dataset.
+            Check that <code>data/sourceroot-light-mvp-bundle.json</code> exists and is loading correctly.
           </div>
         </div>
       `;
