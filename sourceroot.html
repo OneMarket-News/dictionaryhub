@@ -204,6 +204,68 @@
       margin-bottom: 4px;
     }
 
+
+    .hero-demo-panel {
+      background: #fff8e6;
+      border: 1px solid #ead59a;
+      border-radius: 18px;
+      padding: 22px;
+      margin-bottom: 24px;
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 18px;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    }
+
+    .hero-demo-panel h2 {
+      margin: 8px 0 10px;
+      font-size: 28px;
+    }
+
+    .hero-demo-panel p {
+      color: #374151;
+      line-height: 1.55;
+      margin: 0 0 10px;
+    }
+
+    .hero-demo-actions {
+      display: grid;
+      gap: 10px;
+    }
+
+    .primary-demo-button,
+    .secondary-demo-button {
+      display: block;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 999px;
+      padding: 12px 14px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .primary-demo-button {
+      background: #111827;
+      color: white;
+      border: 1px solid #111827;
+    }
+
+    .primary-demo-button:hover {
+      background: #374151;
+    }
+
+    .secondary-demo-button {
+      background: white;
+      color: #1f2933;
+      border: 1px solid #cfc7b8;
+    }
+
+    .secondary-demo-button:hover {
+      background: #efe7d3;
+      border-color: #b78a2f;
+    }
+
     footer {
       max-width: 1200px;
       margin: 0 auto;
@@ -223,6 +285,10 @@
 
       header {
         padding: 28px 16px;
+      }
+
+      .hero-demo-panel {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -262,6 +328,32 @@
         SourceRoot is the shared engine layer under DictionaryHub, BibleRoot, Wiki integrations, and future knowledge hubs.
         It separates concepts, assertions, relationships, sources, credibility metadata, identity resolution, revisions, and import validation so knowledge can be inspected, verified, connected, trusted, and reused.
       </p>
+
+      <section class="hero-demo-panel">
+        <div>
+          <span class="card-label label-source-root">Main MVP Demo</span>
+          <h2>Start the Light MVP Demo</h2>
+          <p>
+            Follow the main SourceRoot demo path to see how one concept — <strong>light</strong> —
+            can be validated, inspected, sourced, connected, and reviewed before it becomes trusted.
+          </p>
+
+          <p>
+            This demo proves the core SourceRoot model:
+            <strong>Node → Assertion → Edge → Source → Credibility → Identity → Revision → Import Validation</strong>.
+          </p>
+        </div>
+
+        <div class="hero-demo-actions">
+          <a class="primary-demo-button" href="sourceroot-import-preview.html">
+            Start Demo: Validate Light MVP Bundle
+          </a>
+
+          <a class="secondary-demo-button" href="sourceroot-inspector.html">
+            Open Inspector
+          </a>
+        </div>
+      </section>
 
       <div class="dashboard-grid">
         <a class="dashboard-card" href="sourceroot-inspector.html">
@@ -425,6 +517,14 @@ DictionaryHub / BibleRoot / Wiki / Future Hubs</code>
   <div class="status-title">Light MVP Bundle</div>
   <div class="status-note">Working larger demo bundle with 8 nodes, 10 assertions, 9 edges, 11 sources, and 12 revisions. Validates as Ready With Warnings.</div>
 </div>
+
+        <div class="status-card">
+          <div class="status-title">Main Demo Path</div>
+          <div class="status-note">
+            Dashboard → Import Preview → Load Light MVP Bundle → Inspector → Assertion, Edge, and Source Registries.
+          </div>
+        </div>
+
 
         <div class="status-card">
           <div class="status-title">Credibility Layer</div>
