@@ -316,6 +316,55 @@
       line-height: 1.5;
     }
 
+
+    .demo-panel {
+      background: #fff8e6;
+      border: 1px solid #ead59a;
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 16px;
+    }
+
+    .demo-panel h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    .demo-panel p {
+      color: #374151;
+      line-height: 1.5;
+      margin: 0 0 10px;
+      font-size: 14px;
+    }
+
+    .demo-button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .demo-button {
+      border: 1px solid #cfc7b8;
+      background: white;
+      color: #1f2933;
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .demo-button:hover {
+      background: #efe7d3;
+      border-color: #b78a2f;
+    }
+
+    .demo-note {
+      margin-top: 10px;
+      color: #6b7280;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
     @media (max-width: 900px) {
       main {
         grid-template-columns: 1fr;
@@ -385,6 +434,26 @@
 
     <section class="panel">
       <div id="inspector">
+        <div class="demo-panel">
+          <h3>Light MVP Demo Path</h3>
+
+          <p>
+            Use this guided path to inspect how SourceRoot separates physical meaning, dictionary meaning, biblical symbolism, truth, knowledge, guidance, revelation, visibility, sources, and trust metadata.
+          </p>
+
+          <div class="demo-button-row">
+            <button class="demo-button" type="button" onclick="window.selectDemoNode('wikidata-light')">Wiki Light</button>
+            <button class="demo-button" type="button" onclick="window.selectDemoNode('dictionary-light')">Dictionary Light</button>
+            <button class="demo-button" type="button" onclick="window.selectDemoNode('bible-light')">BibleRoot Light</button>
+            <button class="demo-button" type="button" onclick="window.selectDemoNode('dictionary-truth')">Truth</button>
+            <button class="demo-button" type="button" onclick="window.selectDemoNode('dictionary-knowledge')">Knowledge</button>
+          </div>
+
+          <div class="demo-note">
+            Tip: Search <strong>light</strong> on the left, then click each node to compare assertions, incoming relationships, outgoing relationships, sources, and credibility metadata.
+          </div>
+        </div>
+
         <h2>Select a node</h2>
         <p class="empty">
           Click a node on the left to inspect its assertions, relationships, sources, revisions, and raw SourceRoot data.
@@ -891,6 +960,94 @@
         ...incomingEdges.flatMap(edge => edge.sourceIds || [])
       ]);
     }
+
+
+    window.selectDemoNode = function(demoKey) {
+      const demoSearchMap = {
+        "wikidata-light": {
+          terms: ["light"],
+          domains: ["Wiki", "WikidataRoot"]
+        },
+        "dictionary-light": {
+          terms: ["light"],
+          domains: ["DictionaryHub"]
+        },
+        "bible-light": {
+          terms: ["light"],
+          domains: ["BibleRoot"]
+        },
+        "dictionary-truth": {
+          terms: ["truth"],
+          domains: ["DictionaryHub"]
+        },
+        "dictionary-knowledge": {
+          terms: ["knowledge"],
+          domains: ["DictionaryHub"]
+        }
+      };
+
+      const demoSearch = demoSearchMap[demoKey];
+
+      if (!demoSearch) {
+        return;
+      }
+
+      const foundNode = allNodes.find(node => {
+        const searchableText = [
+          node.id,
+          node.originalId,
+          node.raw?.id,
+          node.title,
+          node.type,
+          node.summary,
+          node.description
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+
+        const displayDomain = getDisplayDomain(node.domain || "");
+
+        const matchesTerm = demoSearch.terms.some(term =>
+          searchableText.includes(term.toLowerCase())
+        );
+
+        const matchesDomain = demoSearch.domains.includes(displayDomain) ||
+          demoSearch.domains.includes(node.domain);
+
+        return matchesTerm && matchesDomain;
+      });
+
+      if (foundNode) {
+        document.getElementById("searchInput").value = "";
+        document.getElementById("hubFilter").value = "all";
+        document.getElementById("typeFilter").value = "all";
+        window.selectNode(foundNode.id);
+        return;
+      }
+
+      const fallbackTerm = demoSearch.terms[0] || "light";
+
+      document.getElementById("searchInput").value = fallbackTerm;
+      document.getElementById("hubFilter").value = "all";
+      document.getElementById("typeFilter").value = "all";
+      applyFilters();
+
+      document.getElementById("inspector").innerHTML = `
+        <div class="demo-panel">
+          <h3>Demo Node Not Found Yet</h3>
+          <p>
+            This guided button could not find a matching <strong>${demoKey}</strong> node in the currently loaded Inspector dataset.
+          </p>
+          <p>
+            Search has been set to <strong>${fallbackTerm}</strong> so you can pick the closest available node manually.
+          </p>
+          <div class="demo-note">
+            This can happen because the Light MVP Bundle validates in Import Preview but has not yet been persisted into the Inspector dataset.
+          </div>
+        </div>
+      `;
+    };
 
     window.selectNode = function(nodeId) {
       selectedNodeId = nodeId;
