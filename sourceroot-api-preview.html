@@ -155,6 +155,17 @@
       font-family: Consolas, Monaco, monospace;
     }
 
+    .open-source-link {
+      display: inline-block;
+      color: #8a5a00;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    .open-source-link:hover {
+      text-decoration: underline;
+    }
+
     details {
       border: 1px solid #eee2c7;
       background: white;
@@ -270,16 +281,16 @@
       </div>
 
       <div class="top-links">
-  <a href="sourceroot.html">SourceRoot Home</a>
-  <a href="sourceroot-inspector.html">Open Inspector</a>
-  <a href="sourceroot-edge-registry.html">Open Edge Registry</a>
-  <a href="sourceroot-source-registry.html">Open Source Registry</a>
-  <a href="sourceroot-assertion-registry.html">Open Assertion Registry</a>
-  <a href="sourceroot-identity-registry.html">Open Identity Registry</a>
-  <a href="sourceroot-import-preview.html">Open Import Preview</a>
-  <a href="graph-v2.html">Open DictionaryHub Graph</a>
-  <a href="bibleroot.html">Open BibleRoot</a>
-</div>
+        <a href="sourceroot.html">SourceRoot Home</a>
+        <a href="sourceroot-inspector.html">Open Inspector</a>
+        <a href="sourceroot-edge-registry.html">Open Edge Registry</a>
+        <a href="sourceroot-source-registry.html">Open Source Registry</a>
+        <a href="sourceroot-assertion-registry.html">Open Assertion Registry</a>
+        <a href="sourceroot-identity-registry.html">Open Identity Registry</a>
+        <a href="sourceroot-import-preview.html">Open Import Preview</a>
+        <a href="graph-v2.html">Open DictionaryHub Graph</a>
+        <a href="bibleroot.html">Open BibleRoot</a>
+      </div>
     </div>
   </header>
 
@@ -300,6 +311,102 @@ SourceRoot API
 Import Validation → Search → Nodes → Assertions → Assertion Credibility → Edges → Relationship Credibility → Sources → Citations
   ↓
 Verified, inspectable, source-aware knowledge</code>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Exportable API Response Examples</h2>
+
+      <p class="overview-text">
+        These static JSON examples show what SourceRoot API responses could look like for the Light MVP.
+        They are not live backend responses yet, but they model the product contract for node retrieval,
+        import validation, and citation-ready AI answers.
+      </p>
+
+      <div class="endpoint-grid">
+        <article class="endpoint-card">
+          <div class="method-row">
+            <span class="method">GET</span>
+            <span class="endpoint-path">/nodes/light-physical-phenomenon</span>
+          </div>
+
+          <h3>Light Node Response</h3>
+
+          <p>
+            Example response for retrieving a SourceRoot node with assertions, relationships,
+            sources, credibility metadata, and revisions.
+          </p>
+
+          <div class="field-list">
+            <span class="field-pill">node</span>
+            <span class="field-pill">assertions</span>
+            <span class="field-pill">relationships</span>
+            <span class="field-pill">sources</span>
+            <span class="field-pill">revisions</span>
+          </div>
+
+          <p>
+            <a class="open-source-link" href="data/api-examples/sourceRoot-light-node-response.json" target="_blank" rel="noopener">
+              Open JSON example
+            </a>
+          </p>
+        </article>
+
+        <article class="endpoint-card">
+          <div class="method-row">
+            <span class="method">POST</span>
+            <span class="endpoint-path">/imports/validate</span>
+          </div>
+
+          <h3>Light Validation Response</h3>
+
+          <p>
+            Example response for validating the Light MVP Bundle. Shows readiness status,
+            object counts, warnings, errors, and import safety.
+          </p>
+
+          <div class="field-list">
+            <span class="field-pill">status</span>
+            <span class="field-pill">canImport</span>
+            <span class="field-pill">summary</span>
+            <span class="field-pill">errors</span>
+            <span class="field-pill">warnings</span>
+          </div>
+
+          <p>
+            <a class="open-source-link" href="data/api-examples/sourceRoot-light-validation-response.json" target="_blank" rel="noopener">
+              Open JSON example
+            </a>
+          </p>
+        </article>
+
+        <article class="endpoint-card">
+          <div class="method-row">
+            <span class="method">POST</span>
+            <span class="endpoint-path">/answers/with-citations</span>
+          </div>
+
+          <h3>Light Citation Response</h3>
+
+          <p>
+            Example response for an AI-style answer that keeps claim boundaries, relationship types,
+            source provenance, review status, and citation policy visible.
+          </p>
+
+          <div class="field-list">
+            <span class="field-pill">answer</span>
+            <span class="field-pill">supportingObjects</span>
+            <span class="field-pill">sources</span>
+            <span class="field-pill">citationPolicy</span>
+            <span class="field-pill">reviewStatus</span>
+          </div>
+
+          <p>
+            <a class="open-source-link" href="data/api-examples/sourceRoot-light-citation-response.json" target="_blank" rel="noopener">
+              Open JSON example
+            </a>
+          </p>
+        </article>
       </div>
     </section>
 
