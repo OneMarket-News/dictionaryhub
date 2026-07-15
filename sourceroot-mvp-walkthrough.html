@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SourceRoot MVP Walkthrough</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f7f4ee;
+      color: #1f2933;
+    }
+
+    header {
+      background: #111827;
+      color: white;
+      padding: 30px 24px;
+    }
+
+    .header-inner,
+    main,
+    footer {
+      max-width: 1250px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 36px;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      color: #d1d5db;
+      margin-top: 10px;
+      max-width: 980px;
+      line-height: 1.55;
+      font-size: 16px;
+    }
+
+    .top-links {
+      margin-top: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .top-links a {
+      color: white;
+      border: 1px solid #374151;
+      background: #1f2937;
+      border-radius: 999px;
+      padding: 7px 11px;
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    .top-links a:hover {
+      background: #374151;
+    }
+
+    main {
+      padding: 24px;
+    }
+
+    .panel {
+      background: white;
+      border: 1px solid #ddd6c8;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      margin-bottom: 22px;
+    }
+
+    .panel h2 {
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+
+    .overview-text {
+      color: #374151;
+      line-height: 1.6;
+      max-width: 980px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .hero-card {
+      background: #fff8e6;
+      border: 1px solid #ead59a;
+      border-radius: 16px;
+      padding: 18px;
+    }
+
+    .hero-card strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 18px;
+    }
+
+    .hero-card span {
+      color: #374151;
+      line-height: 1.55;
+    }
+
+    .model-box {
+      background: #111827;
+      color: white;
+      border-radius: 16px;
+      padding: 18px;
+      margin-top: 16px;
+      overflow-x: auto;
+    }
+
+    .model-box code {
+      color: #f9fafb;
+      background: transparent;
+      font-size: 14px;
+      line-height: 1.7;
+      white-space: pre;
+      padding: 0;
+    }
+
+    .walkthrough-list {
+      display: grid;
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .step-card {
+      background: #fffdf8;
+      border: 1px solid #eee2c7;
+      border-radius: 16px;
+      padding: 16px;
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .step-number {
+      background: #111827;
+      color: white;
+      border-radius: 14px;
+      padding: 12px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 20px;
+    }
+
+    .step-content h3 {
+      margin: 0 0 8px;
+      font-size: 21px;
+    }
+
+    .step-content p {
+      color: #374151;
+      line-height: 1.55;
+      margin: 0 0 10px;
+    }
+
+    .step-content ul {
+      margin: 8px 0 0;
+      padding-left: 18px;
+      color: #374151;
+      line-height: 1.55;
+    }
+
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .action-link {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 9px 12px;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 13px;
+      border: 1px solid #cfc7b8;
+      background: white;
+      color: #1f2933;
+    }
+
+    .action-link.primary {
+      background: #111827;
+      color: white;
+      border-color: #111827;
+    }
+
+    .action-link:hover {
+      background: #fff8e6;
+      border-color: #b78a2f;
+    }
+
+    .action-link.primary:hover {
+      background: #374151;
+      border-color: #374151;
+    }
+
+    .check-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .check-card {
+      background: #fff8e6;
+      border: 1px solid #ead59a;
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .check-card strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .check-card span {
+      color: #4b5563;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .script-box {
+      background: #f3f4f6;
+      border: 1px solid #d1d5db;
+      border-radius: 14px;
+      padding: 16px;
+      color: #374151;
+      line-height: 1.6;
+      margin-top: 14px;
+    }
+
+    .script-box p {
+      margin: 0 0 12px;
+    }
+
+    .script-box p:last-child {
+      margin-bottom: 0;
+    }
+
+    footer {
+      padding: 0 24px 28px;
+      color: #6b7280;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 800px) {
+      header {
+        padding: 26px 16px;
+      }
+
+      main {
+        padding: 18px 14px;
+      }
+
+      h1 {
+        font-size: 30px;
+      }
+
+      .hero-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .step-card {
+        grid-template-columns: 1fr;
+      }
+
+      .step-number {
+        width: fit-content;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="header-inner">
+      <h1>SourceRoot MVP Walkthrough</h1>
+
+      <div class="subtitle">
+        A guided demo path for showing SourceRoot from start to finish. Use this page when presenting the MVP to someone new.
+      </div>
+
+      <div class="top-links">
+        <a href="index.html">Landing Page</a>
+        <a href="sourceroot.html">Dashboard</a>
+        <a href="sourceroot-import-bundle-registry.html">Import Bundle Registry</a>
+        <a href="sourceroot-import-preview.html">Import Preview</a>
+        <a href="sourceroot-light-graph.html">Light Graph</a>
+        <a href="sourceroot-inspector.html">Inspector</a>
+        <a href="sourceroot-api-preview.html">API Preview</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <h2>Walkthrough Purpose</h2>
+
+      <p class="overview-text">
+        This walkthrough explains the current SourceRoot MVP using the Light MVP Bundle.
+        The goal is to show that SourceRoot is not just a static page or graph. It is a structured provenance system for inspecting knowledge before trusting it.
+      </p>
+
+      <div class="hero-grid">
+        <div class="hero-card">
+          <strong>Core message</strong>
+          <span>
+            SourceRoot separates knowledge into nodes, assertions, relationships, sources, credibility metadata, identity context, revisions, and import validation.
+            That makes knowledge inspectable before it becomes trusted.
+          </span>
+        </div>
+
+        <div class="hero-card">
+          <strong>Demo concept</strong>
+          <span>
+            The demo uses the concept of light across physical, dictionary, biblical, symbolic, truth, knowledge, guidance, revelation, and visibility contexts.
+          </span>
+        </div>
+      </div>
+
+      <div class="model-box">
+        <code>Node → Assertion → Edge → Source → Credibility → Identity → Revision → Import Validation</code>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Full MVP Demo Path</h2>
+
+      <div class="walkthrough-list">
+        <article class="step-card">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h3>Start with the Landing Page</h3>
+            <p>
+              Open the public-facing entry point. Explain SourceRoot as a trust and provenance layer for knowledge applications.
+            </p>
+
+            <ul>
+              <li>Point to the north star: make knowledge inspectable before it becomes trusted.</li>
+              <li>Explain that SourceRoot sits underneath apps like DictionaryHub, BibleRoot, Wiki integrations, and future hubs.</li>
+            </ul>
+
+            <div class="action-row">
+              <a class="action-link primary" href="index.html">Open Landing Page</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="step-card">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h3>Open the SourceRoot Dashboard</h3>
+            <p>
+              Show the main control center. This is where the MVP components are organized.
+            </p>
+
+            <ul>
+              <li>Point out the main demo path.</li>
+              <li>Show the cards for Inspector, Import Bundle Registry, Import Preview, Light Graph, registries, and API Preview.</li>
+              <li>Explain that each page inspects a different layer of the same knowledge system.</li>
+            </ul>
+
+            <div class="action-row">
+              <a class="action-link primary" href="sourceroot.html">Open Dashboard</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="step-card">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h3>Open the Import Bundle Registry</h3>
+            <p>
+              Show that SourceRoot can catalog available bundles instead of treating imports as hidden files.
+            </p>
+
+            <ul>
+              <li>Review the Light MVP Bundle.</li>
+              <li>Show the status: Ready With Warnings.</li>
+              <li>Show the counts: 8 nodes, 10 assertions, 9 edges, 11 sources, 12 revisions.</li>
+              <li>Explain that warnings are visible instead of hidden.</li>
+            </ul>
+
+            <div class="action-row">
+              <a class="action-link primary" href="sourceroot-import-bundle-registry.html">Open Import Bundle Registry</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="step-card">
+          <div class="step-number">4</div>
+          <div class="step-content">
+            <h3>Validate the Light MVP Bundle</h3>
+            <p>
+              Open Import Preview and validate the bundle before trusting it.
+            </p>
+
+            <ul>
+              <li>Click Load Light MVP Bundle.</li>
+              <li>Confirm Ready With Warnings.</li>
+              <li>Confirm Errors: 0.</li>
+              <li>Explain that safe-to-preview is different from public-release-ready.</li>
+            </ul>
+
+            <div class="action-row">
+              <a class="action-link primary" href="sourceroot-import-preview.html">Open Import Preview</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="step-card">
+          <div class="step-number">5</div>
+          <div class="step-content">
+            <h3>Open the Light MVP Graph</h3>
+            <p>
+              Show the same bundle as a visual graph of meaning.
+            </p>
+
+            <ul>
+              <li>Confirm 8 nodes and 9 relationships appear.</li>
+              <li>Click a Light node.</li>
+              <li>Show assertions, relationships, sources, credibility metadata, and revisions in the detail panel.</li>
+              <li>Explain solid vs interpretive/contextual relationship types.</li>
+            </ul>
+
+            <div class="action-row">
+              <a class="action-link primary" href="sourceroot-light-graph.html">Open Light Graph</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="step-card">
+          <div class="step-number">6</div>
+          <div class="step-content">
+            <h3>Inspect the Nodes</h3>
+            <p>
+              Open the Inspector to show that the Light MVP Bundle is loaded into the universal SourceRoot inspection layer.
+            </p>
+
+            <ul>
+              <li>Use the Light MVP Demo Path buttons.</li>
+              <li>Inspect Dictionary Light, BibleRoot Light, Truth, and Knowledge.</li>
+              <li>Show outgoing and incoming relationships.</li>
+              <li>Show source and revision context.</li>
+            </ul>
+
+            <div class="action-row">
+              <a class="action-link primary" href="sourceroot-inspector.html">Open Inspector</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="step-card">
+          <div class="step-number">7</div>
+          <div class="step-content">
+            <h3>Open the Assertion Registry</h3>
+            <p>
+              Show SourceRoot’s claim layer.
+            </p>
+
+            <ul>
+              <li>Search light.</li>
+              <li>Explain that assertions are individual claims, not just page text.</li>
+              <li>Show credibility, verification, review status, support level, and interpretation level.</li>
+            </ul>
+
+            <div class="action-row">
+              <a class="action-link primary" href="sourceroot-assertion-registry.html">Open Assertion Registry</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="step-card">
+          <div class="step-number">8</div>
+          <div class="step-content">
+            <h3>Open the Edge Registry</h3>
+            <p>
+              Show SourceRoot’s relationship layer.
+            </p>
+
+            <ul>
+              <li>Search light.</li>
+              <li>Explain that relationships are also claims.</li>
+              <li>Compare physical light → visibility with biblical light → truth.</li>
+              <li>Explain why both are useful but should not carry the same trust level.</li>
+            </ul>
+
+            <div class="action-row">
+              <a class="action-link primary" href="sourceroot-edge-registry.html">Open Edge Registry</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="step-card">
+          <div class="step-number">9</div>
+          <div class="step-content">
+            <h3>Open the Source Registry</h3>
+            <p>
+              Show the provenance layer.
+            </p>
+
+            <ul>
+              <li>Review publisher, source type, quality tier, license status, and review status.</li>
+              <li>Explain that the source layer is what makes SourceRoot different from a normal graph or note system.</li>
+              <li>Point out that source quality and claim credibility are related but not identical.</li>
+            </ul>
+
+            <div class="action-row">
+              <a class="action-link primary" href="sourceroot-source-registry.html">Open Source Registry</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="step-card">
+          <div class="step-number">10</div>
+          <div class="step-content">
+            <h3>Open the API Preview</h3>
+            <p>
+              Show how this model could become a real API contract.
+            </p>
+
+            <ul>
+              <li>Show node retrieval.</li>
+              <li>Show import validation.</li>
+              <li>Show assertion credibility and relationship credibility.</li>
+              <li>Open the exportable API response examples.</li>
+              <li>Explain how this supports future AI citation and provenance workflows.</li>
+            </ul>
+
+            <div class="action-row">
+              <a class="action-link primary" href="sourceroot-api-preview.html">Open API Preview</a>
+              <a class="action-link" href="data/api-examples/sourceRoot-light-node-response.json" target="_blank" rel="noopener">Node API Example</a>
+              <a class="action-link" href="data/api-examples/sourceRoot-light-validation-response.json" target="_blank" rel="noopener">Validation API Example</a>
+              <a class="action-link" href="data/api-examples/sourceRoot-light-citation-response.json" target="_blank" rel="noopener">Citation API Example</a>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Presenter Checklist</h2>
+
+      <div class="check-grid">
+        <div class="check-card">
+          <strong>What SourceRoot is</strong>
+          <span>A provenance engine for inspectable knowledge, not just a content website.</span>
+        </div>
+
+        <div class="check-card">
+          <strong>What the demo proves</strong>
+          <span>One concept can be validated, inspected, sourced, connected, and reviewed across multiple domains.</span>
+        </div>
+
+        <div class="check-card">
+          <strong>Why warnings matter</strong>
+          <span>SourceRoot separates safe-to-preview data from fully reviewed public-release-ready data.</span>
+        </div>
+
+        <div class="check-card">
+          <strong>Why assertions matter</strong>
+          <span>Claims are inspectable objects with credibility, support, review, and source context.</span>
+        </div>
+
+        <div class="check-card">
+          <strong>Why edges matter</strong>
+          <span>Relationships are also claims and need their own trust metadata.</span>
+        </div>
+
+        <div class="check-card">
+          <strong>Why this matters for AI</strong>
+          <span>AI systems need structured provenance, source boundaries, and citation-ready objects instead of flattened answers.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Simple Talk Track</h2>
+
+      <div class="script-box">
+        <p>
+          SourceRoot is a prototype trust layer for knowledge. Instead of flattening information into one answer or one page, it separates knowledge into nodes, assertions, relationships, sources, credibility metadata, identity context, revisions, and import validation.
+        </p>
+
+        <p>
+          This demo uses the concept of light because light has physical meaning, dictionary meaning, biblical symbolism, and symbolic relationships to truth, knowledge, guidance, revelation, and visibility.
+        </p>
+
+        <p>
+          The important part is not just the word light. The important part is that SourceRoot can show what is being claimed, where it came from, how it connects, how trustworthy it is, what still needs review, and whether the data is safe to import.
+        </p>
+
+        <p>
+          That is the larger idea: make knowledge inspectable before it becomes trusted.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    SourceRoot MVP Walkthrough. Use this page as the guided demo path for presenting the current prototype.
+  </footer>
+</body>
+</html>
