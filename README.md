@@ -28,7 +28,7 @@ Can it be imported safely?
 Can it be cited responsibly?
 ```
 
-The current MVP includes a working Light demo with validation, inspection, a visual graph, registries, source metadata, credibility metadata, screenshots, and documentation.
+The current MVP includes a working Light demo with validation, an Import Bundle Registry, inspection, a visual graph, registries, source metadata, credibility metadata, screenshots, API examples, and documentation.
 
 ---
 
@@ -232,7 +232,13 @@ A safety check before structured knowledge is accepted into the system.
 
 ## Prototype Pages
 
-Open the main dashboard first:
+Open the public landing page first:
+
+```text
+index.html
+```
+
+Open the main SourceRoot dashboard from there:
 
 ```text
 sourceroot.html
@@ -241,7 +247,9 @@ sourceroot.html
 Main prototype pages:
 
 ```text
+index.html
 sourceroot.html
+sourceroot-import-bundle-registry.html
 sourceroot-import-preview.html
 sourceroot-light-graph.html
 sourceroot-inspector.html
@@ -261,24 +269,28 @@ graph-v2.html
 Use this flow for the MVP demo:
 
 ```text
-1. Open sourceroot.html
-2. Click Start Demo: Validate Light MVP Bundle
-3. Open sourceroot-import-preview.html
-4. Click Load Light MVP Bundle
-5. Confirm Ready With Warnings
-6. Confirm Errors: 0
-7. Open sourceroot-light-graph.html
-8. Click a Light node in the graph
-9. Inspect assertions, relationships, sources, and trust metadata
-10. Open sourceroot-inspector.html
-11. Use the Light MVP Demo Path buttons
-12. Inspect Dictionary Light, BibleRoot Light, Truth, and Knowledge
-13. Open Assertion Registry
-14. Search light
-15. Open Edge Registry
+1. Open index.html
+2. Open sourceroot.html
+3. Open the Import Bundle Registry
+4. Review the Light MVP Bundle status
+5. Open Import Preview
+6. Click Load Light MVP Bundle
+7. Confirm Ready With Warnings
+8. Confirm Errors: 0
+9. Open the Light MVP Graph
+10. Click a Light node in the graph
+11. Inspect assertions, relationships, sources, and trust metadata
+12. Open the Inspector
+13. Use the Light MVP Demo Path buttons
+14. Inspect Dictionary Light, BibleRoot Light, Truth, and Knowledge
+15. Open Assertion Registry
 16. Search light
-17. Open Source Registry
-18. Review source and license metadata
+17. Open Edge Registry
+18. Search light
+19. Open Source Registry
+20. Review source and license metadata
+21. Open API Preview
+22. Open the exportable API response examples
 ```
 
 ---
@@ -325,6 +337,40 @@ fully reviewed and public-release ready
 ```
 
 That distinction is one of the core points of the MVP.
+
+---
+
+## Import Bundle Registry
+
+Open:
+
+```text
+sourceroot-import-bundle-registry.html
+```
+
+The Import Bundle Registry is the catalog layer for SourceRoot imports.
+
+It shows available bundles, validation status, object counts, known warnings, known errors, readiness notes, and related actions.
+
+Current registry entries:
+
+```text
+Light MVP Bundle
+Example Import Bundle
+Broken Import Bundle
+```
+
+The registry connects import bundles to:
+
+```text
+Import Preview
+Light Graph
+Inspector
+API examples
+source JSON files
+```
+
+This page helps SourceRoot feel less like separate demos and more like a system that can manage multiple knowledge imports.
 
 ---
 
@@ -571,6 +617,16 @@ Retrieve Sources
 Preview Import
 ```
 
+It also links to exportable static API response examples for the Light MVP.
+
+Current API example files:
+
+```text
+data/api-examples/sourceRoot-light-node-response.json
+data/api-examples/sourceRoot-light-validation-response.json
+data/api-examples/sourceRoot-light-citation-response.json
+```
+
 ---
 
 ## Data Folders
@@ -591,6 +647,9 @@ data/wikidata-root-nodes.json
 data/wikidata-root-edges.json
 data/wikidata-root-sources.json
 data/sourceroot-cross-hub-edges.json
+data/api-examples/sourceRoot-light-node-response.json
+data/api-examples/sourceRoot-light-validation-response.json
+data/api-examples/sourceRoot-light-citation-response.json
 ```
 
 ---
@@ -670,16 +729,17 @@ Recommended local setup:
 ```text
 Open the project in VS Code
 Use Live Server
-Open sourceroot.html
+Open index.html
 ```
 
 Do not open the HTML files directly with `file://`.
 
 Some pages use JavaScript modules and fetch local JSON files, so they need to run through a local server.
 
-Example local URL:
+Example local URLs:
 
 ```text
+http://127.0.0.1:5500/index.html
 http://127.0.0.1:5500/sourceroot.html
 ```
 
@@ -690,6 +750,8 @@ http://127.0.0.1:5500/sourceroot.html
 ```text
 Status: MVP prototype
 Main demo: Light MVP Bundle
+Public landing page: Working
+Import Bundle Registry: Working
 Import validation: Working
 Light MVP visual graph: Working
 Inspector integration: Working
@@ -698,6 +760,7 @@ Edge Registry: Working
 Source Registry: Working
 Identity Registry: Working
 API Preview: Prototype
+API response examples: Working
 Public-release readiness: Not final
 ```
 
@@ -709,6 +772,7 @@ The current MVP proves that SourceRoot can:
 
 ```text
 validate import bundles
+catalog available import bundles
 load structured knowledge
 inspect nodes
 inspect assertions
@@ -719,6 +783,7 @@ track review status
 track interpretation level
 surface warnings
 model one concept across multiple contexts
+link API-style response examples
 support future AI citation and provenance workflows
 ```
 
@@ -730,14 +795,15 @@ Possible next builds:
 
 ```text
 Improve Light demo polish
-Add imported bundle registry view
-Add public landing page copy
 Add schema documentation
-Add exportable API response examples
+Add exportable API response previews inside the UI
 Add more source-backed dictionary data
 Add more BibleRoot phrase data
 Add more identity resolution examples
 Move more adapter logic into reusable engine modules
+Create a real backend API prototype
+Add bundle validation history
+Add a citation event registry
 ```
 
 ---
