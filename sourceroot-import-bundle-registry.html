@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SourceRoot Import Bundle Registry</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f7f4ee;
+      color: #1f2933;
+    }
+
+    header {
+      background: #111827;
+      color: white;
+      padding: 28px 24px;
+    }
+
+    .header-inner,
+    main,
+    footer {
+      max-width: 1250px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 34px;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      color: #d1d5db;
+      margin-top: 10px;
+      max-width: 980px;
+      line-height: 1.55;
+    }
+
+    .top-links {
+      margin-top: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .top-links a {
+      color: white;
+      border: 1px solid #374151;
+      background: #1f2937;
+      border-radius: 999px;
+      padding: 7px 11px;
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    .top-links a:hover {
+      background: #374151;
+    }
+
+    main {
+      padding: 24px;
+    }
+
+    .panel {
+      background: white;
+      border: 1px solid #ddd6c8;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      margin-bottom: 22px;
+    }
+
+    .panel h2 {
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+
+    .overview-text {
+      color: #374151;
+      line-height: 1.6;
+      max-width: 980px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .summary-card {
+      background: #fff8e6;
+      border: 1px solid #ead59a;
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .summary-number {
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    .summary-label {
+      color: #6b7280;
+      font-size: 13px;
+    }
+
+    .bundle-grid {
+      display: grid;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .bundle-card {
+      background: #fffdf8;
+      border: 1px solid #eee2c7;
+      border-radius: 18px;
+      padding: 18px;
+    }
+
+    .bundle-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .bundle-title {
+      margin: 0 0 6px;
+      font-size: 22px;
+    }
+
+    .bundle-path {
+      font-family: Consolas, Monaco, monospace;
+      color: #4b5563;
+      font-size: 13px;
+      background: #f3f4f6;
+      border-radius: 8px;
+      padding: 5px 7px;
+      display: inline-block;
+      word-break: break-word;
+    }
+
+    .status-pill {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .status-ready {
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #86efac;
+    }
+
+    .status-warning {
+      background: #fff8e6;
+      color: #7c2d12;
+      border: 1px solid #ead59a;
+    }
+
+    .status-blocked {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    .bundle-description {
+      color: #374151;
+      line-height: 1.55;
+      max-width: 980px;
+      margin-bottom: 14px;
+    }
+
+    .count-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 10px;
+      margin: 14px 0;
+    }
+
+    .count-card {
+      background: white;
+      border: 1px solid #ead59a;
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .count-number {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .count-label {
+      color: #6b7280;
+      font-size: 12px;
+      margin-top: 3px;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .meta-card {
+      background: white;
+      border: 1px solid #eee2c7;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .meta-card strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .meta-card span {
+      color: #4b5563;
+    }
+
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .action-link {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 9px 12px;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 13px;
+      border: 1px solid #cfc7b8;
+      background: white;
+      color: #1f2933;
+    }
+
+    .action-link.primary {
+      background: #111827;
+      color: white;
+      border-color: #111827;
+    }
+
+    .action-link:hover {
+      background: #fff8e6;
+      border-color: #b78a2f;
+    }
+
+    .action-link.primary:hover {
+      background: #374151;
+      border-color: #374151;
+    }
+
+    .issue-list {
+      margin-top: 14px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .issue {
+      background: white;
+      border: 1px solid #eee2c7;
+      border-radius: 12px;
+      padding: 11px;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .issue.warning {
+      border-color: #ead59a;
+      background: #fff8e6;
+    }
+
+    .issue.error {
+      border-color: #fecaca;
+      background: #fee2e2;
+    }
+
+    .issue strong {
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    .model-box {
+      background: #111827;
+      color: white;
+      border-radius: 16px;
+      padding: 18px;
+      margin-top: 16px;
+      overflow-x: auto;
+    }
+
+    .model-box code {
+      color: #f9fafb;
+      background: transparent;
+      font-size: 14px;
+      line-height: 1.7;
+      white-space: pre;
+      padding: 0;
+    }
+
+    footer {
+      padding: 0 24px 28px;
+      color: #6b7280;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 760px) {
+      header {
+        padding: 24px 16px;
+      }
+
+      main {
+        padding: 18px 14px;
+      }
+
+      h1 {
+        font-size: 29px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="header-inner">
+      <h1>SourceRoot Import Bundle Registry</h1>
+
+      <div class="subtitle">
+        Browse available SourceRoot import bundles, review validation status, inspect object counts,
+        open related demos, and connect bundles to API examples.
+      </div>
+
+      <div class="top-links">
+        <a href="index.html">Landing Page</a>
+        <a href="sourceroot.html">SourceRoot Home</a>
+        <a href="sourceroot-import-preview.html">Open Import Preview</a>
+        <a href="sourceroot-light-graph.html">Open Light Graph</a>
+        <a href="sourceroot-inspector.html">Open Inspector</a>
+        <a href="sourceroot-api-preview.html">Open API Preview</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <h2>Registry Purpose</h2>
+
+      <p class="overview-text">
+        The Import Bundle Registry is the catalog layer for SourceRoot imports. Instead of only loading
+        bundles manually, users can see which bundles exist, what they contain, whether they are safe to
+        preview, and what review work remains before public release.
+      </p>
+
+      <div class="model-box">
+        <code>Import Bundle Registry
+  ↓
+Bundle Status / Counts / Issues / Actions
+  ↓
+Import Preview → Inspector → Light Graph → API Examples</code>
+      </div>
+
+      <div id="summaryGrid" class="summary-grid">
+        <div class="summary-card">
+          <div class="summary-number">—</div>
+          <div class="summary-label">Bundles</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Available Import Bundles</h2>
+
+      <p class="overview-text">
+        Current registry entries are static prototype records. Future versions can generate this list
+        directly from saved validation results.
+      </p>
+
+      <div id="bundleGrid" class="bundle-grid"></div>
+    </section>
+  </main>
+
+  <footer>
+    SourceRoot Import Bundle Registry. Current status: static prototype catalog for import bundle visibility.
+  </footer>
+
+  <script>
+    const bundles = [
+      {
+        id: "sourceroot-light-mvp-bundle",
+        title: "Light MVP Bundle",
+        path: "data/sourceroot-light-mvp-bundle.json",
+        status: "Ready With Warnings",
+        statusClass: "status-warning",
+        canImport: true,
+        description:
+          "Main SourceRoot MVP demo bundle. Models light across physical, dictionary, biblical, symbolic, truth, knowledge, guidance, revelation, and visibility contexts.",
+        counts: {
+          nodes: 8,
+          assertions: 10,
+          edges: 9,
+          sources: 11,
+          revisions: 12,
+          errors: 0,
+          warnings: 3
+        },
+        metadata: {
+          purpose: "Main MVP demo dataset",
+          readiness: "Safe to preview, not fully public-release reviewed",
+          domains: "SourceRoot, DictionaryHub, BibleRoot, Wiki-style context",
+          reviewNeed: "Relationship support levels and internal-only source handling"
+        },
+        warnings: [
+          {
+            code: "INVALID_RELATIONSHIP_SUPPORT_LEVEL",
+            objectId: "edge-light-visibility-to-knowledge",
+            message: "Relationship support level should be reviewed before public release."
+          },
+          {
+            code: "INVALID_RELATIONSHIP_SUPPORT_LEVEL",
+            objectId: "edge-revelation-to-knowledge",
+            message: "Relationship support level should be reviewed before public release."
+          },
+          {
+            code: "SOURCE_INTERNAL_ONLY",
+            objectId: "source-bibleroot-alpha-notes",
+            message: "Internal-only source should not be treated as public-release-ready."
+          }
+        ],
+        errors: [],
+        actions: [
+          {
+            label: "Validate in Import Preview",
+            href: "sourceroot-import-preview.html",
+            primary: true
+          },
+          {
+            label: "Open Light Graph",
+            href: "sourceroot-light-graph.html"
+          },
+          {
+            label: "Open Inspector",
+            href: "sourceroot-inspector.html"
+          },
+          {
+            label: "Open Node API Example",
+            href: "data/api-examples/sourceRoot-light-node-response.json"
+          },
+          {
+            label: "Open Validation API Example",
+            href: "data/api-examples/sourceRoot-light-validation-response.json"
+          },
+          {
+            label: "Open Citation API Example",
+            href: "data/api-examples/sourceRoot-light-citation-response.json"
+          }
+        ]
+      },
+      {
+        id: "sourceroot-import-bundle-example",
+        title: "Example Import Bundle",
+        path: "data/sourceroot-import-bundle-example.json",
+        status: "Ready With Warnings",
+        statusClass: "status-warning",
+        canImport: true,
+        description:
+          "Small clean example bundle used to test the import validator and demonstrate a safe preview with one warning.",
+        counts: {
+          nodes: 2,
+          assertions: 2,
+          edges: 1,
+          sources: 1,
+          revisions: 3,
+          errors: 0,
+          warnings: 1
+        },
+        metadata: {
+          purpose: "Validator smoke test",
+          readiness: "Safe to preview",
+          domains: "SourceRoot example data",
+          reviewNeed: "Internal-only source should not be treated as public-ready"
+        },
+        warnings: [
+          {
+            code: "SOURCE_INTERNAL_ONLY",
+            objectId: "example-source-light-reference",
+            message: "Source license status is internal-use-only."
+          }
+        ],
+        errors: [],
+        actions: [
+          {
+            label: "Validate in Import Preview",
+            href: "sourceroot-import-preview.html",
+            primary: true
+          },
+          {
+            label: "Open JSON Bundle",
+            href: "data/sourceroot-import-bundle-example.json"
+          }
+        ]
+      },
+      {
+        id: "sourceroot-import-bundle-broken-example",
+        title: "Broken Import Bundle",
+        path: "data/sourceroot-import-bundle-broken-example.json",
+        status: "Blocked",
+        statusClass: "status-blocked",
+        canImport: false,
+        description:
+          "Intentional failure bundle used to prove the validator catches duplicate IDs, broken references, missing fields, and invalid trust metadata.",
+        counts: {
+          nodes: "Test",
+          assertions: "Test",
+          edges: "Test",
+          sources: "Test",
+          revisions: "Test",
+          errors: "Several",
+          warnings: "Several"
+        },
+        metadata: {
+          purpose: "Validator failure test",
+          readiness: "Blocked from import",
+          domains: "SourceRoot test data",
+          reviewNeed: "Fix duplicate IDs, missing references, missing fields, and invalid trust values"
+        },
+        warnings: [
+          {
+            code: "EXPECTED_WARNINGS",
+            objectId: "broken-test-bundle",
+            message: "This bundle is supposed to produce warnings."
+          }
+        ],
+        errors: [
+          {
+            code: "EXPECTED_ERRORS",
+            objectId: "broken-test-bundle",
+            message: "This bundle is supposed to produce validation errors and be blocked."
+          }
+        ],
+        actions: [
+          {
+            label: "Validate in Import Preview",
+            href: "sourceroot-import-preview.html",
+            primary: true
+          },
+          {
+            label: "Open JSON Bundle",
+            href: "data/sourceroot-import-bundle-broken-example.json"
+          }
+        ]
+      }
+    ];
+
+    function renderSummary() {
+      const totalBundles = bundles.length;
+      const readyBundles = bundles.filter(bundle => bundle.canImport).length;
+      const blockedBundles = bundles.filter(bundle => !bundle.canImport).length;
+      const totalWarnings = bundles.reduce((sum, bundle) => {
+        const warnings = Number(bundle.counts.warnings);
+        return sum + (Number.isFinite(warnings) ? warnings : 0);
+      }, 0);
+
+      document.getElementById("summaryGrid").innerHTML = `
+        <div class="summary-card">
+          <div class="summary-number">${totalBundles}</div>
+          <div class="summary-label">Bundles</div>
+        </div>
+
+        <div class="summary-card">
+          <div class="summary-number">${readyBundles}</div>
+          <div class="summary-label">Preview-Ready</div>
+        </div>
+
+        <div class="summary-card">
+          <div class="summary-number">${blockedBundles}</div>
+          <div class="summary-label">Blocked</div>
+        </div>
+
+        <div class="summary-card">
+          <div class="summary-number">${totalWarnings}</div>
+          <div class="summary-label">Known Warnings</div>
+        </div>
+      `;
+    }
+
+    function renderBundles() {
+      document.getElementById("bundleGrid").innerHTML = bundles.map(bundle => `
+        <article class="bundle-card">
+          <div class="bundle-header">
+            <div>
+              <h3 class="bundle-title">${escapeHtml(bundle.title)}</h3>
+              <div class="bundle-path">${escapeHtml(bundle.path)}</div>
+            </div>
+
+            <span class="status-pill ${bundle.statusClass}">
+              ${escapeHtml(bundle.status)}
+            </span>
+          </div>
+
+          <p class="bundle-description">
+            ${escapeHtml(bundle.description)}
+          </p>
+
+          <div class="count-grid">
+            ${renderCount("Nodes", bundle.counts.nodes)}
+            ${renderCount("Assertions", bundle.counts.assertions)}
+            ${renderCount("Edges", bundle.counts.edges)}
+            ${renderCount("Sources", bundle.counts.sources)}
+            ${renderCount("Revisions", bundle.counts.revisions)}
+            ${renderCount("Errors", bundle.counts.errors)}
+            ${renderCount("Warnings", bundle.counts.warnings)}
+          </div>
+
+          <div class="meta-grid">
+            <div class="meta-card">
+              <strong>Purpose</strong>
+              <span>${escapeHtml(bundle.metadata.purpose)}</span>
+            </div>
+
+            <div class="meta-card">
+              <strong>Readiness</strong>
+              <span>${escapeHtml(bundle.metadata.readiness)}</span>
+            </div>
+
+            <div class="meta-card">
+              <strong>Domains</strong>
+              <span>${escapeHtml(bundle.metadata.domains)}</span>
+            </div>
+
+            <div class="meta-card">
+              <strong>Review Need</strong>
+              <span>${escapeHtml(bundle.metadata.reviewNeed)}</span>
+            </div>
+          </div>
+
+          ${renderIssues(bundle.errors, "error")}
+          ${renderIssues(bundle.warnings, "warning")}
+
+          <div class="action-row">
+            ${bundle.actions.map(action => `
+              <a
+                class="action-link ${action.primary ? "primary" : ""}"
+                href="${escapeAttribute(action.href)}"
+                ${action.href.endsWith(".json") ? `target="_blank" rel="noopener"` : ""}
+              >
+                ${escapeHtml(action.label)}
+              </a>
+            `).join("")}
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function renderCount(label, value) {
+      return `
+        <div class="count-card">
+          <div class="count-number">${escapeHtml(value)}</div>
+          <div class="count-label">${escapeHtml(label)}</div>
+        </div>
+      `;
+    }
+
+    function renderIssues(issues = [], type = "warning") {
+      if (!issues.length) {
+        return "";
+      }
+
+      const title = type === "error" ? "Known Errors" : "Known Warnings";
+
+      return `
+        <div class="issue-list">
+          ${issues.map(issue => `
+            <div class="issue ${type}">
+              <strong>${escapeHtml(title)} · ${escapeHtml(issue.code)}</strong>
+              <span><code>${escapeHtml(issue.objectId)}</code> — ${escapeHtml(issue.message)}</span>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function escapeAttribute(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+    }
+
+    renderSummary();
+    renderBundles();
+  </script>
+</body>
+</html>
