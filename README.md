@@ -28,7 +28,7 @@ Can it be imported safely?
 Can it be cited responsibly?
 ```
 
-The current MVP includes a working Light demo with validation, an Import Bundle Registry, inspection, a visual graph, registries, source metadata, credibility metadata, screenshots, API examples, and documentation.
+The current MVP includes a working Light demo with validation, an MVP Walkthrough, an Import Bundle Registry, inspection, a visual graph, registries, source metadata, credibility metadata, screenshots, API examples, and documentation.
 
 ---
 
@@ -238,6 +238,12 @@ Open the public landing page first:
 index.html
 ```
 
+Open the guided walkthrough from there:
+
+```text
+sourceroot-mvp-walkthrough.html
+```
+
 Open the main SourceRoot dashboard from there:
 
 ```text
@@ -248,6 +254,7 @@ Main prototype pages:
 
 ```text
 index.html
+sourceroot-mvp-walkthrough.html
 sourceroot.html
 sourceroot-import-bundle-registry.html
 sourceroot-import-preview.html
@@ -270,28 +277,69 @@ Use this flow for the MVP demo:
 
 ```text
 1. Open index.html
-2. Open sourceroot.html
-3. Open the Import Bundle Registry
-4. Review the Light MVP Bundle status
-5. Open Import Preview
-6. Click Load Light MVP Bundle
-7. Confirm Ready With Warnings
-8. Confirm Errors: 0
-9. Open the Light MVP Graph
-10. Click a Light node in the graph
-11. Inspect assertions, relationships, sources, and trust metadata
-12. Open the Inspector
-13. Use the Light MVP Demo Path buttons
-14. Inspect Dictionary Light, BibleRoot Light, Truth, and Knowledge
-15. Open Assertion Registry
-16. Search light
-17. Open Edge Registry
-18. Search light
-19. Open Source Registry
-20. Review source and license metadata
-21. Open API Preview
-22. Open the exportable API response examples
+2. Open sourceroot-mvp-walkthrough.html
+3. Open sourceroot.html
+4. Open the Import Bundle Registry
+5. Review the Light MVP Bundle status
+6. Open Import Preview
+7. Click Load Light MVP Bundle
+8. Confirm Ready With Warnings
+9. Confirm Errors: 0
+10. Open the Light MVP Graph
+11. Click a Light node in the graph
+12. Inspect assertions, relationships, sources, and trust metadata
+13. Open the Inspector
+14. Use the Light MVP Demo Path buttons
+15. Inspect Dictionary Light, BibleRoot Light, Truth, and Knowledge
+16. Open Assertion Registry
+17. Search light
+18. Open Edge Registry
+19. Search light
+20. Open Source Registry
+21. Review source and license metadata
+22. Open API Preview
+23. Open the exportable API response examples
 ```
+
+---
+
+## MVP Walkthrough
+
+Open:
+
+```text
+sourceroot-mvp-walkthrough.html
+```
+
+The MVP Walkthrough is the guided presentation page for SourceRoot.
+
+It gives a stranger the complete demo path from start to finish:
+
+```text
+Landing Page
+Dashboard
+Import Bundle Registry
+Import Preview
+Light Graph
+Inspector
+Assertion Registry
+Edge Registry
+Source Registry
+API Preview
+API example JSON files
+```
+
+The walkthrough includes:
+
+```text
+step-by-step demo cards
+presenter checklist
+simple talk track
+links to each MVP page
+links to API example JSON files
+```
+
+Use this page when presenting SourceRoot to someone who has never seen the project before.
 
 ---
 
@@ -684,9 +732,10 @@ Light MVP bundle adaptation
 
 ## Documentation
 
-Important docs:
+Important docs and walkthrough files:
 
 ```text
+sourceroot-mvp-walkthrough.html
 docs/sourceroot-light-mvp-bundle.md
 docs/sourceroot-light-mvp-demo-script.md
 docs/sourceroot-import-bundle-format.md
@@ -740,6 +789,7 @@ Example local URLs:
 
 ```text
 http://127.0.0.1:5500/index.html
+http://127.0.0.1:5500/sourceroot-mvp-walkthrough.html
 http://127.0.0.1:5500/sourceroot.html
 ```
 
@@ -751,6 +801,7 @@ http://127.0.0.1:5500/sourceroot.html
 Status: MVP prototype
 Main demo: Light MVP Bundle
 Public landing page: Working
+MVP Walkthrough: Working
 Import Bundle Registry: Working
 Import validation: Working
 Light MVP visual graph: Working
@@ -773,6 +824,7 @@ The current MVP proves that SourceRoot can:
 ```text
 validate import bundles
 catalog available import bundles
+guide a complete MVP walkthrough
 load structured knowledge
 inspect nodes
 inspect assertions
