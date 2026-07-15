@@ -1,0 +1,124 @@
+{
+  "apiVersion": "0.1.0",
+  "status": "success",
+  "endpoint": "/nodes/light-physical-phenomenon",
+  "generatedAt": "prototype-static-example",
+  "query": {
+    "nodeId": "light-physical-phenomenon",
+    "include": [
+      "assertions",
+      "relationships",
+      "sources",
+      "credibility",
+      "revisions"
+    ]
+  },
+  "result": {
+    "node": {
+      "id": "light-physical-phenomenon",
+      "title": "Light",
+      "type": "Physical Phenomenon",
+      "domain": "SourceRoot",
+      "summary": "Visible electromagnetic radiation that allows sight and illumination."
+    },
+    "assertions": [
+      {
+        "id": "assertion-light-physical-definition",
+        "nodeId": "light-physical-phenomenon",
+        "assertionType": "definition",
+        "label": "Physical Definition",
+        "summary": "Light is visible electromagnetic radiation.",
+        "sourceIds": [
+          "source-wikidata-light-q9128",
+          "source-physics-reference-light"
+        ],
+        "credibility": {
+          "credibilityTier": "high",
+          "confidence": "strong",
+          "verificationStatus": "source-backed",
+          "reviewStatus": "reviewed",
+          "supportLevel": "direct",
+          "interpretationLevel": "low"
+        }
+      }
+    ],
+    "relationships": {
+      "outgoing": [
+        {
+          "id": "edge-light-physical-to-dictionary",
+          "fromNodeId": "light-physical-phenomenon",
+          "toNodeId": "light-dictionary-meaning",
+          "label": "defined as",
+          "relationshipType": "DEFINED_AS",
+          "summary": "The physical phenomenon is represented in dictionary language as the word light.",
+          "sourceIds": [
+            "source-dictionary-light-reference"
+          ],
+          "credibility": {
+            "credibilityTier": "high",
+            "confidence": "strong",
+            "verificationStatus": "source-backed",
+            "reviewStatus": "reviewed",
+            "supportLevel": "direct",
+            "relationshipStrength": "strong",
+            "interpretationLevel": "low"
+          }
+        },
+        {
+          "id": "edge-light-physical-to-visibility",
+          "fromNodeId": "light-physical-phenomenon",
+          "toNodeId": "visibility-concept",
+          "label": "enables",
+          "relationshipType": "ENABLES",
+          "summary": "Physical light enables visibility.",
+          "sourceIds": [
+            "source-physics-reference-light"
+          ],
+          "credibility": {
+            "credibilityTier": "high",
+            "confidence": "strong",
+            "verificationStatus": "source-backed",
+            "reviewStatus": "reviewed",
+            "supportLevel": "direct",
+            "relationshipStrength": "strong",
+            "interpretationLevel": "low"
+          }
+        }
+      ],
+      "incoming": []
+    },
+    "sources": [
+      {
+        "id": "source-wikidata-light-q9128",
+        "name": "Wikidata — Light Q9128",
+        "type": "External Structured Dataset",
+        "publisher": "Wikidata",
+        "license": "CC0",
+        "licenseStatus": "public-reuse",
+        "credibilityTier": "medium",
+        "verificationStatus": "community-maintained",
+        "reviewStatus": "reviewed"
+      },
+      {
+        "id": "source-physics-reference-light",
+        "name": "General Physics Reference — Light",
+        "type": "Reference Source",
+        "publisher": "Prototype Reference Layer",
+        "license": "prototype",
+        "licenseStatus": "working-reference",
+        "credibilityTier": "medium",
+        "verificationStatus": "prototype",
+        "reviewStatus": "needs-review"
+      }
+    ],
+    "revisions": [
+      {
+        "id": "revision-light-physical-001",
+        "targetId": "light-physical-phenomenon",
+        "version": "0.1.0",
+        "summary": "Initial physical light node added to Light MVP Bundle."
+      }
+    ]
+  },
+  "sourceRootNote": "This response separates the node, claims, relationships, sources, credibility metadata, and revisions instead of returning a flattened answer."
+}

@@ -1,0 +1,45 @@
+{
+  "apiVersion": "0.1.0",
+  "status": "ready_with_warnings",
+  "endpoint": "/imports/validate",
+  "generatedAt": "prototype-static-example",
+  "request": {
+    "bundleId": "sourceroot-light-mvp-bundle",
+    "bundlePath": "data/sourceroot-light-mvp-bundle.json"
+  },
+  "result": {
+    "bundleId": "sourceroot-light-mvp-bundle",
+    "canImport": true,
+    "summary": {
+      "nodes": 8,
+      "assertions": 10,
+      "edges": 9,
+      "sources": 11,
+      "revisions": 12,
+      "errors": 0,
+      "warnings": 3
+    },
+    "errors": [],
+    "warnings": [
+      {
+        "code": "INVALID_RELATIONSHIP_SUPPORT_LEVEL",
+        "objectType": "edge",
+        "objectId": "edge-light-visibility-to-knowledge",
+        "message": "Relationship support level should be reviewed before public release."
+      },
+      {
+        "code": "INVALID_RELATIONSHIP_SUPPORT_LEVEL",
+        "objectType": "edge",
+        "objectId": "edge-revelation-to-knowledge",
+        "message": "Relationship support level should be reviewed before public release."
+      },
+      {
+        "code": "SOURCE_INTERNAL_ONLY",
+        "objectType": "source",
+        "objectId": "source-bibleroot-alpha-notes",
+        "message": "Internal-only source should not be treated as public-release-ready."
+      }
+    ]
+  },
+  "sourceRootNote": "The bundle is structurally safe to preview, but not fully reviewed for public-release trust."
+}

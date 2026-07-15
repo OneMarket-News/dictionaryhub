@@ -1,0 +1,112 @@
+{
+  "apiVersion": "0.1.0",
+  "status": "success",
+  "endpoint": "/answers/with-citations",
+  "generatedAt": "prototype-static-example",
+  "query": {
+    "question": "What does light mean across physical, dictionary, and biblical contexts?",
+    "nodeIds": [
+      "light-physical-phenomenon",
+      "light-dictionary-meaning",
+      "light-biblical-symbol"
+    ],
+    "includeTrustMetadata": true
+  },
+  "answer": {
+    "summary": "In SourceRoot, light is modeled as a physical phenomenon, a dictionary concept, and a biblical symbol. These are connected but not treated as identical. Physical light refers to visible electromagnetic radiation. Dictionary light refers to the word and its ordinary meaning. Biblical light can symbolize revelation, truth, divine presence, guidance, and knowledge depending on source context.",
+    "confidence": "moderate",
+    "reviewStatus": "prototype",
+    "importantCaveat": "The biblical and symbolic relationships are interpretive and should not carry the same trust level as direct physical or dictionary definitions."
+  },
+  "supportingObjects": {
+    "nodes": [
+      {
+        "id": "light-physical-phenomenon",
+        "title": "Light",
+        "type": "Physical Phenomenon"
+      },
+      {
+        "id": "light-dictionary-meaning",
+        "title": "Light",
+        "type": "Dictionary Meaning"
+      },
+      {
+        "id": "light-biblical-symbol",
+        "title": "Light",
+        "type": "Biblical Symbol"
+      }
+    ],
+    "assertions": [
+      {
+        "id": "assertion-light-physical-definition",
+        "summary": "Light is visible electromagnetic radiation.",
+        "credibilityTier": "high",
+        "verificationStatus": "source-backed",
+        "interpretationLevel": "low"
+      },
+      {
+        "id": "assertion-light-dictionary-definition",
+        "summary": "Light refers to illumination, visibility, or the opposite of darkness.",
+        "credibilityTier": "high",
+        "verificationStatus": "source-backed",
+        "interpretationLevel": "low"
+      },
+      {
+        "id": "assertion-light-biblical-symbolic-meaning",
+        "summary": "In biblical context, light can function symbolically as revelation, truth, divine presence, or guidance.",
+        "credibilityTier": "medium",
+        "verificationStatus": "interpretive",
+        "interpretationLevel": "high"
+      }
+    ],
+    "relationships": [
+      {
+        "id": "edge-light-physical-to-dictionary",
+        "label": "defined as",
+        "relationshipStrength": "strong",
+        "interpretationLevel": "low"
+      },
+      {
+        "id": "edge-light-dictionary-to-biblical",
+        "label": "used symbolically as",
+        "relationshipStrength": "contextual",
+        "interpretationLevel": "high"
+      },
+      {
+        "id": "edge-light-biblical-to-truth",
+        "label": "symbolizes",
+        "relationshipStrength": "interpretive",
+        "interpretationLevel": "high"
+      }
+    ],
+    "sources": [
+      {
+        "id": "source-wikidata-light-q9128",
+        "name": "Wikidata — Light Q9128",
+        "licenseStatus": "public-reuse"
+      },
+      {
+        "id": "source-dictionary-light-reference",
+        "name": "Dictionary Reference — Light",
+        "licenseStatus": "working-reference"
+      },
+      {
+        "id": "source-kjv-genesis-1",
+        "name": "King James Version — Genesis 1",
+        "licenseStatus": "public-domain"
+      },
+      {
+        "id": "source-kjv-john-1",
+        "name": "King James Version — John 1",
+        "licenseStatus": "public-domain"
+      }
+    ]
+  },
+  "citationPolicy": {
+    "canCitePublicly": "partial",
+    "publicDomainSourcesAvailable": true,
+    "internalOnlySourcesPresent": true,
+    "requiresHumanReview": true
+  },
+  "sourceRootNote": "This example shows how SourceRoot could support AI answers without hiding claim boundaries, relationship types, source provenance, or review status."
+}
