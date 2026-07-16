@@ -1,13 +1,14 @@
 {
   "registryId": "sourceroot-bundle-registry",
   "title": "SourceRoot Import Bundle Registry",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "bundles": [
     {
       "bundleId": "sourceroot-light-mvp-bundle",
       "title": "Light MVP Bundle",
       "path": "data/sourceroot-light-mvp-bundle.json",
       "featured": true,
+      "routable": true,
       "purpose": "Main SourceRoot MVP demo dataset",
       "description": "Models light across physical, dictionary, biblical, symbolic, truth, knowledge, guidance, revelation, and visibility contexts.",
       "domains": [
@@ -48,6 +49,7 @@
       "title": "Example Import Bundle",
       "path": "data/sourceroot-import-bundle-example.json",
       "featured": false,
+      "routable": true,
       "purpose": "Validator smoke test",
       "description": "Small example bundle used to test successful validation and non-blocking warnings.",
       "domains": [
@@ -61,6 +63,7 @@
       "title": "Broken Import Bundle",
       "path": "data/sourceroot-import-bundle-broken-example.json",
       "featured": false,
+      "routable": true,
       "purpose": "Validator failure test",
       "description": "Intentional failure bundle used to prove the validator catches duplicate IDs, broken references, missing fields, and invalid trust metadata.",
       "domains": [
