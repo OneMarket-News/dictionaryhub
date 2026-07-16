@@ -453,6 +453,26 @@
       border-color: #f87171;
     }
 
+    .integrity-note {
+      margin-top: 10px;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .integrity-current {
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      color: #166534;
+    }
+
+    .integrity-stale {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      color: #92400e;
+    }
+
     .staged-record {
       margin-top: 14px;
       border: 1px solid #86efac;
@@ -516,7 +536,6 @@
         <a href="sourceroot.html">SourceRoot Home</a>
         <a href="sourceroot-mvp-walkthrough.html">MVP Walkthrough</a>
         <a href="sourceroot-import-bundle-registry.html">Open Import Bundle Registry</a>
-        <a href="sourceroot-staged-bundle-registry.html">Staged Bundles</a>
         <a href="sourceroot-inspector.html">Open Inspector</a>
         <a href="sourceroot-edge-registry.html">Open Edge Registry</a>
         <a href="sourceroot-source-registry.html">Open Source Registry</a>
@@ -829,6 +848,15 @@
       activeValidationResult = result;
       stagedRecord = getPersistedStagedRecord(result.bundleId);
 
+      if (stagedRecord) {
+        const currentHash = await createBundleHash(bundle);
+        stagedRecord.integrityStatus =
+          stagedRecord.bundleHash === currentHash
+            ? "current"
+            : "stale";
+        stagedRecord.currentBundleHash = currentHash;
+      }
+
       renderStatus(result);
       renderSummary(result);
       renderIssues(result);
@@ -892,6 +920,15 @@
       activeBundle = bundle;
       activeValidationResult = result;
       stagedRecord = getPersistedStagedRecord(result.bundleId);
+
+      if (stagedRecord) {
+        const currentHash = await createBundleHash(bundle);
+        stagedRecord.integrityStatus =
+          stagedRecord.bundleHash === currentHash
+            ? "current"
+            : "stale";
+        stagedRecord.currentBundleHash = currentHash;
+      }
 
       renderStatus(result);
       renderSummary(result);
@@ -1120,18 +1157,21 @@
     `;
   }
 
-  function stageActiveBundle() {
+  async function stageActiveBundle() {
     if (!activeBundle || !activeValidationResult?.canImport) {
       return;
     }
 
     const summary = activeValidationResult.summary || {};
+    const bundleHash = await createBundleHash(activeBundle);
 
     stagedRecord = {
       bundleId: activeValidationResult.bundleId,
       stagedAt: new Date().toISOString(),
       status: "staged-preview",
       source: getActiveBundleSource(),
+      bundleHash,
+      integrityStatus: "current",
       counts: {
         nodes: numberValue(summary.nodes),
         assertions: numberValue(summary.assertions),
@@ -1156,6 +1196,16 @@
     removePersistedStagedRecord(bundleId);
     stagedRecord = null;
     renderStagingSummary(activeBundle, activeValidationResult);
+  }
+
+  async function createBundleHash(bundle) {
+    const normalizedBundle = JSON.stringify(bundle);
+    const bytes = new TextEncoder().encode(normalizedBundle);
+    const digest = await crypto.subtle.digest("SHA-256", bytes);
+
+    return Array.from(new Uint8Array(digest))
+      .map(byte => byte.toString(16).padStart(2, "0"))
+      .join("");
   }
 
   function getActiveBundleSource() {
@@ -1238,7 +1288,33 @@
           stagedRecord.counts.sources +
           stagedRecord.counts.revisions
         }<br>
-        Warnings carried forward: ${stagedRecord.warningCount}
+        Warnings carried forward: ${stagedRecord.warningCount}<br>
+        Snapshot hash: ${escapeHtml((stagedRecord.bundleHash || "not-recorded").slice(0, 16))}…
+        ${renderIntegrityNote(stagedRecord)}
+      </div>
+    `;
+  }
+
+  function renderIntegrityNote(record) {
+    if (!record.bundleHash) {
+      return `
+        <div class="integrity-note integrity-stale">
+          This staged record predates integrity snapshots. Remove and stage it again to create a bundle hash.
+        </div>
+      `;
+    }
+
+    if (record.integrityStatus === "stale") {
+      return `
+        <div class="integrity-note integrity-stale">
+          The current bundle differs from the staged snapshot. Remove and stage it again after reviewing the changes.
+        </div>
+      `;
+    }
+
+    return `
+      <div class="integrity-note integrity-current">
+        The current bundle matches the staged snapshot.
       </div>
     `;
   }

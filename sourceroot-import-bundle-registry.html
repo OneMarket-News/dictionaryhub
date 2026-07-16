@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>SourceRoot Import Bundle Registry</title>
+  <title>SourceRoot Staged Bundles Registry</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
@@ -88,9 +88,58 @@
       max-width: 980px;
     }
 
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    button,
+    .button-link {
+      font-family: inherit;
+      border: 1px solid #cfc7b8;
+      background: #fff8e6;
+      color: #1f2933;
+      border-radius: 10px;
+      padding: 10px 13px;
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    button:hover,
+    .button-link:hover {
+      background: #efe7d3;
+      border-color: #b78a2f;
+    }
+
+    .primary-button {
+      background: #111827;
+      color: white;
+      border-color: #111827;
+    }
+
+    .primary-button:hover {
+      background: #374151;
+      border-color: #374151;
+    }
+
+    .danger-button {
+      border-color: #fecaca;
+      background: #fef2f2;
+      color: #991b1b;
+    }
+
+    .danger-button:hover {
+      background: #fee2e2;
+      border-color: #f87171;
+    }
+
     .summary-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
       gap: 12px;
       margin-top: 16px;
     }
@@ -113,68 +162,35 @@
       font-size: 13px;
     }
 
-    .bundle-grid {
+    .registry-grid {
       display: grid;
       gap: 16px;
       margin-top: 16px;
     }
 
-    .bundle-card {
+    .staged-card {
       background: #fffdf8;
-      border: 1px solid #eee2c7;
+      border: 1px solid #86efac;
       border-radius: 18px;
       padding: 18px;
+      box-shadow: 0 3px 10px rgba(22, 101, 52, 0.07);
     }
 
-    .bundle-card.featured {
-      border-color: #b78a2f;
-      box-shadow: 0 4px 14px rgba(183, 138, 47, 0.12);
-    }
-
-    .bundle-header {
+    .card-header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
       gap: 14px;
       flex-wrap: wrap;
-      margin-bottom: 12px;
     }
 
-    .bundle-title-row {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      flex-wrap: wrap;
-    }
-
-    .bundle-title {
+    .card-title {
       margin: 0;
-      font-size: 22px;
+      font-size: 21px;
+      overflow-wrap: anywhere;
     }
 
-    .featured-pill {
-      display: inline-block;
-      border-radius: 999px;
-      padding: 4px 8px;
-      background: #7c2d12;
-      color: white;
-      font-size: 11px;
-      font-weight: bold;
-    }
-
-    .bundle-path {
-      font-family: Consolas, Monaco, monospace;
-      color: #4b5563;
-      font-size: 13px;
-      background: #f3f4f6;
-      border-radius: 8px;
-      padding: 5px 7px;
-      display: inline-block;
-      word-break: break-word;
-      margin-top: 7px;
-    }
-
-    .status-pill {
+    .integrity-pill {
       display: inline-block;
       border-radius: 999px;
       padding: 6px 10px;
@@ -183,54 +199,64 @@
       white-space: nowrap;
     }
 
-    .status-ready {
+    .integrity-current {
       background: #dcfce7;
       color: #166534;
       border: 1px solid #86efac;
     }
 
-    .status-warning {
-      background: #fff8e6;
-      color: #7c2d12;
-      border: 1px solid #ead59a;
+    .integrity-stale {
+      background: #fffbeb;
+      color: #92400e;
+      border: 1px solid #fde68a;
     }
 
-    .status-blocked,
-    .status-error {
-      background: #fee2e2;
-      color: #991b1b;
-      border: 1px solid #fecaca;
-    }
-
-    .status-loading {
+    .integrity-unavailable {
       background: #e5e7eb;
-      color: #374151;
+      color: #4b5563;
       border: 1px solid #d1d5db;
     }
 
-    .bundle-description {
-      color: #374151;
-      line-height: 1.55;
-      max-width: 980px;
-      margin-bottom: 14px;
+    .status-pill {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #86efac;
+      font-size: 12px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .source-path {
+      font-family: Consolas, Monaco, monospace;
+      color: #4b5563;
+      font-size: 13px;
+      background: #f3f4f6;
+      border-radius: 8px;
+      padding: 5px 7px;
+      display: inline-block;
+      word-break: break-word;
+      margin-top: 8px;
     }
 
     .count-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(115px, 1fr));
       gap: 10px;
-      margin: 14px 0;
+      margin-top: 16px;
     }
 
     .count-card {
       background: white;
-      border: 1px solid #ead59a;
+      border: 1px solid #ddd6c8;
       border-radius: 12px;
       padding: 12px;
     }
 
     .count-number {
-      font-size: 24px;
+      font-size: 23px;
       font-weight: bold;
     }
 
@@ -242,7 +268,7 @@
 
     .meta-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
       gap: 10px;
       margin-top: 14px;
     }
@@ -253,7 +279,7 @@
       border-radius: 12px;
       padding: 12px;
       font-size: 13px;
-      line-height: 1.45;
+      line-height: 1.5;
     }
 
     .meta-card strong {
@@ -263,6 +289,7 @@
 
     .meta-card span {
       color: #4b5563;
+      overflow-wrap: anywhere;
     }
 
     .action-row {
@@ -272,114 +299,27 @@
       margin-top: 16px;
     }
 
-    .action-link {
-      display: inline-block;
-      border-radius: 999px;
-      padding: 9px 12px;
-      text-decoration: none;
-      font-weight: bold;
-      font-size: 13px;
-      border: 1px solid #cfc7b8;
-      background: white;
-      color: #1f2933;
-    }
-
-    .action-link.primary {
-      background: #111827;
-      color: white;
-      border-color: #111827;
-    }
-
-    .action-link:hover {
-      background: #fff8e6;
-      border-color: #b78a2f;
-    }
-
-    .action-link.primary:hover {
-      background: #374151;
-      border-color: #374151;
-    }
-
-    .issue-section {
-      margin-top: 16px;
-    }
-
-    .issue-heading {
-      margin: 0 0 8px;
-      font-size: 14px;
-    }
-
-    .issue-list {
-      display: grid;
-      gap: 8px;
-    }
-
-    .issue {
-      background: white;
-      border: 1px solid #eee2c7;
-      border-radius: 12px;
-      padding: 11px;
-      font-size: 13px;
-      line-height: 1.45;
-    }
-
-    .issue.warning {
-      border-color: #ead59a;
-      background: #fff8e6;
-    }
-
-    .issue.error {
-      border-color: #fecaca;
-      background: #fee2e2;
-    }
-
-    .issue strong {
-      display: block;
-      margin-bottom: 3px;
-    }
-
-    .model-box {
-      background: #111827;
-      color: white;
-      border-radius: 16px;
-      padding: 18px;
-      margin-top: 16px;
-      overflow-x: auto;
-    }
-
-    .model-box code {
-      color: #f9fafb;
-      background: transparent;
-      font-size: 14px;
-      line-height: 1.7;
-      white-space: pre;
-      padding: 0;
-    }
-
-    .loading-message,
-    .registry-error {
+    .empty-state {
+      background: #fffdf8;
+      border: 1px dashed #cfc7b8;
       border-radius: 14px;
-      padding: 16px;
+      padding: 24px;
+      color: #6b7280;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    .storage-note {
+      margin-top: 12px;
+      color: #6b7280;
+      font-size: 12px;
       line-height: 1.5;
-    }
-
-    .loading-message {
-      background: #f3f4f6;
-      border: 1px solid #d1d5db;
-      color: #4b5563;
-    }
-
-    .registry-error {
-      background: #fee2e2;
-      border: 1px solid #fecaca;
-      color: #991b1b;
     }
 
     footer {
       padding: 0 24px 28px;
       color: #6b7280;
       font-size: 13px;
-      line-height: 1.5;
     }
 
     @media (max-width: 760px) {
@@ -401,368 +341,389 @@
 <body>
   <header>
     <div class="header-inner">
-      <h1>SourceRoot Import Bundle Registry</h1>
+      <h1>SourceRoot Staged Bundles Registry</h1>
 
       <div class="subtitle">
-        Browse SourceRoot import bundles using live validation results calculated from the actual bundle files.
+        Review and manage bundles staged locally through SourceRoot Import Preview.
+        Staged records remain in this browser until they are removed.
       </div>
 
       <div class="top-links">
         <a href="index.html">Landing Page</a>
-        <a href="sourceroot-mvp-walkthrough.html">MVP Walkthrough</a>
         <a href="sourceroot.html">SourceRoot Home</a>
-        <a href="sourceroot-import-preview.html">Open Import Preview</a>
-         <a href="sourceroot-import-bundle-registry.html">Import Bundle Registry</a>
-         <a href="sourceroot-staged-bundle-registry.html">Staged Bundles</a>
-        <a href="sourceroot-light-graph.html">Open Light Graph</a>
-        <a href="sourceroot-inspector.html">Open Inspector</a>
-        <a href="sourceroot-api-preview.html">Open API Preview</a>
+        <a href="sourceroot-mvp-walkthrough.html">MVP Walkthrough</a>
+        <a href="sourceroot-import-bundle-registry.html">Import Bundle Registry</a>
+        <a href="sourceroot-import-preview.html">Import Preview</a>
+        <a href="sourceroot-inspector.html">Inspector</a>
+        <a href="sourceroot-api-preview.html">API Preview</a>
       </div>
     </div>
   </header>
 
   <main>
     <section class="panel">
-      <h2>Registry Purpose</h2>
+      <h2>Staging Overview</h2>
 
       <p class="overview-text">
-        The Import Bundle Registry now loads a registry manifest, fetches each bundle, runs the shared SourceRoot validator,
-        and displays the real validation status, object counts, errors, and warnings.
+        This registry reads the same browser-persistent staging records created by Import Preview.
+        It does not import data into a backend or modify the original bundle files.
       </p>
 
-      <div class="model-box">
-        <code>Bundle Registry Manifest
-  ↓
-Fetch Actual Bundle JSON
-  ↓
-engine/importValidator.js
-  ↓
-Real Counts / Errors / Warnings / Readiness
-  ↓
-Rendered Registry</code>
+      <div class="toolbar">
+        <button id="refreshButton" type="button">Refresh Registry</button>
+        <button id="clearAllButton" class="danger-button" type="button">Remove All Staged Bundles</button>
       </div>
 
-      <div id="summaryGrid" class="summary-grid">
-        <div class="summary-card">
-          <div class="summary-number">—</div>
-          <div class="summary-label">Bundles</div>
-        </div>
+      <div id="summaryGrid" class="summary-grid"></div>
+
+      <div class="storage-note">
+        Storage key: <code>sourceroot-staged-bundles-v1</code>. Records are scoped to this browser and site origin.
       </div>
     </section>
 
     <section class="panel">
-      <h2>Available Import Bundles</h2>
+      <h2>Staged Bundles</h2>
 
       <p class="overview-text">
-        Counts and validation states on this page are derived from the current bundle files. Editing a bundle will automatically change its displayed status the next time this page loads.
+        Open a staged bundle in Import Preview to revalidate it, or remove the staged record when it is no longer needed.
       </p>
 
-      <div id="registryMessage" class="loading-message">
-        Loading bundle registry and validating bundles…
-      </div>
-
-      <div id="bundleGrid" class="bundle-grid"></div>
+      <div id="registryGrid" class="registry-grid"></div>
     </section>
   </main>
 
   <footer>
-    SourceRoot Import Bundle Registry. Validation results are generated from the current bundle files using the shared SourceRoot validator.
+    SourceRoot Staged Bundles Registry. Current status: browser-local staging management, not a live database registry.
   </footer>
 
-  <script type="module">
-    import { validateBundle } from "./engine/importValidator.js";
+  <script>
+    const STAGING_STORAGE_KEY = "sourceroot-staged-bundles-v1";
 
-    const REGISTRY_PATH = "data/sourceroot-bundle-registry.json";
+    document
+      .getElementById("refreshButton")
+      .addEventListener("click", renderRegistry);
 
-    async function initializeRegistry() {
-      const registryMessage = document.getElementById("registryMessage");
+    document
+      .getElementById("clearAllButton")
+      .addEventListener("click", removeAllStagedBundles);
 
+    document
+      .getElementById("registryGrid")
+      .addEventListener("click", event => {
+        const removeButton = event.target.closest("[data-remove-bundle]");
+
+        if (!removeButton) {
+          return;
+        }
+
+        removeStagedBundle(removeButton.dataset.removeBundle);
+      });
+
+    function getStagingMap() {
       try {
-        const registryResponse = await fetch(REGISTRY_PATH);
+        const rawValue = localStorage.getItem(STAGING_STORAGE_KEY);
 
-        if (!registryResponse.ok) {
-          throw new Error(
-            `Registry manifest failed to load: ${registryResponse.status} ${registryResponse.statusText}`
-          );
+        if (!rawValue) {
+          return {};
         }
 
-        const registry = await registryResponse.json();
+        const parsedValue = JSON.parse(rawValue);
 
-        if (!Array.isArray(registry.bundles)) {
-          throw new Error("Registry manifest does not contain a valid bundles array.");
-        }
+        return parsedValue && typeof parsedValue === "object"
+          ? parsedValue
+          : {};
+      } catch (error) {
+        console.error("Could not read SourceRoot staged bundles:", error);
+        return {};
+      }
+    }
 
-        const bundleResults = await Promise.all(
-          registry.bundles.map(loadAndValidateBundle)
+    function saveStagingMap(stagingMap) {
+      try {
+        localStorage.setItem(
+          STAGING_STORAGE_KEY,
+          JSON.stringify(stagingMap)
         );
-
-        renderSummary(bundleResults);
-        renderBundles(bundleResults);
-
-        registryMessage.remove();
       } catch (error) {
-        registryMessage.className = "registry-error";
-        registryMessage.innerHTML = `
-          <strong>Registry failed to load.</strong><br>
-          ${escapeHtml(error.message)}
-        `;
-
-        console.error("SourceRoot bundle registry failed:", error);
+        console.error("Could not save SourceRoot staged bundles:", error);
       }
     }
 
-    async function loadAndValidateBundle(registryEntry) {
-      try {
-        const bundleResponse = await fetch(registryEntry.path);
+    function getStagedRecords() {
+      return Object.values(getStagingMap())
+        .filter(record =>
+          record &&
+          typeof record === "object" &&
+          typeof record.bundleId === "string"
+        )
+        .sort((left, right) =>
+          String(right.stagedAt || "").localeCompare(
+            String(left.stagedAt || "")
+          )
+        );
+    }
 
-        if (!bundleResponse.ok) {
-          throw new Error(
-            `${bundleResponse.status} ${bundleResponse.statusText}`
-          );
+    async function renderRegistry() {
+      const records = getStagedRecords();
+      const verifiedRecords = await Promise.all(
+        records.map(verifyStagedRecord)
+      );
+
+      renderSummary(verifiedRecords);
+      renderCards(verifiedRecords);
+    }
+
+    async function verifyStagedRecord(record) {
+      if (
+        typeof record.source !== "string" ||
+        !record.source.startsWith("data/")
+      ) {
+        return {
+          ...record,
+          integrityStatus: record.bundleHash
+            ? "unavailable"
+            : "legacy"
+        };
+      }
+
+      try {
+        const response = await fetch(record.source);
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
         }
 
-        const bundle = await bundleResponse.json();
-        const validation = validateBundle(bundle);
+        const bundle = await response.json();
+        const currentHash = await createBundleHash(bundle);
 
         return {
-          registryEntry,
-          bundle,
-          validation,
-          loadError: null
+          ...record,
+          currentBundleHash: currentHash,
+          integrityStatus:
+            record.bundleHash === currentHash
+              ? "current"
+              : "stale"
         };
       } catch (error) {
         return {
-          registryEntry,
-          bundle: null,
-          validation: createLoadFailureResult(registryEntry, error),
-          loadError: error.message
+          ...record,
+          integrityStatus: "unavailable",
+          integrityError: error.message
         };
       }
     }
 
-    function createLoadFailureResult(registryEntry, error) {
-      return {
-        bundleId: registryEntry.bundleId || "unknown",
-        status: "load-failed",
-        canImport: false,
-        summary: {
+    async function createBundleHash(bundle) {
+      const normalizedBundle = JSON.stringify(bundle);
+      const bytes = new TextEncoder().encode(normalizedBundle);
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+
+      return Array.from(new Uint8Array(digest))
+        .map(byte => byte.toString(16).padStart(2, "0"))
+        .join("");
+    }
+
+    function renderSummary(records) {
+      const totals = records.reduce(
+        (summary, record) => {
+          const counts = record.counts || {};
+
+          summary.nodes += numberValue(counts.nodes);
+          summary.assertions += numberValue(counts.assertions);
+          summary.edges += numberValue(counts.edges);
+          summary.sources += numberValue(counts.sources);
+          summary.revisions += numberValue(counts.revisions);
+          summary.warnings += numberValue(record.warningCount);
+
+          if (record.integrityStatus === "stale") {
+            summary.stale += 1;
+          }
+
+          return summary;
+        },
+        {
           nodes: 0,
           assertions: 0,
           edges: 0,
           sources: 0,
           revisions: 0,
-          errors: 1,
-          warnings: 0
-        },
-        errors: [
-          {
-            code: "BUNDLE_LOAD_FAILED",
-            objectType: "bundle",
-            objectId: registryEntry.bundleId || "unknown",
-            message: `Bundle could not be loaded: ${error.message}`
-          }
-        ],
-        warnings: []
-      };
-    }
-
-    function renderSummary(results) {
-      const totalBundles = results.length;
-
-      const readyBundles = results.filter(result =>
-        result.validation.canImport
-      ).length;
-
-      const blockedBundles = results.filter(result =>
-        !result.validation.canImport
-      ).length;
-
-      const totalErrors = results.reduce(
-        (sum, result) => sum + numberValue(result.validation.summary?.errors),
-        0
+          warnings: 0,
+          stale: 0
+        }
       );
 
-      const totalWarnings = results.reduce(
-        (sum, result) => sum + numberValue(result.validation.summary?.warnings),
-        0
-      );
-
-      const totalObjects = results.reduce((sum, result) => {
-        const summary = result.validation.summary || {};
-
-        return sum
-          + numberValue(summary.nodes)
-          + numberValue(summary.assertions)
-          + numberValue(summary.edges)
-          + numberValue(summary.sources)
-          + numberValue(summary.revisions);
-      }, 0);
+      const totalObjects =
+        totals.nodes +
+        totals.assertions +
+        totals.edges +
+        totals.sources +
+        totals.revisions;
 
       document.getElementById("summaryGrid").innerHTML = `
-        <div class="summary-card">
-          <div class="summary-number">${totalBundles}</div>
-          <div class="summary-label">Bundles</div>
-        </div>
+        ${renderSummaryCard(records.length, "Staged Bundles")}
+        ${renderSummaryCard(totalObjects, "Total Objects")}
+        ${renderSummaryCard(totals.nodes, "Nodes")}
+        ${renderSummaryCard(totals.assertions, "Assertions")}
+        ${renderSummaryCard(totals.edges, "Edges")}
+        ${renderSummaryCard(totals.sources, "Sources")}
+        ${renderSummaryCard(totals.revisions, "Revisions")}
+        ${renderSummaryCard(totals.warnings, "Warnings")}
+        ${renderSummaryCard(totals.stale, "Stale Snapshots")}
+      `;
+    }
 
+    function renderSummaryCard(value, label) {
+      return `
         <div class="summary-card">
-          <div class="summary-number">${readyBundles}</div>
-          <div class="summary-label">Preview-Ready</div>
-        </div>
-
-        <div class="summary-card">
-          <div class="summary-number">${blockedBundles}</div>
-          <div class="summary-label">Blocked</div>
-        </div>
-
-        <div class="summary-card">
-          <div class="summary-number">${totalObjects}</div>
-          <div class="summary-label">Total Objects</div>
-        </div>
-
-        <div class="summary-card">
-          <div class="summary-number">${totalErrors}</div>
-          <div class="summary-label">Validation Errors</div>
-        </div>
-
-        <div class="summary-card">
-          <div class="summary-number">${totalWarnings}</div>
-          <div class="summary-label">Validation Warnings</div>
+          <div class="summary-number">${numberValue(value)}</div>
+          <div class="summary-label">${escapeHtml(label)}</div>
         </div>
       `;
     }
 
-    function renderBundles(results) {
-      document.getElementById("bundleGrid").innerHTML = results
-        .map(renderBundleCard)
+    function renderCards(records) {
+      const registryGrid = document.getElementById("registryGrid");
+
+      if (!records.length) {
+        registryGrid.innerHTML = `
+          <div class="empty-state">
+            No staged bundles are currently saved in this browser.<br>
+            Open Import Preview, validate a routable bundle, and click
+            <strong>Stage Bundle</strong>.
+          </div>
+        `;
+        return;
+      }
+
+      registryGrid.innerHTML = records
+        .map(renderStagedCard)
         .join("");
     }
 
-    function renderBundleCard(result) {
-      const { registryEntry, validation, loadError } = result;
-      const summary = validation.summary || {};
-      const statusInfo = getStatusInfo(validation, loadError);
-      const actions = buildActions(registryEntry);
+    function renderStagedCard(record) {
+      const counts = record.counts || {};
+      const totalObjects =
+        numberValue(counts.nodes) +
+        numberValue(counts.assertions) +
+        numberValue(counts.edges) +
+        numberValue(counts.sources) +
+        numberValue(counts.revisions);
+
+      const previewHref = buildPreviewHref(record.source);
 
       return `
-        <article class="bundle-card ${registryEntry.featured ? "featured" : ""}">
-          <div class="bundle-header">
+        <article class="staged-card">
+          <div class="card-header">
             <div>
-              <div class="bundle-title-row">
-                <h3 class="bundle-title">
-                  ${escapeHtml(registryEntry.title || registryEntry.bundleId)}
-                </h3>
+              <h3 class="card-title">
+                ${escapeHtml(record.bundleId)}
+              </h3>
 
-                ${registryEntry.featured
-                  ? `<span class="featured-pill">Featured MVP Bundle</span>`
-                  : ""}
-              </div>
-
-              <div class="bundle-path">
-                ${escapeHtml(registryEntry.path)}
+              <div class="source-path">
+                ${escapeHtml(record.source || "unknown")}
               </div>
             </div>
 
-            <span class="status-pill ${statusInfo.className}">
-              ${escapeHtml(statusInfo.label)}
-            </span>
+            <div>
+              <span class="status-pill">
+                ${escapeHtml(record.status || "staged-preview")}
+              </span>
+              ${renderIntegrityPill(record)}
+            </div>
           </div>
 
-          <p class="bundle-description">
-            ${escapeHtml(registryEntry.description || "")}
-          </p>
-
           <div class="count-grid">
-            ${renderCount("Nodes", summary.nodes)}
-            ${renderCount("Assertions", summary.assertions)}
-            ${renderCount("Edges", summary.edges)}
-            ${renderCount("Sources", summary.sources)}
-            ${renderCount("Revisions", summary.revisions)}
-            ${renderCount("Errors", summary.errors)}
-            ${renderCount("Warnings", summary.warnings)}
+            ${renderCountCard(counts.nodes, "Nodes")}
+            ${renderCountCard(counts.assertions, "Assertions")}
+            ${renderCountCard(counts.edges, "Edges")}
+            ${renderCountCard(counts.sources, "Sources")}
+            ${renderCountCard(counts.revisions, "Revisions")}
+            ${renderCountCard(record.warningCount, "Warnings")}
+            ${renderCountCard(totalObjects, "Total Objects")}
           </div>
 
           <div class="meta-grid">
             <div class="meta-card">
-              <strong>Bundle ID</strong>
-              <span>${escapeHtml(validation.bundleId || registryEntry.bundleId)}</span>
+              <strong>Staged At</strong>
+              <span>${escapeHtml(formatDate(record.stagedAt))}</span>
             </div>
 
             <div class="meta-card">
-              <strong>Purpose</strong>
-              <span>${escapeHtml(registryEntry.purpose || "Not provided")}</span>
+              <strong>Storage Scope</strong>
+              <span>Current browser and site origin</span>
             </div>
 
             <div class="meta-card">
-              <strong>Readiness</strong>
-              <span>${escapeHtml(getReadinessDescription(validation, loadError))}</span>
+              <strong>Persistence</strong>
+              <span>localStorage</span>
             </div>
 
             <div class="meta-card">
-              <strong>Domains</strong>
-              <span>${escapeHtml(formatDomains(registryEntry.domains))}</span>
+              <strong>Snapshot Hash</strong>
+              <span>${escapeHtml((record.bundleHash || "Not recorded").slice(0, 20))}${record.bundleHash ? "…" : ""}</span>
             </div>
 
             <div class="meta-card">
-              <strong>Review Need</strong>
-              <span>${escapeHtml(registryEntry.reviewNeed || "No registry note provided")}</span>
-            </div>
-
-            <div class="meta-card">
-              <strong>Validation Source</strong>
-              <span>Calculated by engine/importValidator.js</span>
+              <strong>Integrity Check</strong>
+              <span>${escapeHtml(getIntegrityDescription(record))}</span>
             </div>
           </div>
 
-          ${renderIssues(validation.errors, "error")}
-          ${renderIssues(validation.warnings, "warning")}
-
           <div class="action-row">
-            ${actions.map(renderAction).join("")}
+            ${previewHref
+              ? `
+                <a
+                  class="button-link primary-button"
+                  href="${escapeAttribute(previewHref)}"
+                >
+                  Open in Import Preview
+                </a>
+              `
+              : ""}
+
+            <button
+              class="danger-button"
+              type="button"
+              data-remove-bundle="${escapeAttribute(record.bundleId)}"
+            >
+              Remove Stage
+            </button>
           </div>
         </article>
       `;
     }
 
-    function buildActions(registryEntry) {
-  const importPreviewUrl = new URL(
-    "sourceroot-import-preview.html",
-    window.location.href
-  );
+    function renderIntegrityPill(record) {
+      if (record.integrityStatus === "current") {
+        return `<span class="integrity-pill integrity-current">Snapshot Current</span>`;
+      }
 
-  importPreviewUrl.searchParams.set("bundle", registryEntry.path);
+      if (record.integrityStatus === "stale") {
+        return `<span class="integrity-pill integrity-stale">Snapshot Stale</span>`;
+      }
 
-  const defaultActions = [
-    {
-      label: "Validate in Import Preview",
-      href: `${importPreviewUrl.pathname}${importPreviewUrl.search}`,
-      primary: true
-    },
-    {
-      label: "Open Bundle JSON",
-      href: registryEntry.path,
-      newTab: true
-    }
-  ];
-
-  return [
-    ...defaultActions,
-    ...(Array.isArray(registryEntry.actions) ? registryEntry.actions : [])
-  ];
-}
-
-    function renderAction(action) {
-      return `
-        <a
-          class="action-link ${action.primary ? "primary" : ""}"
-          href="${escapeAttribute(action.href)}"
-          ${action.newTab ? `target="_blank" rel="noopener"` : ""}
-        >
-          ${escapeHtml(action.label)}
-        </a>
-      `;
+      return `<span class="integrity-pill integrity-unavailable">Integrity Unknown</span>`;
     }
 
-    function renderCount(label, value) {
+    function getIntegrityDescription(record) {
+      if (!record.bundleHash) {
+        return "No snapshot hash exists. Restage this bundle to create one.";
+      }
+
+      if (record.integrityStatus === "current") {
+        return "The source bundle matches the staged snapshot.";
+      }
+
+      if (record.integrityStatus === "stale") {
+        return "The source bundle changed after this record was staged.";
+      }
+
+      return record.integrityError
+        ? `Could not verify source bundle: ${record.integrityError}`
+        : "The staged source cannot be verified automatically.";
+    }
+
+    function renderCountCard(value, label) {
       return `
         <div class="count-card">
           <div class="count-number">${numberValue(value)}</div>
@@ -771,87 +732,67 @@ Rendered Registry</code>
       `;
     }
 
-    function renderIssues(issues = [], type = "warning") {
-      if (!Array.isArray(issues) || issues.length === 0) {
+    function buildPreviewHref(source) {
+      if (
+        typeof source !== "string" ||
+        !source.startsWith("data/")
+      ) {
         return "";
       }
 
-      const heading = type === "error"
-        ? `Validation Errors (${issues.length})`
-        : `Validation Warnings (${issues.length})`;
+      const url = new URL(
+        "sourceroot-import-preview.html",
+        window.location.href
+      );
 
-      return `
-        <div class="issue-section">
-          <h4 class="issue-heading">${escapeHtml(heading)}</h4>
+      url.searchParams.set("bundle", source);
 
-          <div class="issue-list">
-            ${issues.map(issue => `
-              <div class="issue ${type}">
-                <strong>
-                  ${escapeHtml(issue.code || "UNKNOWN_ISSUE")}
-                </strong>
-
-                <span>
-                  <code>${escapeHtml(issue.objectId || "unknown")}</code>
-                  — ${escapeHtml(issue.message || "No issue message provided.")}
-                </span>
-              </div>
-            `).join("")}
-          </div>
-        </div>
-      `;
+      return `${url.pathname}${url.search}`;
     }
 
-    function getStatusInfo(validation, loadError) {
-      if (loadError || validation.status === "load-failed") {
-        return {
-          label: "Load Failed",
-          className: "status-error"
-        };
+    function removeStagedBundle(bundleId) {
+      const stagingMap = getStagingMap();
+
+      if (!(bundleId in stagingMap)) {
+        return;
       }
 
-      if (!validation.canImport) {
-        return {
-          label: "Blocked",
-          className: "status-blocked"
-        };
-      }
-
-      if (numberValue(validation.summary?.warnings) > 0) {
-        return {
-          label: "Ready With Warnings",
-          className: "status-warning"
-        };
-      }
-
-      return {
-        label: "Ready",
-        className: "status-ready"
-      };
+      delete stagingMap[bundleId];
+      saveStagingMap(stagingMap);
+      renderRegistry();
     }
 
-    function getReadinessDescription(validation, loadError) {
-      if (loadError) {
-        return "Bundle could not be loaded or parsed.";
+    function removeAllStagedBundles() {
+      const records = getStagedRecords();
+
+      if (!records.length) {
+        return;
       }
 
-      if (!validation.canImport) {
-        return "Blocked from import until validation errors are resolved.";
+      const confirmed = window.confirm(
+        `Remove all ${records.length} staged bundle record${records.length === 1 ? "" : "s"} from this browser?`
+      );
+
+      if (!confirmed) {
+        return;
       }
 
-      if (numberValue(validation.summary?.warnings) > 0) {
-        return "Structurally safe to preview, but review warnings remain.";
-      }
-
-      return "Structurally valid and ready to preview.";
+      localStorage.removeItem(STAGING_STORAGE_KEY);
+      renderRegistry();
     }
 
-    function formatDomains(domains) {
-      if (!Array.isArray(domains) || domains.length === 0) {
-        return "Not specified";
+    function formatDate(value) {
+      if (!value) {
+        return "Unknown";
       }
 
-      return domains.join(", ");
+      const date = new Date(value);
+
+      if (Number.isNaN(date.getTime())) {
+        return String(value);
+      }
+
+      return date.toLocaleString();
     }
 
     function numberValue(value) {
@@ -876,7 +817,13 @@ Rendered Registry</code>
         .replaceAll(">", "&gt;");
     }
 
-    initializeRegistry();
+    window.addEventListener("storage", event => {
+      if (event.key === STAGING_STORAGE_KEY) {
+        renderRegistry();
+      }
+    });
+
+    renderRegistry();
   </script>
 </body>
 </html>
