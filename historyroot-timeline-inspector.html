@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>HistoryRoot Timeline Inspector</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f7f4ee;
+      color: #1f2933;
+    }
+
+    header {
+      background: #111827;
+      color: white;
+      padding: 28px 24px;
+    }
+
+    .header-inner,
+    main,
+    footer {
+      max-width: 1250px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 34px;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      color: #d1d5db;
+      margin-top: 10px;
+      max-width: 980px;
+      line-height: 1.55;
+    }
+
+    .top-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .top-links a {
+      color: white;
+      text-decoration: none;
+      border: 1px solid #374151;
+      background: #1f2937;
+      border-radius: 999px;
+      padding: 7px 11px;
+      font-size: 13px;
+    }
+
+    main {
+      padding: 24px;
+    }
+
+    .panel {
+      background: white;
+      border: 1px solid #ddd6c8;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 22px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .panel h2 {
+      margin: 0 0 10px;
+    }
+
+    .overview {
+      color: #374151;
+      line-height: 1.6;
+      max-width: 980px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: #4b5563;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    select,
+    input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #cfc7b8;
+      background: #fffdf8;
+      border-radius: 10px;
+      font: inherit;
+      color: #1f2933;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .summary-card {
+      background: #fff8e6;
+      border: 1px solid #ead59a;
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .summary-number {
+      font-size: 27px;
+      font-weight: bold;
+    }
+
+    .summary-label {
+      color: #6b7280;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .timeline {
+      position: relative;
+      display: grid;
+      gap: 16px;
+      margin-top: 20px;
+      padding-left: 28px;
+    }
+
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 10px;
+      top: 4px;
+      bottom: 4px;
+      width: 3px;
+      border-radius: 999px;
+      background: #7c2d12;
+    }
+
+    .timeline-entry {
+      position: relative;
+      background: #fffdf8;
+      border: 1px solid #eee2c7;
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .timeline-entry::before {
+      content: "";
+      position: absolute;
+      left: -25px;
+      top: 20px;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: #7c2d12;
+      border: 3px solid #f7f4ee;
+    }
+
+    .timeline-entry.active {
+      border-color: #b78a2f;
+      box-shadow: 0 4px 12px rgba(183,138,47,0.12);
+      background: #fff8e6;
+    }
+
+    .entry-date {
+      color: #7c2d12;
+      font-weight: bold;
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+
+    .entry-title {
+      margin: 0 0 8px;
+      font-size: 20px;
+    }
+
+    .meta {
+      color: #6b7280;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .entity-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 12px;
+    }
+
+    .entity-link {
+      display: inline-block;
+      text-decoration: none;
+      color: #1f2933;
+      border: 1px solid #cfc7b8;
+      background: white;
+      border-radius: 999px;
+      padding: 5px 8px;
+      font-size: 11px;
+    }
+
+    .entity-link:hover {
+      background: #efe7d3;
+      border-color: #b78a2f;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .card {
+      background: #fffdf8;
+      border: 1px solid #eee2c7;
+      border-radius: 14px;
+      padding: 15px;
+    }
+
+    .card h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    .claim {
+      color: #374151;
+      line-height: 1.55;
+      margin-top: 8px;
+    }
+
+    .pill {
+      display: inline-block;
+      background: white;
+      border: 1px solid #cfc7b8;
+      border-radius: 999px;
+      padding: 4px 7px;
+      font-size: 11px;
+      margin: 8px 5px 0 0;
+    }
+
+    .empty {
+      color: #6b7280;
+      font-style: italic;
+      padding: 12px 0;
+    }
+
+    details {
+      border: 1px solid #eee2c7;
+      background: white;
+      border-radius: 12px;
+      padding: 10px;
+      margin-top: 10px;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: bold;
+      color: #4b5563;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #f3f4f6;
+      border-radius: 10px;
+      padding: 12px;
+      overflow: auto;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    footer {
+      padding: 0 24px 28px;
+      color: #6b7280;
+      font-size: 13px;
+    }
+
+    @media (max-width: 700px) {
+      header { padding: 24px 16px; }
+      main { padding: 18px 14px; }
+      h1 { font-size: 29px; }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="header-inner">
+      <h1>HistoryRoot Timeline Inspector</h1>
+
+      <div class="subtitle">
+        Explore the Great Chicago Fire chronologically and inspect how each timeline entry connects
+        to historical entities, assertions, relationships, disputes, sources, and revisions.
+      </div>
+
+      <div class="top-links">
+        <a href="historyroot.html">HistoryRoot Home</a>
+        <a href="historyroot-inspector.html">Entity Inspector</a>
+        <a href="sourceroot.html">SourceRoot Home</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <h2>Timeline Controls</h2>
+
+      <p class="overview">
+        Filter by linked entity or certainty, search timeline titles, and open individual entries through
+        <code>?entry=timeline-entry-id</code>.
+      </p>
+
+      <div class="controls">
+        <label>
+          Search Timeline
+          <input id="searchInput" type="search" placeholder="Search entry title or date" />
+        </label>
+
+        <label>
+          Linked Entity
+          <select id="entityFilter">
+            <option value="">All entities</option>
+          </select>
+        </label>
+
+        <label>
+          Certainty
+          <select id="certaintyFilter">
+            <option value="">All certainty levels</option>
+          </select>
+        </label>
+      </div>
+
+      <div id="summaryGrid" class="summary-grid"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Chronological Timeline</h2>
+      <div id="timelineResults" class="timeline"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Selected Timeline Entry</h2>
+      <div id="entryDetails">
+        <p class="empty">Select a timeline entry.</p>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Raw Timeline Record</h2>
+      <div id="rawEntry">
+        <p class="empty">Select a timeline entry.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    HistoryRoot Timeline Inspector. Current dataset: Great Chicago Fire MVP.
+  </footer>
+
+  <script>
+    const BUNDLE_PATH = "data/historyroot-great-chicago-fire-mvp.json";
+
+    let activeBundle = null;
+    let filteredEntries = [];
+    let selectedEntryId = "";
+
+    document.getElementById("searchInput").addEventListener("input", applyFilters);
+    document.getElementById("entityFilter").addEventListener("change", applyFilters);
+    document.getElementById("certaintyFilter").addEventListener("change", applyFilters);
+
+    document.getElementById("timelineResults").addEventListener("click", event => {
+      const entryButton = event.target.closest("[data-entry-id]");
+
+      if (!entryButton) {
+        return;
+      }
+
+      selectEntry(entryButton.dataset.entryId, true);
+    });
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function escapeAttribute(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+    }
+
+    function getEntity(entityId) {
+      return activeBundle.entities.find(entity => entity.id === entityId) || null;
+    }
+
+    function getEntityName(entityId) {
+      return getEntity(entityId)?.name || entityId;
+    }
+
+    function getEntrySortValue(entry) {
+      return `${entry.date || "9999-99-99"} ${entry.timeApproximate || ""}`;
+    }
+
+    function renderSummary() {
+      const uniqueEntities = new Set(
+        filteredEntries.flatMap(entry => entry.entityIds || [])
+      );
+
+      const certaintyCounts = filteredEntries.reduce((counts, entry) => {
+        const certainty = entry.certainty || "unknown";
+        counts[certainty] = (counts[certainty] || 0) + 1;
+        return counts;
+      }, {});
+
+      document.getElementById("summaryGrid").innerHTML = `
+        ${summaryCard(filteredEntries.length, "Visible Entries")}
+        ${summaryCard(uniqueEntities.size, "Linked Entities")}
+        ${summaryCard(certaintyCounts.high || 0, "High Certainty")}
+        ${summaryCard(certaintyCounts.medium || 0, "Medium Certainty")}
+        ${summaryCard(certaintyCounts.low || 0, "Low Certainty")}
+      `;
+    }
+
+    function summaryCard(value, label) {
+      return `
+        <div class="summary-card">
+          <div class="summary-number">${escapeHtml(value)}</div>
+          <div class="summary-label">${escapeHtml(label)}</div>
+        </div>
+      `;
+    }
+
+    function applyFilters() {
+      if (!activeBundle) {
+        return;
+      }
+
+      const searchValue = document.getElementById("searchInput").value.trim().toLowerCase();
+      const entityValue = document.getElementById("entityFilter").value;
+      const certaintyValue = document.getElementById("certaintyFilter").value;
+
+      filteredEntries = [...activeBundle.timelineEntries]
+        .filter(entry => {
+          const searchable = `${entry.title || ""} ${entry.date || ""} ${entry.timeApproximate || ""}`.toLowerCase();
+          const matchesSearch = !searchValue || searchable.includes(searchValue);
+          const matchesEntity = !entityValue || (entry.entityIds || []).includes(entityValue);
+          const matchesCertainty = !certaintyValue || entry.certainty === certaintyValue;
+          return matchesSearch && matchesEntity && matchesCertainty;
+        })
+        .sort((left, right) => getEntrySortValue(left).localeCompare(getEntrySortValue(right)));
+
+      renderSummary();
+      renderTimeline();
+
+      if (
+        selectedEntryId &&
+        !filteredEntries.some(entry => entry.id === selectedEntryId)
+      ) {
+        selectedEntryId = "";
+        document.getElementById("entryDetails").innerHTML = `<p class="empty">Select a timeline entry.</p>`;
+        document.getElementById("rawEntry").innerHTML = `<p class="empty">Select a timeline entry.</p>`;
+      }
+    }
+
+    function renderTimeline() {
+      const container = document.getElementById("timelineResults");
+
+      if (!filteredEntries.length) {
+        container.innerHTML = `<p class="empty">No timeline entries match the current filters.</p>`;
+        return;
+      }
+
+      container.innerHTML = filteredEntries.map(entry => `
+        <article
+          class="timeline-entry ${entry.id === selectedEntryId ? "active" : ""}"
+          data-entry-id="${escapeAttribute(entry.id)}"
+          tabindex="0"
+          role="button"
+        >
+          <div class="entry-date">
+            ${escapeHtml(entry.date)}
+            ${entry.timeApproximate ? ` · ${escapeHtml(entry.timeApproximate)}` : ""}
+          </div>
+
+          <h3 class="entry-title">${escapeHtml(entry.title)}</h3>
+
+          <div class="meta">
+            Certainty: ${escapeHtml(entry.certainty || "unknown")}
+          </div>
+
+          <div class="entity-links">
+            ${(entry.entityIds || []).map(entityId => `
+              <a
+                class="entity-link"
+                href="historyroot-inspector.html?entity=${encodeURIComponent(entityId)}"
+                onclick="event.stopPropagation()"
+              >
+                ${escapeHtml(getEntityName(entityId))}
+              </a>
+            `).join("")}
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function selectEntry(entryId, updateRoute = false) {
+      if (!activeBundle) {
+        return;
+      }
+
+      const entry = activeBundle.timelineEntries.find(item => item.id === entryId);
+
+      if (!entry) {
+        return;
+      }
+
+      selectedEntryId = entry.id;
+
+      if (updateRoute) {
+        const url = new URL(window.location.href);
+        url.searchParams.set("entry", entry.id);
+        window.history.pushState({ entry: entry.id }, "", `${url.pathname}${url.search}`);
+      }
+
+      renderTimeline();
+      renderEntryDetails(entry);
+    }
+
+    function renderEntryDetails(entry) {
+      const linkedEntities = (entry.entityIds || [])
+        .map(getEntity)
+        .filter(Boolean);
+
+      const linkedEntityIds = new Set(entry.entityIds || []);
+
+      const assertions = activeBundle.assertions.filter(assertion =>
+        linkedEntityIds.has(assertion.entityId)
+      );
+
+      const edges = activeBundle.edges.filter(edge =>
+        linkedEntityIds.has(edge.fromEntityId) ||
+        linkedEntityIds.has(edge.toEntityId)
+      );
+
+      const disputes = activeBundle.disputes.filter(dispute =>
+        linkedEntityIds.has(dispute.subjectEntityId)
+      );
+
+      const sourceIds = new Set();
+
+      assertions.forEach(assertion =>
+        (assertion.sourceIds || []).forEach(sourceId => sourceIds.add(sourceId))
+      );
+
+      edges.forEach(edge =>
+        (edge.sourceIds || []).forEach(sourceId => sourceIds.add(sourceId))
+      );
+
+      disputes.forEach(dispute =>
+        (dispute.positions || []).forEach(position =>
+          (position.sourceIds || []).forEach(sourceId => sourceIds.add(sourceId))
+        )
+      );
+
+      const sources = activeBundle.sources.filter(source => sourceIds.has(source.id));
+
+      const revisions = activeBundle.revisions.filter(revision =>
+        linkedEntityIds.has(revision.objectId) ||
+        assertions.some(assertion => assertion.id === revision.objectId)
+      );
+
+      document.getElementById("entryDetails").innerHTML = `
+        <div class="detail-grid">
+          <div class="card">
+            <h3>${escapeHtml(entry.title)}</h3>
+            <div class="meta">
+              Date: ${escapeHtml(entry.date)}<br>
+              ${entry.timeApproximate ? `Time: ${escapeHtml(entry.timeApproximate)}<br>` : ""}
+              Certainty: ${escapeHtml(entry.certainty || "unknown")}
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Linked Entities</h3>
+            <div class="entity-links">
+              ${linkedEntities.map(entity => `
+                <a class="entity-link" href="historyroot-inspector.html?entity=${encodeURIComponent(entity.id)}">
+                  ${escapeHtml(entity.name)}
+                </a>
+              `).join("") || `<span class="empty">No linked entities.</span>`}
+            </div>
+          </div>
+        </div>
+
+        <h3>Related Assertions</h3>
+        ${renderCards(assertions, assertion => `
+          <div class="card">
+            <h3>${escapeHtml(assertion.assertionType)}</h3>
+            <div class="claim">${escapeHtml(assertion.claim)}</div>
+            <span class="pill">${escapeHtml(assertion.supportLevel)}</span>
+            <span class="pill">${escapeHtml(assertion.verificationStatus)}</span>
+          </div>
+        `, "No related assertions found.")}
+
+        <h3>Related Relationships</h3>
+        ${renderCards(edges, edge => `
+          <div class="card">
+            <h3>${escapeHtml(edge.relationshipType)}</h3>
+            <div class="claim">
+              ${escapeHtml(getEntityName(edge.fromEntityId))}
+              → ${escapeHtml(getEntityName(edge.toEntityId))}
+            </div>
+            <span class="pill">${escapeHtml(edge.confidence)}</span>
+          </div>
+        `, "No related relationships found.")}
+
+        <h3>Related Disputes</h3>
+        ${renderCards(disputes, dispute => `
+          <div class="card">
+            <h3>${escapeHtml(dispute.title)}</h3>
+            <div class="claim">${escapeHtml(dispute.summary)}</div>
+            <span class="pill">${escapeHtml(dispute.status)}</span>
+          </div>
+        `, "No related disputes found.")}
+
+        <h3>Supporting Sources</h3>
+        ${renderCards(sources, source => `
+          <div class="card">
+            <h3>${escapeHtml(source.title)}</h3>
+            <div class="meta">${escapeHtml(source.publisher)} · ${escapeHtml(source.sourceType)}</div>
+            <div class="claim">
+              <a href="${escapeHtml(source.url)}" target="_blank" rel="noopener noreferrer">Open source</a>
+            </div>
+            <span class="pill">${escapeHtml(source.credibilityTier)}</span>
+          </div>
+        `, "No supporting sources found.")}
+
+        <h3>Related Revisions</h3>
+        ${renderCards(revisions, revision => `
+          <div class="card">
+            <h3>${escapeHtml(revision.revisionType)}</h3>
+            <div class="claim">${escapeHtml(revision.summary)}</div>
+            <span class="pill">${escapeHtml(revision.status)}</span>
+          </div>
+        `, "No related revisions found.")}
+      `;
+
+      document.getElementById("rawEntry").innerHTML = `
+        <details open>
+          <summary>Raw timeline JSON</summary>
+          <pre>${escapeHtml(JSON.stringify(entry, null, 2))}</pre>
+        </details>
+      `;
+    }
+
+    function renderCards(items, renderer, emptyMessage) {
+      if (!items.length) {
+        return `<p class="empty">${escapeHtml(emptyMessage)}</p>`;
+      }
+
+      return `<div class="detail-grid">${items.map(renderer).join("")}</div>`;
+    }
+
+    async function initializeTimelineInspector() {
+      try {
+        const response = await fetch(BUNDLE_PATH);
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        activeBundle = await response.json();
+
+        document.getElementById("entityFilter").innerHTML = `
+          <option value="">All entities</option>
+          ${activeBundle.entities
+            .map(entity => `
+              <option value="${escapeAttribute(entity.id)}">
+                ${escapeHtml(entity.name)} — ${escapeHtml(entity.entityType)}
+              </option>
+            `)
+            .join("")}
+        `;
+
+        const certaintyValues = [...new Set(
+          activeBundle.timelineEntries
+            .map(entry => entry.certainty)
+            .filter(Boolean)
+        )].sort();
+
+        document.getElementById("certaintyFilter").innerHTML = `
+          <option value="">All certainty levels</option>
+          ${certaintyValues
+            .map(value => `<option value="${escapeAttribute(value)}">${escapeHtml(value)}</option>`)
+            .join("")}
+        `;
+
+        applyFilters();
+
+        const params = new URLSearchParams(window.location.search);
+        const requestedEntry = params.get("entry");
+
+        if (requestedEntry) {
+          selectEntry(requestedEntry);
+        } else if (filteredEntries[0]) {
+          selectEntry(filteredEntries[0].id);
+        }
+      } catch (error) {
+        document.getElementById("timelineResults").innerHTML = `
+          <p class="empty">HistoryRoot timeline data could not be loaded: ${escapeHtml(error.message)}</p>
+        `;
+      }
+    }
+
+    window.addEventListener("popstate", () => {
+      const params = new URLSearchParams(window.location.search);
+      const entryId = params.get("entry");
+
+      if (entryId) {
+        selectEntry(entryId);
+      }
+    });
+
+    initializeTimelineInspector();
+  </script>
+</body>
+</html>
