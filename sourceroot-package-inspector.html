@@ -368,7 +368,6 @@
         <a href="sourceroot-package-registry.html">Package Registry</a>
         <a href="sourceroot-import-preview.html">Import Preview</a>
         <a href="sourceroot-staged-bundle-registry.html">Staged Bundles</a>
-        <a href="sourceroot-package-registry.html">Package Registry</a>
         <a href="sourceroot-inspector.html">Inspector</a>
         <a href="sourceroot-api-preview.html">API Preview</a>
       </div>
@@ -459,9 +458,14 @@
     SourceRoot Package Inspector. Current status: local package verification and restoration, not a backend import service.
   </footer>
 
+  <script src="./engine/packageLifecycle.js"></script>
+
   <script>
-    const STAGING_STORAGE_KEY = "sourceroot-staged-bundles-v1";
-    const PACKAGE_INSPECTION_STORAGE_KEY = "sourceroot-package-inspections-v1";
+    const packageLifecycle = window.SourceRootPackageLifecycle;
+    const {
+      STAGING_STORAGE_KEY,
+      PACKAGE_INSPECTION_STORAGE_KEY
+    } = packageLifecycle;
 
     let activeArtifact = null;
     let activeRecord = null;
@@ -521,116 +525,11 @@
     }
 
     function parsePackageArtifact(artifact) {
-      if (!artifact || typeof artifact !== "object") {
-        throw new Error("The selected file does not contain a valid JSON object.");
-      }
-
-      if (artifact.exportType !== "sourceroot-staged-package") {
-        throw new Error(
-          "Unsupported artifact type. The Package Inspector currently accepts a single sourceroot-staged-package export."
-        );
-      }
-
-      if (artifact.exportVersion !== "1.0.0") {
-        throw new Error(
-          `Unsupported package version: ${artifact.exportVersion || "unknown"}`
-        );
-      }
-
-      if (!artifact.record || typeof artifact.record !== "object") {
-        throw new Error("The package does not contain a valid staged record.");
-      }
-
-      if (!artifact.bundle || typeof artifact.bundle !== "object") {
-        throw new Error("The package does not contain a valid embedded bundle.");
-      }
-
-      return {
-        record: artifact.record,
-        bundle: artifact.bundle
-      };
+      return packageLifecycle.parsePackageArtifact(artifact);
     }
 
     async function verifyPackage(record, bundle) {
-      const issues = [];
-
-      const requiredRecordFields = [
-        "bundleId",
-        "stagedAt",
-        "status",
-        "bundleHash"
-      ];
-
-      for (const field of requiredRecordFields) {
-        if (typeof record[field] !== "string" || !record[field].trim()) {
-          issues.push({
-            severity: "error",
-            message: `Missing or invalid staged record field: ${field}.`
-          });
-        }
-      }
-
-      if (!record.counts || typeof record.counts !== "object") {
-        issues.push({
-          severity: "error",
-          message: "The staged record does not contain a counts object."
-        });
-      }
-
-      const calculatedHash = await createBundleHash(bundle);
-      const hashMatches = calculatedHash === record.bundleHash;
-
-      if (!hashMatches) {
-        issues.push({
-          severity: "error",
-          message: "The embedded bundle hash does not match the staged record."
-        });
-      }
-
-      const bundleIdMatches =
-        !bundle.bundleId ||
-        bundle.bundleId === record.bundleId;
-
-      if (!bundleIdMatches) {
-        issues.push({
-          severity: "warning",
-          message: `Embedded bundle ID ${bundle.bundleId} does not match staged record ID ${record.bundleId}.`
-        });
-      }
-
-      const actualCounts = getBundleCounts(bundle);
-      const stagedCounts = record.counts || {};
-      const countDifferences = [];
-
-      for (const key of [
-        "nodes",
-        "assertions",
-        "edges",
-        "sources",
-        "revisions"
-      ]) {
-        if (numberValue(stagedCounts[key]) !== numberValue(actualCounts[key])) {
-          countDifferences.push(
-            `${key}: staged ${numberValue(stagedCounts[key])}, embedded ${numberValue(actualCounts[key])}`
-          );
-        }
-      }
-
-      if (countDifferences.length) {
-        issues.push({
-          severity: "warning",
-          message: `Object counts differ: ${countDifferences.join("; ")}.`
-        });
-      }
-
-      return {
-        calculatedHash,
-        hashMatches,
-        bundleIdMatches,
-        actualCounts,
-        issues,
-        canRestore: !issues.some(issue => issue.severity === "error")
-      };
+      return packageLifecycle.verifyPackage(record, bundle);
     }
 
     function renderPackageStatus(filename, verification) {
@@ -817,39 +716,16 @@
         return;
       }
 
-      const inspectionMap = getInspectionMap();
-      const inspectionId = createInspectionId(
-        activeArtifact,
-        activeRecord
+      const inspectionRecord =
+        packageLifecycle.createInspectionRecord({
+          artifact: activeArtifact,
+          record: activeRecord,
+          verification: activeVerification
+        });
+
+      packageLifecycle.saveInspectionRecord(
+        inspectionRecord
       );
-
-      inspectionMap[inspectionId] = {
-        inspectionId,
-        packageId:
-          activeArtifact.packageId ||
-          `${activeRecord.bundleId}:${activeRecord.bundleHash.slice(0, 16)}`,
-        bundleId: activeRecord.bundleId,
-        inspectedAt: new Date().toISOString(),
-        exportedAt: activeArtifact.exportedAt || null,
-        exportType: activeArtifact.exportType,
-        exportVersion: activeArtifact.exportVersion,
-        decision: activeVerification.canRestore
-          ? "approved"
-          : "rejected",
-        integrityStatus: activeVerification.hashMatches
-          ? "verified"
-          : "failed",
-        canRestore: activeVerification.canRestore,
-        issueCount: activeVerification.issues.length,
-        issues: activeVerification.issues,
-        storedHash: activeRecord.bundleHash,
-        calculatedHash: activeVerification.calculatedHash,
-        counts: activeVerification.actualCounts,
-        source: activeRecord.source || "unknown",
-        packageSnapshot: activeArtifact
-      };
-
-      saveInspectionMap(inspectionMap);
 
       document.getElementById("restoreResult").innerHTML = `
         <div class="restore-result success">
@@ -859,39 +735,12 @@
       `;
     }
 
-    function createInspectionId(artifact, record) {
-      const packageId =
-        artifact.packageId ||
-        `${record.bundleId}:${record.bundleHash.slice(0, 16)}`;
-
-      return `${packageId}:${new Date().toISOString()}`;
-    }
-
     function getInspectionMap() {
-      try {
-        const rawValue = localStorage.getItem(
-          PACKAGE_INSPECTION_STORAGE_KEY
-        );
-
-        if (!rawValue) {
-          return {};
-        }
-
-        const parsedValue = JSON.parse(rawValue);
-
-        return parsedValue && typeof parsedValue === "object"
-          ? parsedValue
-          : {};
-      } catch (error) {
-        return {};
-      }
+      return packageLifecycle.getInspectionMap();
     }
 
     function saveInspectionMap(inspectionMap) {
-      localStorage.setItem(
-        PACKAGE_INSPECTION_STORAGE_KEY,
-        JSON.stringify(inspectionMap)
-      );
+      return packageLifecycle.saveInspectionMap(inspectionMap);
     }
 
     function restorePackage() {
@@ -903,8 +752,10 @@
         return;
       }
 
-      const stagingMap = getStagingMap();
-      const existingRecord = stagingMap[activeRecord.bundleId];
+      const existingRecord =
+        packageLifecycle.getStagedRecord(
+          activeRecord.bundleId
+        );
 
       if (existingRecord) {
         const shouldReplace = window.confirm(
@@ -916,15 +767,10 @@
         }
       }
 
-      stagingMap[activeRecord.bundleId] = {
-        ...activeRecord,
-        source: "embedded-package",
-        embeddedBundle: activeBundle,
-        importedAt: new Date().toISOString(),
-        integrityStatus: "current"
-      };
-
-      saveStagingMap(stagingMap);
+      packageLifecycle.restorePackage(
+        activeRecord,
+        activeBundle
+      );
 
       document.getElementById("restoreResult").innerHTML = `
         <div class="restore-result success">
@@ -935,48 +781,19 @@
     }
 
     function getStagingMap() {
-      try {
-        const rawValue = localStorage.getItem(STAGING_STORAGE_KEY);
-
-        if (!rawValue) {
-          return {};
-        }
-
-        const parsedValue = JSON.parse(rawValue);
-
-        return parsedValue && typeof parsedValue === "object"
-          ? parsedValue
-          : {};
-      } catch (error) {
-        return {};
-      }
+      return packageLifecycle.getStagingMap();
     }
 
     function saveStagingMap(stagingMap) {
-      localStorage.setItem(
-        STAGING_STORAGE_KEY,
-        JSON.stringify(stagingMap)
-      );
+      return packageLifecycle.saveStagingMap(stagingMap);
     }
 
     function getBundleCounts(bundle) {
-      return {
-        nodes: Array.isArray(bundle.nodes) ? bundle.nodes.length : 0,
-        assertions: Array.isArray(bundle.assertions) ? bundle.assertions.length : 0,
-        edges: Array.isArray(bundle.edges) ? bundle.edges.length : 0,
-        sources: Array.isArray(bundle.sources) ? bundle.sources.length : 0,
-        revisions: Array.isArray(bundle.revisions) ? bundle.revisions.length : 0
-      };
+      return packageLifecycle.getBundleCounts(bundle);
     }
 
     async function createBundleHash(bundle) {
-      const normalizedBundle = JSON.stringify(bundle);
-      const bytes = new TextEncoder().encode(normalizedBundle);
-      const digest = await crypto.subtle.digest("SHA-256", bytes);
-
-      return Array.from(new Uint8Array(digest))
-        .map(byte => byte.toString(16).padStart(2, "0"))
-        .join("");
+      return packageLifecycle.createBundleHash(bundle);
     }
 
     function clearInspector({ preserveFileInput = false } = {}) {
@@ -1018,8 +835,7 @@
     }
 
     function numberValue(value) {
-      const number = Number(value);
-      return Number.isFinite(number) ? number : 0;
+      return packageLifecycle.numberValue(value);
     }
 
     function escapeHtml(value) {

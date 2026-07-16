@@ -478,7 +478,7 @@
       <h2>Staged Bundles</h2>
 
       <p class="overview-text">
-        Open a staged bundle in Import Preview to revalidate it, or remove the staged record when it is no longer needed.
+        Open source-backed or embedded staged bundles in Import Preview to revalidate them, or remove records when they are no longer needed.
       </p>
 
       <div id="registryGrid" class="registry-grid"></div>
@@ -776,7 +776,10 @@
         numberValue(counts.sources) +
         numberValue(counts.revisions);
 
-      const previewHref = buildPreviewHref(record.source);
+      const previewHref = buildPreviewHref(
+        record.source,
+        record.bundleId
+      );
 
       return `
         <article class="staged-card">
@@ -956,22 +959,34 @@
       `;
     }
 
-    function buildPreviewHref(source) {
-      if (
-        typeof source !== "string" ||
-        !source.startsWith("data/")
-      ) {
-        return "";
-      }
-
+    function buildPreviewHref(source, bundleId = "") {
       const url = new URL(
         "sourceroot-import-preview.html",
         window.location.href
       );
 
-      url.searchParams.set("bundle", source);
+      if (
+        typeof source === "string" &&
+        source.startsWith("data/")
+      ) {
+        url.searchParams.set("bundle", source);
+        return `${url.pathname}${url.search}`;
+      }
 
-      return `${url.pathname}${url.search}`;
+      const record = bundleId
+        ? packageLifecycle.getStagedRecord(bundleId)
+        : null;
+
+      if (
+        record &&
+        record.embeddedBundle &&
+        typeof record.embeddedBundle === "object"
+      ) {
+        url.searchParams.set("staged", bundleId);
+        return `${url.pathname}${url.search}`;
+      }
+
+      return "";
     }
 
     async function handleStagedRecordImport(event) {

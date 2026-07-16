@@ -714,9 +714,12 @@
   });
 
   window.addEventListener("popstate", async () => {
+    const requestedStagedBundleId = getRequestedStagedBundleId();
     const requestedBundlePath = getRequestedBundlePath();
 
-    if (requestedBundlePath) {
+    if (requestedStagedBundleId) {
+      await loadStagedBundle(requestedStagedBundleId);
+    } else if (requestedBundlePath) {
       await loadBundle(requestedBundlePath);
     } else {
       clearPreview();
@@ -760,6 +763,7 @@
     }
 
     const url = new URL(window.location.href);
+    url.searchParams.delete("staged");
     url.searchParams.set("bundle", path);
 
     window.history.pushState(
@@ -832,6 +836,103 @@
     });
   }
 
+  function getRequestedStagedBundleId() {
+    const params = new URLSearchParams(window.location.search);
+    const bundleId = params.get("staged");
+
+    if (!bundleId) {
+      return "";
+    }
+
+    const record = packageLifecycle.getStagedRecord(bundleId);
+
+    return record &&
+      record.embeddedBundle &&
+      typeof record.embeddedBundle === "object"
+        ? bundleId
+        : "";
+  }
+
+  async function loadStagedBundle(bundleId) {
+    clearPreview();
+
+    const record = packageLifecycle.getStagedRecord(bundleId);
+
+    if (
+      !record ||
+      !record.embeddedBundle ||
+      typeof record.embeddedBundle !== "object"
+    ) {
+      const result = {
+        bundleId: bundleId || "unknown",
+        status: "invalid-format",
+        canImport: false,
+        summary: {
+          nodes: 0,
+          assertions: 0,
+          edges: 0,
+          sources: 0,
+          revisions: 0,
+          errors: 1,
+          warnings: 0
+        },
+        errors: [
+          {
+            code: "STAGED_PACKAGE_NOT_AVAILABLE",
+            objectType: "staged-package",
+            objectId: bundleId || "unknown",
+            message: "The requested staged package does not contain an embedded bundle."
+          }
+        ],
+        warnings: []
+      };
+
+      activeBundle = null;
+      activeValidationResult = result;
+      stagedRecord = null;
+
+      document.getElementById("loadedFileNote").innerHTML = `
+        Staged package unavailable: <strong>${escapeHtml(bundleId || "unknown")}</strong>
+      `;
+
+      renderStatus(result);
+      renderSummary(result);
+      renderIssues(result);
+      renderStagingSummary(null, result);
+      return;
+    }
+
+    const bundle = record.embeddedBundle;
+    const result = validateBundle(bundle);
+    const currentHash = await createBundleHash(bundle);
+
+    activeBundle = bundle;
+    activeValidationResult = result;
+    stagedRecord = {
+      ...record,
+      currentBundleHash: currentHash,
+      integrityStatus:
+        record.bundleHash === currentHash
+          ? "current"
+          : "stale",
+      changeComparison: compareBundleSnapshot(
+        record.snapshot,
+        createBundleSnapshot(bundle, result)
+      )
+    };
+
+    document.getElementById("loadedFileNote").innerHTML = `
+      Loaded embedded staged package: <strong>${escapeHtml(bundleId)}</strong>
+    `;
+
+    renderStatus(result);
+    renderSummary(result);
+    renderIssues(result);
+    renderStagingSummary(bundle, result);
+    renderBundleObjects(bundle);
+    renderRawBundle(bundle);
+  }
+
   function getRequestedBundlePath() {
     const params = new URLSearchParams(window.location.search);
     const requestedBundle = params.get("bundle");
@@ -847,7 +948,20 @@
 
   async function loadRequestedBundleFromUrl() {
     const params = new URLSearchParams(window.location.search);
+    const rawRequestedStagedBundle = params.get("staged");
     const rawRequestedBundle = params.get("bundle");
+
+    if (rawRequestedStagedBundle) {
+      const requestedStagedBundleId = getRequestedStagedBundleId();
+
+      if (!requestedStagedBundleId) {
+        await loadStagedBundle(rawRequestedStagedBundle);
+        return;
+      }
+
+      await loadStagedBundle(requestedStagedBundleId);
+      return;
+    }
 
     if (!rawRequestedBundle) {
       return;
@@ -881,7 +995,7 @@
       };
 
       document.getElementById("loadedFileNote").innerHTML = `
-        Registry bundle request rejected: <strong>${rawRequestedBundle}</strong>
+        Registry bundle request rejected: <strong>${escapeHtml(rawRequestedBundle)}</strong>
       `;
 
       renderStatus(result);
@@ -893,7 +1007,7 @@
     await loadBundle(requestedBundlePath);
 
     document.getElementById("loadedFileNote").innerHTML = `
-      Loaded registry bundle: <strong>${requestedBundlePath}</strong>
+      Loaded registry bundle: <strong>${escapeHtml(requestedBundlePath)}</strong>
     `;
   }
 
@@ -1404,6 +1518,12 @@
 
   function getActiveBundleSource() {
     const params = new URLSearchParams(window.location.search);
+    const stagedBundleId = params.get("staged");
+
+    if (stagedBundleId) {
+      return "embedded-package";
+    }
+
     return params.get("bundle") || "local-file";
   }
 
@@ -1621,6 +1741,7 @@
     if (clearRoute) {
       const url = new URL(window.location.href);
       url.searchParams.delete("bundle");
+      url.searchParams.delete("staged");
 
       window.history.replaceState(
         {},
