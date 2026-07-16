@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>HistoryRoot</title><style>
+<title>HistoryRoot Bundle Validator</title><style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f7f4ee;color:#1f2933}
 header{background:#111827;color:#fff;padding:28px 24px}.inner,main,footer{max-width:1250px;margin:auto}
 h1{margin:0;font-size:34px}.subtitle{color:#d1d5db;margin-top:9px;line-height:1.55;max-width:980px}
@@ -16,7 +16,7 @@ pre{white-space:pre-wrap;word-break:break-word;background:#f3f4f6;border-radius:
 a{color:#1d4ed8}.empty{color:#6b7280;font-style:italic}footer{padding:0 24px 28px;color:#6b7280;font-size:13px}
 @media(max-width:700px){header{padding:24px 16px}main{padding:18px 14px}h1{font-size:29px}}
 </style></head>
-<body><header><div class="inner"><h1>HistoryRoot</h1><div class="subtitle">A SourceRoot hub for reconstructing historical events through chronology, entities, disputes, relationships, changing identities, sources, and revision history.</div>
+<body><header><div class="inner"><h1>HistoryRoot Bundle Validator</h1><div class="subtitle">Run browser-side structural and reference validation before a HistoryRoot bundle enters the SourceRoot lifecycle.</div>
 <nav>
   <a href="historyroot.html">HistoryRoot Home</a>
   <a href="historyroot-inspector.html">Entity Inspector</a>
@@ -29,18 +29,18 @@ a{color:#1d4ed8}.empty{color:#6b7280;font-style:italic}footer{padding:0 24px 28p
 </nav>
 </div></header>
 <main>
-<section class="panel hero"><h2>HistoryRoot Fire Events V2</h2><p>Two-event schema pressure test covering the Great Chicago Fire and Peshtigo Fire, enriched disputes, identity records, relationship navigation, validation, and SourceRoot import mapping.</p><div id="status" class="card">Loading…</div><div id="counts" class="grid"></div></section>
-<section class="panel"><h2>Historical Events</h2><div id="events" class="grid"></div></section>
-<section class="panel"><h2>Disputes</h2><div id="disputes" class="grid"></div></section>
-<section class="panel"><h2>Identity Records</h2><div id="identities" class="grid"></div></section>
+<section class="panel hero"><h2>HistoryRoot Bundle Validation</h2><p>Validate required collections, duplicate IDs, broken entity references, source references, dispute evidence links, timeline links, and identity records.</p>
+<button id="run">Run Validation</button></section>
+<section class="panel"><div id="result"><p class="empty">Validation has not run.</p></div></section>
 </main><footer>HistoryRoot V2 · SourceRoot historical knowledge pressure test.</footer>
+<script src="engine/historyRootValidator.js"></script>
 <script>
-const PATH="data/historyroot-fire-events-v2.json";const e=v=>String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
-async function init(){const b=await fetch(PATH).then(r=>r.json());status.innerHTML=`<strong>${e(b.title)}</strong><div>${e(b.description)}</div>`;
-counts.innerHTML=[["Entities",b.entities.length],["Timeline Entries",b.timelineEntries.length],["Assertions",b.assertions.length],["Relationships",b.edges.length],["Disputes",b.disputes.length],["Sources",b.sources.length],["Identity Records",b.identityRecords.length]].map(([k,v])=>`<div class="card"><h3>${v}</h3><div>${k}</div></div>`).join("");
-events.innerHTML=b.entities.filter(x=>x.entityType==="event").map(x=>`<a class="card" href="historyroot-inspector.html?entity=${encodeURIComponent(x.id)}" style="color:inherit;text-decoration:none"><h3>${e(x.name)}</h3><div class="claim">${e(x.summary)}</div><span class="pill">${e(x.startDate)} → ${e(x.endDate)}</span></a>`).join("");
-disputes.innerHTML=b.disputes.map(x=>`<a class="card warn" href="historyroot-dispute-inspector.html?dispute=${encodeURIComponent(x.id)}" style="color:inherit;text-decoration:none"><h3>${e(x.title)}</h3><div class="claim">${e(x.summary)}</div></a>`).join("");
-identities.innerHTML=b.identityRecords.map(x=>`<a class="card" href="historyroot-identity-inspector.html?identity=${encodeURIComponent(x.id)}" style="color:inherit;text-decoration:none"><h3>${e(x.preferredName||x.currentClassification||x.id)}</h3><div class="meta">${e(x.identityType)}</div></a>`).join("");}
+const PATH="data/historyroot-fire-events-v2.json";let bundle;const e=v=>String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+async function init(){bundle=await fetch(PATH).then(r=>r.json());run.onclick=validate;validate();}
+function validate(){const r=HistoryRootValidator.validate(bundle);result.innerHTML=`<div class="card ${r.valid?"good":"bad"}"><h2>${r.valid?"Valid HistoryRoot Bundle":"Validation Failed"}</h2>
+<div class="grid">${Object.entries(r.counts).map(([k,v])=>`<div class="card"><strong>${e(k)}</strong><div>${v}</div></div>`).join("")}</div></div>
+<div class="card ${r.errors.length?"bad":"good"}" style="margin-top:14px"><h3>Errors (${r.errors.length})</h3>${r.errors.map(x=>`<div>${e(x)}</div>`).join("")||"None"}</div>
+<div class="card ${r.warnings.length?"warn":"good"}" style="margin-top:14px"><h3>Warnings (${r.warnings.length})</h3>${r.warnings.map(x=>`<div>${e(x)}</div>`).join("")||"None"}</div>`;}
 init();
 </script>
 </body></html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HistoryRoot Dispute Inspector</title><style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f7f4ee;color:#1f2933}
+header{background:#111827;color:#fff;padding:28px 24px}.inner,main,footer{max-width:1250px;margin:auto}
+h1{margin:0;font-size:34px}.subtitle{color:#d1d5db;margin-top:9px;line-height:1.55;max-width:980px}
+nav{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}nav a{color:#fff;text-decoration:none;border:1px solid #374151;background:#1f2937;border-radius:999px;padding:7px 10px;font-size:12px}
+main{padding:24px}.panel{background:#fff;border:1px solid #ddd6c8;border-radius:16px;padding:20px;margin-bottom:22px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.hero{background:#fff8e6;border-color:#ead59a}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px;margin-top:14px}
+.card{background:#fffdf8;border:1px solid #eee2c7;border-radius:14px;padding:15px}.card h3{margin:0 0 8px}.meta{color:#6b7280;font-size:12px;line-height:1.5}
+.claim{line-height:1.55;margin-top:8px}.pill{display:inline-block;border:1px solid #cfc7b8;background:#fff;border-radius:999px;padding:4px 7px;font-size:11px;margin:7px 5px 0 0}
+select,input,button{padding:10px 12px;border:1px solid #cfc7b8;border-radius:10px;background:#fffdf8;font:inherit}button{cursor:pointer}
+.good{background:#ecfdf5;border-color:#86efac}.bad{background:#fef2f2;border-color:#fca5a5}.warn{background:#fffbeb;border-color:#fde68a}
+pre{white-space:pre-wrap;word-break:break-word;background:#f3f4f6;border-radius:10px;padding:12px;overflow:auto;font-size:12px}
+a{color:#1d4ed8}.empty{color:#6b7280;font-style:italic}footer{padding:0 24px 28px;color:#6b7280;font-size:13px}
+@media(max-width:700px){header{padding:24px 16px}main{padding:18px 14px}h1{font-size:29px}}
+</style></head>
+<body><header><div class="inner"><h1>HistoryRoot Dispute Inspector</h1><div class="subtitle">Inspect historical questions through competing positions and trace how evidence supports, weakens, or leaves each interpretation unresolved.</div>
+<nav>
+  <a href="historyroot.html">HistoryRoot Home</a>
+  <a href="historyroot-inspector.html">Entity Inspector</a>
+  <a href="historyroot-timeline-inspector.html">Timeline Inspector</a>
+  <a href="historyroot-dispute-inspector.html">Dispute Inspector</a>
+  <a href="historyroot-relationship-graph.html">Relationship Graph</a>
+  <a href="historyroot-identity-inspector.html">Identity Inspector</a>
+  <a href="historyroot-validator.html">Bundle Validator</a>
+  <a href="sourceroot.html">SourceRoot Home</a>
+</nav>
+</div></header>
+<main>
+<section class="panel hero"><h2>Historical Dispute Review</h2><p>Compare competing positions, supporting and opposing evidence, source quality, certainty, related entities, timeline entries, and revision history.</p>
+<select id="disputeSelect"></select></section>
+<section class="panel"><div id="disputeHeader"></div></section>
+<section class="panel"><h2>Competing Positions</h2><div id="positions" class="grid"></div></section>
+<section class="panel"><h2>Raw Dispute Record</h2><div id="raw"></div></section>
+</main><footer>HistoryRoot V2 · SourceRoot historical knowledge pressure test.</footer>
+<script>
+const PATH="data/historyroot-fire-events-v2.json";let bundle;
+const e=v=>String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+const by=(arr,id)=>arr.find(x=>(x.id||x.revisionId)===id);
+async function init(){bundle=await fetch(PATH).then(r=>r.json());const s=document.getElementById("disputeSelect");
+s.innerHTML=bundle.disputes.map(d=>`<option value="${e(d.id)}">${e(d.title)}</option>`).join("");
+s.onchange=()=>openDispute(s.value,true);const id=new URLSearchParams(location.search).get("dispute")||bundle.disputes[0]?.id;openDispute(id);}
+function links(ids,type){return (ids||[]).map(id=>{let label=id,href="#";if(type==="entity"){label=by(bundle.entities,id)?.name||id;href=`historyroot-inspector.html?entity=${encodeURIComponent(id)}`;}
+if(type==="timeline"){label=by(bundle.timelineEntries,id)?.title||id;href=`historyroot-timeline-inspector.html?entry=${encodeURIComponent(id)}`;}
+return `<a class="pill" href="${href}">${e(label)}</a>`;}).join("")||'<span class="empty">None linked</span>';}
+function evidence(ids,collection){return (ids||[]).map(id=>{const x=by(collection,id);return `<div class="card"><h3>${e(x?.assertionType||x?.title||id)}</h3><div class="claim">${e(x?.claim||x?.publisher||"")}</div></div>`;}).join("")||'<p class="empty">None recorded.</p>';}
+function openDispute(id,push=false){const d=by(bundle.disputes,id)||bundle.disputes[0];if(!d)return;document.getElementById("disputeSelect").value=d.id;
+if(push){const u=new URL(location.href);u.searchParams.set("dispute",d.id);history.pushState({},'',u.pathname+u.search);}
+document.getElementById("disputeHeader").innerHTML=`<h2>${e(d.title)}</h2><p>${e(d.summary)}</p><div class="card warn"><strong>Why unresolved:</strong> ${e(d.whyUnresolved||"Not specified.")}</div><div class="card good" style="margin-top:12px"><strong>Current assessment:</strong> ${e(d.currentAssessment||"No current assessment.")}</div>`;
+document.getElementById("positions").innerHTML=(d.positions||[]).map(p=>`<article class="card ${p.assessment==="best-supported-current-position"?"good":p.confidence==="low"?"warn":""}">
+<h3>${e(p.label)}</h3><div class="meta">${e(p.positionType)} · ${e(p.assessment)} · confidence: ${e(p.confidence)}</div>
+<h4>Supporting assertions</h4>${evidence(p.supportingAssertionIds,bundle.assertions)}
+<h4>Supporting sources</h4>${evidence(p.supportingSourceIds,bundle.sources)}
+<h4>Opposing assertions</h4>${evidence(p.opposingAssertionIds,bundle.assertions)}
+<h4>Opposing sources</h4>${evidence(p.opposingSourceIds,bundle.sources)}
+<h4>Related entities</h4><div>${links(p.relatedEntityIds,"entity")}</div>
+<h4>Related timeline entries</h4><div>${links(p.relatedTimelineEntryIds,"timeline")}</div></article>`).join("");
+document.getElementById("raw").innerHTML=`<pre>${e(JSON.stringify(d,null,2))}</pre>`;}
+addEventListener("popstate",()=>openDispute(new URLSearchParams(location.search).get("dispute")));init();
+</script>
+</body></html>
