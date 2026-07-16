@@ -453,6 +453,51 @@
       border-color: #f87171;
     }
 
+    .change-summary {
+      margin-top: 12px;
+      border: 1px solid #ddd6c8;
+      background: white;
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .change-summary h4 {
+      margin: 0 0 10px;
+      font-size: 14px;
+    }
+
+    .change-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+      gap: 8px;
+    }
+
+    .change-card {
+      border: 1px solid #eee2c7;
+      background: #fffdf8;
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .change-card strong {
+      display: block;
+      margin-bottom: 3px;
+      font-size: 15px;
+    }
+
+    .change-list {
+      margin: 10px 0 0;
+      padding-left: 18px;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .change-list code {
+      overflow-wrap: anywhere;
+    }
+
     .integrity-note {
       margin-top: 10px;
       border-radius: 10px;
@@ -855,6 +900,10 @@
             ? "current"
             : "stale";
         stagedRecord.currentBundleHash = currentHash;
+        stagedRecord.changeComparison = compareBundleSnapshot(
+          stagedRecord.snapshot,
+          createBundleSnapshot(bundle, result)
+        );
       }
 
       renderStatus(result);
@@ -928,6 +977,10 @@
             ? "current"
             : "stale";
         stagedRecord.currentBundleHash = currentHash;
+        stagedRecord.changeComparison = compareBundleSnapshot(
+          stagedRecord.snapshot,
+          createBundleSnapshot(bundle, result)
+        );
       }
 
       renderStatus(result);
@@ -1172,6 +1225,7 @@
       source: getActiveBundleSource(),
       bundleHash,
       integrityStatus: "current",
+      snapshot: createBundleSnapshot(activeBundle, activeValidationResult),
       counts: {
         nodes: numberValue(summary.nodes),
         assertions: numberValue(summary.assertions),
@@ -1196,6 +1250,83 @@
     removePersistedStagedRecord(bundleId);
     stagedRecord = null;
     renderStagingSummary(activeBundle, activeValidationResult);
+  }
+
+  function createBundleSnapshot(bundle, result) {
+    const getIds = (items = []) =>
+      items
+        .map(item =>
+          item?.id ||
+          item?.revisionId ||
+          item?.bundleId ||
+          ""
+        )
+        .filter(Boolean)
+        .sort();
+
+    return {
+      counts: {
+        nodes: numberValue(result?.summary?.nodes),
+        assertions: numberValue(result?.summary?.assertions),
+        edges: numberValue(result?.summary?.edges),
+        sources: numberValue(result?.summary?.sources),
+        revisions: numberValue(result?.summary?.revisions),
+        warnings: numberValue(result?.summary?.warnings)
+      },
+      ids: {
+        nodes: getIds(bundle?.nodes),
+        assertions: getIds(bundle?.assertions),
+        edges: getIds(bundle?.edges),
+        sources: getIds(bundle?.sources),
+        revisions: getIds(bundle?.revisions)
+      }
+    };
+  }
+
+  function compareBundleSnapshot(previousSnapshot, currentSnapshot) {
+    if (!previousSnapshot || !currentSnapshot) {
+      return null;
+    }
+
+    const categories = [
+      "nodes",
+      "assertions",
+      "edges",
+      "sources",
+      "revisions"
+    ];
+
+    const counts = {};
+    const objects = {};
+
+    for (const category of categories) {
+      const previousCount = numberValue(previousSnapshot.counts?.[category]);
+      const currentCount = numberValue(currentSnapshot.counts?.[category]);
+
+      counts[category] = {
+        previous: previousCount,
+        current: currentCount,
+        delta: currentCount - previousCount
+      };
+
+      const previousIds = new Set(previousSnapshot.ids?.[category] || []);
+      const currentIds = new Set(currentSnapshot.ids?.[category] || []);
+
+      objects[category] = {
+        added: [...currentIds].filter(id => !previousIds.has(id)),
+        removed: [...previousIds].filter(id => !currentIds.has(id))
+      };
+    }
+
+    counts.warnings = {
+      previous: numberValue(previousSnapshot.counts?.warnings),
+      current: numberValue(currentSnapshot.counts?.warnings),
+      delta:
+        numberValue(currentSnapshot.counts?.warnings) -
+        numberValue(previousSnapshot.counts?.warnings)
+    };
+
+    return { counts, objects };
   }
 
   async function createBundleHash(bundle) {
@@ -1291,6 +1422,56 @@
         Warnings carried forward: ${stagedRecord.warningCount}<br>
         Snapshot hash: ${escapeHtml((stagedRecord.bundleHash || "not-recorded").slice(0, 16))}…
         ${renderIntegrityNote(stagedRecord)}
+        ${renderChangeComparison(stagedRecord.changeComparison)}
+      </div>
+    `;
+  }
+
+  function renderChangeComparison(comparison) {
+    if (!comparison) {
+      return "";
+    }
+
+    const countCards = [
+      ["Nodes", comparison.counts.nodes],
+      ["Assertions", comparison.counts.assertions],
+      ["Edges", comparison.counts.edges],
+      ["Sources", comparison.counts.sources],
+      ["Revisions", comparison.counts.revisions],
+      ["Warnings", comparison.counts.warnings]
+    ].map(([label, value]) => `
+      <div class="change-card">
+        <strong>${escapeHtml(label)}</strong>
+        ${numberValue(value.previous)} → ${numberValue(value.current)}
+        ${value.delta === 0
+          ? " (unchanged)"
+          : ` (${value.delta > 0 ? "+" : ""}${value.delta})`}
+      </div>
+    `).join("");
+
+    const objectChanges = [];
+
+    for (const [category, changes] of Object.entries(comparison.objects || {})) {
+      for (const id of changes.added || []) {
+        objectChanges.push(
+          `<li><strong>Added ${escapeHtml(category.slice(0, -1))}:</strong> <code>${escapeHtml(id)}</code></li>`
+        );
+      }
+
+      for (const id of changes.removed || []) {
+        objectChanges.push(
+          `<li><strong>Removed ${escapeHtml(category.slice(0, -1))}:</strong> <code>${escapeHtml(id)}</code></li>`
+        );
+      }
+    }
+
+    return `
+      <div class="change-summary">
+        <h4>Changes Since Staging</h4>
+        <div class="change-grid">${countCards}</div>
+        ${objectChanges.length
+          ? `<ul class="change-list">${objectChanges.join("")}</ul>`
+          : `<p class="empty">No object IDs were added or removed.</p>`}
       </div>
     `;
   }
