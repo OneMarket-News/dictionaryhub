@@ -722,24 +722,31 @@ Rendered Registry</code>
     }
 
     function buildActions(registryEntry) {
-      const defaultActions = [
-        {
-          label: "Validate in Import Preview",
-          href: "sourceroot-import-preview.html",
-          primary: true
-        },
-        {
-          label: "Open Bundle JSON",
-          href: registryEntry.path,
-          newTab: true
-        }
-      ];
+  const importPreviewUrl = new URL(
+    "sourceroot-import-preview.html",
+    window.location.href
+  );
 
-      return [
-        ...defaultActions,
-        ...(Array.isArray(registryEntry.actions) ? registryEntry.actions : [])
-      ];
+  importPreviewUrl.searchParams.set("bundle", registryEntry.path);
+
+  const defaultActions = [
+    {
+      label: "Validate in Import Preview",
+      href: `${importPreviewUrl.pathname}${importPreviewUrl.search}`,
+      primary: true
+    },
+    {
+      label: "Open Bundle JSON",
+      href: registryEntry.path,
+      newTab: true
     }
+  ];
+
+  return [
+    ...defaultActions,
+    ...(Array.isArray(registryEntry.actions) ? registryEntry.actions : [])
+  ];
+}
 
     function renderAction(action) {
       return `
