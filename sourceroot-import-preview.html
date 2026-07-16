@@ -441,6 +441,18 @@
       align-items: center;
     }
 
+    .export-button {
+      background: #eef2ff;
+      border-color: #c7d2fe;
+      color: #3730a3;
+      font-weight: bold;
+    }
+
+    .export-button:hover {
+      background: #e0e7ff;
+      border-color: #818cf8;
+    }
+
     .unstage-button {
       background: white;
       border-color: #fecaca;
@@ -689,6 +701,10 @@
 
     if (event.target.id === "unstageBundleButton") {
       unstageActiveBundle();
+    }
+
+    if (event.target.id === "exportStagedRecordButton") {
+      exportActiveStagedRecord();
     }
   });
 
@@ -1155,6 +1171,14 @@
             ${stagedRecord
               ? `
                 <button
+                  id="exportStagedRecordButton"
+                  class="export-button"
+                  type="button"
+                >
+                  Export Staged Record
+                </button>
+
+                <button
                   id="unstageBundleButton"
                   class="unstage-button"
                   type="button"
@@ -1337,6 +1361,52 @@
     return Array.from(new Uint8Array(digest))
       .map(byte => byte.toString(16).padStart(2, "0"))
       .join("");
+  }
+
+  function exportActiveStagedRecord() {
+    if (!stagedRecord) {
+      return;
+    }
+
+    const exportArtifact = createStagedRecordExport(stagedRecord);
+    const filename = `${sanitizeFilename(stagedRecord.bundleId)}-staged-record.json`;
+
+    downloadJsonFile(exportArtifact, filename);
+  }
+
+  function createStagedRecordExport(record) {
+    return {
+      exportType: "sourceroot-staged-record",
+      exportVersion: "1.0.0",
+      exportedAt: new Date().toISOString(),
+      record
+    };
+  }
+
+  function downloadJsonFile(value, filename) {
+    const blob = new Blob(
+      [JSON.stringify(value, null, 2)],
+      { type: "application/json" }
+    );
+
+    const objectUrl = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+
+    anchor.href = objectUrl;
+    anchor.download = filename;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+
+    URL.revokeObjectURL(objectUrl);
+  }
+
+  function sanitizeFilename(value) {
+    return String(value || "sourceroot-staged-record")
+      .trim()
+      .replace(/[^a-zA-Z0-9._-]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .toLowerCase() || "sourceroot-staged-record";
   }
 
   function getActiveBundleSource() {

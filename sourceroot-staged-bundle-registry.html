@@ -412,6 +412,7 @@
 
       <div class="toolbar">
         <button id="refreshButton" type="button">Refresh Registry</button>
+        <button id="exportAllButton" class="primary-button" type="button">Export All Staged Records</button>
         <button id="clearAllButton" class="danger-button" type="button">Remove All Staged Bundles</button>
       </div>
 
@@ -445,19 +446,27 @@
       .addEventListener("click", renderRegistry);
 
     document
+      .getElementById("exportAllButton")
+      .addEventListener("click", exportAllStagedRecords);
+
+    document
       .getElementById("clearAllButton")
       .addEventListener("click", removeAllStagedBundles);
 
     document
       .getElementById("registryGrid")
       .addEventListener("click", event => {
+        const exportButton = event.target.closest("[data-export-bundle]");
         const removeButton = event.target.closest("[data-remove-bundle]");
 
-        if (!removeButton) {
+        if (exportButton) {
+          exportSingleStagedRecord(exportButton.dataset.exportBundle);
           return;
         }
 
-        removeStagedBundle(removeButton.dataset.removeBundle);
+        if (removeButton) {
+          removeStagedBundle(removeButton.dataset.removeBundle);
+        }
       });
 
     function getStagingMap() {
@@ -805,6 +814,13 @@
               : ""}
 
             <button
+              type="button"
+              data-export-bundle="${escapeAttribute(record.bundleId)}"
+            >
+              Export Staged Record
+            </button>
+
+            <button
               class="danger-button"
               type="button"
               data-remove-bundle="${escapeAttribute(record.bundleId)}"
@@ -919,6 +935,74 @@
       url.searchParams.set("bundle", source);
 
       return `${url.pathname}${url.search}`;
+    }
+
+    function exportSingleStagedRecord(bundleId) {
+      const stagingMap = getStagingMap();
+      const record = stagingMap[bundleId];
+
+      if (!record) {
+        return;
+      }
+
+      const artifact = {
+        exportType: "sourceroot-staged-record",
+        exportVersion: "1.0.0",
+        exportedAt: new Date().toISOString(),
+        record
+      };
+
+      downloadJsonFile(
+        artifact,
+        `${sanitizeFilename(bundleId)}-staged-record.json`
+      );
+    }
+
+    function exportAllStagedRecords() {
+      const records = getStagedRecords();
+
+      if (!records.length) {
+        return;
+      }
+
+      const artifact = {
+        exportType: "sourceroot-staged-record-collection",
+        exportVersion: "1.0.0",
+        exportedAt: new Date().toISOString(),
+        recordCount: records.length,
+        records
+      };
+
+      downloadJsonFile(
+        artifact,
+        `sourceroot-staged-records-${new Date().toISOString().slice(0, 10)}.json`
+      );
+    }
+
+    function downloadJsonFile(value, filename) {
+      const blob = new Blob(
+        [JSON.stringify(value, null, 2)],
+        { type: "application/json" }
+      );
+
+      const objectUrl = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+
+      anchor.href = objectUrl;
+      anchor.download = filename;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+
+      URL.revokeObjectURL(objectUrl);
+    }
+
+    function sanitizeFilename(value) {
+      return String(value || "sourceroot-staged-record")
+        .trim()
+        .replace(/[^a-zA-Z0-9._-]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .toLowerCase() || "sourceroot-staged-record";
     }
 
     function removeStagedBundle(bundleId) {
