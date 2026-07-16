@@ -390,22 +390,26 @@
       <h2>Import Bundle Preview</h2>
 
       <p class="overview-text">
-        This version can load either a clean example bundle or an intentionally broken test bundle.
-        The validator does not import data yet. It only previews whether the bundle is structurally safe.
+        Routable bundle controls are generated directly from the SourceRoot bundle registry.
+        The validator does not import data yet. It only previews whether the selected bundle is structurally safe.
       </p>
 
       <div class="button-row">
-  <button id="loadExampleButton" type="button">Load Example Bundle</button>
-  <button id="loadBrokenButton" class="danger-button" type="button">Load Broken Test Bundle</button>
-  <button id="loadLightMvpButton" type="button">Load Light MVP Bundle</button>
+        <div id="registryBundleButtons" class="button-row" aria-label="Registry bundles"></div>
 
-  <label class="file-upload-label" for="bundleFileInput">
-    Choose Local Bundle JSON
-  </label>
-  <input id="bundleFileInput" class="file-input" type="file" accept=".json,application/json" />
+        <label class="file-upload-label" for="bundleFileInput">
+          Choose Local Bundle JSON
+        </label>
 
-  <button id="clearButton" type="button">Clear Preview</button>
-</div>
+        <input
+          id="bundleFileInput"
+          class="file-input"
+          type="file"
+          accept=".json,application/json"
+        />
+
+        <button id="clearButton" type="button">Clear Preview</button>
+      </div>
 
 <div id="loadedFileNote" class="loaded-file-note"></div>
 
@@ -438,7 +442,7 @@
   </main>
 
   <footer>
-    SourceRoot Import Preview. Current status: static validator preview, not a live import engine yet.
+    SourceRoot Import Preview. Registry-driven validation preview, not a live import engine yet.
   </footer>
 
   <script type="module">
@@ -446,18 +450,7 @@
 
   const REGISTRY_PATH = "data/sourceroot-bundle-registry.json";
   let approvedBundlePaths = [];
-
-  document.getElementById("loadExampleButton").addEventListener("click", () => {
-    openBundleRoute("data/sourceroot-import-bundle-example.json");
-  });
-
-  document.getElementById("loadBrokenButton").addEventListener("click", () => {
-    openBundleRoute("data/sourceroot-import-bundle-broken-example.json");
-  });
-
-  document.getElementById("loadLightMvpButton").addEventListener("click", () => {
-    openBundleRoute("data/sourceroot-light-mvp-bundle.json");
-  });
+  let approvedBundleEntries = [];
 
   document.getElementById("clearButton").addEventListener("click", () => {
     clearPreview({ clearRoute: true });
@@ -536,10 +529,52 @@
       throw new Error("Bundle registry does not contain a valid bundles array.");
     }
 
-    approvedBundlePaths = registry.bundles
-      .filter(entry => entry.routable === true)
-      .map(entry => entry.path)
-      .filter(path => typeof path === "string" && path.length > 0);
+    approvedBundleEntries = registry.bundles.filter(entry =>
+      entry &&
+      entry.routable === true &&
+      typeof entry.path === "string" &&
+      entry.path.length > 0
+    );
+
+    approvedBundlePaths = approvedBundleEntries.map(entry => entry.path);
+
+    renderRegistryBundleButtons();
+  }
+
+  function renderRegistryBundleButtons() {
+    const container = document.getElementById("registryBundleButtons");
+
+    if (!approvedBundleEntries.length) {
+      container.innerHTML = `
+        <span class="empty">No routable registry bundles are available.</span>
+      `;
+      return;
+    }
+
+    container.innerHTML = approvedBundleEntries
+      .map(entry => {
+        const buttonLabel = entry.previewButtonLabel || `Load ${entry.title || entry.bundleId || "Bundle"}`;
+        const dangerClass = String(entry.bundleId || "").toLowerCase().includes("broken")
+          ? "danger-button"
+          : "";
+
+        return `
+          <button
+            type="button"
+            class="registry-bundle-button ${dangerClass}"
+            data-bundle-path="${escapeAttribute(entry.path)}"
+          >
+            ${escapeHtml(buttonLabel)}
+          </button>
+        `;
+      })
+      .join("");
+
+    container.querySelectorAll("[data-bundle-path]").forEach(button => {
+      button.addEventListener("click", () => {
+        openBundleRoute(button.dataset.bundlePath);
+      });
+    });
   }
 
   function getRequestedBundlePath() {
@@ -904,6 +939,23 @@
       .split("-")
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" ");
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function escapeAttribute(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;");
   }
 
   async function initializeImportPreview() {
