@@ -1,0 +1,73 @@
+{
+  "registryId": "sourceroot-bundle-registry",
+  "title": "SourceRoot Import Bundle Registry",
+  "version": "0.1.0",
+  "bundles": [
+    {
+      "bundleId": "sourceroot-light-mvp-bundle",
+      "title": "Light MVP Bundle",
+      "path": "data/sourceroot-light-mvp-bundle.json",
+      "featured": true,
+      "purpose": "Main SourceRoot MVP demo dataset",
+      "description": "Models light across physical, dictionary, biblical, symbolic, truth, knowledge, guidance, revelation, and visibility contexts.",
+      "domains": [
+        "SourceRoot",
+        "DictionaryHub",
+        "BibleRoot",
+        "Wiki"
+      ],
+      "reviewNeed": "Review relationship support levels and internal-only source handling.",
+      "actions": [
+        {
+          "label": "Open Light Graph",
+          "href": "sourceroot-light-graph.html"
+        },
+        {
+          "label": "Open Inspector",
+          "href": "sourceroot-inspector.html"
+        },
+        {
+          "label": "Open Node API Example",
+          "href": "data/api-examples/sourceRoot-light-node-response.json",
+          "newTab": true
+        },
+        {
+          "label": "Open Validation API Example",
+          "href": "data/api-examples/sourceRoot-light-validation-response.json",
+          "newTab": true
+        },
+        {
+          "label": "Open Citation API Example",
+          "href": "data/api-examples/sourceRoot-light-citation-response.json",
+          "newTab": true
+        }
+      ]
+    },
+    {
+      "bundleId": "sourceroot-import-bundle-example",
+      "title": "Example Import Bundle",
+      "path": "data/sourceroot-import-bundle-example.json",
+      "featured": false,
+      "purpose": "Validator smoke test",
+      "description": "Small example bundle used to test successful validation and non-blocking warnings.",
+      "domains": [
+        "SourceRoot"
+      ],
+      "reviewNeed": "Review internal-only source licensing before public release.",
+      "actions": []
+    },
+    {
+      "bundleId": "sourceroot-import-bundle-broken-example",
+      "title": "Broken Import Bundle",
+      "path": "data/sourceroot-import-bundle-broken-example.json",
+      "featured": false,
+      "purpose": "Validator failure test",
+      "description": "Intentional failure bundle used to prove the validator catches duplicate IDs, broken references, missing fields, and invalid trust metadata.",
+      "domains": [
+        "SourceRoot"
+      ],
+      "reviewNeed": "Fix all validation errors before import.",
+      "actions": []
+    }
+  ]
+}

@@ -126,6 +126,11 @@
       padding: 18px;
     }
 
+    .bundle-card.featured {
+      border-color: #b78a2f;
+      box-shadow: 0 4px 14px rgba(183, 138, 47, 0.12);
+    }
+
     .bundle-header {
       display: flex;
       justify-content: space-between;
@@ -135,9 +140,26 @@
       margin-bottom: 12px;
     }
 
+    .bundle-title-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      flex-wrap: wrap;
+    }
+
     .bundle-title {
-      margin: 0 0 6px;
+      margin: 0;
       font-size: 22px;
+    }
+
+    .featured-pill {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 4px 8px;
+      background: #7c2d12;
+      color: white;
+      font-size: 11px;
+      font-weight: bold;
     }
 
     .bundle-path {
@@ -149,6 +171,7 @@
       padding: 5px 7px;
       display: inline-block;
       word-break: break-word;
+      margin-top: 7px;
     }
 
     .status-pill {
@@ -172,10 +195,17 @@
       border: 1px solid #ead59a;
     }
 
-    .status-blocked {
+    .status-blocked,
+    .status-error {
       background: #fee2e2;
       color: #991b1b;
       border: 1px solid #fecaca;
+    }
+
+    .status-loading {
+      background: #e5e7eb;
+      color: #374151;
+      border: 1px solid #d1d5db;
     }
 
     .bundle-description {
@@ -270,8 +300,16 @@
       border-color: #374151;
     }
 
+    .issue-section {
+      margin-top: 16px;
+    }
+
+    .issue-heading {
+      margin: 0 0 8px;
+      font-size: 14px;
+    }
+
     .issue-list {
-      margin-top: 14px;
       display: grid;
       gap: 8px;
     }
@@ -318,6 +356,25 @@
       padding: 0;
     }
 
+    .loading-message,
+    .registry-error {
+      border-radius: 14px;
+      padding: 16px;
+      line-height: 1.5;
+    }
+
+    .loading-message {
+      background: #f3f4f6;
+      border: 1px solid #d1d5db;
+      color: #4b5563;
+    }
+
+    .registry-error {
+      background: #fee2e2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+    }
+
     footer {
       padding: 0 24px 28px;
       color: #6b7280;
@@ -347,15 +404,13 @@
       <h1>SourceRoot Import Bundle Registry</h1>
 
       <div class="subtitle">
-        Browse available SourceRoot import bundles, review validation status, inspect object counts,
-        open related demos, and connect bundles to API examples.
+        Browse SourceRoot import bundles using live validation results calculated from the actual bundle files.
       </div>
 
       <div class="top-links">
         <a href="index.html">Landing Page</a>
         <a href="sourceroot-mvp-walkthrough.html">MVP Walkthrough</a>
         <a href="sourceroot.html">SourceRoot Home</a>
-        <a href="sourceroot-import-bundle-registry.html">Import Bundle Registry</a>
         <a href="sourceroot-import-preview.html">Open Import Preview</a>
         <a href="sourceroot-light-graph.html">Open Light Graph</a>
         <a href="sourceroot-inspector.html">Open Inspector</a>
@@ -369,17 +424,20 @@
       <h2>Registry Purpose</h2>
 
       <p class="overview-text">
-        The Import Bundle Registry is the catalog layer for SourceRoot imports. Instead of only loading
-        bundles manually, users can see which bundles exist, what they contain, whether they are safe to
-        preview, and what review work remains before public release.
+        The Import Bundle Registry now loads a registry manifest, fetches each bundle, runs the shared SourceRoot validator,
+        and displays the real validation status, object counts, errors, and warnings.
       </p>
 
       <div class="model-box">
-        <code>Import Bundle Registry
+        <code>Bundle Registry Manifest
   ↓
-Bundle Status / Counts / Issues / Actions
+Fetch Actual Bundle JSON
   ↓
-Import Preview → Inspector → Light Graph → API Examples</code>
+engine/importValidator.js
+  ↓
+Real Counts / Errors / Warnings / Readiness
+  ↓
+Rendered Registry</code>
       </div>
 
       <div id="summaryGrid" class="summary-grid">
@@ -394,193 +452,148 @@ Import Preview → Inspector → Light Graph → API Examples</code>
       <h2>Available Import Bundles</h2>
 
       <p class="overview-text">
-        Current registry entries are static prototype records. Future versions can generate this list
-        directly from saved validation results.
+        Counts and validation states on this page are derived from the current bundle files. Editing a bundle will automatically change its displayed status the next time this page loads.
       </p>
+
+      <div id="registryMessage" class="loading-message">
+        Loading bundle registry and validating bundles…
+      </div>
 
       <div id="bundleGrid" class="bundle-grid"></div>
     </section>
   </main>
 
   <footer>
-    SourceRoot Import Bundle Registry. Current status: static prototype catalog for import bundle visibility.
+    SourceRoot Import Bundle Registry. Validation results are generated from the current bundle files using the shared SourceRoot validator.
   </footer>
 
-  <script>
-    const bundles = [
-      {
-        id: "sourceroot-light-mvp-bundle",
-        title: "Light MVP Bundle",
-        path: "data/sourceroot-light-mvp-bundle.json",
-        status: "Ready With Warnings",
-        statusClass: "status-warning",
-        canImport: true,
-        description:
-          "Main SourceRoot MVP demo bundle. Models light across physical, dictionary, biblical, symbolic, truth, knowledge, guidance, revelation, and visibility contexts.",
-        counts: {
-          nodes: 8,
-          assertions: 10,
-          edges: 9,
-          sources: 11,
-          revisions: 12,
-          errors: 0,
-          warnings: 3
-        },
-        metadata: {
-          purpose: "Main MVP demo dataset",
-          readiness: "Safe to preview, not fully public-release reviewed",
-          domains: "SourceRoot, DictionaryHub, BibleRoot, Wiki-style context",
-          reviewNeed: "Relationship support levels and internal-only source handling"
-        },
-        warnings: [
-          {
-            code: "INVALID_RELATIONSHIP_SUPPORT_LEVEL",
-            objectId: "edge-light-visibility-to-knowledge",
-            message: "Relationship support level should be reviewed before public release."
-          },
-          {
-            code: "INVALID_RELATIONSHIP_SUPPORT_LEVEL",
-            objectId: "edge-revelation-to-knowledge",
-            message: "Relationship support level should be reviewed before public release."
-          },
-          {
-            code: "SOURCE_INTERNAL_ONLY",
-            objectId: "source-bibleroot-alpha-notes",
-            message: "Internal-only source should not be treated as public-release-ready."
-          }
-        ],
-        errors: [],
-        actions: [
-          {
-            label: "Validate in Import Preview",
-            href: "sourceroot-import-preview.html",
-            primary: true
-          },
-          {
-            label: "Open Light Graph",
-            href: "sourceroot-light-graph.html"
-          },
-          {
-            label: "Open Inspector",
-            href: "sourceroot-inspector.html"
-          },
-          {
-            label: "Open Node API Example",
-            href: "data/api-examples/sourceRoot-light-node-response.json"
-          },
-          {
-            label: "Open Validation API Example",
-            href: "data/api-examples/sourceRoot-light-validation-response.json"
-          },
-          {
-            label: "Open Citation API Example",
-            href: "data/api-examples/sourceRoot-light-citation-response.json"
-          }
-        ]
-      },
-      {
-        id: "sourceroot-import-bundle-example",
-        title: "Example Import Bundle",
-        path: "data/sourceroot-import-bundle-example.json",
-        status: "Ready With Warnings",
-        statusClass: "status-warning",
-        canImport: true,
-        description:
-          "Small clean example bundle used to test the import validator and demonstrate a safe preview with one warning.",
-        counts: {
-          nodes: 2,
-          assertions: 2,
-          edges: 1,
-          sources: 1,
-          revisions: 3,
-          errors: 0,
-          warnings: 1
-        },
-        metadata: {
-          purpose: "Validator smoke test",
-          readiness: "Safe to preview",
-          domains: "SourceRoot example data",
-          reviewNeed: "Internal-only source should not be treated as public-ready"
-        },
-        warnings: [
-          {
-            code: "SOURCE_INTERNAL_ONLY",
-            objectId: "example-source-light-reference",
-            message: "Source license status is internal-use-only."
-          }
-        ],
-        errors: [],
-        actions: [
-          {
-            label: "Validate in Import Preview",
-            href: "sourceroot-import-preview.html",
-            primary: true
-          },
-          {
-            label: "Open JSON Bundle",
-            href: "data/sourceroot-import-bundle-example.json"
-          }
-        ]
-      },
-      {
-        id: "sourceroot-import-bundle-broken-example",
-        title: "Broken Import Bundle",
-        path: "data/sourceroot-import-bundle-broken-example.json",
-        status: "Blocked",
-        statusClass: "status-blocked",
+  <script type="module">
+    import { validateBundle } from "./engine/importValidator.js";
+
+    const REGISTRY_PATH = "data/sourceroot-bundle-registry.json";
+
+    async function initializeRegistry() {
+      const registryMessage = document.getElementById("registryMessage");
+
+      try {
+        const registryResponse = await fetch(REGISTRY_PATH);
+
+        if (!registryResponse.ok) {
+          throw new Error(
+            `Registry manifest failed to load: ${registryResponse.status} ${registryResponse.statusText}`
+          );
+        }
+
+        const registry = await registryResponse.json();
+
+        if (!Array.isArray(registry.bundles)) {
+          throw new Error("Registry manifest does not contain a valid bundles array.");
+        }
+
+        const bundleResults = await Promise.all(
+          registry.bundles.map(loadAndValidateBundle)
+        );
+
+        renderSummary(bundleResults);
+        renderBundles(bundleResults);
+
+        registryMessage.remove();
+      } catch (error) {
+        registryMessage.className = "registry-error";
+        registryMessage.innerHTML = `
+          <strong>Registry failed to load.</strong><br>
+          ${escapeHtml(error.message)}
+        `;
+
+        console.error("SourceRoot bundle registry failed:", error);
+      }
+    }
+
+    async function loadAndValidateBundle(registryEntry) {
+      try {
+        const bundleResponse = await fetch(registryEntry.path);
+
+        if (!bundleResponse.ok) {
+          throw new Error(
+            `${bundleResponse.status} ${bundleResponse.statusText}`
+          );
+        }
+
+        const bundle = await bundleResponse.json();
+        const validation = validateBundle(bundle);
+
+        return {
+          registryEntry,
+          bundle,
+          validation,
+          loadError: null
+        };
+      } catch (error) {
+        return {
+          registryEntry,
+          bundle: null,
+          validation: createLoadFailureResult(registryEntry, error),
+          loadError: error.message
+        };
+      }
+    }
+
+    function createLoadFailureResult(registryEntry, error) {
+      return {
+        bundleId: registryEntry.bundleId || "unknown",
+        status: "load-failed",
         canImport: false,
-        description:
-          "Intentional failure bundle used to prove the validator catches duplicate IDs, broken references, missing fields, and invalid trust metadata.",
-        counts: {
-          nodes: "Test",
-          assertions: "Test",
-          edges: "Test",
-          sources: "Test",
-          revisions: "Test",
-          errors: "Several",
-          warnings: "Several"
+        summary: {
+          nodes: 0,
+          assertions: 0,
+          edges: 0,
+          sources: 0,
+          revisions: 0,
+          errors: 1,
+          warnings: 0
         },
-        metadata: {
-          purpose: "Validator failure test",
-          readiness: "Blocked from import",
-          domains: "SourceRoot test data",
-          reviewNeed: "Fix duplicate IDs, missing references, missing fields, and invalid trust values"
-        },
-        warnings: [
-          {
-            code: "EXPECTED_WARNINGS",
-            objectId: "broken-test-bundle",
-            message: "This bundle is supposed to produce warnings."
-          }
-        ],
         errors: [
           {
-            code: "EXPECTED_ERRORS",
-            objectId: "broken-test-bundle",
-            message: "This bundle is supposed to produce validation errors and be blocked."
+            code: "BUNDLE_LOAD_FAILED",
+            objectType: "bundle",
+            objectId: registryEntry.bundleId || "unknown",
+            message: `Bundle could not be loaded: ${error.message}`
           }
         ],
-        actions: [
-          {
-            label: "Validate in Import Preview",
-            href: "sourceroot-import-preview.html",
-            primary: true
-          },
-          {
-            label: "Open JSON Bundle",
-            href: "data/sourceroot-import-bundle-broken-example.json"
-          }
-        ]
-      }
-    ];
+        warnings: []
+      };
+    }
 
-    function renderSummary() {
-      const totalBundles = bundles.length;
-      const readyBundles = bundles.filter(bundle => bundle.canImport).length;
-      const blockedBundles = bundles.filter(bundle => !bundle.canImport).length;
-      const totalWarnings = bundles.reduce((sum, bundle) => {
-        const warnings = Number(bundle.counts.warnings);
-        return sum + (Number.isFinite(warnings) ? warnings : 0);
+    function renderSummary(results) {
+      const totalBundles = results.length;
+
+      const readyBundles = results.filter(result =>
+        result.validation.canImport
+      ).length;
+
+      const blockedBundles = results.filter(result =>
+        !result.validation.canImport
+      ).length;
+
+      const totalErrors = results.reduce(
+        (sum, result) => sum + numberValue(result.validation.summary?.errors),
+        0
+      );
+
+      const totalWarnings = results.reduce(
+        (sum, result) => sum + numberValue(result.validation.summary?.warnings),
+        0
+      );
+
+      const totalObjects = results.reduce((sum, result) => {
+        const summary = result.validation.summary || {};
+
+        return sum
+          + numberValue(summary.nodes)
+          + numberValue(summary.assertions)
+          + numberValue(summary.edges)
+          + numberValue(summary.sources)
+          + numberValue(summary.revisions);
       }, 0);
 
       document.getElementById("summaryGrid").innerHTML = `
@@ -600,106 +613,241 @@ Import Preview → Inspector → Light Graph → API Examples</code>
         </div>
 
         <div class="summary-card">
+          <div class="summary-number">${totalObjects}</div>
+          <div class="summary-label">Total Objects</div>
+        </div>
+
+        <div class="summary-card">
+          <div class="summary-number">${totalErrors}</div>
+          <div class="summary-label">Validation Errors</div>
+        </div>
+
+        <div class="summary-card">
           <div class="summary-number">${totalWarnings}</div>
-          <div class="summary-label">Known Warnings</div>
+          <div class="summary-label">Validation Warnings</div>
         </div>
       `;
     }
 
-    function renderBundles() {
-      document.getElementById("bundleGrid").innerHTML = bundles.map(bundle => `
-        <article class="bundle-card">
+    function renderBundles(results) {
+      document.getElementById("bundleGrid").innerHTML = results
+        .map(renderBundleCard)
+        .join("");
+    }
+
+    function renderBundleCard(result) {
+      const { registryEntry, validation, loadError } = result;
+      const summary = validation.summary || {};
+      const statusInfo = getStatusInfo(validation, loadError);
+      const actions = buildActions(registryEntry);
+
+      return `
+        <article class="bundle-card ${registryEntry.featured ? "featured" : ""}">
           <div class="bundle-header">
             <div>
-              <h3 class="bundle-title">${escapeHtml(bundle.title)}</h3>
-              <div class="bundle-path">${escapeHtml(bundle.path)}</div>
+              <div class="bundle-title-row">
+                <h3 class="bundle-title">
+                  ${escapeHtml(registryEntry.title || registryEntry.bundleId)}
+                </h3>
+
+                ${registryEntry.featured
+                  ? `<span class="featured-pill">Featured MVP Bundle</span>`
+                  : ""}
+              </div>
+
+              <div class="bundle-path">
+                ${escapeHtml(registryEntry.path)}
+              </div>
             </div>
 
-            <span class="status-pill ${bundle.statusClass}">
-              ${escapeHtml(bundle.status)}
+            <span class="status-pill ${statusInfo.className}">
+              ${escapeHtml(statusInfo.label)}
             </span>
           </div>
 
           <p class="bundle-description">
-            ${escapeHtml(bundle.description)}
+            ${escapeHtml(registryEntry.description || "")}
           </p>
 
           <div class="count-grid">
-            ${renderCount("Nodes", bundle.counts.nodes)}
-            ${renderCount("Assertions", bundle.counts.assertions)}
-            ${renderCount("Edges", bundle.counts.edges)}
-            ${renderCount("Sources", bundle.counts.sources)}
-            ${renderCount("Revisions", bundle.counts.revisions)}
-            ${renderCount("Errors", bundle.counts.errors)}
-            ${renderCount("Warnings", bundle.counts.warnings)}
+            ${renderCount("Nodes", summary.nodes)}
+            ${renderCount("Assertions", summary.assertions)}
+            ${renderCount("Edges", summary.edges)}
+            ${renderCount("Sources", summary.sources)}
+            ${renderCount("Revisions", summary.revisions)}
+            ${renderCount("Errors", summary.errors)}
+            ${renderCount("Warnings", summary.warnings)}
           </div>
 
           <div class="meta-grid">
             <div class="meta-card">
+              <strong>Bundle ID</strong>
+              <span>${escapeHtml(validation.bundleId || registryEntry.bundleId)}</span>
+            </div>
+
+            <div class="meta-card">
               <strong>Purpose</strong>
-              <span>${escapeHtml(bundle.metadata.purpose)}</span>
+              <span>${escapeHtml(registryEntry.purpose || "Not provided")}</span>
             </div>
 
             <div class="meta-card">
               <strong>Readiness</strong>
-              <span>${escapeHtml(bundle.metadata.readiness)}</span>
+              <span>${escapeHtml(getReadinessDescription(validation, loadError))}</span>
             </div>
 
             <div class="meta-card">
               <strong>Domains</strong>
-              <span>${escapeHtml(bundle.metadata.domains)}</span>
+              <span>${escapeHtml(formatDomains(registryEntry.domains))}</span>
             </div>
 
             <div class="meta-card">
               <strong>Review Need</strong>
-              <span>${escapeHtml(bundle.metadata.reviewNeed)}</span>
+              <span>${escapeHtml(registryEntry.reviewNeed || "No registry note provided")}</span>
+            </div>
+
+            <div class="meta-card">
+              <strong>Validation Source</strong>
+              <span>Calculated by engine/importValidator.js</span>
             </div>
           </div>
 
-          ${renderIssues(bundle.errors, "error")}
-          ${renderIssues(bundle.warnings, "warning")}
+          ${renderIssues(validation.errors, "error")}
+          ${renderIssues(validation.warnings, "warning")}
 
           <div class="action-row">
-            ${bundle.actions.map(action => `
-              <a
-                class="action-link ${action.primary ? "primary" : ""}"
-                href="${escapeAttribute(action.href)}"
-                ${action.href.endsWith(".json") ? `target="_blank" rel="noopener"` : ""}
-              >
-                ${escapeHtml(action.label)}
-              </a>
-            `).join("")}
+            ${actions.map(renderAction).join("")}
           </div>
         </article>
-      `).join("");
+      `;
+    }
+
+    function buildActions(registryEntry) {
+      const defaultActions = [
+        {
+          label: "Validate in Import Preview",
+          href: "sourceroot-import-preview.html",
+          primary: true
+        },
+        {
+          label: "Open Bundle JSON",
+          href: registryEntry.path,
+          newTab: true
+        }
+      ];
+
+      return [
+        ...defaultActions,
+        ...(Array.isArray(registryEntry.actions) ? registryEntry.actions : [])
+      ];
+    }
+
+    function renderAction(action) {
+      return `
+        <a
+          class="action-link ${action.primary ? "primary" : ""}"
+          href="${escapeAttribute(action.href)}"
+          ${action.newTab ? `target="_blank" rel="noopener"` : ""}
+        >
+          ${escapeHtml(action.label)}
+        </a>
+      `;
     }
 
     function renderCount(label, value) {
       return `
         <div class="count-card">
-          <div class="count-number">${escapeHtml(value)}</div>
+          <div class="count-number">${numberValue(value)}</div>
           <div class="count-label">${escapeHtml(label)}</div>
         </div>
       `;
     }
 
     function renderIssues(issues = [], type = "warning") {
-      if (!issues.length) {
+      if (!Array.isArray(issues) || issues.length === 0) {
         return "";
       }
 
-      const title = type === "error" ? "Known Errors" : "Known Warnings";
+      const heading = type === "error"
+        ? `Validation Errors (${issues.length})`
+        : `Validation Warnings (${issues.length})`;
 
       return `
-        <div class="issue-list">
-          ${issues.map(issue => `
-            <div class="issue ${type}">
-              <strong>${escapeHtml(title)} · ${escapeHtml(issue.code)}</strong>
-              <span><code>${escapeHtml(issue.objectId)}</code> — ${escapeHtml(issue.message)}</span>
-            </div>
-          `).join("")}
+        <div class="issue-section">
+          <h4 class="issue-heading">${escapeHtml(heading)}</h4>
+
+          <div class="issue-list">
+            ${issues.map(issue => `
+              <div class="issue ${type}">
+                <strong>
+                  ${escapeHtml(issue.code || "UNKNOWN_ISSUE")}
+                </strong>
+
+                <span>
+                  <code>${escapeHtml(issue.objectId || "unknown")}</code>
+                  — ${escapeHtml(issue.message || "No issue message provided.")}
+                </span>
+              </div>
+            `).join("")}
+          </div>
         </div>
       `;
+    }
+
+    function getStatusInfo(validation, loadError) {
+      if (loadError || validation.status === "load-failed") {
+        return {
+          label: "Load Failed",
+          className: "status-error"
+        };
+      }
+
+      if (!validation.canImport) {
+        return {
+          label: "Blocked",
+          className: "status-blocked"
+        };
+      }
+
+      if (numberValue(validation.summary?.warnings) > 0) {
+        return {
+          label: "Ready With Warnings",
+          className: "status-warning"
+        };
+      }
+
+      return {
+        label: "Ready",
+        className: "status-ready"
+      };
+    }
+
+    function getReadinessDescription(validation, loadError) {
+      if (loadError) {
+        return "Bundle could not be loaded or parsed.";
+      }
+
+      if (!validation.canImport) {
+        return "Blocked from import until validation errors are resolved.";
+      }
+
+      if (numberValue(validation.summary?.warnings) > 0) {
+        return "Structurally safe to preview, but review warnings remain.";
+      }
+
+      return "Structurally valid and ready to preview.";
+    }
+
+    function formatDomains(domains) {
+      if (!Array.isArray(domains) || domains.length === 0) {
+        return "Not specified";
+      }
+
+      return domains.join(", ");
+    }
+
+    function numberValue(value) {
+      const number = Number(value);
+      return Number.isFinite(number) ? number : 0;
     }
 
     function escapeHtml(value) {
@@ -719,8 +867,7 @@ Import Preview → Inspector → Light Graph → API Examples</code>
         .replaceAll(">", "&gt;");
     }
 
-    renderSummary();
-    renderBundles();
+    initializeRegistry();
   </script>
 </body>
 </html>
