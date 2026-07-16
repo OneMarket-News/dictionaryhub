@@ -1,17 +1,28 @@
 {
   "bundleId": "historyroot-fire-events-v2",
   "bundleType": "sourceroot-import-bundle",
-  "bundleVersion": "1.0.0",
-  "sourceApplication": "HistoryRoot",
-  "sourceSchemaVersion": "0.2.0",
-  "title": "HistoryRoot Fire Events V2",
-  "description": "A HistoryRoot pressure-test bundle covering the Great Chicago Fire and Peshtigo Fire, with enriched disputes, identity records, validation metadata, and SourceRoot lifecycle mapping.",
+  "version": "0.2",
+  "domain": "HistoryRoot",
+  "createdAt": "2026-07-16",
+  "createdBy": "HistoryRoot / SourceRoot prototype",
+  "description": "SourceRoot-compatible import bundle for the HistoryRoot Great Chicago Fire and Peshtigo Fire V2 dataset.",
   "nodes": [
     {
       "id": "event-great-chicago-fire",
-      "nodeType": "event",
-      "label": "Great Chicago Fire",
+      "title": "Great Chicago Fire",
+      "type": "event",
+      "domain": "HistoryRoot",
       "summary": "A major urban fire that spread across Chicago over multiple days.",
+      "sourceIds": [
+        "source-chm-oleary",
+        "source-encyclopedia-aftermath",
+        "source-encyclopedia-fire",
+        "source-encyclopedia-progress",
+        "source-loc-guide",
+        "source-loc-map-blog",
+        "source-nps-fire-week",
+        "source-wisconsin-peshtigo"
+      ],
       "status": "historical",
       "metadata": {
         "startDate": "1871-10-08",
@@ -20,25 +31,40 @@
     },
     {
       "id": "person-catherine-oleary",
-      "nodeType": "person",
-      "label": "Catherine O'Leary",
+      "title": "Catherine O'Leary",
+      "type": "person",
+      "domain": "HistoryRoot",
       "summary": "Chicago resident whose family barn became associated with the fire's origin story.",
+      "sourceIds": [
+        "source-chm-lesson",
+        "source-chm-oleary"
+      ],
       "status": "historical",
       "metadata": {}
     },
     {
       "id": "person-patrick-oleary",
-      "nodeType": "person",
-      "label": "Patrick O'Leary",
+      "title": "Patrick O'Leary",
+      "type": "person",
+      "domain": "HistoryRoot",
       "summary": "Catherine O'Leary's husband and co-owner of the property associated with the fire's origin.",
+      "sourceIds": [
+        "source-chm-oleary"
+      ],
       "status": "historical",
       "metadata": {}
     },
     {
       "id": "place-oleary-barn",
-      "nodeType": "place",
-      "label": "O'Leary Barn",
+      "title": "O'Leary Barn",
+      "type": "place",
+      "domain": "HistoryRoot",
       "summary": "The barn and property area commonly identified as the location where the fire began.",
+      "sourceIds": [
+        "source-chm-oleary",
+        "source-encyclopedia-fire",
+        "source-loc-guide"
+      ],
       "status": "historical-site",
       "metadata": {
         "alternateNames": [
@@ -48,33 +74,51 @@
     },
     {
       "id": "place-chicago-1871",
-      "nodeType": "place",
-      "label": "Chicago",
+      "title": "Chicago",
+      "type": "place",
+      "domain": "HistoryRoot",
       "summary": "The city affected by the 1871 fire.",
+      "sourceIds": [
+        "source-loc-guide"
+      ],
       "status": "historical-place",
       "metadata": {}
     },
     {
       "id": "institution-chicago-fire-department",
-      "nodeType": "institution",
-      "label": "Chicago Fire Department",
+      "title": "Chicago Fire Department",
+      "type": "institution",
+      "domain": "HistoryRoot",
       "summary": "The municipal firefighting organization responding to the disaster.",
+      "sourceIds": [
+        "source-encyclopedia-progress"
+      ],
       "status": "historical-institution",
       "metadata": {}
     },
     {
       "id": "concept-oleary-cow-myth",
-      "nodeType": "historical-narrative",
-      "label": "O'Leary Cow Origin Story",
+      "title": "O'Leary Cow Origin Story",
+      "type": "historical-narrative",
+      "domain": "HistoryRoot",
       "summary": "The widely repeated story that a cow kicked over a lantern and started the fire.",
+      "sourceIds": [
+        "source-chm-lesson",
+        "source-chm-oleary"
+      ],
       "status": "disputed",
       "metadata": {}
     },
     {
       "id": "period-chicago-rebuilding",
-      "nodeType": "period",
-      "label": "Post-Fire Chicago Rebuilding",
+      "title": "Post-Fire Chicago Rebuilding",
+      "type": "period",
+      "domain": "HistoryRoot",
       "summary": "The reconstruction and institutional response following the fire.",
+      "sourceIds": [
+        "source-encyclopedia-aftermath",
+        "source-encyclopedia-title"
+      ],
       "status": "historical-period",
       "metadata": {
         "startDate": "1871-10-10"
@@ -82,9 +126,15 @@
     },
     {
       "id": "event-peshtigo-fire",
-      "nodeType": "event",
-      "label": "Peshtigo Fire",
+      "title": "Peshtigo Fire",
+      "type": "event",
+      "domain": "HistoryRoot",
       "summary": "A catastrophic wildfire and firestorm centered on Peshtigo, Wisconsin, during the same regional fire period as the Great Chicago Fire.",
+      "sourceIds": [
+        "source-loc-guide",
+        "source-nps-peshtigo",
+        "source-wisconsin-peshtigo"
+      ],
       "status": "historical",
       "metadata": {
         "startDate": "1871-10-08",
@@ -93,17 +143,26 @@
     },
     {
       "id": "place-peshtigo-wisconsin",
-      "nodeType": "place",
-      "label": "Peshtigo, Wisconsin",
+      "title": "Peshtigo, Wisconsin",
+      "type": "place",
+      "domain": "HistoryRoot",
       "summary": "The Wisconsin community most closely associated with the Peshtigo Fire.",
+      "sourceIds": [
+        "source-wisconsin-peshtigo"
+      ],
       "status": "historical-place",
       "metadata": {}
     },
     {
       "id": "region-upper-midwest",
-      "nodeType": "region",
-      "label": "Upper Midwest Fire Region",
+      "title": "Upper Midwest Fire Region",
+      "type": "region",
+      "domain": "HistoryRoot",
       "summary": "A regional context linking multiple major fires during dry and windy conditions in October 1871.",
+      "sourceIds": [
+        "source-encyclopedia-fire",
+        "source-nps-peshtigo"
+      ],
       "status": "historical-region",
       "metadata": {}
     }
@@ -111,369 +170,647 @@
   "assertions": [
     {
       "id": "assertion-fire-dates",
-      "entityId": "event-great-chicago-fire",
+      "nodeId": "event-great-chicago-fire",
       "assertionType": "date-range",
-      "claim": "The Great Chicago Fire burned from the evening of October 8 through October 10, 1871.",
-      "supportLevel": "strong",
-      "verificationStatus": "supported",
+      "label": "Date Range",
+      "summary": "The Great Chicago Fire burned from the evening of October 8 through October 10, 1871.",
+      "body": "The Great Chicago Fire burned from the evening of October 8 through October 10, 1871.",
+      "domain": "HistoryRoot",
       "sourceIds": [
         "source-loc-guide",
         "source-loc-map-blog"
-      ]
+      ],
+      "credibilityTier": "historical-source-backed",
+      "confidence": "strong",
+      "verificationStatus": "supported",
+      "reviewStatus": "reviewed",
+      "supportLevel": "strong",
+      "interpretationLevel": "medium"
     },
     {
       "id": "assertion-origin-location",
-      "entityId": "place-oleary-barn",
+      "nodeId": "place-oleary-barn",
       "assertionType": "location",
-      "claim": "The fire began in or near the O'Leary barn on DeKoven Street.",
-      "supportLevel": "strong",
-      "verificationStatus": "supported",
+      "label": "Location",
+      "summary": "The fire began in or near the O'Leary barn on DeKoven Street.",
+      "body": "The fire began in or near the O'Leary barn on DeKoven Street.",
+      "domain": "HistoryRoot",
       "sourceIds": [
         "source-encyclopedia-fire",
         "source-loc-guide"
-      ]
+      ],
+      "credibilityTier": "historical-source-backed",
+      "confidence": "strong",
+      "verificationStatus": "supported",
+      "reviewStatus": "reviewed",
+      "supportLevel": "strong",
+      "interpretationLevel": "medium"
     },
     {
       "id": "assertion-cause-unknown",
-      "entityId": "event-great-chicago-fire",
+      "nodeId": "event-great-chicago-fire",
       "assertionType": "cause",
-      "claim": "The precise ignition cause of the fire is not known with certainty.",
-      "supportLevel": "moderate",
-      "verificationStatus": "supported-with-uncertainty",
+      "label": "Cause",
+      "summary": "The precise ignition cause of the fire is not known with certainty.",
+      "body": "The precise ignition cause of the fire is not known with certainty.",
+      "domain": "HistoryRoot",
       "sourceIds": [
         "source-chm-oleary",
         "source-loc-map-blog"
-      ]
+      ],
+      "credibilityTier": "historical-source-backed",
+      "confidence": "moderate",
+      "verificationStatus": "supported-with-uncertainty",
+      "reviewStatus": "reviewed",
+      "supportLevel": "moderate",
+      "interpretationLevel": "high"
     },
     {
       "id": "assertion-cow-story-disputed",
-      "entityId": "concept-oleary-cow-myth",
+      "nodeId": "concept-oleary-cow-myth",
       "assertionType": "historical-narrative",
-      "claim": "The story that Catherine O'Leary's cow kicked over a lantern is a disputed legend rather than an established cause.",
-      "supportLevel": "strong",
-      "verificationStatus": "supported",
+      "label": "Historical Narrative",
+      "summary": "The story that Catherine O'Leary's cow kicked over a lantern is a disputed legend rather than an established cause.",
+      "body": "The story that Catherine O'Leary's cow kicked over a lantern is a disputed legend rather than an established cause.",
+      "domain": "HistoryRoot",
       "sourceIds": [
         "source-chm-oleary",
         "source-chm-lesson"
-      ]
+      ],
+      "credibilityTier": "historical-source-backed",
+      "confidence": "strong",
+      "verificationStatus": "supported",
+      "reviewStatus": "reviewed",
+      "supportLevel": "strong",
+      "interpretationLevel": "high"
     },
     {
       "id": "assertion-multiple-fires",
-      "entityId": "event-great-chicago-fire",
+      "nodeId": "event-great-chicago-fire",
       "assertionType": "event-development",
-      "claim": "The disaster involved multiple fires and flying brands that merged into a larger inferno.",
-      "supportLevel": "strong",
-      "verificationStatus": "supported",
+      "label": "Event Development",
+      "summary": "The disaster involved multiple fires and flying brands that merged into a larger inferno.",
+      "body": "The disaster involved multiple fires and flying brands that merged into a larger inferno.",
+      "domain": "HistoryRoot",
       "sourceIds": [
         "source-encyclopedia-progress"
-      ]
+      ],
+      "credibilityTier": "historical-source-backed",
+      "confidence": "strong",
+      "verificationStatus": "supported",
+      "reviewStatus": "reviewed",
+      "supportLevel": "strong",
+      "interpretationLevel": "medium"
     },
     {
       "id": "assertion-wind-spread",
-      "entityId": "event-great-chicago-fire",
+      "nodeId": "event-great-chicago-fire",
       "assertionType": "contributing-factor",
-      "claim": "Strong winds contributed to the rapid spread of the fire.",
-      "supportLevel": "strong",
-      "verificationStatus": "supported",
+      "label": "Contributing Factor",
+      "summary": "Strong winds contributed to the rapid spread of the fire.",
+      "body": "Strong winds contributed to the rapid spread of the fire.",
+      "domain": "HistoryRoot",
       "sourceIds": [
         "source-encyclopedia-fire"
-      ]
+      ],
+      "credibilityTier": "historical-source-backed",
+      "confidence": "strong",
+      "verificationStatus": "supported",
+      "reviewStatus": "reviewed",
+      "supportLevel": "strong",
+      "interpretationLevel": "medium"
     },
     {
       "id": "assertion-major-destruction",
-      "entityId": "event-great-chicago-fire",
+      "nodeId": "event-great-chicago-fire",
       "assertionType": "impact",
-      "claim": "The fire destroyed a large portion of Chicago's built environment and displaced a substantial share of the population.",
-      "supportLevel": "strong",
-      "verificationStatus": "supported",
+      "label": "Impact",
+      "summary": "The fire destroyed a large portion of Chicago's built environment and displaced a substantial share of the population.",
+      "body": "The fire destroyed a large portion of Chicago's built environment and displaced a substantial share of the population.",
+      "domain": "HistoryRoot",
       "sourceIds": [
         "source-nps-fire-week",
         "source-encyclopedia-fire"
-      ]
+      ],
+      "credibilityTier": "historical-source-backed",
+      "confidence": "strong",
+      "verificationStatus": "supported",
+      "reviewStatus": "reviewed",
+      "supportLevel": "strong",
+      "interpretationLevel": "medium"
     },
     {
       "id": "assertion-rebuilding",
-      "entityId": "period-chicago-rebuilding",
+      "nodeId": "period-chicago-rebuilding",
       "assertionType": "aftermath",
-      "claim": "Chicago began rebuilding rapidly after the fire.",
-      "supportLevel": "moderate",
-      "verificationStatus": "supported",
+      "label": "Aftermath",
+      "summary": "Chicago began rebuilding rapidly after the fire.",
+      "body": "Chicago began rebuilding rapidly after the fire.",
+      "domain": "HistoryRoot",
       "sourceIds": [
         "source-encyclopedia-aftermath"
-      ]
+      ],
+      "credibilityTier": "historical-source-backed",
+      "confidence": "moderate",
+      "verificationStatus": "supported",
+      "reviewStatus": "reviewed",
+      "supportLevel": "moderate",
+      "interpretationLevel": "medium"
     },
     {
       "id": "assertion-property-records",
-      "entityId": "period-chicago-rebuilding",
+      "nodeId": "period-chicago-rebuilding",
       "assertionType": "institutional-continuity",
-      "claim": "Privately maintained land-title records helped support reconstruction after courthouse records were destroyed.",
-      "supportLevel": "strong",
-      "verificationStatus": "supported",
+      "label": "Institutional Continuity",
+      "summary": "Privately maintained land-title records helped support reconstruction after courthouse records were destroyed.",
+      "body": "Privately maintained land-title records helped support reconstruction after courthouse records were destroyed.",
+      "domain": "HistoryRoot",
       "sourceIds": [
         "source-encyclopedia-title"
-      ]
+      ],
+      "credibilityTier": "historical-source-backed",
+      "confidence": "strong",
+      "verificationStatus": "supported",
+      "reviewStatus": "reviewed",
+      "supportLevel": "strong",
+      "interpretationLevel": "medium"
     },
     {
       "id": "assertion-oleary-blame",
-      "entityId": "person-catherine-oleary",
+      "nodeId": "person-catherine-oleary",
       "assertionType": "reputation",
-      "claim": "Catherine O'Leary was publicly blamed through a story that later historical interpretation has challenged.",
-      "supportLevel": "strong",
-      "verificationStatus": "supported",
+      "label": "Reputation",
+      "summary": "Catherine O'Leary was publicly blamed through a story that later historical interpretation has challenged.",
+      "body": "Catherine O'Leary was publicly blamed through a story that later historical interpretation has challenged.",
+      "domain": "HistoryRoot",
       "sourceIds": [
         "source-chm-oleary",
         "source-chm-lesson"
-      ]
+      ],
+      "credibilityTier": "historical-source-backed",
+      "confidence": "strong",
+      "verificationStatus": "supported",
+      "reviewStatus": "reviewed",
+      "supportLevel": "strong",
+      "interpretationLevel": "high"
     },
     {
       "id": "assertion-peshtigo-same-period",
-      "entityId": "event-peshtigo-fire",
+      "nodeId": "event-peshtigo-fire",
       "assertionType": "date-range",
-      "claim": "The Peshtigo Fire occurred during the same October 1871 regional fire period as the Great Chicago Fire.",
-      "supportLevel": "strong",
-      "verificationStatus": "supported",
+      "label": "Date Range",
+      "summary": "The Peshtigo Fire occurred during the same October 1871 regional fire period as the Great Chicago Fire.",
+      "body": "The Peshtigo Fire occurred during the same October 1871 regional fire period as the Great Chicago Fire.",
+      "domain": "HistoryRoot",
       "sourceIds": [
         "source-wisconsin-peshtigo",
         "source-nps-peshtigo"
-      ]
+      ],
+      "credibilityTier": "historical-source-backed",
+      "confidence": "strong",
+      "verificationStatus": "supported",
+      "reviewStatus": "reviewed",
+      "supportLevel": "strong",
+      "interpretationLevel": "medium"
     },
     {
       "id": "assertion-peshtigo-firestorm",
-      "entityId": "event-peshtigo-fire",
+      "nodeId": "event-peshtigo-fire",
       "assertionType": "event-development",
-      "claim": "The Peshtigo Fire developed into a rapidly moving firestorm that devastated communities in northeastern Wisconsin.",
-      "supportLevel": "strong",
-      "verificationStatus": "supported",
+      "label": "Event Development",
+      "summary": "The Peshtigo Fire developed into a rapidly moving firestorm that devastated communities in northeastern Wisconsin.",
+      "body": "The Peshtigo Fire developed into a rapidly moving firestorm that devastated communities in northeastern Wisconsin.",
+      "domain": "HistoryRoot",
       "sourceIds": [
         "source-wisconsin-peshtigo",
         "source-nps-peshtigo"
-      ]
+      ],
+      "credibilityTier": "historical-source-backed",
+      "confidence": "strong",
+      "verificationStatus": "supported",
+      "reviewStatus": "reviewed",
+      "supportLevel": "strong",
+      "interpretationLevel": "medium"
     },
     {
       "id": "assertion-regional-context",
-      "entityId": "region-upper-midwest",
+      "nodeId": "region-upper-midwest",
       "assertionType": "regional-context",
-      "claim": "Multiple severe fires occurred across the Upper Midwest during dry and windy conditions in early October 1871.",
-      "supportLevel": "moderate",
-      "verificationStatus": "supported",
+      "label": "Regional Context",
+      "summary": "Multiple severe fires occurred across the Upper Midwest during dry and windy conditions in early October 1871.",
+      "body": "Multiple severe fires occurred across the Upper Midwest during dry and windy conditions in early October 1871.",
+      "domain": "HistoryRoot",
       "sourceIds": [
         "source-nps-peshtigo",
         "source-encyclopedia-fire"
-      ]
+      ],
+      "credibilityTier": "historical-source-backed",
+      "confidence": "moderate",
+      "verificationStatus": "supported",
+      "reviewStatus": "reviewed",
+      "supportLevel": "moderate",
+      "interpretationLevel": "medium"
     }
   ],
   "edges": [
     {
       "id": "edge-fire-occurred-in-chicago",
-      "fromEntityId": "event-great-chicago-fire",
-      "toEntityId": "place-chicago-1871",
-      "relationshipType": "occurred-in",
-      "confidence": "high",
+      "fromNodeId": "event-great-chicago-fire",
+      "toNodeId": "place-chicago-1871",
+      "relationshipType": "OCCURRED_IN",
+      "label": "occurred in",
+      "summary": "Great Chicago Fire occurred in Chicago.",
+      "domain": "HistoryRoot",
       "sourceIds": [
         "source-loc-guide"
-      ]
+      ],
+      "credibilityTier": "historical-source-backed",
+      "confidence": "high",
+      "verificationStatus": "supported",
+      "reviewStatus": "reviewed",
+      "supportLevel": "high",
+      "relationshipStrength": "high",
+      "interpretationLevel": "low"
     },
     {
       "id": "edge-fire-origin-near-barn",
-      "fromEntityId": "event-great-chicago-fire",
-      "toEntityId": "place-oleary-barn",
-      "relationshipType": "originated-near",
-      "confidence": "high",
+      "fromNodeId": "event-great-chicago-fire",
+      "toNodeId": "place-oleary-barn",
+      "relationshipType": "ORIGINATED_NEAR",
+      "label": "originated near",
+      "summary": "Great Chicago Fire originated near O'Leary Barn.",
+      "domain": "HistoryRoot",
       "sourceIds": [
         "source-encyclopedia-fire"
-      ]
+      ],
+      "credibilityTier": "historical-source-backed",
+      "confidence": "high",
+      "verificationStatus": "supported",
+      "reviewStatus": "reviewed",
+      "supportLevel": "high",
+      "relationshipStrength": "high",
+      "interpretationLevel": "low"
     },
     {
       "id": "edge-barn-owned-by-catherine",
-      "fromEntityId": "place-oleary-barn",
-      "toEntityId": "person-catherine-oleary",
-      "relationshipType": "associated-with",
-      "confidence": "high",
+      "fromNodeId": "place-oleary-barn",
+      "toNodeId": "person-catherine-oleary",
+      "relationshipType": "ASSOCIATED_WITH",
+      "label": "associated with",
+      "summary": "O'Leary Barn associated with Catherine O'Leary.",
+      "domain": "HistoryRoot",
       "sourceIds": [
         "source-chm-oleary"
-      ]
+      ],
+      "credibilityTier": "historical-source-backed",
+      "confidence": "high",
+      "verificationStatus": "supported",
+      "reviewStatus": "reviewed",
+      "supportLevel": "high",
+      "relationshipStrength": "high",
+      "interpretationLevel": "low"
     },
     {
       "id": "edge-barn-owned-by-patrick",
-      "fromEntityId": "place-oleary-barn",
-      "toEntityId": "person-patrick-oleary",
-      "relationshipType": "associated-with",
-      "confidence": "high",
+      "fromNodeId": "place-oleary-barn",
+      "toNodeId": "person-patrick-oleary",
+      "relationshipType": "ASSOCIATED_WITH",
+      "label": "associated with",
+      "summary": "O'Leary Barn associated with Patrick O'Leary.",
+      "domain": "HistoryRoot",
       "sourceIds": [
         "source-chm-oleary"
-      ]
+      ],
+      "credibilityTier": "historical-source-backed",
+      "confidence": "high",
+      "verificationStatus": "supported",
+      "reviewStatus": "reviewed",
+      "supportLevel": "high",
+      "relationshipStrength": "high",
+      "interpretationLevel": "low"
     },
     {
       "id": "edge-cow-story-blamed-catherine",
-      "fromEntityId": "concept-oleary-cow-myth",
-      "toEntityId": "person-catherine-oleary",
-      "relationshipType": "assigned-blame-to",
-      "confidence": "high",
+      "fromNodeId": "concept-oleary-cow-myth",
+      "toNodeId": "person-catherine-oleary",
+      "relationshipType": "ASSIGNED_BLAME_TO",
+      "label": "assigned blame to",
+      "summary": "O'Leary Cow Origin Story assigned blame to Catherine O'Leary.",
+      "domain": "HistoryRoot",
       "sourceIds": [
         "source-chm-lesson"
-      ]
+      ],
+      "credibilityTier": "historical-source-backed",
+      "confidence": "high",
+      "verificationStatus": "supported",
+      "reviewStatus": "reviewed",
+      "supportLevel": "high",
+      "relationshipStrength": "high",
+      "interpretationLevel": "medium"
     },
     {
       "id": "edge-fire-led-to-rebuilding",
-      "fromEntityId": "event-great-chicago-fire",
-      "toEntityId": "period-chicago-rebuilding",
-      "relationshipType": "preceded",
-      "confidence": "high",
+      "fromNodeId": "event-great-chicago-fire",
+      "toNodeId": "period-chicago-rebuilding",
+      "relationshipType": "PRECEDED",
+      "label": "preceded",
+      "summary": "Great Chicago Fire preceded Post-Fire Chicago Rebuilding.",
+      "domain": "HistoryRoot",
       "sourceIds": [
         "source-encyclopedia-aftermath"
-      ]
+      ],
+      "credibilityTier": "historical-source-backed",
+      "confidence": "high",
+      "verificationStatus": "supported",
+      "reviewStatus": "reviewed",
+      "supportLevel": "high",
+      "relationshipStrength": "high",
+      "interpretationLevel": "low"
     },
     {
       "id": "edge-fire-department-responded",
-      "fromEntityId": "institution-chicago-fire-department",
-      "toEntityId": "event-great-chicago-fire",
-      "relationshipType": "responded-to",
-      "confidence": "high",
+      "fromNodeId": "institution-chicago-fire-department",
+      "toNodeId": "event-great-chicago-fire",
+      "relationshipType": "RESPONDED_TO",
+      "label": "responded to",
+      "summary": "Chicago Fire Department responded to Great Chicago Fire.",
+      "domain": "HistoryRoot",
       "sourceIds": [
         "source-encyclopedia-progress"
-      ]
+      ],
+      "credibilityTier": "historical-source-backed",
+      "confidence": "high",
+      "verificationStatus": "supported",
+      "reviewStatus": "reviewed",
+      "supportLevel": "high",
+      "relationshipStrength": "high",
+      "interpretationLevel": "low"
     },
     {
       "id": "edge-peshtigo-occurred-in",
-      "fromEntityId": "event-peshtigo-fire",
-      "toEntityId": "place-peshtigo-wisconsin",
-      "relationshipType": "occurred-in",
-      "confidence": "high",
+      "fromNodeId": "event-peshtigo-fire",
+      "toNodeId": "place-peshtigo-wisconsin",
+      "relationshipType": "OCCURRED_IN",
+      "label": "occurred in",
+      "summary": "Peshtigo Fire occurred in Peshtigo, Wisconsin.",
+      "domain": "HistoryRoot",
       "sourceIds": [
         "source-wisconsin-peshtigo"
-      ]
+      ],
+      "credibilityTier": "historical-source-backed",
+      "confidence": "high",
+      "verificationStatus": "supported",
+      "reviewStatus": "reviewed",
+      "supportLevel": "high",
+      "relationshipStrength": "high",
+      "interpretationLevel": "low"
     },
     {
       "id": "edge-peshtigo-regional-context",
-      "fromEntityId": "event-peshtigo-fire",
-      "toEntityId": "region-upper-midwest",
-      "relationshipType": "part-of-regional-event-pattern",
-      "confidence": "medium",
+      "fromNodeId": "event-peshtigo-fire",
+      "toNodeId": "region-upper-midwest",
+      "relationshipType": "PART_OF_REGIONAL_EVENT_PATTERN",
+      "label": "part of regional event pattern",
+      "summary": "Peshtigo Fire part of regional event pattern Upper Midwest Fire Region.",
+      "domain": "HistoryRoot",
       "sourceIds": [
         "source-nps-peshtigo"
-      ]
+      ],
+      "credibilityTier": "historical-source-backed",
+      "confidence": "medium",
+      "verificationStatus": "supported",
+      "reviewStatus": "reviewed",
+      "supportLevel": "medium",
+      "relationshipStrength": "medium",
+      "interpretationLevel": "medium"
     },
     {
       "id": "edge-chicago-regional-context",
-      "fromEntityId": "event-great-chicago-fire",
-      "toEntityId": "region-upper-midwest",
-      "relationshipType": "part-of-regional-event-pattern",
-      "confidence": "medium",
+      "fromNodeId": "event-great-chicago-fire",
+      "toNodeId": "region-upper-midwest",
+      "relationshipType": "PART_OF_REGIONAL_EVENT_PATTERN",
+      "label": "part of regional event pattern",
+      "summary": "Great Chicago Fire part of regional event pattern Upper Midwest Fire Region.",
+      "domain": "HistoryRoot",
       "sourceIds": [
         "source-encyclopedia-fire"
-      ]
+      ],
+      "credibilityTier": "historical-source-backed",
+      "confidence": "medium",
+      "verificationStatus": "supported",
+      "reviewStatus": "reviewed",
+      "supportLevel": "medium",
+      "relationshipStrength": "medium",
+      "interpretationLevel": "medium"
     },
     {
       "id": "edge-events-concurrent",
-      "fromEntityId": "event-great-chicago-fire",
-      "toEntityId": "event-peshtigo-fire",
-      "relationshipType": "overlapped-in-time-with",
-      "confidence": "high",
+      "fromNodeId": "event-great-chicago-fire",
+      "toNodeId": "event-peshtigo-fire",
+      "relationshipType": "OVERLAPPED_IN_TIME_WITH",
+      "label": "overlapped in time with",
+      "summary": "Great Chicago Fire overlapped in time with Peshtigo Fire.",
+      "domain": "HistoryRoot",
       "sourceIds": [
         "source-wisconsin-peshtigo",
         "source-loc-guide"
-      ]
+      ],
+      "credibilityTier": "historical-source-backed",
+      "confidence": "high",
+      "verificationStatus": "supported",
+      "reviewStatus": "reviewed",
+      "supportLevel": "high",
+      "relationshipStrength": "high",
+      "interpretationLevel": "low"
     }
   ],
   "sources": [
     {
       "id": "source-chm-oleary",
-      "title": "Meet the O'Learys Biography",
+      "name": "Meet the O'Learys Biography",
+      "type": "museum-education",
+      "domain": "HistoryRoot",
       "publisher": "Chicago History Museum",
-      "sourceType": "museum-education",
-      "url": "https://www.chicagohistory.org/app/uploads/2023/08/Meet-the-OLearys-Biography-English.pdf",
+      "qualityTier": "institutional",
       "credibilityTier": "institutional",
-      "reviewStatus": "reviewed"
+      "verificationStatus": "reviewed",
+      "sourceClass": "museum-education",
+      "license": "External source; follow publisher terms",
+      "licenseStatus": "linked-reference",
+      "reviewStatus": "reviewed",
+      "lastReviewed": "2026-07-16",
+      "url": "https://www.chicagohistory.org/app/uploads/2023/08/Meet-the-OLearys-Biography-English.pdf",
+      "notes": "Imported from the HistoryRoot V2 source registry."
     },
     {
       "id": "source-chm-lesson",
-      "title": "The Great Chicago Fire: The Myth of Mrs. O'Leary's Cow",
+      "name": "The Great Chicago Fire: The Myth of Mrs. O'Leary's Cow",
+      "type": "museum-lesson-plan",
+      "domain": "HistoryRoot",
       "publisher": "Chicago History Museum",
-      "sourceType": "museum-lesson-plan",
-      "url": "https://www.chicagohistory.org/app/uploads/2024/09/Lesson-Plan-3-The-Great-Chicago-Fire-The-Myth-of-Mrs.-O_Leary_s-Cow.pdf",
+      "qualityTier": "institutional",
       "credibilityTier": "institutional",
-      "reviewStatus": "reviewed"
+      "verificationStatus": "reviewed",
+      "sourceClass": "museum-lesson-plan",
+      "license": "External source; follow publisher terms",
+      "licenseStatus": "linked-reference",
+      "reviewStatus": "reviewed",
+      "lastReviewed": "2026-07-16",
+      "url": "https://www.chicagohistory.org/app/uploads/2024/09/Lesson-Plan-3-The-Great-Chicago-Fire-The-Myth-of-Mrs.-O_Leary_s-Cow.pdf",
+      "notes": "Imported from the HistoryRoot V2 source registry."
     },
     {
       "id": "source-encyclopedia-fire",
-      "title": "Fire of 1871",
+      "name": "Fire of 1871",
+      "type": "historical-encyclopedia",
+      "domain": "HistoryRoot",
       "publisher": "Encyclopedia of Chicago",
-      "sourceType": "historical-encyclopedia",
-      "url": "https://www.encyclopedia.chicagohistory.org/pages/1740.html",
+      "qualityTier": "reference",
       "credibilityTier": "reference",
-      "reviewStatus": "reviewed"
+      "verificationStatus": "reviewed",
+      "sourceClass": "historical-encyclopedia",
+      "license": "External source; follow publisher terms",
+      "licenseStatus": "linked-reference",
+      "reviewStatus": "reviewed",
+      "lastReviewed": "2026-07-16",
+      "url": "https://www.encyclopedia.chicagohistory.org/pages/1740.html",
+      "notes": "Imported from the HistoryRoot V2 source registry."
     },
     {
       "id": "source-encyclopedia-progress",
-      "title": "Progress of the Chicago Fire of 1871",
+      "name": "Progress of the Chicago Fire of 1871",
+      "type": "historical-encyclopedia",
+      "domain": "HistoryRoot",
       "publisher": "Encyclopedia of Chicago",
-      "sourceType": "historical-encyclopedia",
-      "url": "https://www.encyclopedia.chicagohistory.org/pages/3710.html",
+      "qualityTier": "reference",
       "credibilityTier": "reference",
-      "reviewStatus": "reviewed"
+      "verificationStatus": "reviewed",
+      "sourceClass": "historical-encyclopedia",
+      "license": "External source; follow publisher terms",
+      "licenseStatus": "linked-reference",
+      "reviewStatus": "reviewed",
+      "lastReviewed": "2026-07-16",
+      "url": "https://www.encyclopedia.chicagohistory.org/pages/3710.html",
+      "notes": "Imported from the HistoryRoot V2 source registry."
     },
     {
       "id": "source-loc-guide",
-      "title": "Great Chicago Fire of 1871: Topics in Chronicling America",
+      "name": "Great Chicago Fire of 1871: Topics in Chronicling America",
+      "type": "archive-guide",
+      "domain": "HistoryRoot",
       "publisher": "Library of Congress",
-      "sourceType": "archive-guide",
-      "url": "https://guides.loc.gov/chronicling-america-great-chicago-fire",
+      "qualityTier": "primary-archive-guide",
       "credibilityTier": "primary-archive-guide",
-      "reviewStatus": "reviewed"
+      "verificationStatus": "reviewed",
+      "sourceClass": "archive-guide",
+      "license": "External source; follow publisher terms",
+      "licenseStatus": "linked-reference",
+      "reviewStatus": "reviewed",
+      "lastReviewed": "2026-07-16",
+      "url": "https://guides.loc.gov/chronicling-america-great-chicago-fire",
+      "notes": "Imported from the HistoryRoot V2 source registry."
     },
     {
       "id": "source-loc-map-blog",
-      "title": "The City Which Would Not Be Cowed: The Great Chicago Fire of 1871",
+      "name": "The City Which Would Not Be Cowed: The Great Chicago Fire of 1871",
+      "type": "archive-interpretation",
+      "domain": "HistoryRoot",
       "publisher": "Library of Congress",
-      "sourceType": "archive-interpretation",
-      "url": "https://blogs.loc.gov/maps/2021/10/the-city-which-would-not-be-cowed-the-great-chicago-fire-of-1871/",
+      "qualityTier": "institutional",
       "credibilityTier": "institutional",
-      "reviewStatus": "reviewed"
+      "verificationStatus": "reviewed",
+      "sourceClass": "archive-interpretation",
+      "license": "External source; follow publisher terms",
+      "licenseStatus": "linked-reference",
+      "reviewStatus": "reviewed",
+      "lastReviewed": "2026-07-16",
+      "url": "https://blogs.loc.gov/maps/2021/10/the-city-which-would-not-be-cowed-the-great-chicago-fire-of-1871/",
+      "notes": "Imported from the HistoryRoot V2 source registry."
     },
     {
       "id": "source-nps-fire-week",
-      "title": "National Park Service Structural Fire Program Observes Fire Prevention Week",
+      "name": "National Park Service Structural Fire Program Observes Fire Prevention Week",
+      "type": "government-education",
+      "domain": "HistoryRoot",
       "publisher": "National Park Service",
-      "sourceType": "government-education",
-      "url": "https://www.nps.gov/articles/000/fire-prevention-week-2024.htm",
+      "qualityTier": "government",
       "credibilityTier": "government",
-      "reviewStatus": "reviewed"
+      "verificationStatus": "reviewed",
+      "sourceClass": "government-education",
+      "license": "External source; follow publisher terms",
+      "licenseStatus": "linked-reference",
+      "reviewStatus": "reviewed",
+      "lastReviewed": "2026-07-16",
+      "url": "https://www.nps.gov/articles/000/fire-prevention-week-2024.htm",
+      "notes": "Imported from the HistoryRoot V2 source registry."
     },
     {
       "id": "source-encyclopedia-aftermath",
-      "title": "Aftermath of the Great Chicago Fire, 1871",
+      "name": "Aftermath of the Great Chicago Fire, 1871",
+      "type": "historical-image-record",
+      "domain": "HistoryRoot",
       "publisher": "Encyclopedia of Chicago",
-      "sourceType": "historical-image-record",
-      "url": "https://www.encyclopedia.chicagohistory.org/pages/3524.html",
+      "qualityTier": "reference",
       "credibilityTier": "reference",
-      "reviewStatus": "reviewed"
+      "verificationStatus": "reviewed",
+      "sourceClass": "historical-image-record",
+      "license": "External source; follow publisher terms",
+      "licenseStatus": "linked-reference",
+      "reviewStatus": "reviewed",
+      "lastReviewed": "2026-07-16",
+      "url": "https://www.encyclopedia.chicagohistory.org/pages/3524.html",
+      "notes": "Imported from the HistoryRoot V2 source registry."
     },
     {
       "id": "source-encyclopedia-title",
-      "title": "Chicago Title and Trust",
+      "name": "Chicago Title and Trust",
+      "type": "historical-encyclopedia",
+      "domain": "HistoryRoot",
       "publisher": "Encyclopedia of Chicago",
-      "sourceType": "historical-encyclopedia",
-      "url": "https://www.encyclopedia.chicagohistory.org/pages/272.html",
+      "qualityTier": "reference",
       "credibilityTier": "reference",
-      "reviewStatus": "reviewed"
+      "verificationStatus": "reviewed",
+      "sourceClass": "historical-encyclopedia",
+      "license": "External source; follow publisher terms",
+      "licenseStatus": "linked-reference",
+      "reviewStatus": "reviewed",
+      "lastReviewed": "2026-07-16",
+      "url": "https://www.encyclopedia.chicagohistory.org/pages/272.html",
+      "notes": "Imported from the HistoryRoot V2 source registry."
     },
     {
       "id": "source-wisconsin-peshtigo",
-      "title": "Peshtigo Fire",
+      "name": "Peshtigo Fire",
+      "type": "historical-reference",
+      "domain": "HistoryRoot",
       "publisher": "Wisconsin Historical Society",
-      "sourceType": "historical-reference",
-      "url": "https://www.wisconsinhistory.org/Records/Article/CS2554",
+      "qualityTier": "institutional",
       "credibilityTier": "institutional",
-      "reviewStatus": "reviewed"
+      "verificationStatus": "reviewed",
+      "sourceClass": "historical-reference",
+      "license": "External source; follow publisher terms",
+      "licenseStatus": "linked-reference",
+      "reviewStatus": "reviewed",
+      "lastReviewed": "2026-07-16",
+      "url": "https://www.wisconsinhistory.org/Records/Article/CS2554",
+      "notes": "Imported from the HistoryRoot V2 source registry."
     },
     {
       "id": "source-nps-peshtigo",
-      "title": "The Peshtigo Fire",
+      "name": "The Peshtigo Fire",
+      "type": "government-history",
+      "domain": "HistoryRoot",
       "publisher": "National Park Service",
-      "sourceType": "government-history",
-      "url": "https://www.nps.gov/articles/000/peshtigo-fire.htm",
+      "qualityTier": "government",
       "credibilityTier": "government",
-      "reviewStatus": "reviewed"
+      "verificationStatus": "reviewed",
+      "sourceClass": "government-history",
+      "license": "External source; follow publisher terms",
+      "licenseStatus": "linked-reference",
+      "reviewStatus": "reviewed",
+      "lastReviewed": "2026-07-16",
+      "url": "https://www.nps.gov/articles/000/peshtigo-fire.htm",
+      "notes": "Imported from the HistoryRoot V2 source registry."
     }
   ],
   "revisions": [
@@ -496,6 +833,7 @@
   ],
   "extensions": {
     "historyroot": {
+      "schemaVersion": "0.2.0",
       "timelineEntries": [
         {
           "id": "timeline-fire-begins",

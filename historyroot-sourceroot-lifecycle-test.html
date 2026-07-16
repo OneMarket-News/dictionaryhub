@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HistoryRoot SourceRoot Lifecycle Test</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f7f4ee;color:#1f2933;margin:0}
+header,main{max-width:1100px;margin:auto;padding:24px}
+header{background:#111827;color:white;max-width:none}
+header div{max-width:1100px;margin:auto}
+.panel{background:white;border:1px solid #ddd6c8;border-radius:16px;padding:20px;margin-bottom:18px}
+.good{background:#ecfdf5;border-color:#86efac}.bad{background:#fef2f2;border-color:#fca5a5}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.card{border:1px solid #ddd6c8;border-radius:12px;padding:12px;background:#fffdf8}
+pre{white-space:pre-wrap;word-break:break-word;background:#f3f4f6;padding:12px;border-radius:10px}
+button{padding:10px 14px;border-radius:10px;border:1px solid #aaa;cursor:pointer}
+</style>
+</head>
+<body>
+<header><div><h1>HistoryRoot → SourceRoot Lifecycle Test</h1>
+<p>Loads the HistoryRoot V2 bundle, runs HistoryRoot validation, then loads and checks the SourceRoot-compatible import bundle.</p></div></header>
+<main>
+<section class="panel"><button id="run">Run Both Tests</button></section>
+<section id="historyResult" class="panel">Waiting…</section>
+<section id="sourceResult" class="panel">Waiting…</section>
+</main>
+<script src="engine/historyRootValidator.js"></script>
+<script>
+const esc=v=>String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+const HISTORY="data/historyroot-fire-events-v2.json";
+const SOURCE="data/historyroot-fire-events-sourceroot-import.json";
+
+function validateSourceRoot(b){
+  const errors=[],warnings=[];
+  const arrays=["nodes","assertions","edges","sources","revisions"];
+  arrays.forEach(k=>{if(!Array.isArray(b[k]))errors.push(`${k} must be an array.`)});
+  if(b.bundleType!=="sourceroot-import-bundle")errors.push("Invalid bundleType.");
+  if(errors.length)return {valid:false,errors,warnings,counts:{}};
+
+  const nodes=new Set(b.nodes.map(x=>x.id));
+  const sources=new Set(b.sources.map(x=>x.id));
+  b.assertions.forEach(x=>{
+    if(!nodes.has(x.nodeId))errors.push(`Assertion ${x.id} references missing node ${x.nodeId}.`);
+    (x.sourceIds||[]).forEach(id=>{if(!sources.has(id))errors.push(`Assertion ${x.id} references missing source ${id}.`)});
+  });
+  b.edges.forEach(x=>{
+    if(!nodes.has(x.fromNodeId))errors.push(`Edge ${x.id} references missing fromNodeId.`);
+    if(!nodes.has(x.toNodeId))errors.push(`Edge ${x.id} references missing toNodeId.`);
+    (x.sourceIds||[]).forEach(id=>{if(!sources.has(id))errors.push(`Edge ${x.id} references missing source ${id}.`)});
+  });
+  return {valid:!errors.length,errors,warnings,counts:Object.fromEntries(arrays.map(k=>[k,b[k].length]))};
+}
+
+function render(target,title,r){
+  target.className=`panel ${r.valid?"good":"bad"}`;
+  target.innerHTML=`<h2>${esc(title)}: ${r.valid?"PASS":"FAIL"}</h2>
+  <div class="grid">${Object.entries(r.counts||{}).map(([k,v])=>`<div class="card"><strong>${esc(k)}</strong><div>${v}</div></div>`).join("")}</div>
+  <h3>Errors (${r.errors.length})</h3><pre>${esc(JSON.stringify(r.errors,null,2))}</pre>
+  <h3>Warnings (${r.warnings.length})</h3><pre>${esc(JSON.stringify(r.warnings,null,2))}</pre>`;
+}
+
+async function run(){
+  try{
+    const history=await fetch(HISTORY).then(r=>{if(!r.ok)throw Error(`HistoryRoot HTTP ${r.status}`);return r.json()});
+    render(historyResult,"HistoryRoot bundle",HistoryRootValidator.validate(history));
+  }catch(err){render(historyResult,"HistoryRoot bundle",{valid:false,errors:[err.message],warnings:[],counts:{}})}
+  try{
+    const source=await fetch(SOURCE).then(r=>{if(!r.ok)throw Error(`SourceRoot HTTP ${r.status}`);return r.json()});
+    render(sourceResult,"SourceRoot import bundle",validateSourceRoot(source));
+  }catch(err){render(sourceResult,"SourceRoot import bundle",{valid:false,errors:[err.message],warnings:[],counts:{}})}
+}
+run.onclick=run;run();
+</script>
+</body>
+</html>
