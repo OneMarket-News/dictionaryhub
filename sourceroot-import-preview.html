@@ -448,19 +448,80 @@
   let approvedBundlePaths = [];
 
   document.getElementById("loadExampleButton").addEventListener("click", () => {
-    loadBundle("data/sourceroot-import-bundle-example.json");
+    openBundleRoute("data/sourceroot-import-bundle-example.json");
   });
 
   document.getElementById("loadBrokenButton").addEventListener("click", () => {
-    loadBundle("data/sourceroot-import-bundle-broken-example.json");
+    openBundleRoute("data/sourceroot-import-bundle-broken-example.json");
   });
 
   document.getElementById("loadLightMvpButton").addEventListener("click", () => {
-  loadBundle("data/sourceroot-light-mvp-bundle.json");
-});
+    openBundleRoute("data/sourceroot-light-mvp-bundle.json");
+  });
 
-  document.getElementById("clearButton").addEventListener("click", clearPreview);
+  document.getElementById("clearButton").addEventListener("click", () => {
+    clearPreview({ clearRoute: true });
+  });
+
   document.getElementById("bundleFileInput").addEventListener("change", handleLocalBundleUpload);
+
+  window.addEventListener("popstate", async () => {
+    const requestedBundlePath = getRequestedBundlePath();
+
+    if (requestedBundlePath) {
+      await loadBundle(requestedBundlePath);
+    } else {
+      clearPreview();
+    }
+  });
+
+  function openBundleRoute(path) {
+    if (!approvedBundlePaths.includes(path)) {
+      const result = {
+        bundleId: "unapproved-bundle",
+        status: "invalid-format",
+        canImport: false,
+        summary: {
+          nodes: 0,
+          assertions: 0,
+          edges: 0,
+          sources: 0,
+          revisions: 0,
+          errors: 1,
+          warnings: 0
+        },
+        errors: [
+          {
+            code: "UNAPPROVED_BUNDLE_PATH",
+            objectType: "bundle",
+            objectId: path,
+            message: "The selected bundle is not marked routable in the SourceRoot bundle registry."
+          }
+        ],
+        warnings: []
+      };
+
+      clearPreview();
+      document.getElementById("loadedFileNote").innerHTML = `
+        Bundle route rejected: <strong>${path}</strong>
+      `;
+      renderStatus(result);
+      renderSummary(result);
+      renderIssues(result);
+      return;
+    }
+
+    const url = new URL(window.location.href);
+    url.searchParams.set("bundle", path);
+
+    window.history.pushState(
+      { bundle: path },
+      "",
+      `${url.pathname}${url.search}`
+    );
+
+    loadBundle(path);
+  }
 
   async function loadApprovedBundlePaths() {
     const response = await fetch(REGISTRY_PATH);
@@ -817,13 +878,25 @@
     `;
   }
 
-  function clearPreview() {
+  function clearPreview({ clearRoute = false } = {}) {
     document.getElementById("statusPanel").innerHTML = "";
     document.getElementById("summaryStats").innerHTML = "";
     document.getElementById("issueResults").innerHTML = `<p class="empty">No bundle loaded yet.</p>`;
     document.getElementById("bundleObjects").innerHTML = `<p class="empty">No bundle loaded yet.</p>`;
     document.getElementById("rawBundle").innerHTML = `<p class="empty">No bundle loaded yet.</p>`;
     document.getElementById("loadedFileNote").innerHTML = "";
+    document.getElementById("bundleFileInput").value = "";
+
+    if (clearRoute) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("bundle");
+
+      window.history.replaceState(
+        {},
+        "",
+        `${url.pathname}${url.search}`
+      );
+    }
   }
 
   function formatStatus(status) {
