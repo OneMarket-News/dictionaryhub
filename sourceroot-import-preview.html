@@ -1175,7 +1175,7 @@
                   class="export-button"
                   type="button"
                 >
-                  Export Staged Record
+                  Export Staged Package
                 </button>
 
                 <button
@@ -1363,23 +1363,39 @@
       .join("");
   }
 
-  function exportActiveStagedRecord() {
-    if (!stagedRecord) {
+  async function exportActiveStagedRecord() {
+    if (!stagedRecord || !activeBundle) {
       return;
     }
 
-    const exportArtifact = createStagedRecordExport(stagedRecord);
-    const filename = `${sanitizeFilename(stagedRecord.bundleId)}-staged-record.json`;
+    const currentHash = await createBundleHash(activeBundle);
+
+    if (currentHash !== stagedRecord.bundleHash) {
+      window.alert(
+        "The current bundle no longer matches the staged snapshot. Review the changes and restage before exporting a package."
+      );
+      return;
+    }
+
+    const exportArtifact = createStagedPackageExport(
+      stagedRecord,
+      activeBundle
+    );
+
+    const filename =
+      `${sanitizeFilename(stagedRecord.bundleId)}-staged-package.json`;
 
     downloadJsonFile(exportArtifact, filename);
   }
 
-  function createStagedRecordExport(record) {
+  function createStagedPackageExport(record, bundle) {
     return {
-      exportType: "sourceroot-staged-record",
+      exportType: "sourceroot-staged-package",
       exportVersion: "1.0.0",
       exportedAt: new Date().toISOString(),
-      record
+      packageId: `${record.bundleId}:${record.bundleHash.slice(0, 16)}`,
+      record,
+      bundle
     };
   }
 

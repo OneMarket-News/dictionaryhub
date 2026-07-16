@@ -445,7 +445,7 @@
         <button id="refreshButton" type="button">Refresh Registry</button>
 
         <label class="button-link" for="importFileInput">
-          Import Staged Records
+          Import Staged Packages
         </label>
         <input
           id="importFileInput"
@@ -455,7 +455,7 @@
         />
 
         <button id="exportAllButton" class="primary-button" type="button">
-          Export All Staged Records
+          Export All Staged Packages
         </button>
 
         <button id="clearAllButton" class="danger-button" type="button">
@@ -577,26 +577,33 @@
     }
 
     async function verifyStagedRecord(record) {
-      if (
-        typeof record.source !== "string" ||
-        !record.source.startsWith("data/")
-      ) {
-        return {
-          ...record,
-          integrityStatus: record.bundleHash
-            ? "unavailable"
-            : "legacy"
-        };
-      }
-
       try {
-        const response = await fetch(record.source);
+        let bundle;
 
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
+        if (
+          record.embeddedBundle &&
+          typeof record.embeddedBundle === "object"
+        ) {
+          bundle = record.embeddedBundle;
+        } else if (
+          typeof record.source === "string" &&
+          record.source.startsWith("data/")
+        ) {
+          const response = await fetch(record.source);
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+
+          bundle = await response.json();
+        } else {
+          return {
+            ...record,
+            integrityStatus: record.bundleHash
+              ? "unavailable"
+              : "legacy"
+          };
         }
-
-        const bundle = await response.json();
         const currentHash = await createBundleHash(bundle);
         const currentSnapshot = createBundleSnapshot(bundle);
 
@@ -870,7 +877,7 @@
               type="button"
               data-export-bundle="${escapeAttribute(record.bundleId)}"
             >
-              Export Staged Record
+              Export Staged Package
             </button>
 
             <button
@@ -1003,7 +1010,7 @@
       try {
         const text = await file.text();
         const artifact = JSON.parse(text);
-        const parsedRecords = parseImportArtifact(artifact);
+        const parsedRecords = await parseImportArtifact(artifact);
 
         const summary = importStagedRecords(parsedRecords);
         renderImportSummary(summary, file.name);
@@ -1020,38 +1027,92 @@
       }
     }
 
-    function parseImportArtifact(artifact) {
+    async function parseImportArtifact(artifact) {
       if (!artifact || typeof artifact !== "object") {
-        throw new Error("The selected file does not contain a valid JSON object.");
+        throw new Error(
+          "The selected file does not contain a valid JSON object."
+        );
+      }
+
+      if (artifact.exportVersion !== "1.0.0") {
+        throw new Error(
+          `Unsupported export version: ${artifact.exportVersion || "unknown"}`
+        );
+      }
+
+      if (artifact.exportType === "sourceroot-staged-package") {
+        return [
+          await validateAndPreparePackage(
+            artifact.record,
+            artifact.bundle
+          )
+        ];
+      }
+
+      if (
+        artifact.exportType ===
+        "sourceroot-staged-package-collection"
+      ) {
+        if (!Array.isArray(artifact.packages)) {
+          throw new Error(
+            "The staged-package collection does not contain a packages array."
+          );
+        }
+
+        return Promise.all(
+          artifact.packages.map(packageEntry =>
+            validateAndPreparePackage(
+              packageEntry.record,
+              packageEntry.bundle
+            )
+          )
+        );
       }
 
       if (artifact.exportType === "sourceroot-staged-record") {
-        if (artifact.exportVersion !== "1.0.0") {
-          throw new Error(
-            `Unsupported staged-record export version: ${artifact.exportVersion || "unknown"}`
-          );
-        }
-
         return [artifact.record];
       }
 
-      if (artifact.exportType === "sourceroot-staged-record-collection") {
-        if (artifact.exportVersion !== "1.0.0") {
-          throw new Error(
-            `Unsupported staged-record collection version: ${artifact.exportVersion || "unknown"}`
-          );
-        }
-
+      if (
+        artifact.exportType ===
+        "sourceroot-staged-record-collection"
+      ) {
         if (!Array.isArray(artifact.records)) {
-          throw new Error("The staged-record collection does not contain a records array.");
+          throw new Error(
+            "The staged-record collection does not contain a records array."
+          );
         }
 
         return artifact.records;
       }
 
       throw new Error(
-        "Unsupported export type. Expected sourceroot-staged-record or sourceroot-staged-record-collection."
+        "Unsupported export type. Expected a SourceRoot staged package, package collection, or legacy staged-record export."
       );
+    }
+
+    async function validateAndPreparePackage(record, bundle) {
+      if (!bundle || typeof bundle !== "object") {
+        throw new Error(
+          `Package ${record?.bundleId || "unknown"} does not contain a valid embedded bundle.`
+        );
+      }
+
+      const bundleHash = await createBundleHash(bundle);
+
+      if (bundleHash !== record?.bundleHash) {
+        throw new Error(
+          `Package integrity failed for ${record?.bundleId || "unknown"}: the embedded bundle hash does not match the staged record.`
+        );
+      }
+
+      return {
+        ...record,
+        source: "embedded-package",
+        embeddedBundle: bundle,
+        importedPackageAt: new Date().toISOString(),
+        integrityStatus: "current"
+      };
     }
 
     function importStagedRecords(records) {
@@ -1179,6 +1240,11 @@
           revisions: numberValue(record.counts.revisions)
         },
         warningCount: numberValue(record.warningCount),
+        embeddedBundle:
+          record.embeddedBundle &&
+          typeof record.embeddedBundle === "object"
+            ? record.embeddedBundle
+            : undefined,
         importedAt: new Date().toISOString()
       };
     }
@@ -1207,7 +1273,7 @@
       `;
     }
 
-    function exportSingleStagedRecord(bundleId) {
+    async function exportSingleStagedRecord(bundleId) {
       const stagingMap = getStagingMap();
       const record = stagingMap[bundleId];
 
@@ -1215,38 +1281,120 @@
         return;
       }
 
+      const bundle = await resolveBundleForPackage(record);
+
+      if (!bundle) {
+        window.alert(
+          `Could not package ${bundleId} because its bundle content is unavailable.`
+        );
+        return;
+      }
+
+      const currentHash = await createBundleHash(bundle);
+
+      if (currentHash !== record.bundleHash) {
+        window.alert(
+          `Could not package ${bundleId} because the current bundle does not match the staged snapshot.`
+        );
+        return;
+      }
+
       const artifact = {
-        exportType: "sourceroot-staged-record",
+        exportType: "sourceroot-staged-package",
         exportVersion: "1.0.0",
         exportedAt: new Date().toISOString(),
-        record
+        packageId: `${bundleId}:${record.bundleHash.slice(0, 16)}`,
+        record,
+        bundle
       };
 
       downloadJsonFile(
         artifact,
-        `${sanitizeFilename(bundleId)}-staged-record.json`
+        `${sanitizeFilename(bundleId)}-staged-package.json`
       );
     }
 
-    function exportAllStagedRecords() {
+    async function exportAllStagedRecords() {
       const records = getStagedRecords();
 
       if (!records.length) {
         return;
       }
 
+      const packages = [];
+
+      for (const record of records) {
+        const bundle = await resolveBundleForPackage(record);
+
+        if (!bundle) {
+          continue;
+        }
+
+        const currentHash = await createBundleHash(bundle);
+
+        if (currentHash !== record.bundleHash) {
+          continue;
+        }
+
+        packages.push({
+          packageId:
+            `${record.bundleId}:${record.bundleHash.slice(0, 16)}`,
+          record,
+          bundle
+        });
+      }
+
+      if (!packages.length) {
+        window.alert(
+          "No staged bundles could be exported as current self-contained packages."
+        );
+        return;
+      }
+
       const artifact = {
-        exportType: "sourceroot-staged-record-collection",
+        exportType: "sourceroot-staged-package-collection",
         exportVersion: "1.0.0",
         exportedAt: new Date().toISOString(),
-        recordCount: records.length,
-        records
+        packageCount: packages.length,
+        packages
       };
 
       downloadJsonFile(
         artifact,
-        `sourceroot-staged-records-${new Date().toISOString().slice(0, 10)}.json`
+        `sourceroot-staged-packages-${new Date().toISOString().slice(0, 10)}.json`
       );
+    }
+
+    async function resolveBundleForPackage(record) {
+      if (
+        record.embeddedBundle &&
+        typeof record.embeddedBundle === "object"
+      ) {
+        return record.embeddedBundle;
+      }
+
+      if (
+        typeof record.source === "string" &&
+        record.source.startsWith("data/")
+      ) {
+        try {
+          const response = await fetch(record.source);
+
+          if (!response.ok) {
+            return null;
+          }
+
+          return await response.json();
+        } catch (error) {
+          console.error(
+            `Could not resolve bundle for ${record.bundleId}:`,
+            error
+          );
+          return null;
+        }
+      }
+
+      return null;
     }
 
     function downloadJsonFile(value, filename) {
