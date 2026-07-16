@@ -52,6 +52,7 @@
       <div class="badge-row">
         <a class="badge" href="sourceroot.html" style="color:white;text-decoration:none;">SourceRoot Home</a>
         <a class="badge" href="historyroot-inspector.html" style="color:white;text-decoration:none;">HistoryRoot Inspector</a>
+        <a class="badge" href="historyroot-timeline-inspector.html" style="color:white;text-decoration:none;">Timeline Inspector</a>
         <span class="badge">Events</span>
         <span class="badge">People</span>
         <span class="badge">Places</span>
@@ -148,11 +149,11 @@
 
       document.getElementById("timeline").innerHTML = bundle.timelineEntries
         .map(item => `
-          <div class="timeline-item">
+          <a class="timeline-item" href="historyroot-timeline-inspector.html?entry=${encodeURIComponent(item.id)}" style="display:block;color:inherit;text-decoration:none;">
             <div class="timeline-date">${escapeHtml(item.date)}</div>
             <strong>${escapeHtml(item.title)}</strong>
             <div class="meta">Certainty: ${escapeHtml(item.certainty)}</div>
-          </div>
+          </a>
         `).join("");
 
       document.getElementById("entities").innerHTML = bundle.entities
