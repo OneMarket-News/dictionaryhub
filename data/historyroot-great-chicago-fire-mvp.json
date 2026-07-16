@@ -1,0 +1,439 @@
+{
+  "bundleId": "historyroot-great-chicago-fire-mvp",
+  "schemaVersion": "0.1.0",
+  "title": "Great Chicago Fire HistoryRoot MVP",
+  "description": "A bounded HistoryRoot demonstration showing events, people, places, institutions, claims, disputes, relationships, sources, and revisions.",
+  "status": "prototype",
+  "historicalScope": {
+    "subject": "Great Chicago Fire",
+    "startDate": "1871-10-08",
+    "endDate": "1871-10-10",
+    "primaryLocation": "Chicago, Illinois, United States"
+  },
+  "entities": [
+    {
+      "id": "event-great-chicago-fire",
+      "entityType": "event",
+      "name": "Great Chicago Fire",
+      "startDate": "1871-10-08",
+      "endDate": "1871-10-10",
+      "summary": "A major urban fire that spread across Chicago over multiple days.",
+      "status": "historical"
+    },
+    {
+      "id": "person-catherine-oleary",
+      "entityType": "person",
+      "name": "Catherine O'Leary",
+      "summary": "Chicago resident whose family barn became associated with the fire's origin story.",
+      "status": "historical"
+    },
+    {
+      "id": "person-patrick-oleary",
+      "entityType": "person",
+      "name": "Patrick O'Leary",
+      "summary": "Catherine O'Leary's husband and co-owner of the property associated with the fire's origin.",
+      "status": "historical"
+    },
+    {
+      "id": "place-oleary-barn",
+      "entityType": "place",
+      "name": "O'Leary Barn",
+      "alternateNames": [
+        "137 DeKoven Street"
+      ],
+      "summary": "The barn and property area commonly identified as the location where the fire began.",
+      "status": "historical-site"
+    },
+    {
+      "id": "place-chicago-1871",
+      "entityType": "place",
+      "name": "Chicago",
+      "summary": "The city affected by the 1871 fire.",
+      "status": "historical-place"
+    },
+    {
+      "id": "institution-chicago-fire-department",
+      "entityType": "institution",
+      "name": "Chicago Fire Department",
+      "summary": "The municipal firefighting organization responding to the disaster.",
+      "status": "historical-institution"
+    },
+    {
+      "id": "concept-oleary-cow-myth",
+      "entityType": "historical-narrative",
+      "name": "O'Leary Cow Origin Story",
+      "summary": "The widely repeated story that a cow kicked over a lantern and started the fire.",
+      "status": "disputed"
+    },
+    {
+      "id": "period-chicago-rebuilding",
+      "entityType": "period",
+      "name": "Post-Fire Chicago Rebuilding",
+      "startDate": "1871-10-10",
+      "summary": "The reconstruction and institutional response following the fire.",
+      "status": "historical-period"
+    }
+  ],
+  "timelineEntries": [
+    {
+      "id": "timeline-fire-begins",
+      "date": "1871-10-08",
+      "timeApproximate": "evening",
+      "title": "Fire begins near DeKoven Street",
+      "entityIds": [
+        "event-great-chicago-fire",
+        "place-oleary-barn"
+      ],
+      "certainty": "high"
+    },
+    {
+      "id": "timeline-fire-spreads",
+      "date": "1871-10-09",
+      "title": "Fire spreads north and east through Chicago",
+      "entityIds": [
+        "event-great-chicago-fire",
+        "place-chicago-1871"
+      ],
+      "certainty": "high"
+    },
+    {
+      "id": "timeline-fire-ends",
+      "date": "1871-10-10",
+      "timeApproximate": "early morning",
+      "title": "Major burning ends",
+      "entityIds": [
+        "event-great-chicago-fire"
+      ],
+      "certainty": "high"
+    },
+    {
+      "id": "timeline-cow-story-circulates",
+      "date": "1871-10-11",
+      "title": "Cow origin story circulates in newspapers",
+      "entityIds": [
+        "concept-oleary-cow-myth",
+        "person-catherine-oleary"
+      ],
+      "certainty": "medium"
+    }
+  ],
+  "assertions": [
+    {
+      "id": "assertion-fire-dates",
+      "entityId": "event-great-chicago-fire",
+      "assertionType": "date-range",
+      "claim": "The Great Chicago Fire burned from the evening of October 8 through October 10, 1871.",
+      "supportLevel": "strong",
+      "verificationStatus": "supported",
+      "sourceIds": [
+        "source-loc-guide",
+        "source-loc-map-blog"
+      ]
+    },
+    {
+      "id": "assertion-origin-location",
+      "entityId": "place-oleary-barn",
+      "assertionType": "location",
+      "claim": "The fire began in or near the O'Leary barn on DeKoven Street.",
+      "supportLevel": "strong",
+      "verificationStatus": "supported",
+      "sourceIds": [
+        "source-encyclopedia-fire",
+        "source-loc-guide"
+      ]
+    },
+    {
+      "id": "assertion-cause-unknown",
+      "entityId": "event-great-chicago-fire",
+      "assertionType": "cause",
+      "claim": "The precise ignition cause of the fire is not known with certainty.",
+      "supportLevel": "moderate",
+      "verificationStatus": "supported-with-uncertainty",
+      "sourceIds": [
+        "source-chm-oleary",
+        "source-loc-map-blog"
+      ]
+    },
+    {
+      "id": "assertion-cow-story-disputed",
+      "entityId": "concept-oleary-cow-myth",
+      "assertionType": "historical-narrative",
+      "claim": "The story that Catherine O'Leary's cow kicked over a lantern is a disputed legend rather than an established cause.",
+      "supportLevel": "strong",
+      "verificationStatus": "supported",
+      "sourceIds": [
+        "source-chm-oleary",
+        "source-chm-lesson"
+      ]
+    },
+    {
+      "id": "assertion-multiple-fires",
+      "entityId": "event-great-chicago-fire",
+      "assertionType": "event-development",
+      "claim": "The disaster involved multiple fires and flying brands that merged into a larger inferno.",
+      "supportLevel": "strong",
+      "verificationStatus": "supported",
+      "sourceIds": [
+        "source-encyclopedia-progress"
+      ]
+    },
+    {
+      "id": "assertion-wind-spread",
+      "entityId": "event-great-chicago-fire",
+      "assertionType": "contributing-factor",
+      "claim": "Strong winds contributed to the rapid spread of the fire.",
+      "supportLevel": "strong",
+      "verificationStatus": "supported",
+      "sourceIds": [
+        "source-encyclopedia-fire"
+      ]
+    },
+    {
+      "id": "assertion-major-destruction",
+      "entityId": "event-great-chicago-fire",
+      "assertionType": "impact",
+      "claim": "The fire destroyed a large portion of Chicago's built environment and displaced a substantial share of the population.",
+      "supportLevel": "strong",
+      "verificationStatus": "supported",
+      "sourceIds": [
+        "source-nps-fire-week",
+        "source-encyclopedia-fire"
+      ]
+    },
+    {
+      "id": "assertion-rebuilding",
+      "entityId": "period-chicago-rebuilding",
+      "assertionType": "aftermath",
+      "claim": "Chicago began rebuilding rapidly after the fire.",
+      "supportLevel": "moderate",
+      "verificationStatus": "supported",
+      "sourceIds": [
+        "source-encyclopedia-aftermath"
+      ]
+    },
+    {
+      "id": "assertion-property-records",
+      "entityId": "period-chicago-rebuilding",
+      "assertionType": "institutional-continuity",
+      "claim": "Privately maintained land-title records helped support reconstruction after courthouse records were destroyed.",
+      "supportLevel": "strong",
+      "verificationStatus": "supported",
+      "sourceIds": [
+        "source-encyclopedia-title"
+      ]
+    },
+    {
+      "id": "assertion-oleary-blame",
+      "entityId": "person-catherine-oleary",
+      "assertionType": "reputation",
+      "claim": "Catherine O'Leary was publicly blamed through a story that later historical interpretation has challenged.",
+      "supportLevel": "strong",
+      "verificationStatus": "supported",
+      "sourceIds": [
+        "source-chm-oleary",
+        "source-chm-lesson"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-fire-occurred-in-chicago",
+      "fromEntityId": "event-great-chicago-fire",
+      "toEntityId": "place-chicago-1871",
+      "relationshipType": "occurred-in",
+      "confidence": "high",
+      "sourceIds": [
+        "source-loc-guide"
+      ]
+    },
+    {
+      "id": "edge-fire-origin-near-barn",
+      "fromEntityId": "event-great-chicago-fire",
+      "toEntityId": "place-oleary-barn",
+      "relationshipType": "originated-near",
+      "confidence": "high",
+      "sourceIds": [
+        "source-encyclopedia-fire"
+      ]
+    },
+    {
+      "id": "edge-barn-owned-by-catherine",
+      "fromEntityId": "place-oleary-barn",
+      "toEntityId": "person-catherine-oleary",
+      "relationshipType": "associated-with",
+      "confidence": "high",
+      "sourceIds": [
+        "source-chm-oleary"
+      ]
+    },
+    {
+      "id": "edge-barn-owned-by-patrick",
+      "fromEntityId": "place-oleary-barn",
+      "toEntityId": "person-patrick-oleary",
+      "relationshipType": "associated-with",
+      "confidence": "high",
+      "sourceIds": [
+        "source-chm-oleary"
+      ]
+    },
+    {
+      "id": "edge-cow-story-blamed-catherine",
+      "fromEntityId": "concept-oleary-cow-myth",
+      "toEntityId": "person-catherine-oleary",
+      "relationshipType": "assigned-blame-to",
+      "confidence": "high",
+      "sourceIds": [
+        "source-chm-lesson"
+      ]
+    },
+    {
+      "id": "edge-fire-led-to-rebuilding",
+      "fromEntityId": "event-great-chicago-fire",
+      "toEntityId": "period-chicago-rebuilding",
+      "relationshipType": "preceded",
+      "confidence": "high",
+      "sourceIds": [
+        "source-encyclopedia-aftermath"
+      ]
+    },
+    {
+      "id": "edge-fire-department-responded",
+      "fromEntityId": "institution-chicago-fire-department",
+      "toEntityId": "event-great-chicago-fire",
+      "relationshipType": "responded-to",
+      "confidence": "high",
+      "sourceIds": [
+        "source-encyclopedia-progress"
+      ]
+    }
+  ],
+  "disputes": [
+    {
+      "id": "dispute-fire-cause",
+      "title": "What caused the Great Chicago Fire?",
+      "subjectEntityId": "event-great-chicago-fire",
+      "status": "unresolved",
+      "summary": "The starting location is well established, but the specific ignition cause remains uncertain.",
+      "positions": [
+        {
+          "id": "position-cow-lantern",
+          "label": "Cow kicked over a lantern",
+          "assessment": "legend-disputed",
+          "sourceIds": [
+            "source-chm-lesson"
+          ]
+        },
+        {
+          "id": "position-unknown-cause",
+          "label": "Exact ignition cause is unknown",
+          "assessment": "best-supported-current-position",
+          "sourceIds": [
+            "source-chm-oleary",
+            "source-loc-map-blog"
+          ]
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "id": "source-chm-oleary",
+      "title": "Meet the O'Learys Biography",
+      "publisher": "Chicago History Museum",
+      "sourceType": "museum-education",
+      "url": "https://www.chicagohistory.org/app/uploads/2023/08/Meet-the-OLearys-Biography-English.pdf",
+      "credibilityTier": "institutional",
+      "reviewStatus": "reviewed"
+    },
+    {
+      "id": "source-chm-lesson",
+      "title": "The Great Chicago Fire: The Myth of Mrs. O'Leary's Cow",
+      "publisher": "Chicago History Museum",
+      "sourceType": "museum-lesson-plan",
+      "url": "https://www.chicagohistory.org/app/uploads/2024/09/Lesson-Plan-3-The-Great-Chicago-Fire-The-Myth-of-Mrs.-O_Leary_s-Cow.pdf",
+      "credibilityTier": "institutional",
+      "reviewStatus": "reviewed"
+    },
+    {
+      "id": "source-encyclopedia-fire",
+      "title": "Fire of 1871",
+      "publisher": "Encyclopedia of Chicago",
+      "sourceType": "historical-encyclopedia",
+      "url": "https://www.encyclopedia.chicagohistory.org/pages/1740.html",
+      "credibilityTier": "reference",
+      "reviewStatus": "reviewed"
+    },
+    {
+      "id": "source-encyclopedia-progress",
+      "title": "Progress of the Chicago Fire of 1871",
+      "publisher": "Encyclopedia of Chicago",
+      "sourceType": "historical-encyclopedia",
+      "url": "https://www.encyclopedia.chicagohistory.org/pages/3710.html",
+      "credibilityTier": "reference",
+      "reviewStatus": "reviewed"
+    },
+    {
+      "id": "source-loc-guide",
+      "title": "Great Chicago Fire of 1871: Topics in Chronicling America",
+      "publisher": "Library of Congress",
+      "sourceType": "archive-guide",
+      "url": "https://guides.loc.gov/chronicling-america-great-chicago-fire",
+      "credibilityTier": "primary-archive-guide",
+      "reviewStatus": "reviewed"
+    },
+    {
+      "id": "source-loc-map-blog",
+      "title": "The City Which Would Not Be Cowed: The Great Chicago Fire of 1871",
+      "publisher": "Library of Congress",
+      "sourceType": "archive-interpretation",
+      "url": "https://blogs.loc.gov/maps/2021/10/the-city-which-would-not-be-cowed-the-great-chicago-fire-of-1871/",
+      "credibilityTier": "institutional",
+      "reviewStatus": "reviewed"
+    },
+    {
+      "id": "source-nps-fire-week",
+      "title": "National Park Service Structural Fire Program Observes Fire Prevention Week",
+      "publisher": "National Park Service",
+      "sourceType": "government-education",
+      "url": "https://www.nps.gov/articles/000/fire-prevention-week-2024.htm",
+      "credibilityTier": "government",
+      "reviewStatus": "reviewed"
+    },
+    {
+      "id": "source-encyclopedia-aftermath",
+      "title": "Aftermath of the Great Chicago Fire, 1871",
+      "publisher": "Encyclopedia of Chicago",
+      "sourceType": "historical-image-record",
+      "url": "https://www.encyclopedia.chicagohistory.org/pages/3524.html",
+      "credibilityTier": "reference",
+      "reviewStatus": "reviewed"
+    },
+    {
+      "id": "source-encyclopedia-title",
+      "title": "Chicago Title and Trust",
+      "publisher": "Encyclopedia of Chicago",
+      "sourceType": "historical-encyclopedia",
+      "url": "https://www.encyclopedia.chicagohistory.org/pages/272.html",
+      "credibilityTier": "reference",
+      "reviewStatus": "reviewed"
+    }
+  ],
+  "revisions": [
+    {
+      "revisionId": "revision-oleary-story-review",
+      "objectType": "historical-narrative",
+      "objectId": "concept-oleary-cow-myth",
+      "revisionType": "interpretation-update",
+      "summary": "Marks the cow-and-lantern story as disputed rather than established fact.",
+      "status": "current"
+    },
+    {
+      "revisionId": "revision-cause-uncertainty",
+      "objectType": "assertion",
+      "objectId": "assertion-cause-unknown",
+      "revisionType": "certainty-classification",
+      "summary": "Preserves uncertainty about the exact ignition cause.",
+      "status": "current"
+    }
+  ]
+}

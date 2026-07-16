@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>HistoryRoot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, sans-serif; background: #f7f4ee; color: #1f2933; }
+    header { background: #111827; color: white; padding: 32px 24px; }
+    .inner, main, footer { max-width: 1250px; margin: 0 auto; }
+    h1 { margin: 0; font-size: 38px; letter-spacing: -0.03em; }
+    .subtitle { color: #d1d5db; max-width: 930px; line-height: 1.6; margin-top: 10px; }
+    .badge-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+    .badge { border: 1px solid #374151; background: #1f2937; border-radius: 999px; padding: 7px 10px; font-size: 12px; }
+    main { padding: 26px 24px 42px; }
+    .panel { background: white; border: 1px solid #ddd6c8; border-radius: 16px; padding: 20px; margin-bottom: 22px; box-shadow: 0 2px 8px rgba(0,0,0,.04); }
+    .hero { background: #fff8e6; border-color: #ead59a; }
+    h2 { margin: 0 0 10px; }
+    .overview { color: #374151; line-height: 1.6; max-width: 980px; }
+    .status { margin-top: 14px; padding: 12px; border-radius: 12px; background: #f3f4f6; color: #4b5563; }
+    .summary-grid, .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 16px; }
+    .summary-card { background: #fffdf8; border: 1px solid #eee2c7; border-radius: 14px; padding: 14px; }
+    .summary-number { font-size: 27px; font-weight: bold; }
+    .summary-label { color: #6b7280; font-size: 12px; margin-top: 4px; }
+    .card-grid { grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); }
+    .card { background: #fffdf8; border: 1px solid #eee2c7; border-radius: 14px; padding: 15px; }
+    .card h3 { margin: 0 0 8px; font-size: 18px; }
+    .meta { color: #6b7280; font-size: 12px; line-height: 1.5; }
+    .claim { margin-top: 9px; line-height: 1.5; color: #374151; }
+    .pill { display: inline-block; border: 1px solid #cfc7b8; background: #fff8e6; border-radius: 999px; padding: 4px 7px; font-size: 11px; margin: 7px 5px 0 0; }
+    .dispute { border-color: #fde68a; background: #fffbeb; }
+    .timeline { display: grid; gap: 12px; margin-top: 16px; }
+    .timeline-item { border-left: 4px solid #7c2d12; background: #fffdf8; border-radius: 0 12px 12px 0; padding: 13px 15px; }
+    .timeline-date { font-weight: bold; color: #7c2d12; }
+    .source-link { color: #1d4ed8; word-break: break-word; }
+    details { margin-top: 12px; border: 1px solid #eee2c7; border-radius: 12px; padding: 10px; background: white; }
+    summary { cursor: pointer; font-weight: bold; }
+    pre { white-space: pre-wrap; word-break: break-word; background: #f3f4f6; border-radius: 10px; padding: 12px; overflow: auto; font-size: 12px; }
+    footer { padding: 0 24px 28px; color: #6b7280; font-size: 13px; }
+    @media (max-width: 700px) { header { padding: 26px 16px; } main { padding: 18px 14px 34px; } h1 { font-size: 31px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="inner">
+      <h1>HistoryRoot</h1>
+      <div class="subtitle">
+        A SourceRoot knowledge hub for reconstructing historical events through entities, timelines,
+        claims, disputes, sources, relationships, identity changes, and revisions.
+      </div>
+      <div class="badge-row">
+        <span class="badge">Events</span>
+        <span class="badge">People</span>
+        <span class="badge">Places</span>
+        <span class="badge">Institutions</span>
+        <span class="badge">Timelines</span>
+        <span class="badge">Disputes</span>
+        <span class="badge">Sources</span>
+        <span class="badge">Revisions</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel hero">
+      <h2>Great Chicago Fire MVP</h2>
+      <p class="overview">
+        The first HistoryRoot dataset tests a bounded historical question: what happened during the
+        Great Chicago Fire, who and what became connected to its origin story, which claims are well
+        supported, and where uncertainty or myth remains.
+      </p>
+      <div id="loadStatus" class="status">Loading HistoryRoot MVP bundle…</div>
+      <div id="summaryGrid" class="summary-grid"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Timeline</h2>
+      <div id="timeline" class="timeline"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Historical Entities</h2>
+      <div id="entities" class="card-grid"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Claims</h2>
+      <div id="assertions" class="card-grid"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Disputes</h2>
+      <div id="disputes" class="card-grid"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Sources</h2>
+      <div id="sources" class="card-grid"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Raw MVP Bundle</h2>
+      <div id="rawBundle"></div>
+    </section>
+  </main>
+
+  <footer>
+    HistoryRoot prototype. First subject: Great Chicago Fire, 1871. Built as a SourceRoot schema pressure test.
+  </footer>
+
+  <script>
+    const BUNDLE_PATH = "data/historyroot-great-chicago-fire-mvp.json";
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function summaryCard(value, label) {
+      return `
+        <div class="summary-card">
+          <div class="summary-number">${escapeHtml(value)}</div>
+          <div class="summary-label">${escapeHtml(label)}</div>
+        </div>
+      `;
+    }
+
+    function renderBundle(bundle) {
+      document.getElementById("loadStatus").innerHTML =
+        `<strong>${escapeHtml(bundle.title)}</strong><br>${escapeHtml(bundle.description)}`;
+
+      document.getElementById("summaryGrid").innerHTML = [
+        summaryCard(bundle.entities.length, "Entities"),
+        summaryCard(bundle.timelineEntries.length, "Timeline Entries"),
+        summaryCard(bundle.assertions.length, "Assertions"),
+        summaryCard(bundle.edges.length, "Relationships"),
+        summaryCard(bundle.disputes.length, "Disputes"),
+        summaryCard(bundle.sources.length, "Sources"),
+        summaryCard(bundle.revisions.length, "Revisions")
+      ].join("");
+
+      document.getElementById("timeline").innerHTML = bundle.timelineEntries
+        .map(item => `
+          <div class="timeline-item">
+            <div class="timeline-date">${escapeHtml(item.date)}</div>
+            <strong>${escapeHtml(item.title)}</strong>
+            <div class="meta">Certainty: ${escapeHtml(item.certainty)}</div>
+          </div>
+        `).join("");
+
+      document.getElementById("entities").innerHTML = bundle.entities
+        .map(entity => `
+          <div class="card">
+            <h3>${escapeHtml(entity.name)}</h3>
+            <div class="meta">Type: ${escapeHtml(entity.entityType)} · ID: ${escapeHtml(entity.id)}</div>
+            <div class="claim">${escapeHtml(entity.summary)}</div>
+            <span class="pill">${escapeHtml(entity.status)}</span>
+          </div>
+        `).join("");
+
+      document.getElementById("assertions").innerHTML = bundle.assertions
+        .map(assertion => `
+          <div class="card">
+            <h3>${escapeHtml(assertion.assertionType)}</h3>
+            <div class="meta">Entity: ${escapeHtml(assertion.entityId)}</div>
+            <div class="claim">${escapeHtml(assertion.claim)}</div>
+            <span class="pill">${escapeHtml(assertion.supportLevel)}</span>
+            <span class="pill">${escapeHtml(assertion.verificationStatus)}</span>
+          </div>
+        `).join("");
+
+      document.getElementById("disputes").innerHTML = bundle.disputes
+        .map(dispute => `
+          <div class="card dispute">
+            <h3>${escapeHtml(dispute.title)}</h3>
+            <div class="meta">Status: ${escapeHtml(dispute.status)}</div>
+            <div class="claim">${escapeHtml(dispute.summary)}</div>
+            <details>
+              <summary>Positions</summary>
+              <pre>${escapeHtml(JSON.stringify(dispute.positions, null, 2))}</pre>
+            </details>
+          </div>
+        `).join("");
+
+      document.getElementById("sources").innerHTML = bundle.sources
+        .map(source => `
+          <div class="card">
+            <h3>${escapeHtml(source.title)}</h3>
+            <div class="meta">${escapeHtml(source.publisher)} · ${escapeHtml(source.sourceType)}</div>
+            <div class="claim">
+              <a class="source-link" href="${escapeHtml(source.url)}" target="_blank" rel="noopener noreferrer">
+                Open source
+              </a>
+            </div>
+            <span class="pill">${escapeHtml(source.credibilityTier)}</span>
+          </div>
+        `).join("");
+
+      document.getElementById("rawBundle").innerHTML = `
+        <details>
+          <summary>Open raw HistoryRoot JSON</summary>
+          <pre>${escapeHtml(JSON.stringify(bundle, null, 2))}</pre>
+        </details>
+      `;
+    }
+
+    async function initializeHistoryRoot() {
+      try {
+        const response = await fetch(BUNDLE_PATH);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const bundle = await response.json();
+        renderBundle(bundle);
+      } catch (error) {
+        document.getElementById("loadStatus").innerHTML =
+          `<strong>Could not load HistoryRoot bundle.</strong><br>${escapeHtml(error.message)}`;
+      }
+    }
+
+    initializeHistoryRoot();
+  </script>
+</body>
+</html>
