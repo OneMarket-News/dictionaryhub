@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SourceRoot Package Registry</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f7f4ee;
+      color: #1f2933;
+    }
+
+    header {
+      background: #111827;
+      color: white;
+      padding: 28px 24px;
+    }
+
+    .header-inner,
+    main,
+    footer {
+      max-width: 1250px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 34px;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      color: #d1d5db;
+      margin-top: 10px;
+      max-width: 980px;
+      line-height: 1.55;
+    }
+
+    .top-links {
+      margin-top: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .top-links a {
+      color: white;
+      border: 1px solid #374151;
+      background: #1f2937;
+      border-radius: 999px;
+      padding: 7px 11px;
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    .top-links a:hover { background: #374151; }
+
+    main { padding: 24px; }
+
+    .panel {
+      background: white;
+      border: 1px solid #ddd6c8;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      margin-bottom: 22px;
+    }
+
+    .panel h2 {
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+
+    .overview-text {
+      color: #374151;
+      line-height: 1.6;
+      max-width: 980px;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    button,
+    .button-link {
+      font-family: inherit;
+      border: 1px solid #cfc7b8;
+      background: #fff8e6;
+      color: #1f2933;
+      border-radius: 10px;
+      padding: 10px 13px;
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    button:hover,
+    .button-link:hover {
+      background: #efe7d3;
+      border-color: #b78a2f;
+    }
+
+    .danger-button {
+      background: #fef2f2;
+      color: #991b1b;
+      border-color: #fecaca;
+    }
+
+    .danger-button:hover {
+      background: #fee2e2;
+      border-color: #f87171;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .summary-card {
+      background: #fff8e6;
+      border: 1px solid #ead59a;
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .summary-number {
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    .summary-label {
+      color: #6b7280;
+      font-size: 13px;
+    }
+
+    .registry-grid {
+      display: grid;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .inspection-card {
+      background: #fffdf8;
+      border: 1px solid #eee2c7;
+      border-radius: 18px;
+      padding: 18px;
+    }
+
+    .inspection-card.approved {
+      border-color: #86efac;
+      box-shadow: 0 3px 10px rgba(22,101,52,0.06);
+    }
+
+    .inspection-card.rejected {
+      border-color: #fecaca;
+      box-shadow: 0 3px 10px rgba(153,27,27,0.05);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .card-title {
+      margin: 0;
+      font-size: 21px;
+      overflow-wrap: anywhere;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .pill {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .pill.approved {
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #86efac;
+    }
+
+    .pill.rejected {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    .pill.verified {
+      background: #eef2ff;
+      color: #3730a3;
+      border: 1px solid #c7d2fe;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .meta-card {
+      background: white;
+      border: 1px solid #eee2c7;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .meta-card strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .meta-card span {
+      color: #4b5563;
+      overflow-wrap: anywhere;
+    }
+
+    .count-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .count-card {
+      background: white;
+      border: 1px solid #ddd6c8;
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .count-number {
+      font-size: 23px;
+      font-weight: bold;
+    }
+
+    .count-label {
+      color: #6b7280;
+      font-size: 12px;
+      margin-top: 3px;
+    }
+
+    .issue-list {
+      margin: 12px 0 0;
+      padding-left: 18px;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .empty-state {
+      background: #fffdf8;
+      border: 1px dashed #cfc7b8;
+      border-radius: 14px;
+      padding: 24px;
+      color: #6b7280;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    footer {
+      padding: 0 24px 28px;
+      color: #6b7280;
+      font-size: 13px;
+    }
+
+    @media (max-width: 760px) {
+      header { padding: 24px 16px; }
+      main { padding: 18px 14px; }
+      h1 { font-size: 29px; }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="header-inner">
+      <h1>SourceRoot Package Registry</h1>
+
+      <div class="subtitle">
+        Review the history of inspected SourceRoot packages, including integrity results,
+        approval decisions, issues, package metadata, and restoration readiness.
+      </div>
+
+      <div class="top-links">
+        <a href="index.html">Landing Page</a>
+        <a href="sourceroot.html">SourceRoot Home</a>
+        <a href="sourceroot-package-inspector.html">Package Inspector</a>
+        <a href="sourceroot-staged-bundle-registry.html">Staged Bundles</a>
+        <a href="sourceroot-import-preview.html">Import Preview</a>
+        <a href="sourceroot-import-bundle-registry.html">Import Bundle Registry</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <h2>Inspection Overview</h2>
+
+      <p class="overview-text">
+        This registry stores inspection decisions separately from staged bundles.
+        Saving an inspection does not restore or import a package.
+      </p>
+
+      <div class="toolbar">
+        <button id="refreshButton" type="button">Refresh Registry</button>
+        <button id="clearAllButton" class="danger-button" type="button">
+          Remove All Inspection Records
+        </button>
+      </div>
+
+      <div id="summaryGrid" class="summary-grid"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Package Inspections</h2>
+
+      <div id="registryGrid" class="registry-grid"></div>
+    </section>
+  </main>
+
+  <footer>
+    SourceRoot Package Registry. Current status: browser-local package inspection history.
+  </footer>
+
+  <script>
+    const PACKAGE_INSPECTION_STORAGE_KEY =
+      "sourceroot-package-inspections-v1";
+
+    document
+      .getElementById("refreshButton")
+      .addEventListener("click", renderRegistry);
+
+    document
+      .getElementById("clearAllButton")
+      .addEventListener("click", clearAllInspections);
+
+    document
+      .getElementById("registryGrid")
+      .addEventListener("click", event => {
+        const removeButton =
+          event.target.closest("[data-remove-inspection]");
+
+        if (!removeButton) {
+          return;
+        }
+
+        removeInspection(
+          removeButton.dataset.removeInspection
+        );
+      });
+
+    function getInspectionMap() {
+      try {
+        const rawValue = localStorage.getItem(
+          PACKAGE_INSPECTION_STORAGE_KEY
+        );
+
+        if (!rawValue) {
+          return {};
+        }
+
+        const parsedValue = JSON.parse(rawValue);
+
+        return parsedValue && typeof parsedValue === "object"
+          ? parsedValue
+          : {};
+      } catch (error) {
+        return {};
+      }
+    }
+
+    function saveInspectionMap(map) {
+      localStorage.setItem(
+        PACKAGE_INSPECTION_STORAGE_KEY,
+        JSON.stringify(map)
+      );
+    }
+
+    function getInspectionRecords() {
+      return Object.values(getInspectionMap())
+        .filter(record =>
+          record &&
+          typeof record === "object" &&
+          typeof record.inspectionId === "string"
+        )
+        .sort((left, right) =>
+          String(right.inspectedAt || "").localeCompare(
+            String(left.inspectedAt || "")
+          )
+        );
+    }
+
+    function renderRegistry() {
+      const records = getInspectionRecords();
+
+      renderSummary(records);
+      renderCards(records);
+    }
+
+    function renderSummary(records) {
+      const approved = records.filter(
+        record => record.decision === "approved"
+      ).length;
+
+      const rejected = records.filter(
+        record => record.decision === "rejected"
+      ).length;
+
+      const verified = records.filter(
+        record => record.integrityStatus === "verified"
+      ).length;
+
+      const issues = records.reduce(
+        (sum, record) =>
+          sum + numberValue(record.issueCount),
+        0
+      );
+
+      document.getElementById("summaryGrid").innerHTML = `
+        ${renderSummaryCard(records.length, "Inspections")}
+        ${renderSummaryCard(approved, "Approved")}
+        ${renderSummaryCard(rejected, "Rejected")}
+        ${renderSummaryCard(verified, "Integrity Verified")}
+        ${renderSummaryCard(issues, "Total Issues")}
+      `;
+    }
+
+    function renderSummaryCard(value, label) {
+      return `
+        <div class="summary-card">
+          <div class="summary-number">${numberValue(value)}</div>
+          <div class="summary-label">${escapeHtml(label)}</div>
+        </div>
+      `;
+    }
+
+    function renderCards(records) {
+      const grid = document.getElementById("registryGrid");
+
+      if (!records.length) {
+        grid.innerHTML = `
+          <div class="empty-state">
+            No package inspections have been saved.<br>
+            Open a package in Package Inspector and click
+            <strong>Save Inspection</strong>.
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = records
+        .map(renderInspectionCard)
+        .join("");
+    }
+
+    function renderInspectionCard(record) {
+      const counts = record.counts || {};
+
+      return `
+        <article class="inspection-card ${escapeHtml(record.decision)}">
+          <div class="card-header">
+            <div>
+              <h3 class="card-title">
+                ${escapeHtml(record.bundleId)}
+              </h3>
+
+              <div class="pill-row">
+                <span class="pill ${escapeHtml(record.decision)}">
+                  ${escapeHtml(record.decision)}
+                </span>
+
+                <span class="pill verified">
+                  ${escapeHtml(record.integrityStatus)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="count-grid">
+            ${renderCountCard(counts.nodes, "Nodes")}
+            ${renderCountCard(counts.assertions, "Assertions")}
+            ${renderCountCard(counts.edges, "Edges")}
+            ${renderCountCard(counts.sources, "Sources")}
+            ${renderCountCard(counts.revisions, "Revisions")}
+            ${renderCountCard(record.issueCount, "Issues")}
+          </div>
+
+          <div class="meta-grid">
+            ${renderMetaCard("Package ID", record.packageId)}
+            ${renderMetaCard("Inspected At", formatDate(record.inspectedAt))}
+            ${renderMetaCard("Exported At", formatDate(record.exportedAt))}
+            ${renderMetaCard("Export Type", record.exportType)}
+            ${renderMetaCard("Export Version", record.exportVersion)}
+            ${renderMetaCard("Source", record.source)}
+            ${renderMetaCard("Stored Hash", record.storedHash)}
+            ${renderMetaCard("Calculated Hash", record.calculatedHash)}
+          </div>
+
+          ${Array.isArray(record.issues) && record.issues.length
+            ? `
+              <ul class="issue-list">
+                ${record.issues
+                  .map(issue => `
+                    <li>
+                      <strong>${escapeHtml(issue.severity)}:</strong>
+                      ${escapeHtml(issue.message)}
+                    </li>
+                  `)
+                  .join("")}
+              </ul>
+            `
+            : ""}
+
+          <div class="action-row">
+            <button
+              class="danger-button"
+              type="button"
+              data-remove-inspection="${escapeAttribute(record.inspectionId)}"
+            >
+              Remove Inspection
+            </button>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderCountCard(value, label) {
+      return `
+        <div class="count-card">
+          <div class="count-number">${numberValue(value)}</div>
+          <div class="count-label">${escapeHtml(label)}</div>
+        </div>
+      `;
+    }
+
+    function renderMetaCard(label, value) {
+      return `
+        <div class="meta-card">
+          <strong>${escapeHtml(label)}</strong>
+          <span>${escapeHtml(value || "Unknown")}</span>
+        </div>
+      `;
+    }
+
+    function removeInspection(inspectionId) {
+      const map = getInspectionMap();
+
+      if (!(inspectionId in map)) {
+        return;
+      }
+
+      delete map[inspectionId];
+      saveInspectionMap(map);
+      renderRegistry();
+    }
+
+    function clearAllInspections() {
+      const records = getInspectionRecords();
+
+      if (!records.length) {
+        return;
+      }
+
+      const confirmed = window.confirm(
+        `Remove all ${records.length} package inspection record${records.length === 1 ? "" : "s"}?`
+      );
+
+      if (!confirmed) {
+        return;
+      }
+
+      localStorage.removeItem(
+        PACKAGE_INSPECTION_STORAGE_KEY
+      );
+
+      renderRegistry();
+    }
+
+    function formatDate(value) {
+      if (!value) {
+        return "Unknown";
+      }
+
+      const date = new Date(value);
+
+      if (Number.isNaN(date.getTime())) {
+        return String(value);
+      }
+
+      return date.toLocaleString();
+    }
+
+    function numberValue(value) {
+      const number = Number(value);
+      return Number.isFinite(number) ? number : 0;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function escapeAttribute(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+    }
+
+    window.addEventListener("storage", event => {
+      if (event.key === PACKAGE_INSPECTION_STORAGE_KEY) {
+        renderRegistry();
+      }
+    });
+
+    renderRegistry();
+  </script>
+</body>
+</html>

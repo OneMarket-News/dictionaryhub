@@ -365,8 +365,10 @@
         <a href="index.html">Landing Page</a>
         <a href="sourceroot.html">SourceRoot Home</a>
         <a href="sourceroot-import-bundle-registry.html">Import Bundle Registry</a>
+        <a href="sourceroot-package-registry.html">Package Registry</a>
         <a href="sourceroot-import-preview.html">Import Preview</a>
         <a href="sourceroot-staged-bundle-registry.html">Staged Bundles</a>
+        <a href="sourceroot-package-registry.html">Package Registry</a>
         <a href="sourceroot-inspector.html">Inspector</a>
         <a href="sourceroot-api-preview.html">API Preview</a>
       </div>
@@ -393,6 +395,14 @@
           accept=".json,application/json"
           hidden
         />
+
+        <button
+          id="saveInspectionButton"
+          type="button"
+          disabled
+        >
+          Save Inspection
+        </button>
 
         <button
           id="restorePackageButton"
@@ -451,6 +461,7 @@
 
   <script>
     const STAGING_STORAGE_KEY = "sourceroot-staged-bundles-v1";
+    const PACKAGE_INSPECTION_STORAGE_KEY = "sourceroot-package-inspections-v1";
 
     let activeArtifact = null;
     let activeRecord = null;
@@ -460,6 +471,10 @@
     document
       .getElementById("packageFileInput")
       .addEventListener("change", handlePackageFile);
+
+    document
+      .getElementById("saveInspectionButton")
+      .addEventListener("click", saveInspectionRecord);
 
     document
       .getElementById("restorePackageButton")
@@ -495,6 +510,7 @@
         renderBundleObjects(parsed.bundle);
         renderRawPackage(artifact);
 
+        document.getElementById("saveInspectionButton").disabled = false;
         document.getElementById("restorePackageButton").disabled =
           !verification.canRestore;
       } catch (error) {
@@ -791,6 +807,93 @@
       `;
     }
 
+    function saveInspectionRecord() {
+      if (
+        !activeArtifact ||
+        !activeRecord ||
+        !activeBundle ||
+        !activeVerification
+      ) {
+        return;
+      }
+
+      const inspectionMap = getInspectionMap();
+      const inspectionId = createInspectionId(
+        activeArtifact,
+        activeRecord
+      );
+
+      inspectionMap[inspectionId] = {
+        inspectionId,
+        packageId:
+          activeArtifact.packageId ||
+          `${activeRecord.bundleId}:${activeRecord.bundleHash.slice(0, 16)}`,
+        bundleId: activeRecord.bundleId,
+        inspectedAt: new Date().toISOString(),
+        exportedAt: activeArtifact.exportedAt || null,
+        exportType: activeArtifact.exportType,
+        exportVersion: activeArtifact.exportVersion,
+        decision: activeVerification.canRestore
+          ? "approved"
+          : "rejected",
+        integrityStatus: activeVerification.hashMatches
+          ? "verified"
+          : "failed",
+        canRestore: activeVerification.canRestore,
+        issueCount: activeVerification.issues.length,
+        issues: activeVerification.issues,
+        storedHash: activeRecord.bundleHash,
+        calculatedHash: activeVerification.calculatedHash,
+        counts: activeVerification.actualCounts,
+        source: activeRecord.source || "unknown",
+        packageSnapshot: activeArtifact
+      };
+
+      saveInspectionMap(inspectionMap);
+
+      document.getElementById("restoreResult").innerHTML = `
+        <div class="restore-result success">
+          <strong>Inspection saved.</strong><br>
+          ${escapeHtml(activeRecord.bundleId)} is now available in the Package Registry.
+        </div>
+      `;
+    }
+
+    function createInspectionId(artifact, record) {
+      const packageId =
+        artifact.packageId ||
+        `${record.bundleId}:${record.bundleHash.slice(0, 16)}`;
+
+      return `${packageId}:${new Date().toISOString()}`;
+    }
+
+    function getInspectionMap() {
+      try {
+        const rawValue = localStorage.getItem(
+          PACKAGE_INSPECTION_STORAGE_KEY
+        );
+
+        if (!rawValue) {
+          return {};
+        }
+
+        const parsedValue = JSON.parse(rawValue);
+
+        return parsedValue && typeof parsedValue === "object"
+          ? parsedValue
+          : {};
+      } catch (error) {
+        return {};
+      }
+    }
+
+    function saveInspectionMap(inspectionMap) {
+      localStorage.setItem(
+        PACKAGE_INSPECTION_STORAGE_KEY,
+        JSON.stringify(inspectionMap)
+      );
+    }
+
     function restorePackage() {
       if (
         !activeRecord ||
@@ -892,6 +995,7 @@
         `<p class="empty">No package loaded.</p>`;
       document.getElementById("rawPackage").innerHTML =
         `<p class="empty">No package loaded.</p>`;
+      document.getElementById("saveInspectionButton").disabled = true;
       document.getElementById("restorePackageButton").disabled = true;
 
       if (!preserveFileInput) {
