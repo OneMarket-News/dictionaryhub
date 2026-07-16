@@ -489,8 +489,11 @@
     SourceRoot Staged Bundles Registry. Current status: browser-local staging management, not a live database registry.
   </footer>
 
+  <script src="./engine/packageLifecycle.js"></script>
+
   <script>
-    const STAGING_STORAGE_KEY = "sourceroot-staged-bundles-v1";
+    const packageLifecycle = window.SourceRootPackageLifecycle;
+    const { STAGING_STORAGE_KEY } = packageLifecycle;
 
     document
       .getElementById("refreshButton")
@@ -525,33 +528,11 @@
       });
 
     function getStagingMap() {
-      try {
-        const rawValue = localStorage.getItem(STAGING_STORAGE_KEY);
-
-        if (!rawValue) {
-          return {};
-        }
-
-        const parsedValue = JSON.parse(rawValue);
-
-        return parsedValue && typeof parsedValue === "object"
-          ? parsedValue
-          : {};
-      } catch (error) {
-        console.error("Could not read SourceRoot staged bundles:", error);
-        return {};
-      }
+      return packageLifecycle.getStagingMap();
     }
 
     function saveStagingMap(stagingMap) {
-      try {
-        localStorage.setItem(
-          STAGING_STORAGE_KEY,
-          JSON.stringify(stagingMap)
-        );
-      } catch (error) {
-        console.error("Could not save SourceRoot staged bundles:", error);
-      }
+      return packageLifecycle.saveStagingMap(stagingMap);
     }
 
     function getStagedRecords() {
@@ -706,13 +687,7 @@
     }
 
     async function createBundleHash(bundle) {
-      const normalizedBundle = JSON.stringify(bundle);
-      const bytes = new TextEncoder().encode(normalizedBundle);
-      const digest = await crypto.subtle.digest("SHA-256", bytes);
-
-      return Array.from(new Uint8Array(digest))
-        .map(byte => byte.toString(16).padStart(2, "0"))
-        .join("");
+      return packageLifecycle.createBundleHash(bundle);
     }
 
     function renderSummary(records) {
@@ -1301,14 +1276,11 @@
         return;
       }
 
-      const artifact = {
-        exportType: "sourceroot-staged-package",
-        exportVersion: "1.0.0",
-        exportedAt: new Date().toISOString(),
-        packageId: `${bundleId}:${record.bundleHash.slice(0, 16)}`,
-        record,
-        bundle
-      };
+      const artifact =
+        packageLifecycle.createStagedPackageExport(
+          record,
+          bundle
+        );
 
       downloadJsonFile(
         artifact,
@@ -1353,13 +1325,10 @@
         return;
       }
 
-      const artifact = {
-        exportType: "sourceroot-staged-package-collection",
-        exportVersion: "1.0.0",
-        exportedAt: new Date().toISOString(),
-        packageCount: packages.length,
-        packages
-      };
+      const artifact =
+        packageLifecycle.createStagedPackageCollection(
+          packages
+        );
 
       downloadJsonFile(
         artifact,
@@ -1400,41 +1369,23 @@
     }
 
     function downloadJsonFile(value, filename) {
-      const blob = new Blob(
-        [JSON.stringify(value, null, 2)],
-        { type: "application/json" }
-      );
-
-      const objectUrl = URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
-
-      anchor.href = objectUrl;
-      anchor.download = filename;
-      document.body.appendChild(anchor);
-      anchor.click();
-      anchor.remove();
-
-      URL.revokeObjectURL(objectUrl);
+      return packageLifecycle.downloadJsonFile(value, filename);
     }
 
     function sanitizeFilename(value) {
-      return String(value || "sourceroot-staged-record")
-        .trim()
-        .replace(/[^a-zA-Z0-9._-]+/g, "-")
-        .replace(/^-+|-+$/g, "")
-        .toLowerCase() || "sourceroot-staged-record";
+      return packageLifecycle.sanitizeFilename(
+        value,
+        "sourceroot-staged-record"
+      );
     }
 
     function removeStagedBundle(bundleId) {
-      const stagingMap = getStagingMap();
+      const removed =
+        packageLifecycle.removeStagedRecord(bundleId);
 
-      if (!(bundleId in stagingMap)) {
-        return;
+      if (removed) {
+        renderRegistry();
       }
-
-      delete stagingMap[bundleId];
-      saveStagingMap(stagingMap);
-      renderRegistry();
     }
 
     function removeAllStagedBundles() {
@@ -1471,8 +1422,7 @@
     }
 
     function numberValue(value) {
-      const number = Number(value);
-      return Number.isFinite(number) ? number : 0;
+      return packageLifecycle.numberValue(value);
     }
 
     function escapeHtml(value) {

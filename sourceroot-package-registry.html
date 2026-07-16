@@ -354,9 +354,11 @@
     SourceRoot Package Registry. Current status: browser-local package inspection history.
   </footer>
 
+  <script src="./engine/packageLifecycle.js"></script>
+
   <script>
-    const PACKAGE_INSPECTION_STORAGE_KEY =
-      "sourceroot-package-inspections-v1";
+    const packageLifecycle = window.SourceRootPackageLifecycle;
+    const { PACKAGE_INSPECTION_STORAGE_KEY } = packageLifecycle;
 
     document
       .getElementById("refreshButton")
@@ -382,30 +384,11 @@
       });
 
     function getInspectionMap() {
-      try {
-        const rawValue = localStorage.getItem(
-          PACKAGE_INSPECTION_STORAGE_KEY
-        );
-
-        if (!rawValue) {
-          return {};
-        }
-
-        const parsedValue = JSON.parse(rawValue);
-
-        return parsedValue && typeof parsedValue === "object"
-          ? parsedValue
-          : {};
-      } catch (error) {
-        return {};
-      }
+      return packageLifecycle.getInspectionMap();
     }
 
     function saveInspectionMap(map) {
-      localStorage.setItem(
-        PACKAGE_INSPECTION_STORAGE_KEY,
-        JSON.stringify(map)
-      );
+      return packageLifecycle.saveInspectionMap(map);
     }
 
     function getInspectionRecords() {
@@ -601,10 +584,7 @@
         return;
       }
 
-      localStorage.removeItem(
-        PACKAGE_INSPECTION_STORAGE_KEY
-      );
-
+      packageLifecycle.saveInspectionMap({});
       renderRegistry();
     }
 
@@ -623,8 +603,7 @@
     }
 
     function numberValue(value) {
-      const number = Number(value);
-      return Number.isFinite(number) ? number : 0;
+      return packageLifecycle.numberValue(value);
     }
 
     function escapeHtml(value) {

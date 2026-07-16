@@ -678,11 +678,14 @@
     SourceRoot Import Preview. Registry-driven validation preview, not a live import engine yet.
   </footer>
 
+  <script src="./engine/packageLifecycle.js"></script>
+
   <script type="module">
   import { validateBundle } from "./engine/importValidator.js";
 
   const REGISTRY_PATH = "data/sourceroot-bundle-registry.json";
-  const STAGING_STORAGE_KEY = "sourceroot-staged-bundles-v1";
+  const packageLifecycle = window.SourceRootPackageLifecycle;
+  const { STAGING_STORAGE_KEY } = packageLifecycle;
 
   let approvedBundlePaths = [];
   let approvedBundleEntries = [];
@@ -1356,13 +1359,7 @@
   }
 
   async function createBundleHash(bundle) {
-    const normalizedBundle = JSON.stringify(bundle);
-    const bytes = new TextEncoder().encode(normalizedBundle);
-    const digest = await crypto.subtle.digest("SHA-256", bytes);
-
-    return Array.from(new Uint8Array(digest))
-      .map(byte => byte.toString(16).padStart(2, "0"))
-      .join("");
+    return packageLifecycle.createBundleHash(bundle);
   }
 
   async function exportActiveStagedRecord() {
@@ -1391,40 +1388,18 @@
   }
 
   function createStagedPackageExport(record, bundle) {
-    return {
-      exportType: "sourceroot-staged-package",
-      exportVersion: "1.0.0",
-      exportedAt: new Date().toISOString(),
-      packageId: `${record.bundleId}:${record.bundleHash.slice(0, 16)}`,
-      record,
-      bundle
-    };
+    return packageLifecycle.createStagedPackageExport(record, bundle);
   }
 
   function downloadJsonFile(value, filename) {
-    const blob = new Blob(
-      [JSON.stringify(value, null, 2)],
-      { type: "application/json" }
-    );
-
-    const objectUrl = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-
-    anchor.href = objectUrl;
-    anchor.download = filename;
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
-
-    URL.revokeObjectURL(objectUrl);
+    return packageLifecycle.downloadJsonFile(value, filename);
   }
 
   function sanitizeFilename(value) {
-    return String(value || "sourceroot-staged-record")
-      .trim()
-      .replace(/[^a-zA-Z0-9._-]+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .toLowerCase() || "sourceroot-staged-record";
+    return packageLifecycle.sanitizeFilename(
+      value,
+      "sourceroot-staged-record"
+    );
   }
 
   function getActiveBundleSource() {
@@ -1433,59 +1408,23 @@
   }
 
   function getPersistedStagingMap() {
-    try {
-      const rawValue = localStorage.getItem(STAGING_STORAGE_KEY);
-
-      if (!rawValue) {
-        return {};
-      }
-
-      const parsedValue = JSON.parse(rawValue);
-
-      return parsedValue && typeof parsedValue === "object"
-        ? parsedValue
-        : {};
-    } catch (error) {
-      console.warn("Could not read SourceRoot staged bundles:", error);
-      return {};
-    }
+    return packageLifecycle.getStagingMap();
   }
 
   function savePersistedStagingMap(stagingMap) {
-    try {
-      localStorage.setItem(
-        STAGING_STORAGE_KEY,
-        JSON.stringify(stagingMap)
-      );
-    } catch (error) {
-      console.warn("Could not save SourceRoot staged bundles:", error);
-    }
+    return packageLifecycle.saveStagingMap(stagingMap);
   }
 
   function persistStagedRecord(record) {
-    const stagingMap = getPersistedStagingMap();
-    stagingMap[record.bundleId] = record;
-    savePersistedStagingMap(stagingMap);
+    return packageLifecycle.saveStagedRecord(record);
   }
 
   function getPersistedStagedRecord(bundleId) {
-    if (!bundleId) {
-      return null;
-    }
-
-    const stagingMap = getPersistedStagingMap();
-    return stagingMap[bundleId] || null;
+    return packageLifecycle.getStagedRecord(bundleId);
   }
 
   function removePersistedStagedRecord(bundleId) {
-    const stagingMap = getPersistedStagingMap();
-
-    if (!(bundleId in stagingMap)) {
-      return;
-    }
-
-    delete stagingMap[bundleId];
-    savePersistedStagingMap(stagingMap);
+    return packageLifecycle.removeStagedRecord(bundleId);
   }
 
   function renderStagedRecord() {
@@ -1589,8 +1528,7 @@
   }
 
   function numberValue(value) {
-    const number = Number(value);
-    return Number.isFinite(number) ? number : 0;
+    return packageLifecycle.numberValue(value);
   }
 
   function renderBundleObjects(bundle) {
