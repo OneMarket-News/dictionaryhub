@@ -327,6 +327,143 @@
       padding: 12px 0;
     }
 
+    .staging-panel {
+      border: 1px solid #ddd6c8;
+      background: #fffdf8;
+      border-radius: 16px;
+      padding: 18px;
+      margin-top: 16px;
+    }
+
+    .staging-panel.ready {
+      border-color: #86efac;
+      background: #f0fdf4;
+    }
+
+    .staging-panel.blocked {
+      border-color: #fecaca;
+      background: #fef2f2;
+    }
+
+    .staging-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .staging-header h3 {
+      margin: 0 0 6px;
+      font-size: 20px;
+    }
+
+    .staging-description {
+      margin: 0;
+      color: #4b5563;
+      font-size: 13px;
+      line-height: 1.5;
+      max-width: 760px;
+    }
+
+    .staging-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .staging-stat {
+      background: white;
+      border: 1px solid #ddd6c8;
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .staging-stat strong {
+      display: block;
+      font-size: 22px;
+      margin-bottom: 3px;
+    }
+
+    .staging-stat span {
+      color: #6b7280;
+      font-size: 12px;
+    }
+
+    .staging-stat.bundle-id-stat {
+      grid-column: span 2;
+      min-width: 220px;
+    }
+
+    .staging-stat.bundle-id-stat strong {
+      font-size: 17px;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+    }
+
+    .stage-button {
+      background: #111827;
+      border-color: #111827;
+      color: white;
+      font-weight: bold;
+    }
+
+    .stage-button:hover {
+      background: #374151;
+      border-color: #374151;
+    }
+
+    .stage-button:disabled {
+      background: #d1d5db;
+      border-color: #d1d5db;
+      color: #6b7280;
+      cursor: not-allowed;
+    }
+
+    .staging-status-badge {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 5px 9px;
+      font-size: 11px;
+      font-weight: bold;
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #86efac;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    .staging-action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .unstage-button {
+      background: white;
+      border-color: #fecaca;
+      color: #991b1b;
+      font-weight: bold;
+    }
+
+    .unstage-button:hover {
+      background: #fee2e2;
+      border-color: #f87171;
+    }
+
+    .staged-record {
+      margin-top: 14px;
+      border: 1px solid #86efac;
+      background: white;
+      border-radius: 12px;
+      padding: 13px;
+      color: #166534;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
     footer {
       max-width: 1300px;
       margin: 0 auto;
@@ -355,6 +492,11 @@
       .issue-grid,
       .object-grid {
         grid-template-columns: 1fr;
+      }
+
+      .staging-stat.bundle-id-stat {
+        grid-column: span 1;
+        min-width: 0;
       }
     }
   </style>
@@ -427,6 +569,18 @@
     </section>
 
     <section class="panel">
+      <h2>Staging Summary</h2>
+      <p class="overview-text">
+        A bundle can be staged only after it passes structural validation.
+        Staging is stored locally in this browser and does not write to a database.
+      </p>
+
+      <div id="stagingSummary">
+        <p class="empty">Load and validate a bundle to review its staging summary.</p>
+      </div>
+    </section>
+
+    <section class="panel">
       <h2>Bundle Objects</h2>
       <p class="overview-text">
         These are the nodes, assertions, edges, sources, and revisions found in the loaded bundle.
@@ -449,14 +603,29 @@
   import { validateBundle } from "./engine/importValidator.js";
 
   const REGISTRY_PATH = "data/sourceroot-bundle-registry.json";
+  const STAGING_STORAGE_KEY = "sourceroot-staged-bundles-v1";
+
   let approvedBundlePaths = [];
   let approvedBundleEntries = [];
+  let activeBundle = null;
+  let activeValidationResult = null;
+  let stagedRecord = null;
 
   document.getElementById("clearButton").addEventListener("click", () => {
     clearPreview({ clearRoute: true });
   });
 
   document.getElementById("bundleFileInput").addEventListener("change", handleLocalBundleUpload);
+
+  document.getElementById("stagingSummary").addEventListener("click", event => {
+    if (event.target.id === "stageBundleButton") {
+      stageActiveBundle();
+    }
+
+    if (event.target.id === "unstageBundleButton") {
+      unstageActiveBundle();
+    }
+  });
 
   window.addEventListener("popstate", async () => {
     const requestedBundlePath = getRequestedBundlePath();
@@ -655,9 +824,14 @@
       const bundle = await response.json();
       const result = validateBundle(bundle);
 
+      activeBundle = bundle;
+      activeValidationResult = result;
+      stagedRecord = getPersistedStagedRecord(result.bundleId);
+
       renderStatus(result);
       renderSummary(result);
       renderIssues(result);
+      renderStagingSummary(bundle, result);
       renderBundleObjects(bundle);
       renderRawBundle(bundle);
     } catch (error) {
@@ -685,9 +859,14 @@
         warnings: []
       };
 
+      activeBundle = null;
+      activeValidationResult = result;
+      stagedRecord = null;
+
       renderStatus(result);
       renderSummary(result);
       renderIssues(result);
+      renderStagingSummary(null, result);
     }
   }
 
@@ -709,9 +888,14 @@
         Loaded local file: <strong>${file.name}</strong>
       `;
 
+      activeBundle = bundle;
+      activeValidationResult = result;
+      stagedRecord = getPersistedStagedRecord(result.bundleId);
+
       renderStatus(result);
       renderSummary(result);
       renderIssues(result);
+      renderStagingSummary(bundle, result);
       renderBundleObjects(bundle);
       renderRawBundle(bundle);
     } catch (error) {
@@ -743,9 +927,14 @@
         Failed to load local file: <strong>${file.name}</strong>
       `;
 
+      activeBundle = null;
+      activeValidationResult = result;
+      stagedRecord = null;
+
       renderStatus(result);
       renderSummary(result);
       renderIssues(result);
+      renderStagingSummary(null, result);
     }
   }
 
@@ -840,6 +1029,224 @@
     `;
   }
 
+  function renderStagingSummary(bundle, result) {
+    const container = document.getElementById("stagingSummary");
+    const summary = result?.summary || {};
+    const canStage = Boolean(bundle && result?.canImport);
+
+    container.innerHTML = `
+      <div class="staging-panel ${canStage ? "ready" : "blocked"}">
+        <div class="staging-header">
+          <div>
+            <h3>
+              ${canStage ? "Ready to Stage" : "Staging Unavailable"}
+              ${stagedRecord
+                ? `<span class="staging-status-badge">Persisted Stage</span>`
+                : ""}
+            </h3>
+            <p class="staging-description">
+              ${canStage
+                ? "This validated bundle can be staged locally for review. The staged record persists in this browser until it is removed."
+                : "Resolve validation errors before this bundle can be staged."}
+            </p>
+          </div>
+
+          <div class="staging-action-row">
+            <button
+              id="stageBundleButton"
+              class="stage-button"
+              type="button"
+              ${canStage && !stagedRecord ? "" : "disabled"}
+            >
+              ${stagedRecord ? "Bundle Staged" : "Stage Bundle"}
+            </button>
+
+            ${stagedRecord
+              ? `
+                <button
+                  id="unstageBundleButton"
+                  class="unstage-button"
+                  type="button"
+                >
+                  Remove Stage
+                </button>
+              `
+              : ""}
+          </div>
+        </div>
+
+        <div class="staging-grid">
+          <div class="staging-stat bundle-id-stat">
+            <strong>${escapeHtml(result?.bundleId || "—")}</strong>
+            <span>Bundle ID</span>
+          </div>
+
+          <div class="staging-stat">
+            <strong>${numberValue(summary.nodes)}</strong>
+            <span>Nodes to Stage</span>
+          </div>
+
+          <div class="staging-stat">
+            <strong>${numberValue(summary.assertions)}</strong>
+            <span>Assertions to Stage</span>
+          </div>
+
+          <div class="staging-stat">
+            <strong>${numberValue(summary.edges)}</strong>
+            <span>Edges to Stage</span>
+          </div>
+
+          <div class="staging-stat">
+            <strong>${numberValue(summary.sources)}</strong>
+            <span>Sources to Stage</span>
+          </div>
+
+          <div class="staging-stat">
+            <strong>${numberValue(summary.revisions)}</strong>
+            <span>Revisions to Stage</span>
+          </div>
+
+          <div class="staging-stat">
+            <strong>${numberValue(summary.warnings)}</strong>
+            <span>Warnings</span>
+          </div>
+        </div>
+
+        <div id="stagedRecordResult">
+          ${renderStagedRecord()}
+        </div>
+      </div>
+    `;
+  }
+
+  function stageActiveBundle() {
+    if (!activeBundle || !activeValidationResult?.canImport) {
+      return;
+    }
+
+    const summary = activeValidationResult.summary || {};
+
+    stagedRecord = {
+      bundleId: activeValidationResult.bundleId,
+      stagedAt: new Date().toISOString(),
+      status: "staged-preview",
+      source: getActiveBundleSource(),
+      counts: {
+        nodes: numberValue(summary.nodes),
+        assertions: numberValue(summary.assertions),
+        edges: numberValue(summary.edges),
+        sources: numberValue(summary.sources),
+        revisions: numberValue(summary.revisions)
+      },
+      warningCount: numberValue(summary.warnings)
+    };
+
+    persistStagedRecord(stagedRecord);
+    renderStagingSummary(activeBundle, activeValidationResult);
+  }
+
+  function unstageActiveBundle() {
+    const bundleId = activeValidationResult?.bundleId;
+
+    if (!bundleId) {
+      return;
+    }
+
+    removePersistedStagedRecord(bundleId);
+    stagedRecord = null;
+    renderStagingSummary(activeBundle, activeValidationResult);
+  }
+
+  function getActiveBundleSource() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("bundle") || "local-file";
+  }
+
+  function getPersistedStagingMap() {
+    try {
+      const rawValue = localStorage.getItem(STAGING_STORAGE_KEY);
+
+      if (!rawValue) {
+        return {};
+      }
+
+      const parsedValue = JSON.parse(rawValue);
+
+      return parsedValue && typeof parsedValue === "object"
+        ? parsedValue
+        : {};
+    } catch (error) {
+      console.warn("Could not read SourceRoot staged bundles:", error);
+      return {};
+    }
+  }
+
+  function savePersistedStagingMap(stagingMap) {
+    try {
+      localStorage.setItem(
+        STAGING_STORAGE_KEY,
+        JSON.stringify(stagingMap)
+      );
+    } catch (error) {
+      console.warn("Could not save SourceRoot staged bundles:", error);
+    }
+  }
+
+  function persistStagedRecord(record) {
+    const stagingMap = getPersistedStagingMap();
+    stagingMap[record.bundleId] = record;
+    savePersistedStagingMap(stagingMap);
+  }
+
+  function getPersistedStagedRecord(bundleId) {
+    if (!bundleId) {
+      return null;
+    }
+
+    const stagingMap = getPersistedStagingMap();
+    return stagingMap[bundleId] || null;
+  }
+
+  function removePersistedStagedRecord(bundleId) {
+    const stagingMap = getPersistedStagingMap();
+
+    if (!(bundleId in stagingMap)) {
+      return;
+    }
+
+    delete stagingMap[bundleId];
+    savePersistedStagingMap(stagingMap);
+  }
+
+  function renderStagedRecord() {
+    if (!stagedRecord) {
+      return "";
+    }
+
+    return `
+      <div class="staged-record">
+        <strong>Staged Preview Created</strong><br>
+        Bundle: ${escapeHtml(stagedRecord.bundleId)}<br>
+        Status: ${escapeHtml(stagedRecord.status)}<br>
+        Source: ${escapeHtml(stagedRecord.source || "unknown")}<br>
+        Staged at: ${escapeHtml(stagedRecord.stagedAt)}<br>
+        Objects staged: ${
+          stagedRecord.counts.nodes +
+          stagedRecord.counts.assertions +
+          stagedRecord.counts.edges +
+          stagedRecord.counts.sources +
+          stagedRecord.counts.revisions
+        }<br>
+        Warnings carried forward: ${stagedRecord.warningCount}
+      </div>
+    `;
+  }
+
+  function numberValue(value) {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : 0;
+  }
+
   function renderBundleObjects(bundle) {
     document.getElementById("bundleObjects").innerHTML = `
       <h3>Nodes</h3>
@@ -919,8 +1326,13 @@
     document.getElementById("issueResults").innerHTML = `<p class="empty">No bundle loaded yet.</p>`;
     document.getElementById("bundleObjects").innerHTML = `<p class="empty">No bundle loaded yet.</p>`;
     document.getElementById("rawBundle").innerHTML = `<p class="empty">No bundle loaded yet.</p>`;
+    document.getElementById("stagingSummary").innerHTML = `<p class="empty">Load and validate a bundle to review its staging summary.</p>`;
     document.getElementById("loadedFileNote").innerHTML = "";
     document.getElementById("bundleFileInput").value = "";
+
+    activeBundle = null;
+    activeValidationResult = null;
+    stagedRecord = null;
 
     if (clearRoute) {
       const url = new URL(window.location.href);
