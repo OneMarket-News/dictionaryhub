@@ -1,76 +1,121 @@
 {
   "registryId": "sourceroot-bundle-registry",
-  "title": "SourceRoot Import Bundle Registry",
-  "version": "0.2.0",
+  "registryVersion": "1.1.0",
+  "updatedAt": "2026-07-16",
+  "description": "Approved and test SourceRoot import bundles available to Import Preview.",
   "bundles": [
     {
       "bundleId": "sourceroot-light-mvp-bundle",
       "title": "Light MVP Bundle",
+      "previewButtonLabel": "Load Light MVP Bundle",
       "path": "data/sourceroot-light-mvp-bundle.json",
-      "featured": true,
       "routable": true,
-      "purpose": "Main SourceRoot MVP demo dataset",
-      "description": "Models light across physical, dictionary, biblical, symbolic, truth, knowledge, guidance, revelation, and visibility contexts.",
-      "domains": [
-        "SourceRoot",
-        "DictionaryHub",
-        "BibleRoot",
-        "Wiki"
-      ],
-      "reviewNeed": "Review relationship support levels and internal-only source handling.",
-      "actions": [
-        {
-          "label": "Open Light Graph",
-          "href": "sourceroot-light-graph.html"
-        },
-        {
-          "label": "Open Inspector",
-          "href": "sourceroot-inspector.html"
-        },
-        {
-          "label": "Open Node API Example",
-          "href": "data/api-examples/sourceRoot-light-node-response.json",
-          "newTab": true
-        },
-        {
-          "label": "Open Validation API Example",
-          "href": "data/api-examples/sourceRoot-light-validation-response.json",
-          "newTab": true
-        },
-        {
-          "label": "Open Citation API Example",
-          "href": "data/api-examples/sourceRoot-light-citation-response.json",
-          "newTab": true
-        }
-      ]
+      "status": "ready-with-warnings",
+      "canImport": true,
+      "description": "Main SourceRoot MVP demonstration bundle.",
+      "counts": {
+        "nodes": 8,
+        "assertions": 10,
+        "edges": 9,
+        "sources": 11,
+        "revisions": 12,
+        "errors": 0,
+        "warnings": 3
+      },
+      "metadata": {
+        "domain": "SourceRoot / DictionaryHub / BibleRoot",
+        "purpose": "Primary MVP demonstration",
+        "readiness": "Safe to preview and stage with warnings"
+      }
     },
     {
       "bundleId": "sourceroot-import-bundle-example",
       "title": "Example Import Bundle",
+      "previewButtonLabel": "Load Example Bundle",
       "path": "data/sourceroot-import-bundle-example.json",
-      "featured": false,
       "routable": true,
-      "purpose": "Validator smoke test",
-      "description": "Small example bundle used to test successful validation and non-blocking warnings.",
-      "domains": [
-        "SourceRoot"
-      ],
-      "reviewNeed": "Review internal-only source licensing before public release.",
-      "actions": []
+      "status": "ready-with-warnings",
+      "canImport": true,
+      "description": "Small validator smoke-test bundle.",
+      "counts": {
+        "nodes": 2,
+        "assertions": 2,
+        "edges": 1,
+        "sources": 1,
+        "revisions": 3,
+        "errors": 0,
+        "warnings": 1
+      },
+      "metadata": {
+        "domain": "SourceRoot",
+        "purpose": "Validator smoke test",
+        "readiness": "Safe to preview"
+      }
     },
     {
       "bundleId": "sourceroot-import-bundle-broken-example",
       "title": "Broken Import Bundle",
+      "previewButtonLabel": "Load Broken Test Bundle",
       "path": "data/sourceroot-import-bundle-broken-example.json",
-      "featured": false,
       "routable": true,
-      "purpose": "Validator failure test",
-      "description": "Intentional failure bundle used to prove the validator catches duplicate IDs, broken references, missing fields, and invalid trust metadata.",
-      "domains": [
-        "SourceRoot"
-      ],
-      "reviewNeed": "Fix all validation errors before import.",
-      "actions": []
+      "status": "blocked",
+      "canImport": false,
+      "description": "Intentional failure bundle used to test validator rejection.",
+      "counts": {
+        "nodes": "test",
+        "assertions": "test",
+        "edges": "test",
+        "sources": "test",
+        "revisions": "test",
+        "errors": "several",
+        "warnings": "several"
+      },
+      "metadata": {
+        "domain": "SourceRoot test data",
+        "purpose": "Validator failure test",
+        "readiness": "Blocked"
+      }
+    },
+    {
+      "bundleId": "historyroot-fire-events-v2",
+      "title": "HistoryRoot Fire Events V2",
+      "previewButtonLabel": "Load HistoryRoot Fire Events",
+      "path": "data/historyroot-fire-events-sourceroot-import.json",
+      "routable": true,
+      "status": "ready",
+      "canImport": true,
+      "description": "SourceRoot-compatible HistoryRoot bundle covering the Great Chicago Fire and Peshtigo Fire with timeline, dispute, identity, and validation extensions.",
+      "counts": {
+        "nodes": 11,
+        "assertions": 13,
+        "edges": 11,
+        "sources": 11,
+        "revisions": 2,
+        "errors": 0,
+        "warnings": 0
+      },
+      "metadata": {
+        "domain": "HistoryRoot",
+        "purpose": "Multi-event historical knowledge pressure test",
+        "readiness": "Validated for SourceRoot Import Preview and staging",
+        "sourceSchemaVersion": "0.2.0",
+        "extensions": "Timeline entries, disputes, identity records, validation profile"
+      },
+      "actions": [
+        {
+          "label": "Validate in Import Preview",
+          "href": "sourceroot-import-preview.html?bundle=data%2Fhistoryroot-fire-events-sourceroot-import.json",
+          "primary": true
+        },
+        {
+          "label": "Open HistoryRoot",
+          "href": "historyroot.html"
+        },
+        {
+          "label": "Open JSON Bundle",
+          "href": "data/historyroot-fire-events-sourceroot-import.json"
+        }
+      ]
     }
   ]
 }
