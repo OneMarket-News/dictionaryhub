@@ -50,6 +50,8 @@
         claims, disputes, sources, relationships, identity changes, and revisions.
       </div>
       <div class="badge-row">
+        <a class="badge" href="sourceroot.html" style="color:white;text-decoration:none;">SourceRoot Home</a>
+        <a class="badge" href="historyroot-inspector.html" style="color:white;text-decoration:none;">HistoryRoot Inspector</a>
         <span class="badge">Events</span>
         <span class="badge">People</span>
         <span class="badge">Places</span>
@@ -155,12 +157,12 @@
 
       document.getElementById("entities").innerHTML = bundle.entities
         .map(entity => `
-          <div class="card">
+          <a class="card" href="historyroot-inspector.html?entity=${encodeURIComponent(entity.id)}" style="display:block;color:inherit;text-decoration:none;">
             <h3>${escapeHtml(entity.name)}</h3>
             <div class="meta">Type: ${escapeHtml(entity.entityType)} · ID: ${escapeHtml(entity.id)}</div>
             <div class="claim">${escapeHtml(entity.summary)}</div>
             <span class="pill">${escapeHtml(entity.status)}</span>
-          </div>
+          </a>
         `).join("");
 
       document.getElementById("assertions").innerHTML = bundle.assertions

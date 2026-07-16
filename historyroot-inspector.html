@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>HistoryRoot Entity Inspector</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f7f4ee;
+      color: #1f2933;
+    }
+
+    header {
+      background: #111827;
+      color: white;
+      padding: 28px 24px;
+    }
+
+    .header-inner,
+    main,
+    footer {
+      max-width: 1250px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 34px;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      color: #d1d5db;
+      margin-top: 10px;
+      max-width: 980px;
+      line-height: 1.55;
+    }
+
+    .top-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .top-links a {
+      color: white;
+      text-decoration: none;
+      border: 1px solid #374151;
+      background: #1f2937;
+      border-radius: 999px;
+      padding: 7px 11px;
+      font-size: 13px;
+    }
+
+    main {
+      padding: 24px;
+    }
+
+    .panel {
+      background: white;
+      border: 1px solid #ddd6c8;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 22px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .panel h2 {
+      margin: 0 0 10px;
+    }
+
+    .overview {
+      color: #374151;
+      line-height: 1.6;
+      max-width: 980px;
+    }
+
+    .selector-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    select {
+      width: min(100%, 480px);
+      padding: 10px 12px;
+      border: 1px solid #cfc7b8;
+      background: #fffdf8;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 14px;
+    }
+
+    .hero {
+      background: #fff8e6;
+      border-color: #ead59a;
+    }
+
+    .hero h2 {
+      font-size: 28px;
+    }
+
+    .meta-line {
+      color: #6b7280;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .summary {
+      color: #374151;
+      line-height: 1.6;
+      margin-top: 12px;
+      max-width: 900px;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 12px;
+    }
+
+    .pill {
+      display: inline-block;
+      background: #fffdf8;
+      border: 1px solid #cfc7b8;
+      border-radius: 999px;
+      padding: 5px 8px;
+      font-size: 11px;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .card {
+      background: #fffdf8;
+      border: 1px solid #eee2c7;
+      border-radius: 14px;
+      padding: 15px;
+    }
+
+    .card h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    .claim {
+      color: #374151;
+      line-height: 1.55;
+      margin-top: 8px;
+    }
+
+    .timeline-item {
+      border-left: 4px solid #7c2d12;
+    }
+
+    .dispute {
+      background: #fffbeb;
+      border-color: #fde68a;
+    }
+
+    .empty {
+      color: #6b7280;
+      font-style: italic;
+      padding: 10px 0;
+    }
+
+    details {
+      border: 1px solid #eee2c7;
+      background: white;
+      border-radius: 12px;
+      padding: 10px;
+      margin-top: 10px;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: bold;
+      color: #4b5563;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #f3f4f6;
+      border-radius: 10px;
+      padding: 12px;
+      overflow: auto;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    footer {
+      padding: 0 24px 28px;
+      color: #6b7280;
+      font-size: 13px;
+    }
+
+    @media (max-width: 700px) {
+      header { padding: 24px 16px; }
+      main { padding: 18px 14px; }
+      h1 { font-size: 29px; }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="header-inner">
+      <h1>HistoryRoot Entity Inspector</h1>
+
+      <div class="subtitle">
+        Inspect one historical entity at a time and review its claims, timeline entries,
+        relationships, disputes, sources, and revisions.
+      </div>
+
+      <div class="top-links">
+        <a href="historyroot.html">HistoryRoot Home</a>
+        <a href="sourceroot.html">SourceRoot Home</a>
+        <a href="sourceroot-inspector.html">SourceRoot Inspector</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <h2>Select Historical Entity</h2>
+
+      <p class="overview">
+        Select an entity or open the inspector with
+        <code>?entity=entity-id</code>.
+      </p>
+
+      <div class="selector-row">
+        <select id="entitySelect" aria-label="Select a historical entity"></select>
+      </div>
+    </section>
+
+    <section id="entityHero" class="panel hero">
+      <p class="empty">Loading HistoryRoot data…</p>
+    </section>
+
+    <section class="panel">
+      <h2>Timeline Entries</h2>
+      <div id="timelineResults"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Assertions</h2>
+      <div id="assertionResults"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Relationships</h2>
+      <div id="edgeResults"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Disputes</h2>
+      <div id="disputeResults"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Supporting Sources</h2>
+      <div id="sourceResults"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Revisions</h2>
+      <div id="revisionResults"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Raw Entity Record</h2>
+      <div id="rawEntity"></div>
+    </section>
+  </main>
+
+  <footer>
+    HistoryRoot Entity Inspector. Current dataset: Great Chicago Fire MVP.
+  </footer>
+
+  <script>
+    const BUNDLE_PATH = "data/historyroot-great-chicago-fire-mvp.json";
+    let activeBundle = null;
+
+    document
+      .getElementById("entitySelect")
+      .addEventListener("change", event => {
+        openEntity(event.target.value, true);
+      });
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function getEntityName(entityId) {
+      return activeBundle.entities.find(entity => entity.id === entityId)?.name || entityId;
+    }
+
+    function renderCards(items, renderer, emptyMessage) {
+      if (!items.length) {
+        return `<p class="empty">${escapeHtml(emptyMessage)}</p>`;
+      }
+
+      return `<div class="card-grid">${items.map(renderer).join("")}</div>`;
+    }
+
+    function openEntity(entityId, updateRoute = false) {
+      if (!activeBundle) {
+        return;
+      }
+
+      const entity =
+        activeBundle.entities.find(item => item.id === entityId) ||
+        activeBundle.entities[0];
+
+      if (!entity) {
+        return;
+      }
+
+      document.getElementById("entitySelect").value = entity.id;
+
+      if (updateRoute) {
+        const url = new URL(window.location.href);
+        url.searchParams.set("entity", entity.id);
+        window.history.pushState({ entity: entity.id }, "", `${url.pathname}${url.search}`);
+      }
+
+      renderEntity(entity);
+    }
+
+    function renderEntity(entity) {
+      const timelineEntries = activeBundle.timelineEntries.filter(item =>
+        Array.isArray(item.entityIds) && item.entityIds.includes(entity.id)
+      );
+
+      const assertions = activeBundle.assertions.filter(item =>
+        item.entityId === entity.id
+      );
+
+      const edges = activeBundle.edges.filter(item =>
+        item.fromEntityId === entity.id || item.toEntityId === entity.id
+      );
+
+      const disputes = activeBundle.disputes.filter(item =>
+        item.subjectEntityId === entity.id ||
+        item.positions?.some(position =>
+          position.entityId === entity.id
+        )
+      );
+
+      const sourceIds = new Set();
+
+      assertions.forEach(item =>
+        (item.sourceIds || []).forEach(sourceId => sourceIds.add(sourceId))
+      );
+
+      edges.forEach(item =>
+        (item.sourceIds || []).forEach(sourceId => sourceIds.add(sourceId))
+      );
+
+      disputes.forEach(item =>
+        (item.positions || []).forEach(position =>
+          (position.sourceIds || []).forEach(sourceId => sourceIds.add(sourceId))
+        )
+      );
+
+      const sources = activeBundle.sources.filter(source =>
+        sourceIds.has(source.id)
+      );
+
+      const revisions = activeBundle.revisions.filter(item =>
+        item.objectId === entity.id ||
+        assertions.some(assertion => assertion.id === item.objectId)
+      );
+
+      document.getElementById("entityHero").innerHTML = `
+        <h2>${escapeHtml(entity.name)}</h2>
+        <div class="meta-line">
+          <strong>Type:</strong> ${escapeHtml(entity.entityType)} ·
+          <strong>ID:</strong> ${escapeHtml(entity.id)}
+        </div>
+        <div class="summary">${escapeHtml(entity.summary || "No summary available.")}</div>
+        <div class="pill-row">
+          ${entity.status ? `<span class="pill">${escapeHtml(entity.status)}</span>` : ""}
+          ${entity.startDate ? `<span class="pill">Start: ${escapeHtml(entity.startDate)}</span>` : ""}
+          ${entity.endDate ? `<span class="pill">End: ${escapeHtml(entity.endDate)}</span>` : ""}
+          ${(entity.alternateNames || []).map(name =>
+            `<span class="pill">Also: ${escapeHtml(name)}</span>`
+          ).join("")}
+        </div>
+      `;
+
+      document.getElementById("timelineResults").innerHTML = renderCards(
+        timelineEntries,
+        item => `
+          <div class="card timeline-item">
+            <h3>${escapeHtml(item.title)}</h3>
+            <div class="meta-line">${escapeHtml(item.date)} · Certainty: ${escapeHtml(item.certainty)}</div>
+          </div>
+        `,
+        "No timeline entries are directly linked to this entity."
+      );
+
+      document.getElementById("assertionResults").innerHTML = renderCards(
+        assertions,
+        item => `
+          <div class="card">
+            <h3>${escapeHtml(item.assertionType)}</h3>
+            <div class="claim">${escapeHtml(item.claim)}</div>
+            <div class="pill-row">
+              <span class="pill">${escapeHtml(item.supportLevel)}</span>
+              <span class="pill">${escapeHtml(item.verificationStatus)}</span>
+            </div>
+          </div>
+        `,
+        "No assertions are directly linked to this entity."
+      );
+
+      document.getElementById("edgeResults").innerHTML = renderCards(
+        edges,
+        item => {
+          const direction = item.fromEntityId === entity.id
+            ? `→ ${getEntityName(item.toEntityId)}`
+            : `← ${getEntityName(item.fromEntityId)}`;
+
+          return `
+            <div class="card">
+              <h3>${escapeHtml(item.relationshipType)}</h3>
+              <div class="claim">${escapeHtml(direction)}</div>
+              <div class="meta-line">Confidence: ${escapeHtml(item.confidence)}</div>
+            </div>
+          `;
+        },
+        "No relationships are directly linked to this entity."
+      );
+
+      document.getElementById("disputeResults").innerHTML = renderCards(
+        disputes,
+        item => `
+          <div class="card dispute">
+            <h3>${escapeHtml(item.title)}</h3>
+            <div class="meta-line">Status: ${escapeHtml(item.status)}</div>
+            <div class="claim">${escapeHtml(item.summary)}</div>
+            <details>
+              <summary>Competing positions</summary>
+              <pre>${escapeHtml(JSON.stringify(item.positions, null, 2))}</pre>
+            </details>
+          </div>
+        `,
+        "No formal dispute is directly linked to this entity."
+      );
+
+      document.getElementById("sourceResults").innerHTML = renderCards(
+        sources,
+        source => `
+          <div class="card">
+            <h3>${escapeHtml(source.title)}</h3>
+            <div class="meta-line">${escapeHtml(source.publisher)} · ${escapeHtml(source.sourceType)}</div>
+            <div class="claim">
+              <a href="${escapeHtml(source.url)}" target="_blank" rel="noopener noreferrer">Open source</a>
+            </div>
+            <span class="pill">${escapeHtml(source.credibilityTier)}</span>
+          </div>
+        `,
+        "No supporting sources were found through this entity's claims, relationships, or disputes."
+      );
+
+      document.getElementById("revisionResults").innerHTML = renderCards(
+        revisions,
+        item => `
+          <div class="card">
+            <h3>${escapeHtml(item.revisionType)}</h3>
+            <div class="claim">${escapeHtml(item.summary)}</div>
+            <span class="pill">${escapeHtml(item.status)}</span>
+          </div>
+        `,
+        "No revisions are directly linked to this entity or its assertions."
+      );
+
+      document.getElementById("rawEntity").innerHTML = `
+        <details open>
+          <summary>Raw entity JSON</summary>
+          <pre>${escapeHtml(JSON.stringify(entity, null, 2))}</pre>
+        </details>
+      `;
+    }
+
+    async function initializeInspector() {
+      try {
+        const response = await fetch(BUNDLE_PATH);
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        activeBundle = await response.json();
+
+        const select = document.getElementById("entitySelect");
+        select.innerHTML = activeBundle.entities
+          .map(entity => `
+            <option value="${escapeHtml(entity.id)}">
+              ${escapeHtml(entity.name)} — ${escapeHtml(entity.entityType)}
+            </option>
+          `)
+          .join("");
+
+        const params = new URLSearchParams(window.location.search);
+        const requestedEntity = params.get("entity");
+
+        openEntity(requestedEntity || activeBundle.entities[0]?.id || "");
+      } catch (error) {
+        document.getElementById("entityHero").innerHTML = `
+          <h2>HistoryRoot data could not be loaded</h2>
+          <p class="overview">${escapeHtml(error.message)}</p>
+        `;
+      }
+    }
+
+    window.addEventListener("popstate", () => {
+      const params = new URLSearchParams(window.location.search);
+      openEntity(params.get("entity") || activeBundle?.entities[0]?.id || "");
+    });
+
+    initializeInspector();
+  </script>
+</body>
+</html>
