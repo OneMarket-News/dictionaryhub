@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SourceRoot Package Inspector</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f7f4ee;
+      color: #1f2933;
+    }
+
+    header {
+      background: #111827;
+      color: white;
+      padding: 28px 24px;
+    }
+
+    .header-inner,
+    main,
+    footer {
+      max-width: 1250px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 34px;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      color: #d1d5db;
+      margin-top: 10px;
+      max-width: 980px;
+      line-height: 1.55;
+    }
+
+    .top-links {
+      margin-top: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .top-links a {
+      color: white;
+      border: 1px solid #374151;
+      background: #1f2937;
+      border-radius: 999px;
+      padding: 7px 11px;
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    .top-links a:hover {
+      background: #374151;
+    }
+
+    main {
+      padding: 24px;
+    }
+
+    .panel {
+      background: white;
+      border: 1px solid #ddd6c8;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      margin-bottom: 22px;
+    }
+
+    .panel h2 {
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+
+    .overview-text {
+      color: #374151;
+      line-height: 1.6;
+      max-width: 980px;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    button,
+    .file-label {
+      font-family: inherit;
+      border: 1px solid #cfc7b8;
+      background: #fff8e6;
+      color: #1f2933;
+      border-radius: 10px;
+      padding: 10px 13px;
+      font-size: 13px;
+      cursor: pointer;
+      display: inline-block;
+    }
+
+    button:hover,
+    .file-label:hover {
+      background: #efe7d3;
+      border-color: #b78a2f;
+    }
+
+    .primary-button {
+      background: #111827;
+      color: white;
+      border-color: #111827;
+      font-weight: bold;
+    }
+
+    .primary-button:hover {
+      background: #374151;
+      border-color: #374151;
+    }
+
+    .primary-button:disabled {
+      background: #d1d5db;
+      color: #6b7280;
+      border-color: #d1d5db;
+      cursor: not-allowed;
+    }
+
+    .danger-button {
+      background: #fef2f2;
+      color: #991b1b;
+      border-color: #fecaca;
+    }
+
+    .status-card {
+      border-radius: 14px;
+      padding: 16px;
+      margin-top: 16px;
+      border: 1px solid #ddd6c8;
+      background: #fffdf8;
+    }
+
+    .status-valid {
+      border-color: #86efac;
+      background: #f0fdf4;
+    }
+
+    .status-invalid {
+      border-color: #fecaca;
+      background: #fef2f2;
+    }
+
+    .status-warning {
+      border-color: #fde68a;
+      background: #fffbeb;
+    }
+
+    .status-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    .status-meta {
+      color: #4b5563;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .summary-card {
+      background: #fff8e6;
+      border: 1px solid #ead59a;
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .summary-number {
+      font-size: 26px;
+      font-weight: bold;
+      margin-bottom: 4px;
+      overflow-wrap: anywhere;
+    }
+
+    .summary-label {
+      color: #6b7280;
+      font-size: 12px;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .meta-card {
+      background: #fffdf8;
+      border: 1px solid #eee2c7;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .meta-card strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .meta-card span {
+      color: #4b5563;
+      overflow-wrap: anywhere;
+    }
+
+    .issue-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .issue {
+      border-radius: 12px;
+      padding: 11px;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .issue.error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+    }
+
+    .issue.warning {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      color: #92400e;
+    }
+
+    .object-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .object-card {
+      background: #fffdf8;
+      border: 1px solid #eee2c7;
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .object-card h3 {
+      margin: 0 0 8px;
+      font-size: 17px;
+      overflow-wrap: anywhere;
+    }
+
+    .meta {
+      color: #6b7280;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    details {
+      border: 1px solid #eee2c7;
+      background: white;
+      border-radius: 12px;
+      padding: 10px;
+      margin-top: 10px;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 13px;
+      color: #4b5563;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #f3f4f6;
+      border-radius: 10px;
+      padding: 12px;
+      overflow: auto;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .empty {
+      color: #6b7280;
+      font-style: italic;
+      padding: 12px 0;
+    }
+
+    .restore-result {
+      margin-top: 14px;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .restore-result.success {
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      color: #166534;
+    }
+
+    .restore-result.error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+    }
+
+    footer {
+      padding: 0 24px 28px;
+      color: #6b7280;
+      font-size: 13px;
+    }
+
+    @media (max-width: 760px) {
+      header {
+        padding: 24px 16px;
+      }
+
+      main {
+        padding: 18px 14px;
+      }
+
+      h1 {
+        font-size: 29px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="header-inner">
+      <h1>SourceRoot Package Inspector</h1>
+
+      <div class="subtitle">
+        Open a self-contained SourceRoot staged package, inspect its metadata and embedded bundle,
+        verify its SHA-256 integrity, and restore it only after review.
+      </div>
+
+      <div class="top-links">
+        <a href="index.html">Landing Page</a>
+        <a href="sourceroot.html">SourceRoot Home</a>
+        <a href="sourceroot-import-bundle-registry.html">Import Bundle Registry</a>
+        <a href="sourceroot-import-preview.html">Import Preview</a>
+        <a href="sourceroot-staged-bundle-registry.html">Staged Bundles</a>
+        <a href="sourceroot-inspector.html">Inspector</a>
+        <a href="sourceroot-api-preview.html">API Preview</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <h2>Open Staged Package</h2>
+
+      <p class="overview-text">
+        The inspector does not restore a package automatically. It validates the export structure,
+        recalculates the embedded bundle hash, displays the contents, and enables restoration only when the package passes review.
+      </p>
+
+      <div class="toolbar">
+        <label class="file-label" for="packageFileInput">
+          Choose Staged Package JSON
+        </label>
+
+        <input
+          id="packageFileInput"
+          type="file"
+          accept=".json,application/json"
+          hidden
+        />
+
+        <button
+          id="restorePackageButton"
+          class="primary-button"
+          type="button"
+          disabled
+        >
+          Restore Package
+        </button>
+
+        <button
+          id="clearInspectorButton"
+          class="danger-button"
+          type="button"
+        >
+          Clear Inspector
+        </button>
+      </div>
+
+      <div id="packageStatus"></div>
+      <div id="restoreResult"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Package Summary</h2>
+      <div id="packageSummary">
+        <p class="empty">No package loaded.</p>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Package Metadata</h2>
+      <div id="packageMetadata">
+        <p class="empty">No package loaded.</p>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Embedded Bundle Objects</h2>
+      <div id="bundleObjects">
+        <p class="empty">No package loaded.</p>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Raw Package Data</h2>
+      <div id="rawPackage">
+        <p class="empty">No package loaded.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    SourceRoot Package Inspector. Current status: local package verification and restoration, not a backend import service.
+  </footer>
+
+  <script>
+    const STAGING_STORAGE_KEY = "sourceroot-staged-bundles-v1";
+
+    let activeArtifact = null;
+    let activeRecord = null;
+    let activeBundle = null;
+    let activeVerification = null;
+
+    document
+      .getElementById("packageFileInput")
+      .addEventListener("change", handlePackageFile);
+
+    document
+      .getElementById("restorePackageButton")
+      .addEventListener("click", restorePackage);
+
+    document
+      .getElementById("clearInspectorButton")
+      .addEventListener("click", clearInspector);
+
+    async function handlePackageFile(event) {
+      const file = event.target.files[0];
+
+      if (!file) {
+        return;
+      }
+
+      clearInspector({ preserveFileInput: true });
+
+      try {
+        const text = await file.text();
+        const artifact = JSON.parse(text);
+        const parsed = parsePackageArtifact(artifact);
+        const verification = await verifyPackage(parsed.record, parsed.bundle);
+
+        activeArtifact = artifact;
+        activeRecord = parsed.record;
+        activeBundle = parsed.bundle;
+        activeVerification = verification;
+
+        renderPackageStatus(file.name, verification);
+        renderPackageSummary(parsed.record, parsed.bundle, verification);
+        renderPackageMetadata(artifact, parsed.record, verification);
+        renderBundleObjects(parsed.bundle);
+        renderRawPackage(artifact);
+
+        document.getElementById("restorePackageButton").disabled =
+          !verification.canRestore;
+      } catch (error) {
+        renderPackageError(file.name, error.message);
+      } finally {
+        event.target.value = "";
+      }
+    }
+
+    function parsePackageArtifact(artifact) {
+      if (!artifact || typeof artifact !== "object") {
+        throw new Error("The selected file does not contain a valid JSON object.");
+      }
+
+      if (artifact.exportType !== "sourceroot-staged-package") {
+        throw new Error(
+          "Unsupported artifact type. The Package Inspector currently accepts a single sourceroot-staged-package export."
+        );
+      }
+
+      if (artifact.exportVersion !== "1.0.0") {
+        throw new Error(
+          `Unsupported package version: ${artifact.exportVersion || "unknown"}`
+        );
+      }
+
+      if (!artifact.record || typeof artifact.record !== "object") {
+        throw new Error("The package does not contain a valid staged record.");
+      }
+
+      if (!artifact.bundle || typeof artifact.bundle !== "object") {
+        throw new Error("The package does not contain a valid embedded bundle.");
+      }
+
+      return {
+        record: artifact.record,
+        bundle: artifact.bundle
+      };
+    }
+
+    async function verifyPackage(record, bundle) {
+      const issues = [];
+
+      const requiredRecordFields = [
+        "bundleId",
+        "stagedAt",
+        "status",
+        "bundleHash"
+      ];
+
+      for (const field of requiredRecordFields) {
+        if (typeof record[field] !== "string" || !record[field].trim()) {
+          issues.push({
+            severity: "error",
+            message: `Missing or invalid staged record field: ${field}.`
+          });
+        }
+      }
+
+      if (!record.counts || typeof record.counts !== "object") {
+        issues.push({
+          severity: "error",
+          message: "The staged record does not contain a counts object."
+        });
+      }
+
+      const calculatedHash = await createBundleHash(bundle);
+      const hashMatches = calculatedHash === record.bundleHash;
+
+      if (!hashMatches) {
+        issues.push({
+          severity: "error",
+          message: "The embedded bundle hash does not match the staged record."
+        });
+      }
+
+      const bundleIdMatches =
+        !bundle.bundleId ||
+        bundle.bundleId === record.bundleId;
+
+      if (!bundleIdMatches) {
+        issues.push({
+          severity: "warning",
+          message: `Embedded bundle ID ${bundle.bundleId} does not match staged record ID ${record.bundleId}.`
+        });
+      }
+
+      const actualCounts = getBundleCounts(bundle);
+      const stagedCounts = record.counts || {};
+      const countDifferences = [];
+
+      for (const key of [
+        "nodes",
+        "assertions",
+        "edges",
+        "sources",
+        "revisions"
+      ]) {
+        if (numberValue(stagedCounts[key]) !== numberValue(actualCounts[key])) {
+          countDifferences.push(
+            `${key}: staged ${numberValue(stagedCounts[key])}, embedded ${numberValue(actualCounts[key])}`
+          );
+        }
+      }
+
+      if (countDifferences.length) {
+        issues.push({
+          severity: "warning",
+          message: `Object counts differ: ${countDifferences.join("; ")}.`
+        });
+      }
+
+      return {
+        calculatedHash,
+        hashMatches,
+        bundleIdMatches,
+        actualCounts,
+        issues,
+        canRestore: !issues.some(issue => issue.severity === "error")
+      };
+    }
+
+    function renderPackageStatus(filename, verification) {
+      const hasWarnings = verification.issues.some(
+        issue => issue.severity === "warning"
+      );
+
+      const statusClass = verification.canRestore
+        ? hasWarnings
+          ? "status-warning"
+          : "status-valid"
+        : "status-invalid";
+
+      const statusTitle = verification.canRestore
+        ? hasWarnings
+          ? "Package Valid With Warnings"
+          : "Package Valid"
+        : "Package Invalid";
+
+      document.getElementById("packageStatus").innerHTML = `
+        <div class="status-card ${statusClass}">
+          <div class="status-title">${statusTitle}</div>
+          <div class="status-meta">
+            <strong>File:</strong> ${escapeHtml(filename)}<br>
+            <strong>Hash Match:</strong> ${verification.hashMatches ? "Yes" : "No"}<br>
+            <strong>Restore Allowed:</strong> ${verification.canRestore ? "Yes" : "No"}
+          </div>
+
+          ${verification.issues.length
+            ? `
+              <div class="issue-list">
+                ${verification.issues
+                  .map(issue => `
+                    <div class="issue ${issue.severity}">
+                      ${escapeHtml(issue.message)}
+                    </div>
+                  `)
+                  .join("")}
+              </div>
+            `
+            : ""}
+        </div>
+      `;
+    }
+
+    function renderPackageError(filename, message) {
+      document.getElementById("packageStatus").innerHTML = `
+        <div class="status-card status-invalid">
+          <div class="status-title">Package Could Not Be Opened</div>
+          <div class="status-meta">
+            <strong>File:</strong> ${escapeHtml(filename)}<br>
+            ${escapeHtml(message)}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderPackageSummary(record, bundle, verification) {
+      const counts = verification.actualCounts;
+
+      document.getElementById("packageSummary").innerHTML = `
+        <div class="summary-grid">
+          ${renderSummaryCard(record.bundleId, "Bundle ID")}
+          ${renderSummaryCard(counts.nodes, "Nodes")}
+          ${renderSummaryCard(counts.assertions, "Assertions")}
+          ${renderSummaryCard(counts.edges, "Edges")}
+          ${renderSummaryCard(counts.sources, "Sources")}
+          ${renderSummaryCard(counts.revisions, "Revisions")}
+          ${renderSummaryCard(numberValue(record.warningCount), "Warnings")}
+        </div>
+      `;
+    }
+
+    function renderSummaryCard(value, label) {
+      return `
+        <div class="summary-card">
+          <div class="summary-number">${escapeHtml(value)}</div>
+          <div class="summary-label">${escapeHtml(label)}</div>
+        </div>
+      `;
+    }
+
+    function renderPackageMetadata(artifact, record, verification) {
+      document.getElementById("packageMetadata").innerHTML = `
+        <div class="meta-grid">
+          ${renderMetaCard("Export Type", artifact.exportType)}
+          ${renderMetaCard("Export Version", artifact.exportVersion)}
+          ${renderMetaCard("Package ID", artifact.packageId || "Not provided")}
+          ${renderMetaCard("Exported At", formatDate(artifact.exportedAt))}
+          ${renderMetaCard("Staged At", formatDate(record.stagedAt))}
+          ${renderMetaCard("Stage Status", record.status)}
+          ${renderMetaCard("Source", record.source || "Unknown")}
+          ${renderMetaCard("Stored Hash", record.bundleHash)}
+          ${renderMetaCard("Calculated Hash", verification.calculatedHash)}
+        </div>
+      `;
+    }
+
+    function renderMetaCard(label, value) {
+      return `
+        <div class="meta-card">
+          <strong>${escapeHtml(label)}</strong>
+          <span>${escapeHtml(value)}</span>
+        </div>
+      `;
+    }
+
+    function renderBundleObjects(bundle) {
+      document.getElementById("bundleObjects").innerHTML = `
+        <h3>Nodes</h3>
+        ${renderObjectGrid(bundle.nodes || [], "node")}
+
+        <h3>Assertions</h3>
+        ${renderObjectGrid(bundle.assertions || [], "assertion")}
+
+        <h3>Edges</h3>
+        ${renderObjectGrid(bundle.edges || [], "edge")}
+
+        <h3>Sources</h3>
+        ${renderObjectGrid(bundle.sources || [], "source")}
+
+        <h3>Revisions</h3>
+        ${renderObjectGrid(bundle.revisions || [], "revision")}
+      `;
+    }
+
+    function renderObjectGrid(items, type) {
+      if (!items.length) {
+        return `<p class="empty">No ${escapeHtml(type)}s found.</p>`;
+      }
+
+      return `
+        <div class="object-grid">
+          ${items.map(item => renderObjectCard(item, type)).join("")}
+        </div>
+      `;
+    }
+
+    function renderObjectCard(item, type) {
+      const id =
+        item.id ||
+        item.revisionId ||
+        item.bundleId ||
+        "unknown";
+
+      const title =
+        item.title ||
+        item.name ||
+        item.label ||
+        item.relationshipType ||
+        item.objectType ||
+        id;
+
+      return `
+        <div class="object-card">
+          <h3>${escapeHtml(title)}</h3>
+          <div class="meta"><strong>Type:</strong> ${escapeHtml(type)}</div>
+          <div class="meta"><strong>ID:</strong> ${escapeHtml(id)}</div>
+
+          <details>
+            <summary>Raw ${escapeHtml(type)} data</summary>
+            <pre>${escapeHtml(JSON.stringify(item, null, 2))}</pre>
+          </details>
+        </div>
+      `;
+    }
+
+    function renderRawPackage(artifact) {
+      document.getElementById("rawPackage").innerHTML = `
+        <details open>
+          <summary>Raw Package JSON</summary>
+          <pre>${escapeHtml(JSON.stringify(artifact, null, 2))}</pre>
+        </details>
+      `;
+    }
+
+    function restorePackage() {
+      if (
+        !activeRecord ||
+        !activeBundle ||
+        !activeVerification?.canRestore
+      ) {
+        return;
+      }
+
+      const stagingMap = getStagingMap();
+      const existingRecord = stagingMap[activeRecord.bundleId];
+
+      if (existingRecord) {
+        const shouldReplace = window.confirm(
+          `A staged record already exists for "${activeRecord.bundleId}". Replace it with this inspected package?`
+        );
+
+        if (!shouldReplace) {
+          return;
+        }
+      }
+
+      stagingMap[activeRecord.bundleId] = {
+        ...activeRecord,
+        source: "embedded-package",
+        embeddedBundle: activeBundle,
+        importedAt: new Date().toISOString(),
+        integrityStatus: "current"
+      };
+
+      saveStagingMap(stagingMap);
+
+      document.getElementById("restoreResult").innerHTML = `
+        <div class="restore-result success">
+          <strong>Package restored.</strong><br>
+          ${escapeHtml(activeRecord.bundleId)} is now available in the Staged Bundles Registry.
+        </div>
+      `;
+    }
+
+    function getStagingMap() {
+      try {
+        const rawValue = localStorage.getItem(STAGING_STORAGE_KEY);
+
+        if (!rawValue) {
+          return {};
+        }
+
+        const parsedValue = JSON.parse(rawValue);
+
+        return parsedValue && typeof parsedValue === "object"
+          ? parsedValue
+          : {};
+      } catch (error) {
+        return {};
+      }
+    }
+
+    function saveStagingMap(stagingMap) {
+      localStorage.setItem(
+        STAGING_STORAGE_KEY,
+        JSON.stringify(stagingMap)
+      );
+    }
+
+    function getBundleCounts(bundle) {
+      return {
+        nodes: Array.isArray(bundle.nodes) ? bundle.nodes.length : 0,
+        assertions: Array.isArray(bundle.assertions) ? bundle.assertions.length : 0,
+        edges: Array.isArray(bundle.edges) ? bundle.edges.length : 0,
+        sources: Array.isArray(bundle.sources) ? bundle.sources.length : 0,
+        revisions: Array.isArray(bundle.revisions) ? bundle.revisions.length : 0
+      };
+    }
+
+    async function createBundleHash(bundle) {
+      const normalizedBundle = JSON.stringify(bundle);
+      const bytes = new TextEncoder().encode(normalizedBundle);
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+
+      return Array.from(new Uint8Array(digest))
+        .map(byte => byte.toString(16).padStart(2, "0"))
+        .join("");
+    }
+
+    function clearInspector({ preserveFileInput = false } = {}) {
+      activeArtifact = null;
+      activeRecord = null;
+      activeBundle = null;
+      activeVerification = null;
+
+      document.getElementById("packageStatus").innerHTML = "";
+      document.getElementById("restoreResult").innerHTML = "";
+      document.getElementById("packageSummary").innerHTML =
+        `<p class="empty">No package loaded.</p>`;
+      document.getElementById("packageMetadata").innerHTML =
+        `<p class="empty">No package loaded.</p>`;
+      document.getElementById("bundleObjects").innerHTML =
+        `<p class="empty">No package loaded.</p>`;
+      document.getElementById("rawPackage").innerHTML =
+        `<p class="empty">No package loaded.</p>`;
+      document.getElementById("restorePackageButton").disabled = true;
+
+      if (!preserveFileInput) {
+        document.getElementById("packageFileInput").value = "";
+      }
+    }
+
+    function formatDate(value) {
+      if (!value) {
+        return "Unknown";
+      }
+
+      const date = new Date(value);
+
+      if (Number.isNaN(date.getTime())) {
+        return String(value);
+      }
+
+      return date.toLocaleString();
+    }
+
+    function numberValue(value) {
+      const number = Number(value);
+      return Number.isFinite(number) ? number : 0;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    clearInspector();
+  </script>
+</body>
+</html>
