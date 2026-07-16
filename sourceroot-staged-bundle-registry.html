@@ -137,6 +137,37 @@
       border-color: #f87171;
     }
 
+    .import-result {
+      margin-top: 14px;
+      border-radius: 12px;
+      padding: 13px;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .import-result.success {
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      color: #166534;
+    }
+
+    .import-result.warning {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      color: #92400e;
+    }
+
+    .import-result.error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+    }
+
+    .import-result ul {
+      margin: 8px 0 0;
+      padding-left: 18px;
+    }
+
     .summary-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
@@ -412,9 +443,27 @@
 
       <div class="toolbar">
         <button id="refreshButton" type="button">Refresh Registry</button>
-        <button id="exportAllButton" class="primary-button" type="button">Export All Staged Records</button>
-        <button id="clearAllButton" class="danger-button" type="button">Remove All Staged Bundles</button>
+
+        <label class="button-link" for="importFileInput">
+          Import Staged Records
+        </label>
+        <input
+          id="importFileInput"
+          type="file"
+          accept=".json,application/json"
+          hidden
+        />
+
+        <button id="exportAllButton" class="primary-button" type="button">
+          Export All Staged Records
+        </button>
+
+        <button id="clearAllButton" class="danger-button" type="button">
+          Remove All Staged Bundles
+        </button>
       </div>
+
+      <div id="importResults"></div>
 
       <div id="summaryGrid" class="summary-grid"></div>
 
@@ -444,6 +493,10 @@
     document
       .getElementById("refreshButton")
       .addEventListener("click", renderRegistry);
+
+    document
+      .getElementById("importFileInput")
+      .addEventListener("change", handleStagedRecordImport);
 
     document
       .getElementById("exportAllButton")
@@ -935,6 +988,223 @@
       url.searchParams.set("bundle", source);
 
       return `${url.pathname}${url.search}`;
+    }
+
+    async function handleStagedRecordImport(event) {
+      const file = event.target.files[0];
+
+      if (!file) {
+        return;
+      }
+
+      const importResults = document.getElementById("importResults");
+      importResults.innerHTML = "";
+
+      try {
+        const text = await file.text();
+        const artifact = JSON.parse(text);
+        const parsedRecords = parseImportArtifact(artifact);
+
+        const summary = importStagedRecords(parsedRecords);
+        renderImportSummary(summary, file.name);
+        renderRegistry();
+      } catch (error) {
+        importResults.innerHTML = `
+          <div class="import-result error">
+            <strong>Import failed.</strong><br>
+            ${escapeHtml(error.message)}
+          </div>
+        `;
+      } finally {
+        event.target.value = "";
+      }
+    }
+
+    function parseImportArtifact(artifact) {
+      if (!artifact || typeof artifact !== "object") {
+        throw new Error("The selected file does not contain a valid JSON object.");
+      }
+
+      if (artifact.exportType === "sourceroot-staged-record") {
+        if (artifact.exportVersion !== "1.0.0") {
+          throw new Error(
+            `Unsupported staged-record export version: ${artifact.exportVersion || "unknown"}`
+          );
+        }
+
+        return [artifact.record];
+      }
+
+      if (artifact.exportType === "sourceroot-staged-record-collection") {
+        if (artifact.exportVersion !== "1.0.0") {
+          throw new Error(
+            `Unsupported staged-record collection version: ${artifact.exportVersion || "unknown"}`
+          );
+        }
+
+        if (!Array.isArray(artifact.records)) {
+          throw new Error("The staged-record collection does not contain a records array.");
+        }
+
+        return artifact.records;
+      }
+
+      throw new Error(
+        "Unsupported export type. Expected sourceroot-staged-record or sourceroot-staged-record-collection."
+      );
+    }
+
+    function importStagedRecords(records) {
+      const stagingMap = getStagingMap();
+
+      const summary = {
+        added: 0,
+        replaced: 0,
+        skipped: 0,
+        rejected: 0,
+        issues: []
+      };
+
+      for (const record of records) {
+        const validation = validateImportedRecord(record);
+
+        if (!validation.valid) {
+          summary.rejected += 1;
+          summary.issues.push(validation.message);
+          continue;
+        }
+
+        const bundleId = record.bundleId;
+        const existingRecord = stagingMap[bundleId];
+
+        if (existingRecord) {
+          const shouldReplace = window.confirm(
+            `A staged record already exists for "${bundleId}". Replace it with the imported record?`
+          );
+
+          if (!shouldReplace) {
+            summary.skipped += 1;
+            continue;
+          }
+
+          stagingMap[bundleId] = normalizeImportedRecord(record);
+          summary.replaced += 1;
+          continue;
+        }
+
+        stagingMap[bundleId] = normalizeImportedRecord(record);
+        summary.added += 1;
+      }
+
+      saveStagingMap(stagingMap);
+      return summary;
+    }
+
+    function validateImportedRecord(record) {
+      if (!record || typeof record !== "object") {
+        return {
+          valid: false,
+          message: "Rejected record: staged record is not an object."
+        };
+      }
+
+      const requiredStringFields = [
+        "bundleId",
+        "stagedAt",
+        "status",
+        "bundleHash"
+      ];
+
+      for (const field of requiredStringFields) {
+        if (typeof record[field] !== "string" || !record[field].trim()) {
+          return {
+            valid: false,
+            message: `Rejected record: missing or invalid ${field}.`
+          };
+        }
+      }
+
+      if (!record.counts || typeof record.counts !== "object") {
+        return {
+          valid: false,
+          message: `Rejected ${record.bundleId}: counts object is missing.`
+        };
+      }
+
+      const countFields = [
+        "nodes",
+        "assertions",
+        "edges",
+        "sources",
+        "revisions"
+      ];
+
+      for (const field of countFields) {
+        if (!Number.isFinite(Number(record.counts[field]))) {
+          return {
+            valid: false,
+            message: `Rejected ${record.bundleId}: invalid count for ${field}.`
+          };
+        }
+      }
+
+      if (
+        record.snapshot &&
+        typeof record.snapshot !== "object"
+      ) {
+        return {
+          valid: false,
+          message: `Rejected ${record.bundleId}: snapshot must be an object when provided.`
+        };
+      }
+
+      return { valid: true };
+    }
+
+    function normalizeImportedRecord(record) {
+      return {
+        ...record,
+        bundleId: String(record.bundleId),
+        stagedAt: String(record.stagedAt),
+        status: String(record.status),
+        source: typeof record.source === "string"
+          ? record.source
+          : "imported-record",
+        bundleHash: String(record.bundleHash),
+        counts: {
+          nodes: numberValue(record.counts.nodes),
+          assertions: numberValue(record.counts.assertions),
+          edges: numberValue(record.counts.edges),
+          sources: numberValue(record.counts.sources),
+          revisions: numberValue(record.counts.revisions)
+        },
+        warningCount: numberValue(record.warningCount),
+        importedAt: new Date().toISOString()
+      };
+    }
+
+    function renderImportSummary(summary, filename) {
+      const importResults = document.getElementById("importResults");
+      const hasIssues = summary.rejected > 0 || summary.skipped > 0;
+
+      importResults.innerHTML = `
+        <div class="import-result ${hasIssues ? "warning" : "success"}">
+          <strong>Import complete: ${escapeHtml(filename)}</strong><br>
+          Added: ${summary.added} ·
+          Replaced: ${summary.replaced} ·
+          Skipped: ${summary.skipped} ·
+          Rejected: ${summary.rejected}
+          ${summary.issues.length
+            ? `
+              <ul>
+                ${summary.issues
+                  .map(issue => `<li>${escapeHtml(issue)}</li>`)
+                  .join("")}
+              </ul>
+            `
+            : ""}
+        </div>
+      `;
     }
 
     function exportSingleStagedRecord(bundleId) {
