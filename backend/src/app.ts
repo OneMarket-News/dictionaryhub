@@ -4,9 +4,11 @@ import express, {
   type Request,
   type Response,
 } from "express";
+
 import { requestIdMiddleware } from "./lib/request-id.js";
 import { healthRouter } from "./routes/health.js";
 import { importRouter } from "./routes/import.js";
+import { nodesRouter } from "./routes/nodes.js";
 import { validateRouter } from "./routes/validate.js";
 
 export function createApp() {
@@ -31,6 +33,7 @@ export function createApp() {
   app.use(healthRouter);
   app.use("/api/v1", validateRouter);
   app.use("/api/v1/import", importRouter);
+  app.use("/api/v1/nodes", nodesRouter);
 
   app.use((_request, response) => {
     response.status(404).json({

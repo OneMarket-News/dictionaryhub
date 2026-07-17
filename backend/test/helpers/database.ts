@@ -10,7 +10,18 @@ export async function resetTestDatabase(): Promise<void> {
   }
 
   await pool.query(`
-    TRUNCATE TABLE imported_bundles;
+    TRUNCATE TABLE
+      edge_sources,
+      assertion_sources,
+      node_sources,
+      revisions,
+      edges,
+      assertions,
+      nodes,
+      sources,
+      imported_bundles
+    RESTART IDENTITY
+    CASCADE;
   `);
 }
 
