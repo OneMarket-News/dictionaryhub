@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS imported_bundles (
+  bundle_id TEXT PRIMARY KEY,
+  bundle_type TEXT,
+  version TEXT,
+  domain TEXT,
+  bundle JSONB NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
