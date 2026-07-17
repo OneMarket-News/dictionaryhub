@@ -97,7 +97,7 @@
       "metadata": {
         "domain": "HistoryRoot",
         "purpose": "Multi-event historical knowledge pressure test",
-        "readiness": "Validated for SourceRoot Import Preview and staging",
+        "readiness": "Validated against SourceRoot trust-value enums",
         "sourceSchemaVersion": "0.2.0",
         "extensions": "Timeline entries, disputes, identity records, validation profile"
       },

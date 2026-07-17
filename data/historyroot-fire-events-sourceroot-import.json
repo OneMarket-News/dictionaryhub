@@ -180,12 +180,12 @@
         "source-loc-guide",
         "source-loc-map-blog"
       ],
-      "credibilityTier": "historical-source-backed",
+      "credibilityTier": "high",
       "confidence": "strong",
-      "verificationStatus": "supported",
+      "verificationStatus": "source-backed",
       "reviewStatus": "reviewed",
-      "supportLevel": "strong",
-      "interpretationLevel": "medium"
+      "supportLevel": "direct",
+      "interpretationLevel": "low"
     },
     {
       "id": "assertion-origin-location",
@@ -199,12 +199,12 @@
         "source-encyclopedia-fire",
         "source-loc-guide"
       ],
-      "credibilityTier": "historical-source-backed",
+      "credibilityTier": "high",
       "confidence": "strong",
-      "verificationStatus": "supported",
+      "verificationStatus": "source-backed",
       "reviewStatus": "reviewed",
-      "supportLevel": "strong",
-      "interpretationLevel": "medium"
+      "supportLevel": "direct",
+      "interpretationLevel": "low"
     },
     {
       "id": "assertion-cause-unknown",
@@ -218,11 +218,11 @@
         "source-chm-oleary",
         "source-loc-map-blog"
       ],
-      "credibilityTier": "historical-source-backed",
+      "credibilityTier": "high",
       "confidence": "moderate",
-      "verificationStatus": "supported-with-uncertainty",
+      "verificationStatus": "needs-review",
       "reviewStatus": "reviewed",
-      "supportLevel": "moderate",
+      "supportLevel": "interpretive",
       "interpretationLevel": "high"
     },
     {
@@ -237,11 +237,11 @@
         "source-chm-oleary",
         "source-chm-lesson"
       ],
-      "credibilityTier": "historical-source-backed",
+      "credibilityTier": "high",
       "confidence": "strong",
-      "verificationStatus": "supported",
+      "verificationStatus": "source-backed",
       "reviewStatus": "reviewed",
-      "supportLevel": "strong",
+      "supportLevel": "interpretive",
       "interpretationLevel": "high"
     },
     {
@@ -255,12 +255,12 @@
       "sourceIds": [
         "source-encyclopedia-progress"
       ],
-      "credibilityTier": "historical-source-backed",
+      "credibilityTier": "high",
       "confidence": "strong",
-      "verificationStatus": "supported",
+      "verificationStatus": "source-backed",
       "reviewStatus": "reviewed",
-      "supportLevel": "strong",
-      "interpretationLevel": "medium"
+      "supportLevel": "direct",
+      "interpretationLevel": "low"
     },
     {
       "id": "assertion-wind-spread",
@@ -273,11 +273,11 @@
       "sourceIds": [
         "source-encyclopedia-fire"
       ],
-      "credibilityTier": "historical-source-backed",
+      "credibilityTier": "high",
       "confidence": "strong",
-      "verificationStatus": "supported",
+      "verificationStatus": "source-backed",
       "reviewStatus": "reviewed",
-      "supportLevel": "strong",
+      "supportLevel": "derived",
       "interpretationLevel": "medium"
     },
     {
@@ -292,12 +292,12 @@
         "source-nps-fire-week",
         "source-encyclopedia-fire"
       ],
-      "credibilityTier": "historical-source-backed",
+      "credibilityTier": "high",
       "confidence": "strong",
-      "verificationStatus": "supported",
+      "verificationStatus": "source-backed",
       "reviewStatus": "reviewed",
-      "supportLevel": "strong",
-      "interpretationLevel": "medium"
+      "supportLevel": "direct",
+      "interpretationLevel": "low"
     },
     {
       "id": "assertion-rebuilding",
@@ -310,11 +310,11 @@
       "sourceIds": [
         "source-encyclopedia-aftermath"
       ],
-      "credibilityTier": "historical-source-backed",
+      "credibilityTier": "high",
       "confidence": "moderate",
-      "verificationStatus": "supported",
+      "verificationStatus": "source-backed",
       "reviewStatus": "reviewed",
-      "supportLevel": "moderate",
+      "supportLevel": "derived",
       "interpretationLevel": "medium"
     },
     {
@@ -328,12 +328,12 @@
       "sourceIds": [
         "source-encyclopedia-title"
       ],
-      "credibilityTier": "historical-source-backed",
+      "credibilityTier": "high",
       "confidence": "strong",
-      "verificationStatus": "supported",
+      "verificationStatus": "source-backed",
       "reviewStatus": "reviewed",
-      "supportLevel": "strong",
-      "interpretationLevel": "medium"
+      "supportLevel": "direct",
+      "interpretationLevel": "low"
     },
     {
       "id": "assertion-oleary-blame",
@@ -347,11 +347,11 @@
         "source-chm-oleary",
         "source-chm-lesson"
       ],
-      "credibilityTier": "historical-source-backed",
+      "credibilityTier": "high",
       "confidence": "strong",
-      "verificationStatus": "supported",
+      "verificationStatus": "source-backed",
       "reviewStatus": "reviewed",
-      "supportLevel": "strong",
+      "supportLevel": "interpretive",
       "interpretationLevel": "high"
     },
     {
@@ -366,12 +366,12 @@
         "source-wisconsin-peshtigo",
         "source-nps-peshtigo"
       ],
-      "credibilityTier": "historical-source-backed",
+      "credibilityTier": "high",
       "confidence": "strong",
-      "verificationStatus": "supported",
+      "verificationStatus": "source-backed",
       "reviewStatus": "reviewed",
-      "supportLevel": "strong",
-      "interpretationLevel": "medium"
+      "supportLevel": "direct",
+      "interpretationLevel": "low"
     },
     {
       "id": "assertion-peshtigo-firestorm",
@@ -385,12 +385,12 @@
         "source-wisconsin-peshtigo",
         "source-nps-peshtigo"
       ],
-      "credibilityTier": "historical-source-backed",
+      "credibilityTier": "high",
       "confidence": "strong",
-      "verificationStatus": "supported",
+      "verificationStatus": "source-backed",
       "reviewStatus": "reviewed",
-      "supportLevel": "strong",
-      "interpretationLevel": "medium"
+      "supportLevel": "direct",
+      "interpretationLevel": "low"
     },
     {
       "id": "assertion-regional-context",
@@ -404,11 +404,11 @@
         "source-nps-peshtigo",
         "source-encyclopedia-fire"
       ],
-      "credibilityTier": "historical-source-backed",
+      "credibilityTier": "high",
       "confidence": "moderate",
-      "verificationStatus": "supported",
+      "verificationStatus": "source-backed",
       "reviewStatus": "reviewed",
-      "supportLevel": "moderate",
+      "supportLevel": "derived",
       "interpretationLevel": "medium"
     }
   ],
@@ -424,12 +424,12 @@
       "sourceIds": [
         "source-loc-guide"
       ],
-      "credibilityTier": "historical-source-backed",
-      "confidence": "high",
-      "verificationStatus": "supported",
+      "credibilityTier": "high",
+      "confidence": "strong",
+      "verificationStatus": "source-backed",
       "reviewStatus": "reviewed",
-      "supportLevel": "high",
-      "relationshipStrength": "high",
+      "supportLevel": "direct",
+      "relationshipStrength": "strong",
       "interpretationLevel": "low"
     },
     {
@@ -443,12 +443,12 @@
       "sourceIds": [
         "source-encyclopedia-fire"
       ],
-      "credibilityTier": "historical-source-backed",
-      "confidence": "high",
-      "verificationStatus": "supported",
+      "credibilityTier": "high",
+      "confidence": "strong",
+      "verificationStatus": "source-backed",
       "reviewStatus": "reviewed",
-      "supportLevel": "high",
-      "relationshipStrength": "high",
+      "supportLevel": "direct",
+      "relationshipStrength": "strong",
       "interpretationLevel": "low"
     },
     {
@@ -462,12 +462,12 @@
       "sourceIds": [
         "source-chm-oleary"
       ],
-      "credibilityTier": "historical-source-backed",
-      "confidence": "high",
-      "verificationStatus": "supported",
+      "credibilityTier": "high",
+      "confidence": "strong",
+      "verificationStatus": "source-backed",
       "reviewStatus": "reviewed",
-      "supportLevel": "high",
-      "relationshipStrength": "high",
+      "supportLevel": "derived",
+      "relationshipStrength": "medium",
       "interpretationLevel": "low"
     },
     {
@@ -481,12 +481,12 @@
       "sourceIds": [
         "source-chm-oleary"
       ],
-      "credibilityTier": "historical-source-backed",
-      "confidence": "high",
-      "verificationStatus": "supported",
+      "credibilityTier": "high",
+      "confidence": "strong",
+      "verificationStatus": "source-backed",
       "reviewStatus": "reviewed",
-      "supportLevel": "high",
-      "relationshipStrength": "high",
+      "supportLevel": "derived",
+      "relationshipStrength": "medium",
       "interpretationLevel": "low"
     },
     {
@@ -500,12 +500,12 @@
       "sourceIds": [
         "source-chm-lesson"
       ],
-      "credibilityTier": "historical-source-backed",
-      "confidence": "high",
-      "verificationStatus": "supported",
+      "credibilityTier": "high",
+      "confidence": "strong",
+      "verificationStatus": "source-backed",
       "reviewStatus": "reviewed",
-      "supportLevel": "high",
-      "relationshipStrength": "high",
+      "supportLevel": "contextual",
+      "relationshipStrength": "contextual",
       "interpretationLevel": "medium"
     },
     {
@@ -519,12 +519,12 @@
       "sourceIds": [
         "source-encyclopedia-aftermath"
       ],
-      "credibilityTier": "historical-source-backed",
-      "confidence": "high",
-      "verificationStatus": "supported",
+      "credibilityTier": "high",
+      "confidence": "strong",
+      "verificationStatus": "source-backed",
       "reviewStatus": "reviewed",
-      "supportLevel": "high",
-      "relationshipStrength": "high",
+      "supportLevel": "derived",
+      "relationshipStrength": "medium",
       "interpretationLevel": "low"
     },
     {
@@ -538,12 +538,12 @@
       "sourceIds": [
         "source-encyclopedia-progress"
       ],
-      "credibilityTier": "historical-source-backed",
-      "confidence": "high",
-      "verificationStatus": "supported",
+      "credibilityTier": "high",
+      "confidence": "strong",
+      "verificationStatus": "source-backed",
       "reviewStatus": "reviewed",
-      "supportLevel": "high",
-      "relationshipStrength": "high",
+      "supportLevel": "derived",
+      "relationshipStrength": "medium",
       "interpretationLevel": "low"
     },
     {
@@ -557,12 +557,12 @@
       "sourceIds": [
         "source-wisconsin-peshtigo"
       ],
-      "credibilityTier": "historical-source-backed",
-      "confidence": "high",
-      "verificationStatus": "supported",
+      "credibilityTier": "high",
+      "confidence": "strong",
+      "verificationStatus": "source-backed",
       "reviewStatus": "reviewed",
-      "supportLevel": "high",
-      "relationshipStrength": "high",
+      "supportLevel": "direct",
+      "relationshipStrength": "strong",
       "interpretationLevel": "low"
     },
     {
@@ -576,12 +576,12 @@
       "sourceIds": [
         "source-nps-peshtigo"
       ],
-      "credibilityTier": "historical-source-backed",
-      "confidence": "medium",
-      "verificationStatus": "supported",
+      "credibilityTier": "high",
+      "confidence": "moderate",
+      "verificationStatus": "source-backed",
       "reviewStatus": "reviewed",
-      "supportLevel": "medium",
-      "relationshipStrength": "medium",
+      "supportLevel": "contextual",
+      "relationshipStrength": "contextual",
       "interpretationLevel": "medium"
     },
     {
@@ -595,12 +595,12 @@
       "sourceIds": [
         "source-encyclopedia-fire"
       ],
-      "credibilityTier": "historical-source-backed",
-      "confidence": "medium",
-      "verificationStatus": "supported",
+      "credibilityTier": "high",
+      "confidence": "moderate",
+      "verificationStatus": "source-backed",
       "reviewStatus": "reviewed",
-      "supportLevel": "medium",
-      "relationshipStrength": "medium",
+      "supportLevel": "contextual",
+      "relationshipStrength": "contextual",
       "interpretationLevel": "medium"
     },
     {
@@ -615,12 +615,12 @@
         "source-wisconsin-peshtigo",
         "source-loc-guide"
       ],
-      "credibilityTier": "historical-source-backed",
-      "confidence": "high",
-      "verificationStatus": "supported",
+      "credibilityTier": "high",
+      "confidence": "strong",
+      "verificationStatus": "source-backed",
       "reviewStatus": "reviewed",
-      "supportLevel": "high",
-      "relationshipStrength": "high",
+      "supportLevel": "direct",
+      "relationshipStrength": "strong",
       "interpretationLevel": "low"
     }
   ],
@@ -631,12 +631,12 @@
       "type": "museum-education",
       "domain": "HistoryRoot",
       "publisher": "Chicago History Museum",
-      "qualityTier": "institutional",
-      "credibilityTier": "institutional",
+      "qualityTier": "high",
+      "credibilityTier": "high",
       "verificationStatus": "reviewed",
       "sourceClass": "museum-education",
       "license": "External source; follow publisher terms",
-      "licenseStatus": "linked-reference",
+      "licenseStatus": "linked-reference-only",
       "reviewStatus": "reviewed",
       "lastReviewed": "2026-07-16",
       "url": "https://www.chicagohistory.org/app/uploads/2023/08/Meet-the-OLearys-Biography-English.pdf",
@@ -648,12 +648,12 @@
       "type": "museum-lesson-plan",
       "domain": "HistoryRoot",
       "publisher": "Chicago History Museum",
-      "qualityTier": "institutional",
-      "credibilityTier": "institutional",
+      "qualityTier": "high",
+      "credibilityTier": "high",
       "verificationStatus": "reviewed",
       "sourceClass": "museum-lesson-plan",
       "license": "External source; follow publisher terms",
-      "licenseStatus": "linked-reference",
+      "licenseStatus": "linked-reference-only",
       "reviewStatus": "reviewed",
       "lastReviewed": "2026-07-16",
       "url": "https://www.chicagohistory.org/app/uploads/2024/09/Lesson-Plan-3-The-Great-Chicago-Fire-The-Myth-of-Mrs.-O_Leary_s-Cow.pdf",
@@ -665,12 +665,12 @@
       "type": "historical-encyclopedia",
       "domain": "HistoryRoot",
       "publisher": "Encyclopedia of Chicago",
-      "qualityTier": "reference",
-      "credibilityTier": "reference",
+      "qualityTier": "high",
+      "credibilityTier": "high",
       "verificationStatus": "reviewed",
       "sourceClass": "historical-encyclopedia",
       "license": "External source; follow publisher terms",
-      "licenseStatus": "linked-reference",
+      "licenseStatus": "linked-reference-only",
       "reviewStatus": "reviewed",
       "lastReviewed": "2026-07-16",
       "url": "https://www.encyclopedia.chicagohistory.org/pages/1740.html",
@@ -682,12 +682,12 @@
       "type": "historical-encyclopedia",
       "domain": "HistoryRoot",
       "publisher": "Encyclopedia of Chicago",
-      "qualityTier": "reference",
-      "credibilityTier": "reference",
+      "qualityTier": "high",
+      "credibilityTier": "high",
       "verificationStatus": "reviewed",
       "sourceClass": "historical-encyclopedia",
       "license": "External source; follow publisher terms",
-      "licenseStatus": "linked-reference",
+      "licenseStatus": "linked-reference-only",
       "reviewStatus": "reviewed",
       "lastReviewed": "2026-07-16",
       "url": "https://www.encyclopedia.chicagohistory.org/pages/3710.html",
@@ -699,12 +699,12 @@
       "type": "archive-guide",
       "domain": "HistoryRoot",
       "publisher": "Library of Congress",
-      "qualityTier": "primary-archive-guide",
-      "credibilityTier": "primary-archive-guide",
+      "qualityTier": "very-high",
+      "credibilityTier": "very-high",
       "verificationStatus": "reviewed",
       "sourceClass": "archive-guide",
       "license": "External source; follow publisher terms",
-      "licenseStatus": "linked-reference",
+      "licenseStatus": "linked-reference-only",
       "reviewStatus": "reviewed",
       "lastReviewed": "2026-07-16",
       "url": "https://guides.loc.gov/chronicling-america-great-chicago-fire",
@@ -716,12 +716,12 @@
       "type": "archive-interpretation",
       "domain": "HistoryRoot",
       "publisher": "Library of Congress",
-      "qualityTier": "institutional",
-      "credibilityTier": "institutional",
+      "qualityTier": "high",
+      "credibilityTier": "high",
       "verificationStatus": "reviewed",
       "sourceClass": "archive-interpretation",
       "license": "External source; follow publisher terms",
-      "licenseStatus": "linked-reference",
+      "licenseStatus": "linked-reference-only",
       "reviewStatus": "reviewed",
       "lastReviewed": "2026-07-16",
       "url": "https://blogs.loc.gov/maps/2021/10/the-city-which-would-not-be-cowed-the-great-chicago-fire-of-1871/",
@@ -733,12 +733,12 @@
       "type": "government-education",
       "domain": "HistoryRoot",
       "publisher": "National Park Service",
-      "qualityTier": "government",
-      "credibilityTier": "government",
+      "qualityTier": "very-high",
+      "credibilityTier": "very-high",
       "verificationStatus": "reviewed",
       "sourceClass": "government-education",
       "license": "External source; follow publisher terms",
-      "licenseStatus": "linked-reference",
+      "licenseStatus": "linked-reference-only",
       "reviewStatus": "reviewed",
       "lastReviewed": "2026-07-16",
       "url": "https://www.nps.gov/articles/000/fire-prevention-week-2024.htm",
@@ -750,12 +750,12 @@
       "type": "historical-image-record",
       "domain": "HistoryRoot",
       "publisher": "Encyclopedia of Chicago",
-      "qualityTier": "reference",
-      "credibilityTier": "reference",
+      "qualityTier": "high",
+      "credibilityTier": "high",
       "verificationStatus": "reviewed",
       "sourceClass": "historical-image-record",
       "license": "External source; follow publisher terms",
-      "licenseStatus": "linked-reference",
+      "licenseStatus": "linked-reference-only",
       "reviewStatus": "reviewed",
       "lastReviewed": "2026-07-16",
       "url": "https://www.encyclopedia.chicagohistory.org/pages/3524.html",
@@ -767,12 +767,12 @@
       "type": "historical-encyclopedia",
       "domain": "HistoryRoot",
       "publisher": "Encyclopedia of Chicago",
-      "qualityTier": "reference",
-      "credibilityTier": "reference",
+      "qualityTier": "high",
+      "credibilityTier": "high",
       "verificationStatus": "reviewed",
       "sourceClass": "historical-encyclopedia",
       "license": "External source; follow publisher terms",
-      "licenseStatus": "linked-reference",
+      "licenseStatus": "linked-reference-only",
       "reviewStatus": "reviewed",
       "lastReviewed": "2026-07-16",
       "url": "https://www.encyclopedia.chicagohistory.org/pages/272.html",
@@ -784,12 +784,12 @@
       "type": "historical-reference",
       "domain": "HistoryRoot",
       "publisher": "Wisconsin Historical Society",
-      "qualityTier": "institutional",
-      "credibilityTier": "institutional",
+      "qualityTier": "high",
+      "credibilityTier": "high",
       "verificationStatus": "reviewed",
       "sourceClass": "historical-reference",
       "license": "External source; follow publisher terms",
-      "licenseStatus": "linked-reference",
+      "licenseStatus": "linked-reference-only",
       "reviewStatus": "reviewed",
       "lastReviewed": "2026-07-16",
       "url": "https://www.wisconsinhistory.org/Records/Article/CS2554",
@@ -801,12 +801,12 @@
       "type": "government-history",
       "domain": "HistoryRoot",
       "publisher": "National Park Service",
-      "qualityTier": "government",
-      "credibilityTier": "government",
+      "qualityTier": "very-high",
+      "credibilityTier": "very-high",
       "verificationStatus": "reviewed",
       "sourceClass": "government-history",
       "license": "External source; follow publisher terms",
-      "licenseStatus": "linked-reference",
+      "licenseStatus": "linked-reference-only",
       "reviewStatus": "reviewed",
       "lastReviewed": "2026-07-16",
       "url": "https://www.nps.gov/articles/000/peshtigo-fire.htm",
