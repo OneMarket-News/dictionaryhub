@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SourceRoot Backend Blueprint</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f5f7fb;color:#172033}
+header{background:#0f172a;color:#fff;padding:30px 24px}.inner,.layout,footer{max-width:1320px;margin:auto}
+h1{margin:0;font-size:38px;letter-spacing:-.03em}.subtitle{color:#cbd5e1;margin-top:10px;line-height:1.6;max-width:980px}
+nav{display:flex;flex-wrap:wrap;gap:8px;margin-top:15px}nav a{color:#fff;text-decoration:none;border:1px solid #334155;background:#1e293b;border-radius:999px;padding:7px 10px;font-size:12px}
+.layout{display:grid;grid-template-columns:250px minmax(0,1fr);gap:22px;padding:24px;align-items:start}
+aside{position:sticky;top:16px;background:#fff;border:1px solid #dbe2eb;border-radius:16px;padding:15px}
+aside a{display:block;text-decoration:none;color:#334155;padding:8px;border-radius:8px;font-size:13px}aside a:hover{background:#f1f5f9}
+main{min-width:0}.panel{background:#fff;border:1px solid #dbe2eb;border-radius:16px;padding:20px;margin-bottom:20px;box-shadow:0 2px 8px rgba(15,23,42,.05);scroll-margin-top:18px}
+.hero{background:#eff6ff;border-color:#bfdbfe}h2{margin:0 0 10px}h3{margin:20px 0 8px}.overview{color:#475569;line-height:1.65}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:14px}.card{border:1px solid #dbe2eb;border-radius:14px;padding:14px;background:#fbfdff}
+.pill{display:inline-block;border:1px solid #cbd5e1;border-radius:999px;padding:5px 8px;font-size:11px;margin:7px 5px 0 0;background:#fff}
+.good{background:#ecfdf5;border-color:#86efac}.warn{background:#fffbeb;border-color:#fde68a}.notice{padding:13px;border:1px solid #dbe2eb;border-radius:12px;margin-top:14px;line-height:1.55}
+table{width:100%;border-collapse:collapse;min-width:760px}th,td{text-align:left;vertical-align:top;padding:11px;border-bottom:1px solid #dbe2eb;font-size:13px;line-height:1.45}th{background:#f8fafc}
+.table-wrap{overflow:auto;border:1px solid #dbe2eb;border-radius:12px;margin-top:14px}
+pre{white-space:pre-wrap;word-break:break-word;background:#0f172a;color:#e2e8f0;border-radius:12px;padding:14px;overflow:auto;font-size:12px;line-height:1.5}
+code{font-family:Consolas,monospace;background:#f1f5f9;padding:2px 5px;border-radius:5px}
+footer{padding:0 24px 28px;color:#64748b;font-size:13px}
+@media(max-width:900px){.layout{grid-template-columns:1fr}aside{position:static}}@media(max-width:700px){header{padding:24px 16px}.layout{padding:16px 14px}h1{font-size:31px}}
+</style>
+</head>
+<body>
+<header><div class="inner"><h1>SourceRoot Backend Blueprint</h1>
+<div class="subtitle">Proposed API, PostgreSQL data model, authentication boundary, migration path, and implementation order for moving SourceRoot beyond localStorage.</div>
+<nav><a href="sourceroot.html">SourceRoot Home</a><a href="sourceroot-schema-reference.html">Schema Reference</a><a href="sourceroot-lifecycle-tests.html">Lifecycle Tests</a><a href="sourceroot-lifecycle-event-registry.html">Lifecycle Events</a></nav></div></header>
+<div class="layout">
+<aside>
+<a href="#decisions">Architecture decisions</a>
+<a href="#services">Service boundaries</a>
+<a href="#data-model">Database model</a>
+<a href="#api">API contract</a>
+<a href="#auth">Authentication</a>
+<a href="#migration">Migration phases</a>
+<a href="#first-sprint">First backend sprint</a>
+<a href="#risks">Risks</a>
+</aside>
+<main>
+<section class="panel hero"><h2>Recommended Alpha Architecture</h2>
+<p class="overview">Start with one API service and one PostgreSQL database. Keep SourceRoot's existing JSON contract at the API boundary, then normalize core graph objects into relational tables while preserving full original JSON and extension payloads.</p>
+<div class="grid">
+<div class="card"><strong>Frontend</strong><p>Existing HTML/JavaScript pages using a repository adapter.</p></div>
+<div class="card"><strong>API</strong><p>Node.js + TypeScript REST service.</p></div>
+<div class="card"><strong>Database</strong><p>PostgreSQL with JSONB for extensions and original artifacts.</p></div>
+<div class="card"><strong>Authentication</strong><p>Managed identity provider or secure session-based auth.</p></div>
+<div class="card"><strong>Deployment</strong><p>One API deployment, one managed Postgres instance, static frontend hosting.</p></div>
+</div>
+<div class="notice warn"><strong>Planning decision:</strong> do not begin with microservices, blockchain storage, a graph database, or multiple databases. The current workload is small and relational integrity matters more than horizontal scale.</div>
+</section>
+
+<section id="decisions" class="panel"><h2>Architecture Decisions</h2>
+<div class="table-wrap"><table><thead><tr><th>Decision</th><th>Recommendation</th><th>Reason</th></tr></thead><tbody>
+<tr><td>API style</td><td>REST first</td><td>Maps directly to current lifecycle operations and is easier to test than introducing GraphQL immediately.</td></tr>
+<tr><td>Backend language</td><td>TypeScript</td><td>Matches the browser JavaScript model while adding types and safer schema contracts.</td></tr>
+<tr><td>Database</td><td>PostgreSQL</td><td>Strong foreign keys, transactions, JSONB, full-text search, and mature hosting.</td></tr>
+<tr><td>Graph storage</td><td>Relational edge table</td><td>The graph is still modest. A dedicated graph database would add complexity without current benefit.</td></tr>
+<tr><td>Artifacts</td><td>Store exact JSON plus normalized rows</td><td>Preserves portability and auditability while enabling search and joins.</td></tr>
+<tr><td>Validation</td><td>Shared rules, server execution</td><td>The server must become the authority while the browser remains a fast preview.</td></tr>
+<tr><td>Audit history</td><td>Append-only lifecycle events</td><td>Matches the browser model and protects provenance.</td></tr>
+<tr><td>Hub extensions</td><td>JSONB first</td><td>HistoryRoot and future hubs can evolve before dedicated extension tables are stable.</td></tr>
+</tbody></table></div></section>
+
+<section id="services" class="panel"><h2>Service Boundaries</h2>
+<div class="grid">
+<div class="card good"><h3>Validation Service</h3><p>Schema checks, controlled vocabularies, references, counts, readiness, and hashes.</p></div>
+<div class="card"><h3>Bundle Service</h3><p>Bundle creation, version conflicts, retrieval, indexing, and staging.</p></div>
+<div class="card"><h3>Package Service</h3><p>Package creation, exact artifact storage, integrity verification, and restore rules.</p></div>
+<div class="card"><h3>Inspection Service</h3><p>Reviewer decisions, issues, hashes, and approval history.</p></div>
+<div class="card"><h3>Lifecycle Event Service</h3><p>Append-only event writes and searchable audit history.</p></div>
+<div class="card"><h3>Knowledge Query Service</h3><p>Node search, assertions, relationships, sources, and cross-hub lookups.</p></div>
+</div>
+<p class="overview">These are code-level modules inside one application at first—not separately deployed services.</p></section>
+
+<section id="data-model" class="panel"><h2>Database Model</h2>
+<p class="overview">The included SQL blueprint defines users, roles, bundles, nodes, assertions, edges, sources, source links, revisions, snapshots, packages, inspections, lifecycle events, and hub extensions.</p>
+<div class="grid">
+<div class="card"><strong>Core graph</strong><p><code>nodes</code>, <code>assertions</code>, <code>edges</code>, <code>sources</code></p></div>
+<div class="card"><strong>Lifecycle</strong><p><code>bundle_snapshots</code>, <code>packages</code>, <code>package_inspections</code>, <code>lifecycle_events</code></p></div>
+<div class="card"><strong>Identity</strong><p><code>users</code>, <code>roles</code>, <code>user_roles</code></p></div>
+<div class="card"><strong>Extensibility</strong><p><code>hub_extensions</code> with JSONB payloads</p></div>
+</div>
+<div class="notice good">Every uploaded bundle and package should preserve its original JSON, even after its objects are normalized into relational rows.</div>
+</section>
+
+<section id="api" class="panel"><h2>API Contract</h2>
+<p class="overview">The included OpenAPI file defines the first public contract. The most important endpoints are:</p>
+<pre>POST /api/v1/validate
+POST /api/v1/bundles
+GET  /api/v1/bundles/:bundleId
+POST /api/v1/bundles/:bundleId/validate
+POST /api/v1/bundles/:bundleId/stage
+POST /api/v1/packages
+POST /api/v1/packages/:packageId/verify
+POST /api/v1/packages/:packageId/inspections
+POST /api/v1/packages/:packageId/restore
+GET  /api/v1/nodes/:nodeId
+GET  /api/v1/events</pre>
+<div class="notice warn">The first implemented endpoint should be <code>POST /validate</code>. It provides immediate value without requiring authentication, migration, or persistence.</div></section>
+
+<section id="auth" class="panel"><h2>Authentication and Authorization</h2>
+<div class="table-wrap"><table><thead><tr><th>Role</th><th>Capabilities</th></tr></thead><tbody>
+<tr><td>Reader</td><td>Read approved public nodes, assertions, sources, and packages.</td></tr>
+<tr><td>Creator</td><td>Create bundles, submit validation, and stage owned bundles.</td></tr>
+<tr><td>Reviewer</td><td>Inspect packages and save approval or rejection decisions.</td></tr>
+<tr><td>Admin</td><td>Manage users, roles, revocations, migrations, and all records.</td></tr>
+</tbody></table></div>
+<p class="overview">Do not invent a custom password system unless necessary. Use a managed identity provider or a proven authentication library and store only the minimum identity metadata SourceRoot needs.</p></section>
+
+<section id="migration" class="panel"><h2>Migration Phases</h2>
+<div class="grid">
+<div class="card good"><strong>0. Freeze contract</strong><p>Tests, fixtures, schema reference, package version.</p></div>
+<div class="card"><strong>1. Read-only mirror</strong><p>Health, validation, bundle reads, node reads.</p></div>
+<div class="card"><strong>2. Bundle persistence</strong><p>Store bundles, graph objects, snapshots, and events.</p></div>
+<div class="card"><strong>3. Package persistence</strong><p>Export, verify, inspect, and restore through API.</p></div>
+<div class="card"><strong>4. Identity</strong><p>Users, roles, creators, reviewers, permissions.</p></div>
+<div class="card"><strong>5. Frontend cutover</strong><p>Repository adapter switches pages from localStorage to API.</p></div>
+<div class="card"><strong>6. Hardening</strong><p>Backups, signatures, revocation, rate limits, monitoring.</p></div>
+</div></section>
+
+<section id="first-sprint" class="panel"><h2>First Backend Sprint</h2>
+<p class="overview">A focused first sprint should take approximately 15–25 hours.</p>
+<div class="table-wrap"><table><thead><tr><th>Task</th><th>Estimated effort</th><th>Exit condition</th></tr></thead><tbody>
+<tr><td>Create TypeScript API project</td><td>2–3 hours</td><td><code>GET /health</code> works locally.</td></tr>
+<tr><td>Connect PostgreSQL</td><td>2–4 hours</td><td>Migration runner creates the database schema.</td></tr>
+<tr><td>Port validator</td><td>4–6 hours</td><td>Server result matches browser fixtures.</td></tr>
+<tr><td>Add <code>POST /validate</code></td><td>2–3 hours</td><td>HistoryRoot bundle returns 0 errors and 0 warnings.</td></tr>
+<tr><td>Add fixture tests</td><td>3–5 hours</td><td>Valid, warning, broken-reference, and enum tests pass.</td></tr>
+<tr><td>Add structured logging</td><td>1–2 hours</td><td>Request ID, duration, outcome, and error logs exist.</td></tr>
+</tbody></table></div>
+<div class="notice good"><strong>First backend milestone:</strong> the current HistoryRoot JSON is sent to the server, validated by the same rules, and receives the same result as Import Preview.</div></section>
+
+<section id="risks" class="panel"><h2>Key Risks</h2>
+<div class="grid">
+<div class="card warn"><strong>Validator drift</strong><p>Browser and server produce different outcomes. Prevent with shared fixtures and contract tests.</p></div>
+<div class="card warn"><strong>Premature normalization</strong><p>Hub schemas change before tables stabilize. Preserve full JSON and use JSONB extensions.</p></div>
+<div class="card warn"><strong>Identity overclaim</strong><p>A reviewer name is not cryptographic proof. Treat signatures as a later security layer.</p></div>
+<div class="card warn"><strong>Audit mutation</strong><p>Editing historical events would weaken provenance. Use append-only event writes.</p></div>
+<div class="card warn"><strong>Scope expansion</strong><p>Search, payments, tokens, and public publishing can wait until persistence works.</p></div>
+</div></section>
+</main></div>
+<footer>SourceRoot Backend Blueprint · Proposed alpha architecture before implementation.</footer>
+</body></html>

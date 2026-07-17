@@ -1,0 +1,412 @@
+openapi: 3.1.0
+info:
+  title: SourceRoot API
+  version: 0.1.0
+  description: Proposed backend contract for the first SourceRoot alpha.
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Local development
+
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      summary: Confirm API and database availability
+      responses:
+        "200":
+          description: Healthy service
+
+  /validate:
+    post:
+      operationId: validateBundle
+      summary: Validate a SourceRoot import bundle without saving it
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceRootBundle"
+      responses:
+        "200":
+          description: Validation completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationResult"
+        "422":
+          description: Invalid JSON or unsupported bundle format
+
+  /bundles:
+    get:
+      operationId: listBundles
+      summary: List accessible bundles
+      parameters:
+        - in: query
+          name: domain
+          schema:
+            type: string
+        - in: query
+          name: status
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Bundle list
+    post:
+      operationId: createBundle
+      summary: Validate and persist a bundle
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceRootBundle"
+      responses:
+        "201":
+          description: Bundle persisted
+        "409":
+          description: Bundle ID or version conflict
+        "422":
+          description: Validation failed
+
+  /bundles/{bundleId}:
+    get:
+      operationId: getBundle
+      summary: Read one bundle and its current metadata
+      parameters:
+        - $ref: "#/components/parameters/BundleId"
+      responses:
+        "200":
+          description: Bundle detail
+        "404":
+          description: Bundle not found
+
+  /bundles/{bundleId}/validate:
+    post:
+      operationId: revalidateBundle
+      summary: Revalidate a stored bundle
+      parameters:
+        - $ref: "#/components/parameters/BundleId"
+      responses:
+        "200":
+          description: Validation result
+        "404":
+          description: Bundle not found
+
+  /bundles/{bundleId}/stage:
+    post:
+      operationId: stageBundle
+      summary: Create an immutable bundle snapshot
+      parameters:
+        - $ref: "#/components/parameters/BundleId"
+      responses:
+        "201":
+          description: Snapshot created
+        "409":
+          description: Identical snapshot already exists
+        "422":
+          description: Bundle is blocked
+
+  /bundles/{bundleId}/events:
+    get:
+      operationId: listBundleEvents
+      summary: List lifecycle events for one bundle
+      parameters:
+        - $ref: "#/components/parameters/BundleId"
+      responses:
+        "200":
+          description: Event list
+
+  /packages:
+    get:
+      operationId: listPackages
+      summary: List accessible packages
+      responses:
+        "200":
+          description: Package list
+    post:
+      operationId: createPackage
+      summary: Export a package from a stored snapshot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [snapshotId]
+              properties:
+                snapshotId:
+                  type: string
+                  format: uuid
+      responses:
+        "201":
+          description: Package created
+
+  /packages/{packageId}:
+    get:
+      operationId: getPackage
+      summary: Read one package artifact
+      parameters:
+        - $ref: "#/components/parameters/PackageId"
+      responses:
+        "200":
+          description: Package detail
+        "404":
+          description: Package not found
+
+  /packages/{packageId}/verify:
+    post:
+      operationId: verifyPackage
+      summary: Recalculate package integrity and object counts
+      parameters:
+        - $ref: "#/components/parameters/PackageId"
+      responses:
+        "200":
+          description: Verification result
+
+  /packages/{packageId}/inspections:
+    get:
+      operationId: listPackageInspections
+      summary: List inspections for a package
+      parameters:
+        - $ref: "#/components/parameters/PackageId"
+      responses:
+        "200":
+          description: Inspection list
+    post:
+      operationId: createPackageInspection
+      summary: Persist an approval or rejection decision
+      parameters:
+        - $ref: "#/components/parameters/PackageId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [decision]
+              properties:
+                decision:
+                  type: string
+                  enum: [approved, rejected]
+                notes:
+                  type: string
+      responses:
+        "201":
+          description: Inspection saved
+        "409":
+          description: Package integrity changed during inspection
+
+  /packages/{packageId}/restore:
+    post:
+      operationId: restorePackage
+      summary: Restore an approved package as the current bundle snapshot
+      parameters:
+        - $ref: "#/components/parameters/PackageId"
+      responses:
+        "201":
+          description: Package restored
+        "403":
+          description: Package has no approved valid inspection
+        "409":
+          description: Restore conflict
+
+  /nodes:
+    get:
+      operationId: searchNodes
+      summary: Search nodes across domains
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+        - in: query
+          name: domain
+          schema:
+            type: string
+        - in: query
+          name: type
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Node results
+
+  /nodes/{nodeId}:
+    get:
+      operationId: getNode
+      summary: Read a node with assertions, edges, and sources
+      parameters:
+        - in: path
+          name: nodeId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Node detail
+        "404":
+          description: Node not found
+
+  /events:
+    get:
+      operationId: listLifecycleEvents
+      summary: Search lifecycle events
+      parameters:
+        - in: query
+          name: eventType
+          schema:
+            type: string
+        - in: query
+          name: outcome
+          schema:
+            type: string
+        - in: query
+          name: bundleId
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Lifecycle event list
+
+components:
+  parameters:
+    BundleId:
+      in: path
+      name: bundleId
+      required: true
+      schema:
+        type: string
+    PackageId:
+      in: path
+      name: packageId
+      required: true
+      schema:
+        type: string
+
+  schemas:
+    SourceRootBundle:
+      type: object
+      required:
+        - bundleId
+        - bundleType
+        - version
+        - domain
+        - nodes
+        - assertions
+        - edges
+        - sources
+        - revisions
+      properties:
+        bundleId:
+          type: string
+        bundleType:
+          const: sourceroot-import-bundle
+        version:
+          type: string
+        domain:
+          type: string
+        createdAt:
+          type: string
+        createdBy:
+          type: string
+        description:
+          type: string
+        nodes:
+          type: array
+          items:
+            type: object
+        assertions:
+          type: array
+          items:
+            type: object
+        edges:
+          type: array
+          items:
+            type: object
+        sources:
+          type: array
+          items:
+            type: object
+        revisions:
+          type: array
+          items:
+            type: object
+        extensions:
+          type: object
+          additionalProperties: true
+
+    ValidationIssue:
+      type: object
+      required: [severity, message]
+      properties:
+        severity:
+          type: string
+          enum: [error, warning]
+        code:
+          type: string
+        message:
+          type: string
+        objectType:
+          type: string
+        objectId:
+          type: string
+        field:
+          type: string
+
+    ValidationResult:
+      type: object
+      required:
+        - bundleId
+        - status
+        - canImport
+        - summary
+        - errors
+        - warnings
+      properties:
+        bundleId:
+          type: string
+        status:
+          type: string
+          enum:
+            - ready
+            - ready-with-warnings
+            - blocked
+            - invalid-format
+            - needs-review
+            - prototype-only
+        canImport:
+          type: boolean
+        summary:
+          type: object
+          required:
+            - nodes
+            - assertions
+            - edges
+            - sources
+            - revisions
+            - errors
+            - warnings
+          properties:
+            nodes:
+              type: integer
+            assertions:
+              type: integer
+            edges:
+              type: integer
+            sources:
+              type: integer
+            revisions:
+              type: integer
+            errors:
+              type: integer
+            warnings:
+              type: integer
+        errors:
+          type: array
+          items:
+            $ref: "#/components/schemas/ValidationIssue"
+        warnings:
+          type: array
+          items:
+            $ref: "#/components/schemas/ValidationIssue"
