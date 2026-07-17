@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SourceRoot Schema Reference</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --ink: #172033;
+      --muted: #64748b;
+      --line: #dbe2eb;
+      --panel: #ffffff;
+      --soft: #f6f8fb;
+      --navy: #0f172a;
+      --navy-2: #1e293b;
+      --blue-soft: #eff6ff;
+      --blue-line: #bfdbfe;
+      --green-soft: #ecfdf5;
+      --green-line: #86efac;
+      --amber-soft: #fffbeb;
+      --amber-line: #fde68a;
+      --red-soft: #fef2f2;
+      --red-line: #fca5a5;
+      --purple-soft: #faf5ff;
+      --purple-line: #d8b4fe;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--soft);
+      color: var(--ink);
+    }
+
+    header {
+      background: var(--navy);
+      color: white;
+      padding: 30px 24px;
+    }
+
+    .header-inner,
+    .layout,
+    footer {
+      max-width: 1320px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 38px;
+      letter-spacing: -0.035em;
+    }
+
+    .subtitle {
+      margin-top: 10px;
+      max-width: 980px;
+      color: #cbd5e1;
+      line-height: 1.6;
+    }
+
+    .top-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-top: 16px;
+    }
+
+    .top-nav a {
+      color: white;
+      text-decoration: none;
+      border: 1px solid #334155;
+      background: var(--navy-2);
+      border-radius: 999px;
+      padding: 7px 11px;
+      font-size: 12px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 270px minmax(0, 1fr);
+      gap: 22px;
+      padding: 24px;
+      align-items: start;
+    }
+
+    aside {
+      position: sticky;
+      top: 16px;
+      max-height: calc(100vh - 32px);
+      overflow: auto;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+    }
+
+    .search-label {
+      display: grid;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: bold;
+      color: #475569;
+    }
+
+    #schemaSearch {
+      width: 100%;
+      padding: 10px 11px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      background: white;
+      font: inherit;
+      color: var(--ink);
+    }
+
+    .side-title {
+      margin: 18px 0 7px;
+      color: #475569;
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .side-nav {
+      display: grid;
+      gap: 4px;
+    }
+
+    .side-nav a {
+      color: #334155;
+      text-decoration: none;
+      padding: 8px 9px;
+      border-radius: 9px;
+      font-size: 13px;
+      line-height: 1.3;
+    }
+
+    .side-nav a:hover {
+      background: #f1f5f9;
+    }
+
+    main {
+      min-width: 0;
+    }
+
+    .panel,
+    .schema-section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+      scroll-margin-top: 18px;
+    }
+
+    .hero {
+      background: var(--blue-soft);
+      border-color: var(--blue-line);
+    }
+
+    .schema-section[data-hidden="true"] {
+      display: none;
+    }
+
+    h2 {
+      margin: 0 0 10px;
+      font-size: 25px;
+      letter-spacing: -0.02em;
+    }
+
+    h3 {
+      margin: 22px 0 8px;
+      font-size: 18px;
+    }
+
+    h4 {
+      margin: 18px 0 7px;
+      font-size: 15px;
+    }
+
+    .overview {
+      line-height: 1.65;
+      color: #475569;
+      max-width: 980px;
+    }
+
+    .status-row,
+    .pill-row,
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .pill {
+      display: inline-block;
+      border: 1px solid #cbd5e1;
+      background: white;
+      border-radius: 999px;
+      padding: 5px 8px;
+      font-size: 11px;
+      color: #334155;
+    }
+
+    .pill.required {
+      background: var(--red-soft);
+      border-color: var(--red-line);
+      color: #991b1b;
+    }
+
+    .pill.optional {
+      background: var(--blue-soft);
+      border-color: var(--blue-line);
+      color: #1d4ed8;
+    }
+
+    .pill.current {
+      background: var(--green-soft);
+      border-color: var(--green-line);
+      color: #166534;
+    }
+
+    .pill.prototype {
+      background: var(--amber-soft);
+      border-color: var(--amber-line);
+      color: #92400e;
+    }
+
+    .summary-grid,
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .summary-card,
+    .info-card {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .summary-number {
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .summary-label,
+    .meta {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    .notice {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 13px;
+      margin-top: 14px;
+      line-height: 1.55;
+    }
+
+    .notice.good {
+      background: var(--green-soft);
+      border-color: var(--green-line);
+    }
+
+    .notice.warn {
+      background: var(--amber-soft);
+      border-color: var(--amber-line);
+    }
+
+    .notice.info {
+      background: var(--blue-soft);
+      border-color: var(--blue-line);
+    }
+
+    .notice.prototype {
+      background: var(--purple-soft);
+      border-color: var(--purple-line);
+    }
+
+    .field-table-wrap {
+      overflow-x: auto;
+      margin-top: 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 820px;
+      background: white;
+    }
+
+    th,
+    td {
+      text-align: left;
+      vertical-align: top;
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--line);
+      line-height: 1.45;
+      font-size: 13px;
+    }
+
+    th {
+      background: #f8fafc;
+      color: #334155;
+      font-size: 12px;
+      letter-spacing: 0.02em;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    code {
+      font-family: Consolas, Monaco, monospace;
+      font-size: 0.95em;
+      background: #f1f5f9;
+      border-radius: 5px;
+      padding: 2px 5px;
+    }
+
+    pre {
+      margin: 12px 0 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: var(--navy);
+      color: #e2e8f0;
+      border-radius: 12px;
+      padding: 15px;
+      overflow: auto;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    details {
+      margin-top: 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 11px;
+      background: white;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: bold;
+      color: #334155;
+    }
+
+    .enum-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .enum-card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      background: #fbfdff;
+    }
+
+    .enum-card h3 {
+      margin: 0 0 9px;
+      font-size: 16px;
+    }
+
+    .enum-values {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .enum-values code {
+      border: 1px solid #dbe2eb;
+      background: white;
+      padding: 5px 7px;
+      border-radius: 8px;
+    }
+
+    .reference-map {
+      display: grid;
+      gap: 9px;
+      margin-top: 14px;
+    }
+
+    .reference-row {
+      display: grid;
+      grid-template-columns: minmax(170px, 0.8fr) 38px minmax(220px, 1fr);
+      gap: 10px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 11px;
+      background: #fbfdff;
+    }
+
+    .arrow {
+      text-align: center;
+      color: #64748b;
+      font-weight: bold;
+    }
+
+    .copy-button {
+      border: 1px solid #94a3b8;
+      border-radius: 9px;
+      padding: 8px 10px;
+      background: white;
+      color: #0f172a;
+      cursor: pointer;
+      font: inherit;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .copy-button:hover {
+      background: #f1f5f9;
+    }
+
+    #searchMessage {
+      display: none;
+      margin-bottom: 20px;
+      background: var(--amber-soft);
+      border: 1px solid var(--amber-line);
+      border-radius: 12px;
+      padding: 12px;
+      color: #92400e;
+    }
+
+    footer {
+      padding: 0 24px 30px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 950px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        position: static;
+        max-height: none;
+      }
+
+      .side-nav {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      }
+    }
+
+    @media (max-width: 700px) {
+      header {
+        padding: 24px 16px;
+      }
+
+      .layout {
+        padding: 16px 14px;
+      }
+
+      h1 {
+        font-size: 31px;
+      }
+
+      .reference-row {
+        grid-template-columns: 1fr;
+      }
+
+      .arrow {
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="header-inner">
+      <h1>SourceRoot Schema Reference</h1>
+
+      <div class="subtitle">
+        The current developer contract for SourceRoot knowledge objects, import
+        bundles, staging records, portable packages, inspection history,
+        controlled trust vocabularies, HistoryRoot extensions, and future backend
+        boundaries.
+      </div>
+
+      <nav class="top-nav">
+        <a href="sourceroot.html">SourceRoot Home</a>
+        <a href="sourceroot-import-preview.html">Import Preview</a>
+        <a href="sourceroot-lifecycle-tests.html">Lifecycle Tests</a>
+        <a href="sourceroot-staged-bundle-registry.html">Staged Bundles</a>
+        <a href="sourceroot-package-inspector.html">Package Inspector</a>
+        <a href="historyroot.html">HistoryRoot</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside>
+      <label class="search-label">
+        Search schemas and fields
+        <input
+          id="schemaSearch"
+          type="search"
+          placeholder="Example: bundleHash"
+          autocomplete="off"
+        />
+      </label>
+
+      <div class="side-title">Core knowledge</div>
+      <nav class="side-nav">
+        <a href="#node-schema">Node</a>
+        <a href="#assertion-schema">Assertion</a>
+        <a href="#edge-schema">Edge</a>
+        <a href="#source-schema">Source</a>
+        <a href="#revision-schema">Revision</a>
+      </nav>
+
+      <div class="side-title">Import lifecycle</div>
+      <nav class="side-nav">
+        <a href="#bundle-schema">Import Bundle</a>
+        <a href="#staged-schema">Staged Record</a>
+        <a href="#package-schema">Package</a>
+        <a href="#collection-schema">Package Collection</a>
+        <a href="#inspection-schema">Inspection Record</a>
+      </nav>
+
+      <div class="side-title">Extensions and rules</div>
+      <nav class="side-nav">
+        <a href="#historyroot-schema">HistoryRoot Extension</a>
+        <a href="#trust-vocabularies">Trust Vocabularies</a>
+        <a href="#reference-rules">Reference Rules</a>
+        <a href="#validation-results">Validation Results</a>
+        <a href="#versioning">Versioning</a>
+        <a href="#backend-mapping">Backend Mapping</a>
+      </nav>
+    </aside>
+
+    <main>
+      <div id="searchMessage">
+        No schema sections match the current search.
+      </div>
+
+      <section class="panel hero schema-section" data-search="overview status current schema contract">
+        <h2>Current Contract</h2>
+
+        <p class="overview">
+          SourceRoot currently uses a browser-based JSON contract. The core
+          knowledge graph is made of nodes, assertions, edges, sources, and
+          revisions. Bundles move through validation, staging, hashing, package
+          export, inspection, restoration, and embedded revalidation.
+        </p>
+
+        <div class="status-row">
+          <span class="pill current">Current reference: 0.1</span>
+          <span class="pill current">Package version: 1.0.0</span>
+          <span class="pill current">HistoryRoot import validated</span>
+          <span class="pill prototype">Browser-local prototype</span>
+        </div>
+
+        <div class="summary-grid">
+          <div class="summary-card">
+            <div class="summary-number">5</div>
+            <div class="summary-label">Core object types</div>
+          </div>
+
+          <div class="summary-card">
+            <div class="summary-number">5</div>
+            <div class="summary-label">Lifecycle record types</div>
+          </div>
+
+          <div class="summary-card">
+            <div class="summary-number">8</div>
+            <div class="summary-label">Controlled vocabulary groups</div>
+          </div>
+
+          <div class="summary-card">
+            <div class="summary-number">2</div>
+            <div class="summary-label">Browser storage namespaces</div>
+          </div>
+        </div>
+
+        <div class="notice warn">
+          <strong>Important:</strong> this page documents the current working
+          contract. Fields marked optional may become required when the backend
+          and formal schema migrations are introduced.
+        </div>
+      </section>
+
+      <section id="node-schema" class="schema-section" data-search="node title type domain summary sourceids metadata status core entity">
+        <h2>Node Schema</h2>
+
+        <p class="overview">
+          A node represents a distinct concept, entity, event, person, place,
+          institution, period, narrative, word, or other addressable knowledge
+          object.
+        </p>
+
+        <div class="field-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Requirement</th>
+                <th>Meaning</th>
+                <th>Validation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><code>id</code></td><td>string</td><td>Required</td><td>Stable unique identifier.</td><td>Non-empty and unique among nodes.</td></tr>
+              <tr><td><code>title</code></td><td>string</td><td>Required</td><td>Primary display label.</td><td>Non-empty.</td></tr>
+              <tr><td><code>type</code></td><td>string</td><td>Required</td><td>Domain-neutral or hub-specific node category.</td><td>Non-empty; currently open vocabulary.</td></tr>
+              <tr><td><code>domain</code></td><td>string</td><td>Required</td><td>Owning or originating knowledge domain.</td><td>Non-empty.</td></tr>
+              <tr><td><code>summary</code></td><td>string</td><td>Recommended</td><td>Short human-readable description.</td><td>Missing text may produce a warning.</td></tr>
+              <tr><td><code>sourceIds</code></td><td>string[]</td><td>Recommended</td><td>Sources directly supporting the node record.</td><td>Every ID must exist in <code>sources</code>.</td></tr>
+              <tr><td><code>status</code></td><td>string</td><td>Optional</td><td>Lifecycle or domain state.</td><td>Currently hub-defined.</td></tr>
+              <tr><td><code>metadata</code></td><td>object</td><td>Optional</td><td>Hub-specific attributes preserved without altering the core node contract.</td><td>Must be JSON-compatible.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <details>
+          <summary>Example node</summary>
+          <pre id="nodeExample">{
+  "id": "event-great-chicago-fire",
+  "title": "Great Chicago Fire",
+  "type": "event",
+  "domain": "HistoryRoot",
+  "summary": "A major urban fire that spread across Chicago in October 1871.",
+  "sourceIds": [
+    "source-loc-guide",
+    "source-encyclopedia-fire"
+  ],
+  "status": "historical",
+  "metadata": {
+    "startDate": "1871-10-08",
+    "endDate": "1871-10-10"
+  }
+}</pre>
+          <button class="copy-button" data-copy-target="nodeExample">Copy example</button>
+        </details>
+      </section>
+
+      <section id="assertion-schema" class="schema-section" data-search="assertion claim body nodeid supportlevel credibilitytier confidence verification review interpretation sourceids">
+        <h2>Assertion Schema</h2>
+
+        <p class="overview">
+          An assertion stores a claim about one node. Claims remain separate from
+          nodes so evidence, confidence, interpretation, disagreement, and revision
+          can be inspected independently.
+        </p>
+
+        <div class="field-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Requirement</th>
+                <th>Meaning</th>
+                <th>Validation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><code>id</code></td><td>string</td><td>Required</td><td>Unique assertion identifier.</td><td>Non-empty and unique among assertions.</td></tr>
+              <tr><td><code>nodeId</code></td><td>string</td><td>Required</td><td>Node this claim describes.</td><td>Must reference <code>nodes.id</code>.</td></tr>
+              <tr><td><code>assertionType</code></td><td>string</td><td>Required</td><td>Category such as definition, date-range, cause, impact, or interpretation.</td><td>Non-empty; open vocabulary.</td></tr>
+              <tr><td><code>label</code></td><td>string</td><td>Recommended</td><td>Readable assertion heading.</td><td>Missing label may warn.</td></tr>
+              <tr><td><code>summary</code></td><td>string</td><td>Recommended</td><td>Short claim text.</td><td>At least one meaningful claim field should be present.</td></tr>
+              <tr><td><code>body</code></td><td>string</td><td>Recommended</td><td>Full claim text.</td><td>Empty claims may warn or block later production validation.</td></tr>
+              <tr><td><code>domain</code></td><td>string</td><td>Required</td><td>Knowledge domain that produced the assertion.</td><td>Non-empty.</td></tr>
+              <tr><td><code>sourceIds</code></td><td>string[]</td><td>Required for source-backed claims</td><td>Evidence supporting the claim.</td><td>Every ID must reference <code>sources.id</code>.</td></tr>
+              <tr><td><code>credibilityTier</code></td><td>enum</td><td>Recommended</td><td>General credibility classification.</td><td>Must use controlled vocabulary.</td></tr>
+              <tr><td><code>confidence</code></td><td>enum</td><td>Recommended</td><td>Confidence in this claim.</td><td>Must use controlled vocabulary.</td></tr>
+              <tr><td><code>verificationStatus</code></td><td>enum</td><td>Recommended</td><td>How the claim has been checked.</td><td>Must use controlled vocabulary.</td></tr>
+              <tr><td><code>reviewStatus</code></td><td>enum</td><td>Recommended</td><td>Human or workflow review state.</td><td>Must use controlled vocabulary.</td></tr>
+              <tr><td><code>supportLevel</code></td><td>enum</td><td>Recommended</td><td>How directly the evidence supports the assertion.</td><td>Uses assertion support vocabulary.</td></tr>
+              <tr><td><code>interpretationLevel</code></td><td>enum</td><td>Recommended</td><td>Degree of interpretive judgment.</td><td>Must use controlled vocabulary.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <details>
+          <summary>Example assertion</summary>
+          <pre id="assertionExample">{
+  "id": "assertion-fire-dates",
+  "nodeId": "event-great-chicago-fire",
+  "assertionType": "date-range",
+  "label": "Fire dates",
+  "summary": "The fire burned from October 8 through October 10, 1871.",
+  "body": "The Great Chicago Fire burned from the evening of October 8 through October 10, 1871.",
+  "domain": "HistoryRoot",
+  "sourceIds": [
+    "source-loc-guide",
+    "source-loc-map-blog"
+  ],
+  "credibilityTier": "high",
+  "confidence": "strong",
+  "verificationStatus": "source-backed",
+  "reviewStatus": "reviewed",
+  "supportLevel": "direct",
+  "interpretationLevel": "low"
+}</pre>
+          <button class="copy-button" data-copy-target="assertionExample">Copy example</button>
+        </details>
+      </section>
+
+      <section id="edge-schema" class="schema-section" data-search="edge relationship fromnodeid tonodeid relationshiptype confidence strength support sourceids">
+        <h2>Edge Schema</h2>
+
+        <p class="overview">
+          An edge represents a directed relationship between two nodes. The
+          relationship itself carries evidence, confidence, support level, and
+          interpretation metadata.
+        </p>
+
+        <div class="field-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Requirement</th>
+                <th>Meaning</th>
+                <th>Validation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><code>id</code></td><td>string</td><td>Required</td><td>Unique edge identifier.</td><td>Non-empty and unique among edges.</td></tr>
+              <tr><td><code>fromNodeId</code></td><td>string</td><td>Required</td><td>Relationship origin.</td><td>Must reference <code>nodes.id</code>.</td></tr>
+              <tr><td><code>toNodeId</code></td><td>string</td><td>Required</td><td>Relationship destination.</td><td>Must reference <code>nodes.id</code>.</td></tr>
+              <tr><td><code>relationshipType</code></td><td>string</td><td>Required</td><td>Machine-readable relationship category.</td><td>Non-empty; currently open vocabulary.</td></tr>
+              <tr><td><code>label</code></td><td>string</td><td>Recommended</td><td>Human-readable relationship phrase.</td><td>Missing label may warn.</td></tr>
+              <tr><td><code>summary</code></td><td>string</td><td>Recommended</td><td>Readable explanation of the connection.</td><td>Missing summary may warn.</td></tr>
+              <tr><td><code>domain</code></td><td>string</td><td>Required</td><td>Originating knowledge domain.</td><td>Non-empty.</td></tr>
+              <tr><td><code>sourceIds</code></td><td>string[]</td><td>Recommended</td><td>Sources supporting the relationship.</td><td>Every ID must reference <code>sources.id</code>.</td></tr>
+              <tr><td><code>credibilityTier</code></td><td>enum</td><td>Recommended</td><td>General credibility level.</td><td>Controlled vocabulary.</td></tr>
+              <tr><td><code>confidence</code></td><td>enum</td><td>Recommended</td><td>Confidence in the connection.</td><td>Controlled vocabulary.</td></tr>
+              <tr><td><code>verificationStatus</code></td><td>enum</td><td>Recommended</td><td>Verification state.</td><td>Controlled vocabulary.</td></tr>
+              <tr><td><code>reviewStatus</code></td><td>enum</td><td>Recommended</td><td>Human review state.</td><td>Controlled vocabulary.</td></tr>
+              <tr><td><code>supportLevel</code></td><td>enum</td><td>Recommended</td><td>How directly evidence supports the relationship.</td><td>Uses relationship support vocabulary.</td></tr>
+              <tr><td><code>relationshipStrength</code></td><td>enum</td><td>Recommended</td><td>Structural importance or strength.</td><td>Controlled vocabulary.</td></tr>
+              <tr><td><code>interpretationLevel</code></td><td>enum</td><td>Recommended</td><td>Degree of interpretation in making the connection.</td><td>Controlled vocabulary.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <details>
+          <summary>Example edge</summary>
+          <pre id="edgeExample">{
+  "id": "edge-fire-occurred-in-chicago",
+  "fromNodeId": "event-great-chicago-fire",
+  "toNodeId": "place-chicago-1871",
+  "relationshipType": "OCCURRED_IN",
+  "label": "occurred in",
+  "summary": "The Great Chicago Fire occurred in Chicago.",
+  "domain": "HistoryRoot",
+  "sourceIds": [
+    "source-loc-guide"
+  ],
+  "credibilityTier": "high",
+  "confidence": "strong",
+  "verificationStatus": "source-backed",
+  "reviewStatus": "reviewed",
+  "supportLevel": "direct",
+  "relationshipStrength": "strong",
+  "interpretationLevel": "low"
+}</pre>
+          <button class="copy-button" data-copy-target="edgeExample">Copy example</button>
+        </details>
+      </section>
+
+      <section id="source-schema" class="schema-section" data-search="source name publisher url license quality credibility verification review lastreviewed">
+        <h2>Source Schema</h2>
+
+        <p class="overview">
+          A source describes where evidence came from. Source credibility and
+          licensing are tracked separately from the truth or strength of any
+          specific assertion.
+        </p>
+
+        <div class="field-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Requirement</th>
+                <th>Meaning</th>
+                <th>Validation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><code>id</code></td><td>string</td><td>Required</td><td>Unique source identifier.</td><td>Non-empty and unique among sources.</td></tr>
+              <tr><td><code>name</code></td><td>string</td><td>Required</td><td>Source title or display name.</td><td>Non-empty.</td></tr>
+              <tr><td><code>type</code></td><td>string</td><td>Required</td><td>Source category.</td><td>Non-empty; open vocabulary.</td></tr>
+              <tr><td><code>domain</code></td><td>string</td><td>Required</td><td>Knowledge domain using the source.</td><td>Non-empty.</td></tr>
+              <tr><td><code>publisher</code></td><td>string</td><td>Recommended</td><td>Publishing organization or authoring body.</td><td>Missing publisher may warn.</td></tr>
+              <tr><td><code>url</code></td><td>string</td><td>Recommended</td><td>External or internal source location.</td><td>Should be a usable URL when present.</td></tr>
+              <tr><td><code>sourceClass</code></td><td>string</td><td>Optional</td><td>Additional source classification.</td><td>Open vocabulary.</td></tr>
+              <tr><td><code>qualityTier</code></td><td>enum-like string</td><td>Optional</td><td>Quality label, generally aligned with credibility tier.</td><td>Should not contradict credibility metadata.</td></tr>
+              <tr><td><code>credibilityTier</code></td><td>enum</td><td>Recommended</td><td>Institutional or evidentiary credibility classification.</td><td>Controlled vocabulary.</td></tr>
+              <tr><td><code>verificationStatus</code></td><td>enum</td><td>Recommended</td><td>How the source record has been checked.</td><td>Controlled vocabulary.</td></tr>
+              <tr><td><code>reviewStatus</code></td><td>enum</td><td>Recommended</td><td>Review state.</td><td>Controlled vocabulary.</td></tr>
+              <tr><td><code>license</code></td><td>string</td><td>Recommended</td><td>Human-readable use conditions.</td><td>Missing license may warn.</td></tr>
+              <tr><td><code>licenseStatus</code></td><td>string</td><td>Recommended</td><td>Operational license classification.</td><td>Internal-only or unclear values may warn.</td></tr>
+              <tr><td><code>lastReviewed</code></td><td>date string</td><td>Recommended</td><td>Most recent review date.</td><td>Prefer ISO 8601 date.</td></tr>
+              <tr><td><code>notes</code></td><td>string</td><td>Optional</td><td>Additional provenance or usage notes.</td><td>Free text.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <details>
+          <summary>Example source</summary>
+          <pre id="sourceExample">{
+  "id": "source-loc-guide",
+  "name": "Great Chicago Fire of 1871: Topics in Chronicling America",
+  "type": "archive-guide",
+  "domain": "HistoryRoot",
+  "publisher": "Library of Congress",
+  "url": "https://guides.loc.gov/chronicling-america-great-chicago-fire",
+  "sourceClass": "archive-guide",
+  "qualityTier": "very-high",
+  "credibilityTier": "very-high",
+  "verificationStatus": "reviewed",
+  "reviewStatus": "reviewed",
+  "license": "External source; follow publisher terms",
+  "licenseStatus": "linked-reference-only",
+  "lastReviewed": "2026-07-16"
+}</pre>
+          <button class="copy-button" data-copy-target="sourceExample">Copy example</button>
+        </details>
+      </section>
+
+      <section id="revision-schema" class="schema-section" data-search="revision revisionid objectid objecttype revisiontype status timestamp summary changedby history">
+        <h2>Revision Schema</h2>
+
+        <p class="overview">
+          A revision records that a knowledge object changed, was reclassified,
+          corrected, deprecated, or received a new interpretation.
+        </p>
+
+        <div class="field-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Requirement</th>
+                <th>Meaning</th>
+                <th>Validation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><code>revisionId</code></td><td>string</td><td>Required</td><td>Unique revision identifier.</td><td>Non-empty and unique among revisions.</td></tr>
+              <tr><td><code>objectId</code></td><td>string</td><td>Required</td><td>Object affected by the revision.</td><td>Should reference a known core or extension object.</td></tr>
+              <tr><td><code>objectType</code></td><td>string</td><td>Required</td><td>Type of revised object.</td><td>Non-empty.</td></tr>
+              <tr><td><code>revisionType</code></td><td>string</td><td>Required</td><td>Nature of the change.</td><td>Open vocabulary during prototype.</td></tr>
+              <tr><td><code>summary</code></td><td>string</td><td>Recommended</td><td>Explanation of what changed.</td><td>Missing summary may warn.</td></tr>
+              <tr><td><code>status</code></td><td>string</td><td>Required</td><td>Revision state such as current or superseded.</td><td>Non-empty.</td></tr>
+              <tr><td><code>revisedAt</code></td><td>datetime string</td><td>Future recommended</td><td>When the revision occurred.</td><td>Prefer ISO 8601.</td></tr>
+              <tr><td><code>revisedBy</code></td><td>identity ID</td><td>Future recommended</td><td>Authenticated creator or reviewer.</td><td>Will reference a backend identity record.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <details>
+          <summary>Example revision</summary>
+          <pre id="revisionExample">{
+  "revisionId": "revision-oleary-story-review",
+  "objectType": "historical-narrative",
+  "objectId": "concept-oleary-cow-myth",
+  "revisionType": "interpretation-update",
+  "summary": "Marks the cow-and-lantern story as disputed rather than established fact.",
+  "status": "current"
+}</pre>
+          <button class="copy-button" data-copy-target="revisionExample">Copy example</button>
+        </details>
+      </section>
+
+      <section id="bundle-schema" class="schema-section" data-search="bundle import bundleid bundletype version domain createdat createdby description nodes assertions edges sources revisions extensions">
+        <h2>SourceRoot Import Bundle</h2>
+
+        <p class="overview">
+          The import bundle is the transport contract used by Import Preview and
+          the validator. It groups all core object collections and preserves
+          hub-specific data under <code>extensions</code>.
+        </p>
+
+        <div class="field-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Requirement</th>
+                <th>Meaning</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><code>bundleId</code></td><td>string</td><td>Required</td><td>Stable bundle identifier and staging key.</td></tr>
+              <tr><td><code>bundleType</code></td><td>literal</td><td>Required</td><td>Must equal <code>sourceroot-import-bundle</code>.</td></tr>
+              <tr><td><code>version</code></td><td>string</td><td>Required</td><td>Bundle schema or content version.</td></tr>
+              <tr><td><code>domain</code></td><td>string</td><td>Required</td><td>Originating domain such as HistoryRoot.</td></tr>
+              <tr><td><code>createdAt</code></td><td>date/datetime</td><td>Recommended</td><td>Bundle creation timestamp.</td></tr>
+              <tr><td><code>createdBy</code></td><td>string</td><td>Recommended</td><td>Creator name or future identity ID.</td></tr>
+              <tr><td><code>description</code></td><td>string</td><td>Recommended</td><td>Purpose and scope.</td></tr>
+              <tr><td><code>nodes</code></td><td>Node[]</td><td>Required</td><td>Node collection.</td></tr>
+              <tr><td><code>assertions</code></td><td>Assertion[]</td><td>Required</td><td>Assertion collection.</td></tr>
+              <tr><td><code>edges</code></td><td>Edge[]</td><td>Required</td><td>Relationship collection.</td></tr>
+              <tr><td><code>sources</code></td><td>Source[]</td><td>Required</td><td>Source collection.</td></tr>
+              <tr><td><code>revisions</code></td><td>Revision[]</td><td>Recommended</td><td>Revision collection.</td></tr>
+              <tr><td><code>extensions</code></td><td>object</td><td>Optional</td><td>Domain-specific objects that do not belong in the core arrays.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <details>
+          <summary>Minimal valid import bundle</summary>
+          <pre id="bundleExample">{
+  "bundleId": "example-bundle",
+  "bundleType": "sourceroot-import-bundle",
+  "version": "1.0.0",
+  "domain": "ExampleHub",
+  "nodes": [],
+  "assertions": [],
+  "edges": [],
+  "sources": [],
+  "revisions": []
+}</pre>
+          <button class="copy-button" data-copy-target="bundleExample">Copy example</button>
+        </details>
+      </section>
+
+      <section id="staged-schema" class="schema-section" data-search="staged record bundlehash stagedat warningcount counts source status embeddedbundle importedat integrity localstorage">
+        <h2>Staged Record</h2>
+
+        <p class="overview">
+          A staged record is the browser-local integrity snapshot created after a
+          bundle passes validation. It is stored under
+          <code>sourceroot-staged-bundles-v1</code>, keyed by bundle ID.
+        </p>
+
+        <div class="field-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Requirement</th>
+                <th>Meaning</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><code>bundleId</code></td><td>string</td><td>Required</td><td>Bundle identity and storage-map key.</td></tr>
+              <tr><td><code>source</code></td><td>string</td><td>Recommended</td><td>Original path, upload, registry route, or <code>embedded-package</code>.</td></tr>
+              <tr><td><code>stagedAt</code></td><td>datetime</td><td>Required</td><td>When the original staging snapshot was created.</td></tr>
+              <tr><td><code>status</code></td><td>string</td><td>Required</td><td>Validation readiness at staging.</td></tr>
+              <tr><td><code>warningCount</code></td><td>number</td><td>Recommended</td><td>Warnings present when staged.</td></tr>
+              <tr><td><code>counts</code></td><td>object</td><td>Required</td><td>Counts for nodes, assertions, edges, sources, and revisions.</td></tr>
+              <tr><td><code>bundleHash</code></td><td>64-character string</td><td>Required</td><td>SHA-256 of <code>JSON.stringify(bundle)</code>.</td></tr>
+              <tr><td><code>embeddedBundle</code></td><td>Import Bundle</td><td>Restored packages only</td><td>Self-contained bundle used without the original JSON file.</td></tr>
+              <tr><td><code>importedAt</code></td><td>datetime</td><td>Restored packages only</td><td>When an inspected package was restored.</td></tr>
+              <tr><td><code>integrityStatus</code></td><td>string</td><td>Restored packages only</td><td>Current snapshot state, currently <code>current</code>.</td></tr>
+              <tr><td><code>restoredBy</code></td><td>string</td><td>Optional</td><td>Prototype reviewer label; future authenticated identity.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <details>
+          <summary>Example staged record</summary>
+          <pre id="stagedExample">{
+  "bundleId": "historyroot-fire-events-v2",
+  "source": "data/historyroot-fire-events-sourceroot-import.json",
+  "stagedAt": "2026-07-16T20:30:00.000Z",
+  "status": "ready",
+  "warningCount": 0,
+  "counts": {
+    "nodes": 11,
+    "assertions": 13,
+    "edges": 11,
+    "sources": 11,
+    "revisions": 2
+  },
+  "bundleHash": "64-character-sha256-value"
+}</pre>
+          <button class="copy-button" data-copy-target="stagedExample">Copy example</button>
+        </details>
+      </section>
+
+      <section id="package-schema" class="schema-section" data-search="package exporttype exportversion exportedat packageid record bundle self contained portable hash">
+        <h2>Self-Contained Staged Package</h2>
+
+        <p class="overview">
+          A package combines the staged integrity record and the complete bundle
+          into one portable JSON artifact.
+        </p>
+
+        <div class="status-row">
+          <span class="pill current"><code>exportType: sourceroot-staged-package</code></span>
+          <span class="pill current"><code>exportVersion: 1.0.0</code></span>
+        </div>
+
+        <div class="field-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Requirement</th>
+                <th>Meaning</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><code>exportType</code></td><td>literal</td><td>Required</td><td>Must equal <code>sourceroot-staged-package</code>.</td></tr>
+              <tr><td><code>exportVersion</code></td><td>literal</td><td>Required</td><td>Currently <code>1.0.0</code>.</td></tr>
+              <tr><td><code>exportedAt</code></td><td>datetime</td><td>Required on export</td><td>When the file was created.</td></tr>
+              <tr><td><code>packageId</code></td><td>string</td><td>Required on export</td><td><code>{bundleId}:{first16CharactersOfHash}</code>.</td></tr>
+              <tr><td><code>record</code></td><td>Staged Record</td><td>Required</td><td>Stored integrity snapshot.</td></tr>
+              <tr><td><code>bundle</code></td><td>Import Bundle</td><td>Required</td><td>Complete embedded knowledge bundle.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <details>
+          <summary>Package shape</summary>
+          <pre id="packageExample">{
+  "exportType": "sourceroot-staged-package",
+  "exportVersion": "1.0.0",
+  "exportedAt": "2026-07-16T21:00:00.000Z",
+  "packageId": "historyroot-fire-events-v2:0123456789abcdef",
+  "record": {},
+  "bundle": {}
+}</pre>
+          <button class="copy-button" data-copy-target="packageExample">Copy example</button>
+        </details>
+
+        <div class="notice info">
+          Package integrity is content integrity, not identity authentication.
+          SHA-256 proves whether the bundle changed relative to the staged record;
+          it does not prove who created or approved the package.
+        </div>
+      </section>
+
+      <section id="collection-schema" class="schema-section" data-search="package collection packagecount packages exporttype collection multiple">
+        <h2>Package Collection</h2>
+
+        <p class="overview">
+          A package collection groups multiple complete packages into one export.
+        </p>
+
+        <div class="status-row">
+          <span class="pill current"><code>exportType: sourceroot-staged-package-collection</code></span>
+          <span class="pill current"><code>exportVersion: 1.0.0</code></span>
+        </div>
+
+        <details open>
+          <summary>Collection shape</summary>
+          <pre id="collectionExample">{
+  "exportType": "sourceroot-staged-package-collection",
+  "exportVersion": "1.0.0",
+  "exportedAt": "2026-07-16T21:10:00.000Z",
+  "packageCount": 2,
+  "packages": [
+    {},
+    {}
+  ]
+}</pre>
+          <button class="copy-button" data-copy-target="collectionExample">Copy example</button>
+        </details>
+      </section>
+
+      <section id="inspection-schema" class="schema-section" data-search="inspection inspectionid packageid decision approved rejected integrity status storedhash calculatedhash issues snapshot">
+        <h2>Package Inspection Record</h2>
+
+        <p class="overview">
+          An inspection record preserves a review decision separately from the
+          staged bundle registry. Records are stored under
+          <code>sourceroot-package-inspections-v1</code>, keyed by inspection ID.
+        </p>
+
+        <div class="field-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Requirement</th>
+                <th>Meaning</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><code>inspectionId</code></td><td>string</td><td>Required</td><td><code>{packageId}:{inspectedAt}</code>.</td></tr>
+              <tr><td><code>packageId</code></td><td>string</td><td>Required</td><td>Reviewed package identity.</td></tr>
+              <tr><td><code>bundleId</code></td><td>string</td><td>Required</td><td>Contained bundle identity.</td></tr>
+              <tr><td><code>inspectedAt</code></td><td>datetime</td><td>Required</td><td>Review timestamp.</td></tr>
+              <tr><td><code>exportedAt</code></td><td>datetime/null</td><td>Optional</td><td>Original package export time.</td></tr>
+              <tr><td><code>exportType</code></td><td>string</td><td>Required</td><td>Reviewed artifact type.</td></tr>
+              <tr><td><code>exportVersion</code></td><td>string</td><td>Required</td><td>Reviewed package version.</td></tr>
+              <tr><td><code>decision</code></td><td>enum</td><td>Required</td><td><code>approved</code> when restorable; otherwise <code>rejected</code>.</td></tr>
+              <tr><td><code>integrityStatus</code></td><td>enum</td><td>Required</td><td><code>verified</code> or <code>failed</code>.</td></tr>
+              <tr><td><code>canRestore</code></td><td>boolean</td><td>Required</td><td>Whether blocking issues are absent.</td></tr>
+              <tr><td><code>issueCount</code></td><td>number</td><td>Required</td><td>Total warnings and errors.</td></tr>
+              <tr><td><code>issues</code></td><td>Issue[]</td><td>Required</td><td>Verification messages with severity and text.</td></tr>
+              <tr><td><code>storedHash</code></td><td>string</td><td>Required</td><td>Hash from staged record.</td></tr>
+              <tr><td><code>calculatedHash</code></td><td>string</td><td>Required</td><td>Hash recalculated from embedded bundle.</td></tr>
+              <tr><td><code>counts</code></td><td>object</td><td>Required</td><td>Counts recalculated from embedded bundle.</td></tr>
+              <tr><td><code>source</code></td><td>string</td><td>Required</td><td>Staged record source or <code>unknown</code>.</td></tr>
+              <tr><td><code>packageSnapshot</code></td><td>Package</td><td>Required</td><td>Complete inspected artifact retained for history.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <details>
+          <summary>Example inspection record</summary>
+          <pre id="inspectionExample">{
+  "inspectionId": "historyroot-fire-events-v2:0123456789abcdef:2026-07-16T21:15:00.000Z",
+  "packageId": "historyroot-fire-events-v2:0123456789abcdef",
+  "bundleId": "historyroot-fire-events-v2",
+  "inspectedAt": "2026-07-16T21:15:00.000Z",
+  "decision": "approved",
+  "integrityStatus": "verified",
+  "canRestore": true,
+  "issueCount": 0,
+  "issues": [],
+  "storedHash": "64-character-sha256-value",
+  "calculatedHash": "64-character-sha256-value",
+  "counts": {
+    "nodes": 11,
+    "assertions": 13,
+    "edges": 11,
+    "sources": 11,
+    "revisions": 2
+  },
+  "source": "data/historyroot-fire-events-sourceroot-import.json",
+  "packageSnapshot": {}
+}</pre>
+          <button class="copy-button" data-copy-target="inspectionExample">Copy example</button>
+        </details>
+      </section>
+
+      <section id="historyroot-schema" class="schema-section" data-search="historyroot extension timeline disputes positions identity records historical event entity alternate names">
+        <h2>HistoryRoot Extension Contract</h2>
+
+        <p class="overview">
+          HistoryRoot maps entities into SourceRoot nodes and preserves
+          history-specific objects beneath
+          <code>extensions.historyroot</code>.
+        </p>
+
+        <div class="reference-map">
+          <div class="reference-row">
+            <code>HistoryRoot entity</code>
+            <div class="arrow">→</div>
+            <code>SourceRoot node</code>
+          </div>
+
+          <div class="reference-row">
+            <code>HistoryRoot assertion.entityId</code>
+            <div class="arrow">→</div>
+            <code>SourceRoot assertion.nodeId</code>
+          </div>
+
+          <div class="reference-row">
+            <code>HistoryRoot edge.fromEntityId</code>
+            <div class="arrow">→</div>
+            <code>SourceRoot edge.fromNodeId</code>
+          </div>
+
+          <div class="reference-row">
+            <code>HistoryRoot edge.toEntityId</code>
+            <div class="arrow">→</div>
+            <code>SourceRoot edge.toNodeId</code>
+          </div>
+        </div>
+
+        <h3>Extension collections</h3>
+
+        <div class="card-grid">
+          <div class="info-card">
+            <strong><code>timelineEntries</code></strong>
+            <div class="meta">Chronological entries with dates, certainty, and linked entity IDs.</div>
+          </div>
+
+          <div class="info-card">
+            <strong><code>disputes</code></strong>
+            <div class="meta">Historical questions, competing positions, evidence links, current assessment, and unresolved reason.</div>
+          </div>
+
+          <div class="info-card">
+            <strong><code>identityRecords</code></strong>
+            <div class="meta">Alternate names, time-bound identities, and interpretive reclassifications.</div>
+          </div>
+
+          <div class="info-card">
+            <strong><code>validationProfile</code></strong>
+            <div class="meta">HistoryRoot-specific required collections and reference rules.</div>
+          </div>
+        </div>
+
+        <details>
+          <summary>HistoryRoot extension shape</summary>
+          <pre id="historyrootExample">{
+  "extensions": {
+    "historyroot": {
+      "schemaVersion": "0.2.0",
+      "timelineEntries": [],
+      "disputes": [],
+      "identityRecords": [],
+      "validationProfile": {}
+    }
+  }
+}</pre>
+          <button class="copy-button" data-copy-target="historyrootExample">Copy example</button>
+        </details>
+      </section>
+
+      <section id="trust-vocabularies" class="schema-section" data-search="controlled vocabulary enum credibility confidence verification review support relationship strength interpretation allowed values">
+        <h2>Controlled Trust Vocabularies</h2>
+
+        <p class="overview">
+          These values are enforced by the current SourceRoot import validator.
+          Domain-specific terms must be mapped into this shared vocabulary before
+          entering the standard lifecycle.
+        </p>
+
+        <div class="enum-grid">
+          <div class="enum-card">
+            <h3><code>credibilityTier</code></h3>
+            <div class="enum-values">
+              <code>very-high</code><code>high</code><code>medium</code><code>low</code>
+              <code>unknown</code><code>disputed</code><code>prototype</code>
+            </div>
+          </div>
+
+          <div class="enum-card">
+            <h3><code>confidence</code></h3>
+            <div class="enum-values">
+              <code>strong</code><code>moderate</code><code>weak</code>
+              <code>working</code><code>disputed</code><code>unknown</code>
+            </div>
+          </div>
+
+          <div class="enum-card">
+            <h3><code>verificationStatus</code></h3>
+            <div class="enum-values">
+              <code>verified</code><code>reviewed</code><code>source-backed</code>
+              <code>community-maintained</code><code>official-documentation</code>
+              <code>inferred</code><code>interpretive</code><code>symbolic</code>
+              <code>prototype</code><code>needs-review</code><code>unverified</code>
+              <code>disputed</code><code>deprecated</code>
+            </div>
+          </div>
+
+          <div class="enum-card">
+            <h3><code>reviewStatus</code></h3>
+            <div class="enum-values">
+              <code>reviewed</code><code>needs-review</code><code>not-reviewed</code>
+              <code>deprecated</code><code>disputed</code><code>prototype</code>
+            </div>
+          </div>
+
+          <div class="enum-card">
+            <h3>Assertion <code>supportLevel</code></h3>
+            <div class="enum-values">
+              <code>direct</code><code>derived</code><code>inferred</code>
+              <code>interpretive</code><code>contextual</code><code>unsupported</code>
+            </div>
+          </div>
+
+          <div class="enum-card">
+            <h3>Relationship <code>supportLevel</code></h3>
+            <div class="enum-values">
+              <code>direct</code><code>derived</code><code>inferred</code>
+              <code>symbolic</code><code>contextual</code><code>unsupported</code>
+            </div>
+          </div>
+
+          <div class="enum-card">
+            <h3><code>relationshipStrength</code></h3>
+            <div class="enum-values">
+              <code>core</code><code>strong</code><code>medium</code>
+              <code>weak</code><code>contextual</code><code>experimental</code>
+            </div>
+          </div>
+
+          <div class="enum-card">
+            <h3><code>interpretationLevel</code></h3>
+            <div class="enum-values">
+              <code>none</code><code>low</code><code>medium</code>
+              <code>high</code><code>speculative</code>
+            </div>
+          </div>
+        </div>
+
+        <div class="notice good">
+          The HistoryRoot lifecycle test exposed why this vocabulary matters:
+          structurally correct data can still be incompatible when a hub invents
+          values such as <code>historical-source-backed</code> or uses
+          <code>strong</code> as an assertion support level.
+        </div>
+      </section>
+
+      <section id="reference-rules" class="schema-section" data-search="references foreign keys nodeid sourceids fromnodeid tonodeid revision object extension">
+        <h2>Cross-Reference Rules</h2>
+
+        <div class="reference-map">
+          <div class="reference-row"><code>assertions[].nodeId</code><div class="arrow">→</div><code>nodes[].id</code></div>
+          <div class="reference-row"><code>assertions[].sourceIds[]</code><div class="arrow">→</div><code>sources[].id</code></div>
+          <div class="reference-row"><code>edges[].fromNodeId</code><div class="arrow">→</div><code>nodes[].id</code></div>
+          <div class="reference-row"><code>edges[].toNodeId</code><div class="arrow">→</div><code>nodes[].id</code></div>
+          <div class="reference-row"><code>edges[].sourceIds[]</code><div class="arrow">→</div><code>sources[].id</code></div>
+          <div class="reference-row"><code>nodes[].sourceIds[]</code><div class="arrow">→</div><code>sources[].id</code></div>
+          <div class="reference-row"><code>revisions[].objectId</code><div class="arrow">→</div><code>core object ID or extension object ID</code></div>
+          <div class="reference-row"><code>stagedRecord.bundleId</code><div class="arrow">→</div><code>bundle.bundleId</code></div>
+          <div class="reference-row"><code>stagedRecord.bundleHash</code><div class="arrow">→</div><code>SHA-256(JSON.stringify(bundle))</code></div>
+        </div>
+
+        <div class="notice warn">
+          Revision references to extension objects may currently produce a
+          warning in lightweight validators because extension IDs are not yet
+          indexed as first-class core objects.
+        </div>
+      </section>
+
+      <section id="validation-results" class="schema-section" data-search="validation result errors warnings summary readiness status canimport ready blocked invalid format">
+        <h2>Validation Result Contract</h2>
+
+        <p class="overview">
+          Import validation returns errors, warnings, object counts, readiness
+          status, and whether the bundle may enter staging.
+        </p>
+
+        <div class="field-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Status</th>
+                <th>Meaning</th>
+                <th>Can Import?</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><code>ready</code></td><td>No blocking errors or meaningful warnings.</td><td>Yes</td></tr>
+              <tr><td><code>ready-with-warnings</code></td><td>No blocking errors, but review warnings exist.</td><td>Yes</td></tr>
+              <tr><td><code>blocked</code></td><td>One or more errors prevent import.</td><td>No</td></tr>
+              <tr><td><code>invalid-format</code></td><td>Input is not a usable SourceRoot bundle.</td><td>No</td></tr>
+              <tr><td><code>needs-review</code></td><td>May be inspectable but should not load automatically.</td><td>Conditional</td></tr>
+              <tr><td><code>prototype-only</code></td><td>Accepted for testing, not production.</td><td>Conditional</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <details>
+          <summary>Validation result example</summary>
+          <pre id="validationExample">{
+  "bundleId": "historyroot-fire-events-v2",
+  "status": "ready",
+  "canImport": true,
+  "summary": {
+    "nodes": 11,
+    "assertions": 13,
+    "edges": 11,
+    "sources": 11,
+    "revisions": 2,
+    "errors": 0,
+    "warnings": 0
+  },
+  "errors": [],
+  "warnings": []
+}</pre>
+          <button class="copy-button" data-copy-target="validationExample">Copy example</button>
+        </details>
+      </section>
+
+      <section id="versioning" class="schema-section" data-search="versioning migration semantic version package schema bundle backward compatible major minor patch">
+        <h2>Versioning and Migration Policy</h2>
+
+        <div class="notice prototype">
+          This is the recommended policy to adopt before backend persistence.
+          Package exports already enforce exact version <code>1.0.0</code>;
+          formal bundle migrations are not yet implemented.
+        </div>
+
+        <div class="card-grid">
+          <div class="info-card">
+            <strong>Major version</strong>
+            <div class="meta">Breaking field, meaning, identity, or package-shape change.</div>
+          </div>
+
+          <div class="info-card">
+            <strong>Minor version</strong>
+            <div class="meta">Backward-compatible optional fields, extension collections, or new enum values.</div>
+          </div>
+
+          <div class="info-card">
+            <strong>Patch version</strong>
+            <div class="meta">Documentation, validation bug fixes, or clarifications that do not change stored meaning.</div>
+          </div>
+        </div>
+
+        <h3>Required migration rules before backend launch</h3>
+
+        <div class="reference-map">
+          <div class="reference-row"><code>Read old version</code><div class="arrow">→</div><code>Identify migration path</code></div>
+          <div class="reference-row"><code>Preserve original artifact</code><div class="arrow">→</div><code>Create migrated copy</code></div>
+          <div class="reference-row"><code>Record migration event</code><div class="arrow">→</div><code>Link old and new hashes</code></div>
+          <div class="reference-row"><code>Revalidate migrated content</code><div class="arrow">→</div><code>Allow or block persistence</code></div>
+        </div>
+      </section>
+
+      <section id="backend-mapping" class="schema-section" data-search="backend database api table postgres endpoint migration storage authentication authorization">
+        <h2>Future Backend Mapping</h2>
+
+        <p class="overview">
+          These mappings are a planning guide, not a final database design. They
+          show how the current browser contract can move into persistent storage
+          without discarding the working model.
+        </p>
+
+        <div class="field-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Current object</th>
+                <th>Likely backend resource</th>
+                <th>Important notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Node</td><td><code>nodes</code> table and <code>/nodes</code> API</td><td>Stable IDs, domain ownership, metadata JSON.</td></tr>
+              <tr><td>Assertion</td><td><code>assertions</code> table</td><td>Foreign key to node; many-to-many source links.</td></tr>
+              <tr><td>Edge</td><td><code>edges</code> table</td><td>Two node foreign keys; relationship indexes.</td></tr>
+              <tr><td>Source</td><td><code>sources</code> table</td><td>Deduplication, canonical URLs, review metadata.</td></tr>
+              <tr><td>Revision</td><td><code>revisions</code> or append-only event table</td><td>Prefer immutable audit records.</td></tr>
+              <tr><td>Import Bundle</td><td><code>bundles</code> plus object membership tables</td><td>Store original JSON, calculated hash, validation result, and schema version.</td></tr>
+              <tr><td>Staged Record</td><td><code>bundle_snapshots</code></td><td>Replace browser-local map with durable snapshot rows.</td></tr>
+              <tr><td>Package</td><td><code>packages</code> or object storage</td><td>Preserve exact exported artifact bytes and hash.</td></tr>
+              <tr><td>Inspection Record</td><td><code>package_inspections</code></td><td>Authenticated reviewer, decision, issues, timestamp.</td></tr>
+              <tr><td>HistoryRoot extensions</td><td>Dedicated extension tables or versioned JSONB</td><td>Keep core API stable while domain models evolve.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>First API boundary</h3>
+
+        <pre>POST /validate
+POST /bundles
+GET  /bundles/:bundleId
+POST /bundles/:bundleId/stage
+POST /packages
+GET  /packages/:packageId
+POST /packages/:packageId/inspections
+POST /packages/:packageId/restore
+GET  /nodes/:nodeId</pre>
+
+        <div class="notice info">
+          The safest backend transition is to preserve the current JSON objects
+          at the API boundary first, then normalize database storage behind the
+          API. That avoids rewriting every existing interface at once.
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <footer>
+    SourceRoot Schema Reference · Current browser contract before backend persistence.
+  </footer>
+
+  <script>
+    const searchInput = document.getElementById("schemaSearch");
+    const sections = [...document.querySelectorAll(".schema-section")];
+    const searchMessage = document.getElementById("searchMessage");
+
+    searchInput.addEventListener("input", filterSections);
+
+    document.querySelectorAll("[data-copy-target]").forEach(button => {
+      button.addEventListener("click", async () => {
+        const target = document.getElementById(button.dataset.copyTarget);
+
+        if (!target) {
+          return;
+        }
+
+        try {
+          await navigator.clipboard.writeText(target.textContent);
+          const originalText = button.textContent;
+          button.textContent = "Copied";
+
+          setTimeout(() => {
+            button.textContent = originalText;
+          }, 1200);
+        } catch (error) {
+          button.textContent = "Copy failed";
+        }
+      });
+    });
+
+    function filterSections() {
+      const query = searchInput.value.trim().toLowerCase();
+      let visibleCount = 0;
+
+      sections.forEach(section => {
+        const searchableText = [
+          section.dataset.search || "",
+          section.textContent || ""
+        ].join(" ").toLowerCase();
+
+        const visible = !query || searchableText.includes(query);
+        section.dataset.hidden = visible ? "false" : "true";
+
+        if (visible) {
+          visibleCount += 1;
+        }
+      });
+
+      searchMessage.style.display = visibleCount ? "none" : "block";
+    }
+  </script>
+</body>
+</html>
