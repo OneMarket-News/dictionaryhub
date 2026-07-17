@@ -904,6 +904,16 @@
 
     const bundle = record.embeddedBundle;
     const result = validateBundle(bundle);
+
+    packageLifecycle.recordValidationEvent(bundle, result, {
+      source: "embedded-package",
+      eventType: "bundle-revalidated",
+      metadata: {
+        route: "staged",
+        restoredRecordFound: true
+      }
+    });
+
     const currentHash = await createBundleHash(bundle);
 
     activeBundle = bundle;

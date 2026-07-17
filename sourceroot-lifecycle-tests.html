@@ -712,6 +712,65 @@
             assertEqual(collection.packages.length, 2);
           }
         },
+
+        {
+          name: "Lifecycle events append without replacing earlier events",
+          description: "Confirms lifecycle history is append-only during normal operations.",
+          run: async () => {
+            lifecycle.clearLifecycleEvents();
+
+            lifecycle.appendLifecycleEvent({
+              eventType: "test-event-one",
+              bundleId: "test-lifecycle-bundle",
+              outcome: "passed"
+            });
+
+            lifecycle.appendLifecycleEvent({
+              eventType: "test-event-two",
+              bundleId: "test-lifecycle-bundle",
+              outcome: "saved"
+            });
+
+            const events = lifecycle.getLifecycleEvents();
+
+            assertEqual(events.length, 2);
+            assertEqual(events[0].eventType, "test-event-one");
+            assertEqual(events[1].eventType, "test-event-two");
+          }
+        },
+        {
+          name: "Validation event records counts and outcome",
+          description: "Creates a standard validation lifecycle event.",
+          run: async () => {
+            lifecycle.clearLifecycleEvents();
+
+            const bundle = createTestBundle();
+
+            lifecycle.recordValidationEvent(bundle, {
+              bundleId: bundle.bundleId,
+              status: "ready",
+              canImport: true,
+              summary: {
+                nodes: 2,
+                assertions: 1,
+                edges: 1,
+                sources: 1,
+                revisions: 1,
+                errors: 0,
+                warnings: 0
+              },
+              errors: [],
+              warnings: []
+            });
+
+            const event = lifecycle.getLifecycleEvents()[0];
+
+            assertEqual(event.eventType, "bundle-validated");
+            assertEqual(event.outcome, "passed");
+            assertEqual(event.counts.nodes, 2);
+            assertEqual(event.errorCount, 0);
+          }
+        },
         {
           name: "Filename normalization is predictable",
           description: "Unsafe filename characters are converted into portable lowercase names.",
@@ -742,7 +801,12 @@
     function backupStorage() {
       return {
         staging: localStorage.getItem(lifecycle.STAGING_STORAGE_KEY),
-        inspections: localStorage.getItem(lifecycle.PACKAGE_INSPECTION_STORAGE_KEY)
+        inspections: localStorage.getItem(
+          lifecycle.PACKAGE_INSPECTION_STORAGE_KEY
+        ),
+        lifecycleEvents: localStorage.getItem(
+          lifecycle.LIFECYCLE_EVENT_STORAGE_KEY
+        )
       };
     }
 
@@ -751,6 +815,11 @@
       restoreStorageValue(
         lifecycle.PACKAGE_INSPECTION_STORAGE_KEY,
         backup.inspections
+      );
+
+      restoreStorageValue(
+        lifecycle.LIFECYCLE_EVENT_STORAGE_KEY,
+        backup.lifecycleEvents
       );
     }
 
@@ -782,7 +851,12 @@
 
       try {
         localStorage.removeItem(lifecycle.STAGING_STORAGE_KEY);
-        localStorage.removeItem(lifecycle.PACKAGE_INSPECTION_STORAGE_KEY);
+        localStorage.removeItem(
+          lifecycle.PACKAGE_INSPECTION_STORAGE_KEY
+        );
+        localStorage.removeItem(
+          lifecycle.LIFECYCLE_EVENT_STORAGE_KEY
+        );
 
         for (const test of createTests()) {
           const result = {

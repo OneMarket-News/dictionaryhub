@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SourceRoot Lifecycle Event Registry</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f7fb;
+      color: #172033;
+    }
+
+    header {
+      background: #0f172a;
+      color: white;
+      padding: 30px 24px;
+    }
+
+    .inner,
+    main,
+    footer {
+      max-width: 1250px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 36px;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      color: #cbd5e1;
+      margin-top: 10px;
+      line-height: 1.6;
+      max-width: 980px;
+    }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-top: 16px;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      border: 1px solid #334155;
+      background: #1e293b;
+      border-radius: 999px;
+      padding: 7px 11px;
+      font-size: 12px;
+    }
+
+    main {
+      padding: 24px;
+    }
+
+    .panel {
+      background: white;
+      border: 1px solid #dbe2eb;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+    }
+
+    .hero {
+      background: #eff6ff;
+      border-color: #bfdbfe;
+    }
+
+    h2 {
+      margin: 0 0 10px;
+    }
+
+    .overview {
+      color: #475569;
+      line-height: 1.6;
+      max-width: 980px;
+    }
+
+    .controls,
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: #475569;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    select,
+    input,
+    button {
+      padding: 10px 11px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      background: white;
+      color: #172033;
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button.primary {
+      background: #0f172a;
+      color: white;
+      border-color: #0f172a;
+    }
+
+    button.danger {
+      color: #991b1b;
+      border-color: #fca5a5;
+      background: #fff;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-top: 15px;
+    }
+
+    .summary-card {
+      border: 1px solid #dbe2eb;
+      border-radius: 14px;
+      padding: 14px;
+      background: white;
+    }
+
+    .summary-number {
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .summary-label {
+      color: #64748b;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .event-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 15px;
+    }
+
+    .event-card {
+      border: 1px solid #dbe2eb;
+      border-radius: 14px;
+      padding: 15px;
+      background: #fbfdff;
+    }
+
+    .event-card.passed,
+    .event-card.approved,
+    .event-card.saved,
+    .event-card.exported,
+    .event-card.restored {
+      border-color: #86efac;
+      background: #ecfdf5;
+    }
+
+    .event-card.blocked,
+    .event-card.rejected,
+    .event-card.failed {
+      border-color: #fca5a5;
+      background: #fef2f2;
+    }
+
+    .event-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .event-title {
+      font-weight: bold;
+      font-size: 17px;
+    }
+
+    .event-time,
+    .meta {
+      color: #64748b;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .pill {
+      border: 1px solid #cbd5e1;
+      background: white;
+      border-radius: 999px;
+      padding: 4px 7px;
+      font-size: 11px;
+    }
+
+    details {
+      margin-top: 11px;
+      border: 1px solid #dbe2eb;
+      border-radius: 10px;
+      padding: 10px;
+      background: white;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: bold;
+      color: #334155;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 12px;
+      border-radius: 10px;
+      overflow: auto;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .empty {
+      color: #64748b;
+      font-style: italic;
+    }
+
+    footer {
+      padding: 0 24px 28px;
+      color: #64748b;
+      font-size: 13px;
+    }
+
+    @media (max-width: 700px) {
+      header { padding: 24px 16px; }
+      main { padding: 18px 14px; }
+      h1 { font-size: 30px; }
+      .event-header { display: block; }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="inner">
+      <h1>SourceRoot Lifecycle Event Registry</h1>
+
+      <div class="subtitle">
+        Append-only browser history for validation, staging, package export,
+        verification, inspection, restoration, revalidation, and record removal.
+      </div>
+
+      <nav>
+        <a href="sourceroot.html">SourceRoot Home</a>
+        <a href="sourceroot-import-preview.html">Import Preview</a>
+        <a href="sourceroot-staged-bundle-registry.html">Staged Bundles</a>
+        <a href="sourceroot-package-inspector.html">Package Inspector</a>
+        <a href="sourceroot-package-registry.html">Package Registry</a>
+        <a href="sourceroot-schema-reference.html">Schema Reference</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel hero">
+      <h2>Lifecycle History</h2>
+
+      <p class="overview">
+        Events are stored separately from staged records and inspection records
+        under <code>sourceroot-lifecycle-events-v1</code>. Existing events are
+        never edited by the lifecycle engine; new actions append new records.
+      </p>
+
+      <div class="controls">
+        <label>
+          Search
+          <input id="searchInput" type="search" placeholder="Bundle, package, event, source…" />
+        </label>
+
+        <label>
+          Event Type
+          <select id="eventTypeFilter">
+            <option value="">All event types</option>
+          </select>
+        </label>
+
+        <label>
+          Outcome
+          <select id="outcomeFilter">
+            <option value="">All outcomes</option>
+          </select>
+        </label>
+
+        <label>
+          Bundle
+          <select id="bundleFilter">
+            <option value="">All bundles</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="button-row">
+        <button id="refreshButton" class="primary">Refresh Events</button>
+        <button id="exportButton">Export Event History</button>
+        <button id="clearButton" class="danger">Clear Event History</button>
+      </div>
+
+      <div class="summary-grid">
+        <div class="summary-card">
+          <div id="totalCount" class="summary-number">0</div>
+          <div class="summary-label">Visible Events</div>
+        </div>
+
+        <div class="summary-card">
+          <div id="bundleCount" class="summary-number">0</div>
+          <div class="summary-label">Bundles</div>
+        </div>
+
+        <div class="summary-card">
+          <div id="passedCount" class="summary-number">0</div>
+          <div class="summary-label">Successful Outcomes</div>
+        </div>
+
+        <div class="summary-card">
+          <div id="blockedCount" class="summary-number">0</div>
+          <div class="summary-label">Blocked or Failed</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Events</h2>
+      <div id="eventList" class="event-list"></div>
+    </section>
+  </main>
+
+  <footer>
+    SourceRoot lifecycle event history · Browser-local append-only prototype.
+  </footer>
+
+  <script src="./engine/packageLifecycle.js"></script>
+
+  <script>
+    const lifecycle = window.SourceRootPackageLifecycle;
+
+    const searchInput = document.getElementById("searchInput");
+    const eventTypeFilter = document.getElementById("eventTypeFilter");
+    const outcomeFilter = document.getElementById("outcomeFilter");
+    const bundleFilter = document.getElementById("bundleFilter");
+    const eventList = document.getElementById("eventList");
+
+    let allEvents = [];
+
+    searchInput.addEventListener("input", renderEvents);
+    eventTypeFilter.addEventListener("change", renderEvents);
+    outcomeFilter.addEventListener("change", renderEvents);
+    bundleFilter.addEventListener("change", renderEvents);
+
+    document
+      .getElementById("refreshButton")
+      .addEventListener("click", loadEvents);
+
+    document
+      .getElementById("exportButton")
+      .addEventListener("click", exportEvents);
+
+    document
+      .getElementById("clearButton")
+      .addEventListener("click", clearEvents);
+
+    function loadEvents() {
+      allEvents = lifecycle.getLifecycleEvents()
+        .slice()
+        .sort((left, right) =>
+          String(right.occurredAt).localeCompare(
+            String(left.occurredAt)
+          )
+        );
+
+      populateFilters();
+      renderEvents();
+    }
+
+    function populateFilters() {
+      populateSelect(
+        eventTypeFilter,
+        "All event types",
+        uniqueValues(allEvents.map(event => event.eventType))
+      );
+
+      populateSelect(
+        outcomeFilter,
+        "All outcomes",
+        uniqueValues(allEvents.map(event => event.outcome))
+      );
+
+      populateSelect(
+        bundleFilter,
+        "All bundles",
+        uniqueValues(
+          allEvents
+            .map(event => event.bundleId)
+            .filter(Boolean)
+        )
+      );
+    }
+
+    function populateSelect(select, firstLabel, values) {
+      const currentValue = select.value;
+
+      select.innerHTML = `
+        <option value="">${escapeHtml(firstLabel)}</option>
+        ${values.map(value => `
+          <option value="${escapeAttribute(value)}">
+            ${escapeHtml(value)}
+          </option>
+        `).join("")}
+      `;
+
+      if (values.includes(currentValue)) {
+        select.value = currentValue;
+      }
+    }
+
+    function uniqueValues(values) {
+      return [...new Set(values)].sort();
+    }
+
+    function getVisibleEvents() {
+      const query = searchInput.value.trim().toLowerCase();
+      const type = eventTypeFilter.value;
+      const outcome = outcomeFilter.value;
+      const bundleId = bundleFilter.value;
+
+      return allEvents.filter(event => {
+        const searchable = JSON.stringify(event).toLowerCase();
+
+        return (
+          (!query || searchable.includes(query)) &&
+          (!type || event.eventType === type) &&
+          (!outcome || event.outcome === outcome) &&
+          (!bundleId || event.bundleId === bundleId)
+        );
+      });
+    }
+
+    function renderEvents() {
+      const events = getVisibleEvents();
+
+      document.getElementById("totalCount").textContent =
+        events.length;
+
+      document.getElementById("bundleCount").textContent =
+        new Set(
+          events.map(event => event.bundleId).filter(Boolean)
+        ).size;
+
+      document.getElementById("passedCount").textContent =
+        events.filter(event =>
+          [
+            "passed",
+            "approved",
+            "saved",
+            "exported",
+            "restored",
+            "removed"
+          ].includes(event.outcome)
+        ).length;
+
+      document.getElementById("blockedCount").textContent =
+        events.filter(event =>
+          ["blocked", "rejected", "failed"].includes(
+            event.outcome
+          )
+        ).length;
+
+      if (!events.length) {
+        eventList.innerHTML = `
+          <p class="empty">
+            No lifecycle events match the current filters.
+          </p>
+        `;
+        return;
+      }
+
+      eventList.innerHTML = events
+        .map(renderEventCard)
+        .join("");
+    }
+
+    function renderEventCard(event) {
+      return `
+        <article class="event-card ${escapeAttribute(event.outcome)}">
+          <div class="event-header">
+            <div>
+              <div class="event-title">
+                ${escapeHtml(formatEventType(event.eventType))}
+              </div>
+
+              <div class="meta">
+                ${event.bundleId
+                  ? `Bundle: ${escapeHtml(event.bundleId)}`
+                  : "No bundle ID"}
+                ${event.packageId
+                  ? `<br>Package: ${escapeHtml(event.packageId)}`
+                  : ""}
+              </div>
+            </div>
+
+            <div class="event-time">
+              ${escapeHtml(formatDate(event.occurredAt))}
+            </div>
+          </div>
+
+          <div class="pill-row">
+            <span class="pill">${escapeHtml(event.outcome)}</span>
+            <span class="pill">${escapeHtml(event.source)}</span>
+            ${event.integrityStatus
+              ? `<span class="pill">${escapeHtml(event.integrityStatus)}</span>`
+              : ""}
+            ${event.warningCount
+              ? `<span class="pill">${event.warningCount} warning(s)</span>`
+              : ""}
+            ${event.errorCount
+              ? `<span class="pill">${event.errorCount} error(s)</span>`
+              : ""}
+          </div>
+
+          ${renderCounts(event.counts)}
+
+          <details>
+            <summary>Full event record</summary>
+            <pre>${escapeHtml(JSON.stringify(event, null, 2))}</pre>
+          </details>
+        </article>
+      `;
+    }
+
+    function renderCounts(counts) {
+      if (!counts || typeof counts !== "object") {
+        return "";
+      }
+
+      return `
+        <div class="pill-row">
+          ${Object.entries(counts)
+            .map(([key, value]) => `
+              <span class="pill">
+                ${escapeHtml(key)}: ${escapeHtml(value)}
+              </span>
+            `)
+            .join("")}
+        </div>
+      `;
+    }
+
+    function exportEvents() {
+      const artifact = {
+        exportType: "sourceroot-lifecycle-event-history",
+        exportVersion: "1.0.0",
+        exportedAt: new Date().toISOString(),
+        eventCount: allEvents.length,
+        events: allEvents
+      };
+
+      lifecycle.downloadJsonFile(
+        artifact,
+        "sourceroot-lifecycle-event-history.json"
+      );
+    }
+
+    function clearEvents() {
+      if (
+        !window.confirm(
+          "Clear all SourceRoot lifecycle event history stored in this browser?"
+        )
+      ) {
+        return;
+      }
+
+      lifecycle.clearLifecycleEvents();
+      loadEvents();
+    }
+
+    function formatEventType(value) {
+      return String(value || "unknown event")
+        .split("-")
+        .map(part =>
+          part.charAt(0).toUpperCase() + part.slice(1)
+        )
+        .join(" ");
+    }
+
+    function formatDate(value) {
+      const date = new Date(value);
+
+      return Number.isNaN(date.getTime())
+        ? value || "Unknown time"
+        : date.toLocaleString();
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function escapeAttribute(value) {
+      return escapeHtml(value);
+    }
+
+    loadEvents();
+  </script>
+</body>
+</html>
