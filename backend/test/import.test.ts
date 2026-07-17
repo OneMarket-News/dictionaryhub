@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test, { after, beforeEach } from "node:test";
 import request from "supertest";
+
 import { createApp } from "../src/app.js";
 import {
   closeTestDatabase,
@@ -9,6 +10,7 @@ import {
 } from "./helpers/database.js";
 
 const app = createApp();
+
 beforeEach(async () => {
   await resetTestDatabase();
 });
@@ -16,7 +18,6 @@ beforeEach(async () => {
 after(async () => {
   await closeTestDatabase();
 });
-
 
 const validFixtureUrl = new URL(
   "./fixtures/historyroot-valid.json",
@@ -69,6 +70,41 @@ test("GET /api/v1/import/:bundleId retrieves an imported bundle", async () => {
   assert.equal(response.body.domain, "HistoryRoot");
   assert.equal(response.body.nodes.length, 11);
   assert.equal(response.body.assertions.length, 13);
+});
+
+test("GET /api/v1/import lists imported bundle metadata", async () => {
+  const bundle = await readJsonFixture(validFixtureUrl);
+
+  await request(app)
+    .post("/api/v1/import")
+    .send(bundle)
+    .expect(201);
+
+  const response = await request(app)
+    .get("/api/v1/import")
+    .expect("Content-Type", /json/)
+    .expect(200);
+
+  assert.equal(response.body.page, 1);
+  assert.equal(response.body.limit, 25);
+  assert.equal(response.body.total, 1);
+  assert.equal(response.body.totalPages, 1);
+  assert.equal(response.body.bundles.length, 1);
+  assert.equal(
+    response.body.bundles[0].bundleId,
+    "historyroot-fire-events-v2",
+  );
+  assert.equal(
+    response.body.bundles[0].bundleType,
+    "sourceroot-import-bundle",
+  );
+  assert.equal(response.body.bundles[0].version, "0.2");
+  assert.equal(response.body.bundles[0].domain, "HistoryRoot");
+  assert.equal(typeof response.body.bundles[0].createdAt, "string");
+  assert.equal(typeof response.body.bundles[0].updatedAt, "string");
+
+  assert.equal("nodes" in response.body.bundles[0], false);
+  assert.equal("assertions" in response.body.bundles[0], false);
 });
 
 test("POST /api/v1/import blocks an invalid bundle", async () => {

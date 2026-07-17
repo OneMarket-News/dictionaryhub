@@ -3,6 +3,7 @@ import { Router } from "express";
 import {
   getImportedBundle,
   getImportedBundleCount,
+  listImportedBundles,
   saveImportedBundle,
 } from "../services/import-store.js";
 import { validateBundle } from "../services/validator.js";
@@ -32,6 +33,36 @@ importRouter.post("/", async (request, response, next) => {
       storedBundles,
       validation,
     });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+importRouter.get("/", async (request, response, next) => {
+  try {
+    const page = Number.parseInt(String(request.query.page ?? "1"), 10);
+    const limit = Number.parseInt(String(request.query.limit ?? "25"), 10);
+
+    if (!Number.isInteger(page) || page < 1) {
+      return response.status(400).json({
+        error: "INVALID_PAGE",
+        message: "page must be a positive integer.",
+      });
+    }
+
+    if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
+      return response.status(400).json({
+        error: "INVALID_LIMIT",
+        message: "limit must be an integer between 1 and 100.",
+      });
+    }
+
+    const result = await listImportedBundles({
+      page,
+      limit,
+    });
+
+    return response.status(200).json(result);
   } catch (error) {
     return next(error);
   }
