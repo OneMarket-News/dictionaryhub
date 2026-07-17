@@ -1,4 +1,5 @@
 import "dotenv/config";
+import "dotenv/config";
 import { createApp } from "./app.js";
 import { closeDatabase } from "./lib/database.js";
 
