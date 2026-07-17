@@ -8,12 +8,14 @@
     "node": ">=22.0.0"
   },
   "scripts": {
-    "dev": "tsx watch src/server.ts",
-    "start": "tsx src/server.ts",
-    "build": "tsc -p tsconfig.json",
-    "start:compiled": "node dist/server.js",
-    "test": "node --import tsx --test test/**/*.test.ts",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+     "dev": "tsx watch src/server.ts",
+  "start": "tsx src/server.ts",
+  "build": "tsc -p tsconfig.json",
+  "start:compiled": "node dist/server.js",
+  "test": "node --env-file=.env.test --import tsx --test test/**/*.test.ts",
+  "db:migrate": "tsx src/scripts/migrate.ts",
+  "db:migrate:test": "node --env-file=.env.test --import tsx src/scripts/migrate.ts",
+  "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "cors": "^2.8.6",

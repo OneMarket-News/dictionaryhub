@@ -1,10 +1,22 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import test from "node:test";
+import test, { after, beforeEach } from "node:test";
 import request from "supertest";
 import { createApp } from "../src/app.js";
+import {
+  closeTestDatabase,
+  resetTestDatabase,
+} from "./helpers/database.js";
 
 const app = createApp();
+beforeEach(async () => {
+  await resetTestDatabase();
+});
+
+after(async () => {
+  await closeTestDatabase();
+});
+
 
 const validFixtureUrl = new URL(
   "./fixtures/historyroot-valid.json",
