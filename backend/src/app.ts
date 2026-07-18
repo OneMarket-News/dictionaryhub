@@ -6,9 +6,13 @@ import express, {
 } from "express";
 
 import { requestIdMiddleware } from "./lib/request-id.js";
+import { assertionsRouter } from "./routes/assertions.js";
+import { edgesRouter } from "./routes/edges.js";
 import { healthRouter } from "./routes/health.js";
 import { importRouter } from "./routes/import.js";
 import { nodesRouter } from "./routes/nodes.js";
+import { revisionsRouter } from "./routes/revisions.js";
+import { sourcesRouter } from "./routes/sources.js";
 import { validateRouter } from "./routes/validate.js";
 
 export function createApp() {
@@ -34,6 +38,10 @@ export function createApp() {
   app.use("/api/v1", validateRouter);
   app.use("/api/v1/import", importRouter);
   app.use("/api/v1/nodes", nodesRouter);
+  app.use("/api/v1/assertions", assertionsRouter);
+  app.use("/api/v1/edges", edgesRouter);
+  app.use("/api/v1/sources", sourcesRouter);
+  app.use("/api/v1/revisions", revisionsRouter);
 
   app.use((_request, response) => {
     response.status(404).json({

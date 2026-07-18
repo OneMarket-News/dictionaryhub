@@ -364,6 +364,381 @@ test("GET /api/v1/nodes/:nodeId/assertions returns 404 for an unknown node", asy
   assert.match(response.body.message, /does-not-exist/);
 });
 
+test("GET /api/v1/nodes/:nodeId/edges retrieves incoming and outgoing normalized edges", async () => {
+  const bundle = await readJsonFixture(validFixtureUrl);
+
+  await request(app)
+    .post("/api/v1/import")
+    .send(bundle)
+    .expect(201);
+
+  const response = await request(app)
+    .get("/api/v1/nodes/event-great-chicago-fire/edges")
+    .expect("Content-Type", /json/)
+    .expect(200);
+
+  assert.equal(response.body.nodeId, "event-great-chicago-fire");
+  assert.equal(response.body.total, 6);
+  assert.equal(response.body.incomingTotal, 1);
+  assert.equal(response.body.outgoingTotal, 5);
+  assert.equal(response.body.incoming.length, 1);
+  assert.equal(response.body.outgoing.length, 5);
+
+  const occurredInChicago = response.body.outgoing.find(
+    (edge: { edgeId: string }) =>
+      edge.edgeId === "edge-fire-occurred-in-chicago",
+  );
+
+  assert.ok(occurredInChicago);
+  assert.equal(
+    occurredInChicago.bundleId,
+    "historyroot-fire-events-v2",
+  );
+  assert.equal(
+    occurredInChicago.fromNodeId,
+    "event-great-chicago-fire",
+  );
+  assert.equal(
+    occurredInChicago.toNodeId,
+    "place-chicago-1871",
+  );
+  assert.equal(
+    occurredInChicago.relationshipType,
+    "OCCURRED_IN",
+  );
+  assert.equal(occurredInChicago.label, "occurred in");
+  assert.equal(occurredInChicago.domain, "HistoryRoot");
+  assert.equal(occurredInChicago.credibilityTier, "high");
+  assert.equal(occurredInChicago.confidence, "strong");
+  assert.equal(
+    occurredInChicago.verificationStatus,
+    "source-backed",
+  );
+  assert.equal(occurredInChicago.reviewStatus, "reviewed");
+  assert.equal(occurredInChicago.supportLevel, "direct");
+  assert.equal(
+    occurredInChicago.relationshipStrength,
+    "strong",
+  );
+  assert.equal(occurredInChicago.interpretationLevel, "low");
+
+  assert.deepEqual(occurredInChicago.sourceIds, [
+    "source-loc-guide",
+  ]);
+
+  assert.equal(typeof occurredInChicago.createdAt, "string");
+  assert.equal(typeof occurredInChicago.updatedAt, "string");
+
+  const fireDepartmentResponse = response.body.incoming.find(
+    (edge: { edgeId: string }) =>
+      edge.edgeId === "edge-fire-department-responded",
+  );
+
+  assert.ok(fireDepartmentResponse);
+  assert.equal(
+    fireDepartmentResponse.fromNodeId,
+    "institution-chicago-fire-department",
+  );
+  assert.equal(
+    fireDepartmentResponse.toNodeId,
+    "event-great-chicago-fire",
+  );
+  assert.equal(
+    fireDepartmentResponse.relationshipType,
+    "RESPONDED_TO",
+  );
+});
+
+test("GET /api/v1/nodes/:nodeId/edges returns empty arrays for a node without edges", async () => {
+  const bundle = await readJsonFixture(validFixtureUrl);
+  const nodes = bundle.nodes;
+
+  if (!Array.isArray(nodes)) {
+    throw new Error("Expected the fixture to contain a nodes array.");
+  }
+
+  nodes.push({
+    id: "concept-no-edges",
+    title: "Node Without Edges",
+    type: "concept",
+    domain: "HistoryRoot",
+    summary: "A test node intentionally created without edges.",
+    sourceIds: [],
+    status: "test",
+    metadata: {},
+  });
+
+  await request(app)
+    .post("/api/v1/import")
+    .send(bundle)
+    .expect(201);
+
+  const response = await request(app)
+    .get("/api/v1/nodes/concept-no-edges/edges")
+    .expect("Content-Type", /json/)
+    .expect(200);
+
+  assert.equal(response.body.nodeId, "concept-no-edges");
+  assert.equal(response.body.total, 0);
+  assert.equal(response.body.incomingTotal, 0);
+  assert.equal(response.body.outgoingTotal, 0);
+  assert.deepEqual(response.body.incoming, []);
+  assert.deepEqual(response.body.outgoing, []);
+});
+
+test("GET /api/v1/nodes/:nodeId/edges returns 404 for an unknown node", async () => {
+  const response = await request(app)
+    .get("/api/v1/nodes/does-not-exist/edges")
+    .expect("Content-Type", /json/)
+    .expect(404);
+
+  assert.equal(response.body.error, "NODE_NOT_FOUND");
+  assert.match(response.body.message, /does-not-exist/);
+});
+
+test("GET /api/v1/assertions/:assertionId retrieves a normalized assertion", async () => {
+  const bundle = await readJsonFixture(validFixtureUrl);
+
+  await request(app)
+    .post("/api/v1/import")
+    .send(bundle)
+    .expect(201);
+
+  const response = await request(app)
+    .get("/api/v1/assertions/assertion-fire-dates")
+    .expect("Content-Type", /json/)
+    .expect(200);
+
+  assert.equal(response.body.assertionId, "assertion-fire-dates");
+  assert.equal(response.body.bundleId, "historyroot-fire-events-v2");
+  assert.equal(response.body.nodeId, "event-great-chicago-fire");
+  assert.equal(response.body.assertionType, "date-range");
+  assert.equal(response.body.label, "Date Range");
+
+  assert.equal(
+    response.body.summary,
+    "The Great Chicago Fire burned from the evening of October 8 through October 10, 1871.",
+  );
+
+  assert.equal(
+    response.body.body,
+    "The Great Chicago Fire burned from the evening of October 8 through October 10, 1871.",
+  );
+
+  assert.equal(response.body.domain, "HistoryRoot");
+  assert.equal(response.body.credibilityTier, "high");
+  assert.equal(response.body.confidence, "strong");
+  assert.equal(response.body.verificationStatus, "source-backed");
+  assert.equal(response.body.reviewStatus, "reviewed");
+  assert.equal(response.body.supportLevel, "direct");
+  assert.equal(response.body.interpretationLevel, "low");
+
+  assert.deepEqual(response.body.sourceIds, [
+    "source-loc-guide",
+    "source-loc-map-blog",
+  ]);
+
+  assert.equal(typeof response.body.createdAt, "string");
+  assert.equal(typeof response.body.updatedAt, "string");
+});
+
+test("GET /api/v1/assertions/:assertionId returns 404 for an unknown assertion", async () => {
+  const response = await request(app)
+    .get("/api/v1/assertions/does-not-exist")
+    .expect("Content-Type", /json/)
+    .expect(404);
+
+  assert.equal(response.body.error, "ASSERTION_NOT_FOUND");
+  assert.match(response.body.message, /does-not-exist/);
+});
+
+
+
+test("GET /api/v1/edges/:edgeId retrieves a normalized edge", async () => {
+  const bundle = await readJsonFixture(validFixtureUrl);
+
+  await request(app)
+    .post("/api/v1/import")
+    .send(bundle)
+    .expect(201);
+
+  const response = await request(app)
+    .get("/api/v1/edges/edge-fire-occurred-in-chicago")
+    .expect("Content-Type", /json/)
+    .expect(200);
+
+  assert.equal(
+    response.body.edgeId,
+    "edge-fire-occurred-in-chicago",
+  );
+  assert.equal(
+    response.body.bundleId,
+    "historyroot-fire-events-v2",
+  );
+  assert.equal(
+    response.body.fromNodeId,
+    "event-great-chicago-fire",
+  );
+  assert.equal(
+    response.body.toNodeId,
+    "place-chicago-1871",
+  );
+  assert.equal(
+    response.body.relationshipType,
+    "OCCURRED_IN",
+  );
+  assert.equal(response.body.label, "occurred in");
+  assert.equal(
+    response.body.summary,
+    "Great Chicago Fire occurred in Chicago.",
+  );
+  assert.equal(response.body.domain, "HistoryRoot");
+  assert.equal(response.body.credibilityTier, "high");
+  assert.equal(response.body.confidence, "strong");
+  assert.equal(
+    response.body.verificationStatus,
+    "source-backed",
+  );
+  assert.equal(response.body.reviewStatus, "reviewed");
+  assert.equal(response.body.supportLevel, "direct");
+  assert.equal(
+    response.body.relationshipStrength,
+    "strong",
+  );
+  assert.equal(response.body.interpretationLevel, "low");
+
+  assert.deepEqual(response.body.sourceIds, [
+    "source-loc-guide",
+  ]);
+
+  assert.equal(typeof response.body.createdAt, "string");
+  assert.equal(typeof response.body.updatedAt, "string");
+});
+
+test("GET /api/v1/edges/:edgeId returns 404 for an unknown edge", async () => {
+  const response = await request(app)
+    .get("/api/v1/edges/does-not-exist")
+    .expect("Content-Type", /json/)
+    .expect(404);
+
+  assert.equal(response.body.error, "EDGE_NOT_FOUND");
+  assert.match(response.body.message, /does-not-exist/);
+});
+
+test("GET /api/v1/sources/:sourceId retrieves a normalized source", async () => {
+  const bundle = await readJsonFixture(validFixtureUrl);
+
+  await request(app)
+    .post("/api/v1/import")
+    .send(bundle)
+    .expect(201);
+
+  const response = await request(app)
+    .get("/api/v1/sources/source-loc-guide")
+    .expect("Content-Type", /json/)
+    .expect(200);
+
+  assert.equal(response.body.sourceId, "source-loc-guide");
+  assert.equal(
+    response.body.bundleId,
+    "historyroot-fire-events-v2",
+  );
+  assert.equal(
+    response.body.name,
+    "Great Chicago Fire of 1871: Topics in Chronicling America",
+  );
+  assert.equal(response.body.sourceType, "archive-guide");
+  assert.equal(response.body.domain, "HistoryRoot");
+  assert.equal(response.body.publisher, "Library of Congress");
+  assert.equal(response.body.qualityTier, "very-high");
+  assert.equal(response.body.credibilityTier, "very-high");
+  assert.equal(response.body.verificationStatus, "reviewed");
+  assert.equal(response.body.sourceClass, "archive-guide");
+  assert.equal(
+    response.body.license,
+    "External source; follow publisher terms",
+  );
+  assert.equal(
+    response.body.licenseStatus,
+    "linked-reference-only",
+  );
+  assert.equal(response.body.reviewStatus, "reviewed");
+  assert.equal(response.body.lastReviewed, "2026-07-16");
+  assert.equal(
+    response.body.url,
+    "https://guides.loc.gov/chronicling-america-great-chicago-fire",
+  );
+  assert.equal(
+    response.body.notes,
+    "Imported from the HistoryRoot V2 source registry.",
+  );
+
+  assert.equal(typeof response.body.createdAt, "string");
+  assert.equal(typeof response.body.updatedAt, "string");
+});
+
+test("GET /api/v1/sources/:sourceId returns 404 for an unknown source", async () => {
+  const response = await request(app)
+    .get("/api/v1/sources/does-not-exist")
+    .expect("Content-Type", /json/)
+    .expect(404);
+
+  assert.equal(response.body.error, "SOURCE_NOT_FOUND");
+  assert.match(response.body.message, /does-not-exist/);
+});
+
+test("GET /api/v1/revisions/:revisionId retrieves a normalized revision", async () => {
+  const bundle = await readJsonFixture(validFixtureUrl);
+
+  await request(app)
+    .post("/api/v1/import")
+    .send(bundle)
+    .expect(201);
+
+  const response = await request(app)
+    .get("/api/v1/revisions/revision-oleary-story-review")
+    .expect("Content-Type", /json/)
+    .expect(200);
+
+  assert.equal(
+    response.body.revisionId,
+    "revision-oleary-story-review",
+  );
+  assert.equal(
+    response.body.bundleId,
+    "historyroot-fire-events-v2",
+  );
+  assert.equal(
+    response.body.objectType,
+    "historical-narrative",
+  );
+  assert.equal(
+    response.body.objectId,
+    "concept-oleary-cow-myth",
+  );
+  assert.equal(
+    response.body.revisionType,
+    "interpretation-update",
+  );
+  assert.equal(
+    response.body.summary,
+    "Marks the cow-and-lantern story as disputed rather than established fact.",
+  );
+  assert.equal(response.body.status, "current");
+  assert.equal(typeof response.body.createdAt, "string");
+  assert.equal(typeof response.body.updatedAt, "string");
+});
+
+test("GET /api/v1/revisions/:revisionId returns 404 for an unknown revision", async () => {
+  const response = await request(app)
+    .get("/api/v1/revisions/does-not-exist")
+    .expect("Content-Type", /json/)
+    .expect(404);
+
+  assert.equal(response.body.error, "REVISION_NOT_FOUND");
+  assert.match(response.body.message, /does-not-exist/);
+});
+
 test("GET /api/v1/import/:bundleId retrieves an imported bundle", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
