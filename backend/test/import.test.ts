@@ -235,6 +235,108 @@ test("POST /api/v1/import safely replaces normalized records on re-import", asyn
   assert.equal(Number(counts.edge_sources), 12);
 });
 
+test("GET /api/v1/nodes lists normalized nodes with default pagination", async () => {
+  const bundle = await readJsonFixture(validFixtureUrl);
+
+  await request(app)
+    .post("/api/v1/import")
+    .send(bundle)
+    .expect(201);
+
+  const response = await request(app)
+    .get("/api/v1/nodes")
+    .expect("Content-Type", /json/)
+    .expect(200);
+
+  assert.equal(response.body.page, 1);
+  assert.equal(response.body.limit, 25);
+  assert.equal(response.body.total, 11);
+  assert.equal(response.body.totalPages, 1);
+  assert.equal(response.body.nodes.length, 11);
+
+  assert.equal(
+    response.body.nodes[0].title,
+    "Catherine O'Leary",
+  );
+  assert.equal(
+    response.body.nodes[0].nodeId,
+    "person-catherine-oleary",
+  );
+  assert.equal(
+    response.body.nodes[0].bundleId,
+    "historyroot-fire-events-v2",
+  );
+  assert.equal(response.body.nodes[0].domain, "HistoryRoot");
+  assert.ok(Array.isArray(response.body.nodes[0].sourceIds));
+  assert.equal(typeof response.body.nodes[0].createdAt, "string");
+  assert.equal(typeof response.body.nodes[0].updatedAt, "string");
+});
+
+test("GET /api/v1/nodes filters normalized nodes", async () => {
+  const bundle = await readJsonFixture(validFixtureUrl);
+
+  await request(app)
+    .post("/api/v1/import")
+    .send(bundle)
+    .expect(201);
+
+  const response = await request(app)
+    .get(
+      "/api/v1/nodes?bundleId=historyroot-fire-events-v2&domain=HistoryRoot&nodeType=event&status=historical",
+    )
+    .expect("Content-Type", /json/)
+    .expect(200);
+
+  assert.equal(response.body.page, 1);
+  assert.equal(response.body.limit, 25);
+  assert.equal(response.body.total, 2);
+  assert.equal(response.body.totalPages, 1);
+  assert.equal(response.body.nodes.length, 2);
+
+  assert.deepEqual(
+    response.body.nodes.map(
+      (node: { nodeId: string }) => node.nodeId,
+    ),
+    [
+      "event-great-chicago-fire",
+      "event-peshtigo-fire",
+    ],
+  );
+
+  for (const node of response.body.nodes) {
+    assert.equal(node.bundleId, "historyroot-fire-events-v2");
+    assert.equal(node.domain, "HistoryRoot");
+    assert.equal(node.nodeType, "event");
+    assert.equal(node.status, "historical");
+  }
+});
+
+test("GET /api/v1/nodes rejects an invalid page", async () => {
+  const response = await request(app)
+    .get("/api/v1/nodes?page=0")
+    .expect("Content-Type", /json/)
+    .expect(400);
+
+  assert.equal(response.body.error, "INVALID_PAGE");
+  assert.equal(
+    response.body.message,
+    "page must be a positive integer.",
+  );
+});
+
+test("GET /api/v1/nodes rejects an invalid limit", async () => {
+  const response = await request(app)
+    .get("/api/v1/nodes?limit=101")
+    .expect("Content-Type", /json/)
+    .expect(400);
+
+  assert.equal(response.body.error, "INVALID_LIMIT");
+  assert.equal(
+    response.body.message,
+    "limit must be an integer between 1 and 100.",
+  );
+});
+
 test("GET /api/v1/nodes/:nodeId retrieves a normalized node", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
