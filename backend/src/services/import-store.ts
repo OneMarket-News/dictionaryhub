@@ -25,6 +25,20 @@ export interface ListImportedBundlesResult {
   bundles: ImportedBundleMetadata[];
 }
 
+export interface DeletedImportedBundleCounts {
+  importedBundles: number;
+  nodes: number;
+  assertions: number;
+  edges: number;
+  sources: number;
+  revisions: number;
+  nodeSources: number;
+  assertionSources: number;
+  edgeSources: number;
+}
+
+const INTEGRATION_TEST_PREFIX = "sourceroot-integration-test-";
+
 type UnknownRecord = Record<string, unknown>;
 
 function requireDatabase() {
@@ -655,4 +669,157 @@ export async function listImportedBundles(
       updatedAt: row.updated_at.toISOString(),
     })),
   };
+}
+
+export async function deleteImportedTestBundle(
+  bundleId: string,
+): Promise<DeletedImportedBundleCounts> {
+  if (!bundleId.startsWith(INTEGRATION_TEST_PREFIX)) {
+    throw new Error(
+      `Refusing to delete bundle "${bundleId}". Only bundle IDs beginning with "${INTEGRATION_TEST_PREFIX}" may be deleted.`,
+    );
+  }
+
+  const database = requireDatabase();
+  const client = await database.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const bundleResult = await client.query<{
+      bundle_id: string;
+    }>(
+      `
+        SELECT bundle_id
+        FROM imported_bundles
+        WHERE bundle_id = $1
+        FOR UPDATE;
+      `,
+      [bundleId],
+    );
+
+    if (!bundleResult.rows[0]) {
+      await client.query("ROLLBACK");
+
+      return {
+        importedBundles: 0,
+        nodes: 0,
+        assertions: 0,
+        edges: 0,
+        sources: 0,
+        revisions: 0,
+        nodeSources: 0,
+        assertionSources: 0,
+        edgeSources: 0,
+      };
+    }
+
+    const countResult = await client.query<{
+      imported_bundles: string;
+      nodes: string;
+      assertions: string;
+      edges: string;
+      sources: string;
+      revisions: string;
+      node_sources: string;
+      assertion_sources: string;
+      edge_sources: string;
+    }>(
+      `
+        SELECT
+          (
+            SELECT COUNT(*)
+            FROM imported_bundles
+            WHERE bundle_id = $1
+          ) AS imported_bundles,
+          (
+            SELECT COUNT(*)
+            FROM nodes
+            WHERE bundle_id = $1
+          ) AS nodes,
+          (
+            SELECT COUNT(*)
+            FROM assertions
+            WHERE bundle_id = $1
+          ) AS assertions,
+          (
+            SELECT COUNT(*)
+            FROM edges
+            WHERE bundle_id = $1
+          ) AS edges,
+          (
+            SELECT COUNT(*)
+            FROM sources
+            WHERE bundle_id = $1
+          ) AS sources,
+          (
+            SELECT COUNT(*)
+            FROM revisions
+            WHERE bundle_id = $1
+          ) AS revisions,
+          (
+            SELECT COUNT(*)
+            FROM node_sources
+            WHERE bundle_id = $1
+          ) AS node_sources,
+          (
+            SELECT COUNT(*)
+            FROM assertion_sources
+            WHERE bundle_id = $1
+          ) AS assertion_sources,
+          (
+            SELECT COUNT(*)
+            FROM edge_sources
+            WHERE bundle_id = $1
+          ) AS edge_sources;
+      `,
+      [bundleId],
+    );
+
+    const row = countResult.rows[0];
+
+    /*
+     * This helper removes revisions, nodes, assertions, edges, sources,
+     * and source-link rows through the schema's cascade relationships.
+     */
+    await deleteExistingNormalizedRecords(client, bundleId);
+
+    const deletedBundleResult = await client.query(
+      `
+        DELETE FROM imported_bundles
+        WHERE bundle_id = $1;
+      `,
+      [bundleId],
+    );
+
+    if (deletedBundleResult.rowCount !== 1) {
+      throw new Error(
+        `Expected to delete one imported bundle for "${bundleId}", but deleted ${deletedBundleResult.rowCount ?? 0}.`,
+      );
+    }
+
+    await client.query("COMMIT");
+
+    return {
+      importedBundles: Number(row?.imported_bundles ?? 0),
+      nodes: Number(row?.nodes ?? 0),
+      assertions: Number(row?.assertions ?? 0),
+      edges: Number(row?.edges ?? 0),
+      sources: Number(row?.sources ?? 0),
+      revisions: Number(row?.revisions ?? 0),
+      nodeSources: Number(row?.node_sources ?? 0),
+      assertionSources: Number(row?.assertion_sources ?? 0),
+      edgeSources: Number(row?.edge_sources ?? 0),
+    };
+  } catch (error) {
+    try {
+      await client.query("ROLLBACK");
+    } catch {
+      // Preserve the original database error.
+    }
+
+    throw error;
+  } finally {
+    client.release();
+  }
 }

@@ -1841,3 +1841,230 @@ test("GET /api/v1/import/:bundleId returns 404 for an unknown bundle", async () 
   assert.equal(response.body.error, "BUNDLE_NOT_FOUND");
   assert.match(response.body.message, /does-not-exist/);
 });
+
+test("DELETE /api/v1/import/:bundleId deletes an integration-test bundle and normalized records", async () => {
+  const bundle = await readJsonFixture(validFixtureUrl);
+  const bundleId = "sourceroot-integration-test-delete-success";
+
+  bundle.bundleId = bundleId;
+
+  await request(app)
+    .post("/api/v1/import")
+    .send(bundle)
+    .expect(201);
+
+  const response = await request(app)
+    .delete(`/api/v1/import/${bundleId}`)
+    .expect("Content-Type", /json/)
+    .expect(200);
+
+  assert.equal(response.body.deleted, true);
+  assert.equal(response.body.bundleId, bundleId);
+  assert.equal(response.body.storedBundles, 0);
+
+  assert.deepEqual(response.body.deletedCounts, {
+    importedBundles: 1,
+    nodes: 11,
+    assertions: 13,
+    edges: 11,
+    sources: 11,
+    revisions: 2,
+    nodeSources: 26,
+    assertionSources: 22,
+    edgeSources: 12,
+  });
+
+  await request(app)
+    .get(`/api/v1/import/${bundleId}`)
+    .expect("Content-Type", /json/)
+    .expect(404);
+
+  const pool = getPool();
+
+  if (!pool) {
+    throw new Error(
+      "Test database is not configured. Confirm that .env.test contains DATABASE_URL.",
+    );
+  }
+
+  const result = await pool.query<{
+    imported_bundles: string;
+    sources: string;
+    nodes: string;
+    assertions: string;
+    edges: string;
+    revisions: string;
+    node_sources: string;
+    assertion_sources: string;
+    edge_sources: string;
+  }>(`
+    SELECT
+      (SELECT COUNT(*) FROM imported_bundles) AS imported_bundles,
+      (SELECT COUNT(*) FROM sources) AS sources,
+      (SELECT COUNT(*) FROM nodes) AS nodes,
+      (SELECT COUNT(*) FROM assertions) AS assertions,
+      (SELECT COUNT(*) FROM edges) AS edges,
+      (SELECT COUNT(*) FROM revisions) AS revisions,
+      (SELECT COUNT(*) FROM node_sources) AS node_sources,
+      (SELECT COUNT(*) FROM assertion_sources) AS assertion_sources,
+      (SELECT COUNT(*) FROM edge_sources) AS edge_sources;
+  `);
+
+  const counts = result.rows[0];
+
+  if (!counts) {
+    throw new Error("Delete verification query returned no result.");
+  }
+
+  assert.equal(Number(counts.imported_bundles), 0);
+  assert.equal(Number(counts.sources), 0);
+  assert.equal(Number(counts.nodes), 0);
+  assert.equal(Number(counts.assertions), 0);
+  assert.equal(Number(counts.edges), 0);
+  assert.equal(Number(counts.revisions), 0);
+  assert.equal(Number(counts.node_sources), 0);
+  assert.equal(Number(counts.assertion_sources), 0);
+  assert.equal(Number(counts.edge_sources), 0);
+});
+
+test("DELETE /api/v1/import/:bundleId returns 404 for a missing integration-test bundle", async () => {
+  const bundleId = "sourceroot-integration-test-does-not-exist";
+
+  const response = await request(app)
+    .delete(`/api/v1/import/${bundleId}`)
+    .expect("Content-Type", /json/)
+    .expect(404);
+
+  assert.equal(response.body.deleted, false);
+  assert.equal(response.body.error, "BUNDLE_NOT_FOUND");
+  assert.match(response.body.message, new RegExp(bundleId));
+});
+
+test("DELETE /api/v1/import/:bundleId forbids deletion of a normal bundle", async () => {
+  const bundle = await readJsonFixture(validFixtureUrl);
+
+  await request(app)
+    .post("/api/v1/import")
+    .send(bundle)
+    .expect(201);
+
+  const response = await request(app)
+    .delete("/api/v1/import/historyroot-fire-events-v2")
+    .expect("Content-Type", /json/)
+    .expect(403);
+
+  assert.equal(response.body.deleted, false);
+  assert.equal(response.body.error, "BUNDLE_DELETE_FORBIDDEN");
+  assert.equal(
+    response.body.requiredPrefix,
+    "sourceroot-integration-test-",
+  );
+
+  const storedBundle = await request(app)
+    .get("/api/v1/import/historyroot-fire-events-v2")
+    .expect("Content-Type", /json/)
+    .expect(200);
+
+  assert.equal(storedBundle.body.bundleId, "historyroot-fire-events-v2");
+});
+
+test("DELETE /api/v1/import/:bundleId leaves unrelated bundles intact", async () => {
+  const normalBundle = await readJsonFixture(validFixtureUrl);
+  const testBundle = structuredClone(normalBundle);
+  const testBundleId = "sourceroot-integration-test-isolated-delete";
+
+  await request(app)
+    .post("/api/v1/import")
+    .send(normalBundle)
+    .expect(201);
+
+  /*
+   * Normalized object IDs are globally unique. Build an exact ID map from
+   * the fixture, then rewrite every matching ID and reference recursively.
+   */
+  const idMap = new Map<string, string>();
+
+  for (const collectionName of [
+    "sources",
+    "nodes",
+    "assertions",
+    "edges",
+    "revisions",
+  ]) {
+    const collection = testBundle[collectionName];
+
+    if (!Array.isArray(collection)) {
+      continue;
+    }
+
+    for (const item of collection) {
+      if (typeof item !== "object" || item === null) {
+        continue;
+      }
+
+      const record = item as Record<string, unknown>;
+
+      for (const idField of ["id", "revisionId"]) {
+        const value = record[idField];
+
+        if (typeof value === "string") {
+          idMap.set(value, `${testBundleId}:${value}`);
+        }
+      }
+    }
+  }
+
+  const rewriteIds = (value: unknown): unknown => {
+    if (typeof value === "string") {
+      return idMap.get(value) ?? value;
+    }
+
+    if (Array.isArray(value)) {
+      return value.map(rewriteIds);
+    }
+
+    if (typeof value === "object" && value !== null) {
+      return Object.fromEntries(
+        Object.entries(value).map(([key, nestedValue]) => [
+          key,
+          rewriteIds(nestedValue),
+        ]),
+      );
+    }
+
+    return value;
+  };
+
+  const isolatedTestBundle = rewriteIds(
+    testBundle,
+  ) as Record<string, unknown>;
+
+  isolatedTestBundle.bundleId = testBundleId;
+
+  await request(app)
+    .post("/api/v1/import")
+    .send(isolatedTestBundle)
+    .expect(201);
+
+  const deleteResponse = await request(app)
+    .delete(`/api/v1/import/${testBundleId}`)
+    .expect("Content-Type", /json/)
+    .expect(200);
+
+  assert.equal(deleteResponse.body.deleted, true);
+  assert.equal(deleteResponse.body.storedBundles, 1);
+
+  await request(app)
+    .get(`/api/v1/import/${testBundleId}`)
+    .expect(404);
+
+  const normalResponse = await request(app)
+    .get("/api/v1/import/historyroot-fire-events-v2")
+    .expect("Content-Type", /json/)
+    .expect(200);
+
+  assert.equal(
+    normalResponse.body.bundleId,
+    "historyroot-fire-events-v2",
+  );
+});
