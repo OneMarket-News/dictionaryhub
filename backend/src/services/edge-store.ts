@@ -26,6 +26,29 @@ export interface NodeEdgesResult {
   outgoing: NormalizedEdge[];
 }
 
+export interface ListEdgesOptions {
+  page: number;
+  limit: number;
+  bundleId?: string;
+  fromNodeId?: string;
+  toNodeId?: string;
+  domain?: string;
+  relationshipType?: string;
+  reviewStatus?: string;
+  verificationStatus?: string;
+  supportLevel?: string;
+  relationshipStrength?: string;
+  interpretationLevel?: string;
+}
+
+export interface ListEdgesResult {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  edges: NormalizedEdge[];
+}
+
 interface EdgeRow {
   edge_id: string;
   bundle_id: string;
@@ -80,6 +103,39 @@ function mapEdgeRow(row: EdgeRow): NormalizedEdge {
   };
 }
 
+const edgeSelect = `
+  SELECT
+    e.edge_id,
+    e.bundle_id,
+    e.from_node_id,
+    e.to_node_id,
+    e.relationship_type,
+    e.label,
+    e.summary,
+    e.domain,
+    e.credibility_tier,
+    e.confidence,
+    e.verification_status,
+    e.review_status,
+    e.support_level,
+    e.relationship_strength,
+    e.interpretation_level,
+    e.created_at,
+    e.updated_at,
+    COALESCE(
+      (
+        SELECT ARRAY_AGG(
+          es.source_id
+          ORDER BY es.source_id
+        )
+        FROM edge_sources es
+        WHERE es.edge_id = e.edge_id
+      ),
+      ARRAY[]::TEXT[]
+    ) AS source_ids
+  FROM edges e
+`;
+
 export async function getEdgeById(
   edgeId: string,
 ): Promise<NormalizedEdge | undefined> {
@@ -87,51 +143,8 @@ export async function getEdgeById(
 
   const result = await database.query<EdgeRow>(
     `
-      SELECT
-        e.edge_id,
-        e.bundle_id,
-        e.from_node_id,
-        e.to_node_id,
-        e.relationship_type,
-        e.label,
-        e.summary,
-        e.domain,
-        e.credibility_tier,
-        e.confidence,
-        e.verification_status,
-        e.review_status,
-        e.support_level,
-        e.relationship_strength,
-        e.interpretation_level,
-        e.created_at,
-        e.updated_at,
-        COALESCE(
-          ARRAY_AGG(es.source_id ORDER BY es.source_id)
-            FILTER (WHERE es.source_id IS NOT NULL),
-          ARRAY[]::TEXT[]
-        ) AS source_ids
-      FROM edges e
-      LEFT JOIN edge_sources es
-        ON es.edge_id = e.edge_id
-      WHERE e.edge_id = $1
-      GROUP BY
-        e.edge_id,
-        e.bundle_id,
-        e.from_node_id,
-        e.to_node_id,
-        e.relationship_type,
-        e.label,
-        e.summary,
-        e.domain,
-        e.credibility_tier,
-        e.confidence,
-        e.verification_status,
-        e.review_status,
-        e.support_level,
-        e.relationship_strength,
-        e.interpretation_level,
-        e.created_at,
-        e.updated_at;
+      ${edgeSelect}
+      WHERE e.edge_id = $1;
     `,
     [edgeId],
   );
@@ -148,53 +161,10 @@ export async function getEdgesByNodeId(
 
   const result = await database.query<EdgeRow>(
     `
-      SELECT
-        e.edge_id,
-        e.bundle_id,
-        e.from_node_id,
-        e.to_node_id,
-        e.relationship_type,
-        e.label,
-        e.summary,
-        e.domain,
-        e.credibility_tier,
-        e.confidence,
-        e.verification_status,
-        e.review_status,
-        e.support_level,
-        e.relationship_strength,
-        e.interpretation_level,
-        e.created_at,
-        e.updated_at,
-        COALESCE(
-          ARRAY_AGG(es.source_id ORDER BY es.source_id)
-            FILTER (WHERE es.source_id IS NOT NULL),
-          ARRAY[]::TEXT[]
-        ) AS source_ids
-      FROM edges e
-      LEFT JOIN edge_sources es
-        ON es.edge_id = e.edge_id
+      ${edgeSelect}
       WHERE e.from_node_id = $1
          OR e.to_node_id = $1
-      GROUP BY
-        e.edge_id,
-        e.bundle_id,
-        e.from_node_id,
-        e.to_node_id,
-        e.relationship_type,
-        e.label,
-        e.summary,
-        e.domain,
-        e.credibility_tier,
-        e.confidence,
-        e.verification_status,
-        e.review_status,
-        e.support_level,
-        e.relationship_strength,
-        e.interpretation_level,
-        e.created_at,
-        e.updated_at
-      ORDER BY e.edge_id;
+      ORDER BY e.edge_id ASC;
     `,
     [nodeId],
   );
@@ -202,7 +172,149 @@ export async function getEdgesByNodeId(
   const edges = result.rows.map(mapEdgeRow);
 
   return {
-    incoming: edges.filter((edge) => edge.toNodeId === nodeId),
-    outgoing: edges.filter((edge) => edge.fromNodeId === nodeId),
+    incoming: edges.filter(
+      (edge) => edge.toNodeId === nodeId,
+    ),
+    outgoing: edges.filter(
+      (edge) => edge.fromNodeId === nodeId,
+    ),
+  };
+}
+
+export async function listEdges(
+  options: ListEdgesOptions,
+): Promise<ListEdgesResult> {
+  const database = requireDatabase();
+
+  const conditions: string[] = [];
+  const filterValues: string[] = [];
+
+  if (options.bundleId) {
+    filterValues.push(options.bundleId);
+    conditions.push(
+      `e.bundle_id = $${filterValues.length}`,
+    );
+  }
+
+  if (options.fromNodeId) {
+    filterValues.push(options.fromNodeId);
+    conditions.push(
+      `e.from_node_id = $${filterValues.length}`,
+    );
+  }
+
+  if (options.toNodeId) {
+    filterValues.push(options.toNodeId);
+    conditions.push(
+      `e.to_node_id = $${filterValues.length}`,
+    );
+  }
+
+  if (options.domain) {
+    filterValues.push(options.domain);
+    conditions.push(
+      `e.domain = $${filterValues.length}`,
+    );
+  }
+
+  if (options.relationshipType) {
+    filterValues.push(options.relationshipType);
+    conditions.push(
+      `e.relationship_type = $${filterValues.length}`,
+    );
+  }
+
+  if (options.reviewStatus) {
+    filterValues.push(options.reviewStatus);
+    conditions.push(
+      `e.review_status = $${filterValues.length}`,
+    );
+  }
+
+  if (options.verificationStatus) {
+    filterValues.push(options.verificationStatus);
+    conditions.push(
+      `e.verification_status = $${filterValues.length}`,
+    );
+  }
+
+  if (options.supportLevel) {
+    filterValues.push(options.supportLevel);
+    conditions.push(
+      `e.support_level = $${filterValues.length}`,
+    );
+  }
+
+  if (options.relationshipStrength) {
+    filterValues.push(options.relationshipStrength);
+    conditions.push(
+      `e.relationship_strength = $${filterValues.length}`,
+    );
+  }
+
+  if (options.interpretationLevel) {
+    filterValues.push(options.interpretationLevel);
+    conditions.push(
+      `e.interpretation_level = $${filterValues.length}`,
+    );
+  }
+
+  const whereClause =
+    conditions.length > 0
+      ? `WHERE ${conditions.join(" AND ")}`
+      : "";
+
+  const offset =
+    (options.page - 1) * options.limit;
+
+  const limitParameter =
+    filterValues.length + 1;
+
+  const offsetParameter =
+    filterValues.length + 2;
+
+  const [countResult, edgesResult] =
+    await Promise.all([
+      database.query<{ count: string }>(
+        `
+          SELECT COUNT(*) AS count
+          FROM edges e
+          ${whereClause};
+        `,
+        filterValues,
+      ),
+      database.query<EdgeRow>(
+        `
+          ${edgeSelect}
+          ${whereClause}
+          ORDER BY
+            COALESCE(e.label, '') ASC,
+            e.edge_id ASC
+          LIMIT $${limitParameter}
+          OFFSET $${offsetParameter};
+        `,
+        [
+          ...filterValues,
+          options.limit,
+          offset,
+        ],
+      ),
+    ]);
+
+  const total = Number(
+    countResult.rows[0]?.count ?? 0,
+  );
+
+  return {
+    page: options.page,
+    limit: options.limit,
+    total,
+    totalPages:
+      total === 0
+        ? 0
+        : Math.ceil(
+            total / options.limit,
+          ),
+    edges: edgesResult.rows.map(mapEdgeRow),
   };
 }

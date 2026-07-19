@@ -598,6 +598,102 @@ test("GET /api/v1/nodes/:nodeId/edges returns 404 for an unknown node", async ()
   assert.match(response.body.message, /does-not-exist/);
 });
 
+test("GET /api/v1/assertions lists normalized assertions with default pagination", async () => {
+  const bundle = await readJsonFixture(validFixtureUrl);
+
+  await request(app)
+    .post("/api/v1/import")
+    .send(bundle)
+    .expect(201);
+
+  const response = await request(app)
+    .get("/api/v1/assertions")
+    .expect("Content-Type", /json/)
+    .expect(200);
+
+  assert.equal(response.body.page, 1);
+  assert.equal(response.body.limit, 25);
+  assert.equal(response.body.total, 13);
+  assert.equal(response.body.totalPages, 1);
+  assert.equal(response.body.assertions.length, 13);
+
+  const fireDates = response.body.assertions.find(
+    (assertion: { assertionId: string }) =>
+      assertion.assertionId === "assertion-fire-dates",
+  );
+
+  assert.ok(fireDates);
+  assert.equal(fireDates.bundleId, "historyroot-fire-events-v2");
+  assert.equal(fireDates.nodeId, "event-great-chicago-fire");
+  assert.equal(fireDates.assertionType, "date-range");
+  assert.equal(fireDates.domain, "HistoryRoot");
+  assert.equal(fireDates.reviewStatus, "reviewed");
+  assert.equal(fireDates.verificationStatus, "source-backed");
+  assert.ok(Array.isArray(fireDates.sourceIds));
+  assert.equal(typeof fireDates.createdAt, "string");
+  assert.equal(typeof fireDates.updatedAt, "string");
+});
+
+test("GET /api/v1/assertions filters normalized assertions", async () => {
+  const bundle = await readJsonFixture(validFixtureUrl);
+
+  await request(app)
+    .post("/api/v1/import")
+    .send(bundle)
+    .expect(201);
+
+  const response = await request(app)
+    .get(
+      "/api/v1/assertions?bundleId=historyroot-fire-events-v2&nodeId=event-great-chicago-fire&domain=HistoryRoot&assertionType=date-range&reviewStatus=reviewed&verificationStatus=source-backed&supportLevel=direct&interpretationLevel=low",
+    )
+    .expect("Content-Type", /json/)
+    .expect(200);
+
+  assert.equal(response.body.page, 1);
+  assert.equal(response.body.limit, 25);
+  assert.equal(response.body.total, 1);
+  assert.equal(response.body.totalPages, 1);
+  assert.equal(response.body.assertions.length, 1);
+
+  const assertion = response.body.assertions[0];
+
+  assert.equal(assertion.assertionId, "assertion-fire-dates");
+  assert.equal(assertion.bundleId, "historyroot-fire-events-v2");
+  assert.equal(assertion.nodeId, "event-great-chicago-fire");
+  assert.equal(assertion.domain, "HistoryRoot");
+  assert.equal(assertion.assertionType, "date-range");
+  assert.equal(assertion.reviewStatus, "reviewed");
+  assert.equal(assertion.verificationStatus, "source-backed");
+  assert.equal(assertion.supportLevel, "direct");
+  assert.equal(assertion.interpretationLevel, "low");
+});
+
+test("GET /api/v1/assertions rejects an invalid page", async () => {
+  const response = await request(app)
+    .get("/api/v1/assertions?page=0")
+    .expect("Content-Type", /json/)
+    .expect(400);
+
+  assert.equal(response.body.error, "INVALID_PAGE");
+  assert.equal(
+    response.body.message,
+    "page must be a positive integer.",
+  );
+});
+
+test("GET /api/v1/assertions rejects an invalid limit", async () => {
+  const response = await request(app)
+    .get("/api/v1/assertions?limit=101")
+    .expect("Content-Type", /json/)
+    .expect(400);
+
+  assert.equal(response.body.error, "INVALID_LIMIT");
+  assert.equal(
+    response.body.message,
+    "limit must be an integer between 1 and 100.",
+  );
+});
+
 test("GET /api/v1/assertions/:assertionId retrieves a normalized assertion", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
@@ -655,6 +751,120 @@ test("GET /api/v1/assertions/:assertionId returns 404 for an unknown assertion",
 });
 
 
+
+test("GET /api/v1/edges lists normalized edges with default pagination", async () => {
+  const bundle = await readJsonFixture(validFixtureUrl);
+
+  await request(app)
+    .post("/api/v1/import")
+    .send(bundle)
+    .expect(201);
+
+  const response = await request(app)
+    .get("/api/v1/edges")
+    .expect("Content-Type", /json/)
+    .expect(200);
+
+  assert.equal(response.body.page, 1);
+  assert.equal(response.body.limit, 25);
+  assert.equal(response.body.total, 11);
+  assert.equal(response.body.totalPages, 1);
+  assert.equal(response.body.edges.length, 11);
+
+  const occurredInChicago = response.body.edges.find(
+    (edge: { edgeId: string }) =>
+      edge.edgeId === "edge-fire-occurred-in-chicago",
+  );
+
+  assert.ok(occurredInChicago);
+  assert.equal(
+    occurredInChicago.bundleId,
+    "historyroot-fire-events-v2",
+  );
+  assert.equal(
+    occurredInChicago.fromNodeId,
+    "event-great-chicago-fire",
+  );
+  assert.equal(
+    occurredInChicago.toNodeId,
+    "place-chicago-1871",
+  );
+  assert.equal(
+    occurredInChicago.relationshipType,
+    "OCCURRED_IN",
+  );
+  assert.equal(occurredInChicago.domain, "HistoryRoot");
+  assert.equal(occurredInChicago.reviewStatus, "reviewed");
+  assert.equal(
+    occurredInChicago.verificationStatus,
+    "source-backed",
+  );
+  assert.ok(Array.isArray(occurredInChicago.sourceIds));
+  assert.equal(typeof occurredInChicago.createdAt, "string");
+  assert.equal(typeof occurredInChicago.updatedAt, "string");
+});
+
+test("GET /api/v1/edges filters normalized edges", async () => {
+  const bundle = await readJsonFixture(validFixtureUrl);
+
+  await request(app)
+    .post("/api/v1/import")
+    .send(bundle)
+    .expect(201);
+
+  const response = await request(app)
+    .get(
+      "/api/v1/edges?bundleId=historyroot-fire-events-v2&fromNodeId=event-great-chicago-fire&toNodeId=place-chicago-1871&domain=HistoryRoot&relationshipType=OCCURRED_IN&reviewStatus=reviewed&verificationStatus=source-backed&supportLevel=direct&relationshipStrength=strong&interpretationLevel=low",
+    )
+    .expect("Content-Type", /json/)
+    .expect(200);
+
+  assert.equal(response.body.page, 1);
+  assert.equal(response.body.limit, 25);
+  assert.equal(response.body.total, 1);
+  assert.equal(response.body.totalPages, 1);
+  assert.equal(response.body.edges.length, 1);
+
+  const edge = response.body.edges[0];
+
+  assert.equal(edge.edgeId, "edge-fire-occurred-in-chicago");
+  assert.equal(edge.bundleId, "historyroot-fire-events-v2");
+  assert.equal(edge.fromNodeId, "event-great-chicago-fire");
+  assert.equal(edge.toNodeId, "place-chicago-1871");
+  assert.equal(edge.domain, "HistoryRoot");
+  assert.equal(edge.relationshipType, "OCCURRED_IN");
+  assert.equal(edge.reviewStatus, "reviewed");
+  assert.equal(edge.verificationStatus, "source-backed");
+  assert.equal(edge.supportLevel, "direct");
+  assert.equal(edge.relationshipStrength, "strong");
+  assert.equal(edge.interpretationLevel, "low");
+});
+
+test("GET /api/v1/edges rejects an invalid page", async () => {
+  const response = await request(app)
+    .get("/api/v1/edges?page=0")
+    .expect("Content-Type", /json/)
+    .expect(400);
+
+  assert.equal(response.body.error, "INVALID_PAGE");
+  assert.equal(
+    response.body.message,
+    "page must be a positive integer.",
+  );
+});
+
+test("GET /api/v1/edges rejects an invalid limit", async () => {
+  const response = await request(app)
+    .get("/api/v1/edges?limit=101")
+    .expect("Content-Type", /json/)
+    .expect(400);
+
+  assert.equal(response.body.error, "INVALID_LIMIT");
+  assert.equal(
+    response.body.message,
+    "limit must be an integer between 1 and 100.",
+  );
+});
 
 test("GET /api/v1/edges/:edgeId retrieves a normalized edge", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
@@ -727,6 +937,130 @@ test("GET /api/v1/edges/:edgeId returns 404 for an unknown edge", async () => {
   assert.match(response.body.message, /does-not-exist/);
 });
 
+test("GET /api/v1/sources lists normalized sources with default pagination", async () => {
+  const bundle = await readJsonFixture(validFixtureUrl);
+
+  await request(app)
+    .post("/api/v1/import")
+    .send(bundle)
+    .expect(201);
+
+  const response = await request(app)
+    .get("/api/v1/sources")
+    .expect("Content-Type", /json/)
+    .expect(200);
+
+  assert.equal(response.body.page, 1);
+  assert.equal(response.body.limit, 25);
+  assert.equal(response.body.total, 11);
+  assert.equal(response.body.totalPages, 1);
+  assert.equal(response.body.sources.length, 11);
+
+  const libraryOfCongressSource = response.body.sources.find(
+    (source: { sourceId: string }) =>
+      source.sourceId === "source-loc-guide",
+  );
+
+  assert.ok(libraryOfCongressSource);
+  assert.equal(
+    libraryOfCongressSource.bundleId,
+    "historyroot-fire-events-v2",
+  );
+  assert.equal(
+    libraryOfCongressSource.name,
+    "Great Chicago Fire of 1871: Topics in Chronicling America",
+  );
+  assert.equal(
+    libraryOfCongressSource.sourceType,
+    "archive-guide",
+  );
+  assert.equal(
+    libraryOfCongressSource.domain,
+    "HistoryRoot",
+  );
+  assert.equal(
+    libraryOfCongressSource.publisher,
+    "Library of Congress",
+  );
+  assert.equal(
+    libraryOfCongressSource.reviewStatus,
+    "reviewed",
+  );
+  assert.equal(
+    libraryOfCongressSource.verificationStatus,
+    "reviewed",
+  );
+  assert.equal(
+    typeof libraryOfCongressSource.createdAt,
+    "string",
+  );
+  assert.equal(
+    typeof libraryOfCongressSource.updatedAt,
+    "string",
+  );
+});
+
+test("GET /api/v1/sources filters normalized sources", async () => {
+  const bundle = await readJsonFixture(validFixtureUrl);
+
+  await request(app)
+    .post("/api/v1/import")
+    .send(bundle)
+    .expect(201);
+
+  const response = await request(app)
+    .get(
+      "/api/v1/sources?bundleId=historyroot-fire-events-v2&domain=HistoryRoot&sourceType=archive-guide&publisher=Library%20of%20Congress&reviewStatus=reviewed&verificationStatus=reviewed",
+    )
+    .expect("Content-Type", /json/)
+    .expect(200);
+
+  assert.equal(response.body.page, 1);
+  assert.equal(response.body.limit, 25);
+  assert.equal(response.body.total, 1);
+  assert.equal(response.body.totalPages, 1);
+  assert.equal(response.body.sources.length, 1);
+
+  const source = response.body.sources[0];
+
+  assert.equal(source.sourceId, "source-loc-guide");
+  assert.equal(
+    source.bundleId,
+    "historyroot-fire-events-v2",
+  );
+  assert.equal(source.domain, "HistoryRoot");
+  assert.equal(source.sourceType, "archive-guide");
+  assert.equal(source.publisher, "Library of Congress");
+  assert.equal(source.reviewStatus, "reviewed");
+  assert.equal(source.verificationStatus, "reviewed");
+});
+
+test("GET /api/v1/sources rejects an invalid page", async () => {
+  const response = await request(app)
+    .get("/api/v1/sources?page=0")
+    .expect("Content-Type", /json/)
+    .expect(400);
+
+  assert.equal(response.body.error, "INVALID_PAGE");
+  assert.equal(
+    response.body.message,
+    "page must be a positive integer.",
+  );
+});
+
+test("GET /api/v1/sources rejects an invalid limit", async () => {
+  const response = await request(app)
+    .get("/api/v1/sources?limit=101")
+    .expect("Content-Type", /json/)
+    .expect(400);
+
+  assert.equal(response.body.error, "INVALID_LIMIT");
+  assert.equal(
+    response.body.message,
+    "limit must be an integer between 1 and 100.",
+  );
+});
+
 test("GET /api/v1/sources/:sourceId retrieves a normalized source", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
@@ -787,6 +1121,124 @@ test("GET /api/v1/sources/:sourceId returns 404 for an unknown source", async ()
 
   assert.equal(response.body.error, "SOURCE_NOT_FOUND");
   assert.match(response.body.message, /does-not-exist/);
+});
+
+test("GET /api/v1/revisions lists normalized revisions with default pagination", async () => {
+  const bundle = await readJsonFixture(validFixtureUrl);
+
+  await request(app)
+    .post("/api/v1/import")
+    .send(bundle)
+    .expect(201);
+
+  const response = await request(app)
+    .get("/api/v1/revisions")
+    .expect("Content-Type", /json/)
+    .expect(200);
+
+  assert.equal(response.body.page, 1);
+  assert.equal(response.body.limit, 25);
+  assert.equal(response.body.total, 2);
+  assert.equal(response.body.totalPages, 1);
+  assert.equal(response.body.revisions.length, 2);
+
+  const olearyReview = response.body.revisions.find(
+    (revision: { revisionId: string }) =>
+      revision.revisionId === "revision-oleary-story-review",
+  );
+
+  assert.ok(olearyReview);
+  assert.equal(
+    olearyReview.bundleId,
+    "historyroot-fire-events-v2",
+  );
+  assert.equal(
+    olearyReview.objectType,
+    "historical-narrative",
+  );
+  assert.equal(
+    olearyReview.objectId,
+    "concept-oleary-cow-myth",
+  );
+  assert.equal(
+    olearyReview.revisionType,
+    "interpretation-update",
+  );
+  assert.equal(olearyReview.status, "current");
+  assert.equal(typeof olearyReview.createdAt, "string");
+  assert.equal(typeof olearyReview.updatedAt, "string");
+});
+
+test("GET /api/v1/revisions filters normalized revisions", async () => {
+  const bundle = await readJsonFixture(validFixtureUrl);
+
+  await request(app)
+    .post("/api/v1/import")
+    .send(bundle)
+    .expect(201);
+
+  const response = await request(app)
+    .get(
+      "/api/v1/revisions?bundleId=historyroot-fire-events-v2&objectType=historical-narrative&objectId=concept-oleary-cow-myth&revisionType=interpretation-update&status=current",
+    )
+    .expect("Content-Type", /json/)
+    .expect(200);
+
+  assert.equal(response.body.page, 1);
+  assert.equal(response.body.limit, 25);
+  assert.equal(response.body.total, 1);
+  assert.equal(response.body.totalPages, 1);
+  assert.equal(response.body.revisions.length, 1);
+
+  const revision = response.body.revisions[0];
+
+  assert.equal(
+    revision.revisionId,
+    "revision-oleary-story-review",
+  );
+  assert.equal(
+    revision.bundleId,
+    "historyroot-fire-events-v2",
+  );
+  assert.equal(
+    revision.objectType,
+    "historical-narrative",
+  );
+  assert.equal(
+    revision.objectId,
+    "concept-oleary-cow-myth",
+  );
+  assert.equal(
+    revision.revisionType,
+    "interpretation-update",
+  );
+  assert.equal(revision.status, "current");
+});
+
+test("GET /api/v1/revisions rejects an invalid page", async () => {
+  const response = await request(app)
+    .get("/api/v1/revisions?page=0")
+    .expect("Content-Type", /json/)
+    .expect(400);
+
+  assert.equal(response.body.error, "INVALID_PAGE");
+  assert.equal(
+    response.body.message,
+    "page must be a positive integer.",
+  );
+});
+
+test("GET /api/v1/revisions rejects an invalid limit", async () => {
+  const response = await request(app)
+    .get("/api/v1/revisions?limit=101")
+    .expect("Content-Type", /json/)
+    .expect(400);
+
+  assert.equal(response.body.error, "INVALID_LIMIT");
+  assert.equal(
+    response.body.message,
+    "limit must be an integer between 1 and 100.",
+  );
 });
 
 test("GET /api/v1/revisions/:revisionId retrieves a normalized revision", async () => {
