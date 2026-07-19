@@ -1,0 +1,4 @@
+  Open English WordNet miniature test fixture
+00001740 03 n 02 entity 0 something 0 001 ~ 00001930 n 0000 | that which is perceived or known; "an example entity"
+00001930 03 n 01 object 0 002 @ 00001740 n 0000 ~ 00002100 n 0000 | a tangible and visible entity
+00002100 03 n 01 tool 0 001 @ 00001930 n 0000 | an object used to perform work
