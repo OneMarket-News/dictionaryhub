@@ -12,6 +12,7 @@ import { healthRouter } from "./routes/health.js";
 import { importRouter } from "./routes/import.js";
 import { nodesRouter } from "./routes/nodes.js";
 import { revisionsRouter } from "./routes/revisions.js";
+import { searchRouter } from "./routes/search.js";
 import { sourcesRouter } from "./routes/sources.js";
 import { validateRouter } from "./routes/validate.js";
 
@@ -37,6 +38,7 @@ export function createApp() {
   app.use(healthRouter);
   app.use("/api/v1", validateRouter);
   app.use("/api/v1/import", importRouter);
+  app.use("/api/v1/search", searchRouter);
   app.use("/api/v1/nodes", nodesRouter);
   app.use("/api/v1/assertions", assertionsRouter);
   app.use("/api/v1/edges", edgesRouter);
@@ -46,8 +48,10 @@ export function createApp() {
   app.use((_request, response) => {
     response.status(404).json({
       error: "NOT_FOUND",
-      message: "The requested SourceRoot API route does not exist.",
-      requestId: response.locals.requestId,
+      message:
+        "The requested SourceRoot API route does not exist.",
+      requestId:
+        response.locals.requestId,
     });
   });
 
@@ -59,17 +63,25 @@ export function createApp() {
       _next: NextFunction,
     ) => {
       const isJsonSyntaxError =
-        error instanceof SyntaxError && "body" in error;
+        error instanceof SyntaxError &&
+        "body" in error;
 
-      response.status(isJsonSyntaxError ? 400 : 500).json({
-        error: isJsonSyntaxError
-          ? "INVALID_JSON"
-          : "INTERNAL_SERVER_ERROR",
-        message: isJsonSyntaxError
-          ? "Request body must contain valid JSON."
-          : "The SourceRoot backend encountered an unexpected error.",
-        requestId: response.locals.requestId,
-      });
+      response
+        .status(
+          isJsonSyntaxError
+            ? 400
+            : 500,
+        )
+        .json({
+          error: isJsonSyntaxError
+            ? "INVALID_JSON"
+            : "INTERNAL_SERVER_ERROR",
+          message: isJsonSyntaxError
+            ? "Request body must contain valid JSON."
+            : "The SourceRoot backend encountered an unexpected error.",
+          requestId:
+            response.locals.requestId,
+        });
     },
   );
 

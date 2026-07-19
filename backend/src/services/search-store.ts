@@ -1,0 +1,385 @@
+import { getPool } from "../lib/database.js";
+
+export type SearchResultType =
+  | "node"
+  | "assertion"
+  | "edge"
+  | "source"
+  | "revision";
+
+export interface SearchOptions {
+  query: string;
+  page: number;
+  limit: number;
+  type?: SearchResultType;
+  bundleId?: string;
+  domain?: string;
+}
+
+export interface SearchResult {
+  resultType: SearchResultType;
+  id: string;
+  bundleId: string;
+  title: string;
+  summary: string | null;
+  domain: string | null;
+  objectType: string | null;
+  metadata: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SearchResponse {
+  query: string;
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  results: SearchResult[];
+}
+
+interface SearchRow {
+  result_type: SearchResultType;
+  id: string;
+  bundle_id: string;
+  title: string;
+  summary: string | null;
+  domain: string | null;
+  object_type: string | null;
+  metadata: Record<string, unknown>;
+  created_at: Date;
+  updated_at: Date;
+}
+
+function requireDatabase() {
+  const database = getPool();
+
+  if (!database) {
+    throw new Error("DATABASE_URL is not configured.");
+  }
+
+  return database;
+}
+
+function mapSearchRow(
+  row: SearchRow,
+): SearchResult {
+  return {
+    resultType: row.result_type,
+    id: row.id,
+    bundleId: row.bundle_id,
+    title: row.title,
+    summary: row.summary,
+    domain: row.domain,
+    objectType: row.object_type,
+    metadata: row.metadata,
+    createdAt: row.created_at.toISOString(),
+    updatedAt: row.updated_at.toISOString(),
+  };
+}
+
+const searchRecordsCte = `
+  WITH search_records AS (
+    SELECT
+      'node'::TEXT AS result_type,
+      n.node_id AS id,
+      n.bundle_id,
+      n.title,
+      n.summary,
+      COALESCE(n.domain, ib.domain) AS domain,
+      n.node_type AS object_type,
+      JSONB_BUILD_OBJECT(
+        'nodeType', n.node_type,
+        'status', n.status
+      ) AS metadata,
+      n.created_at,
+      n.updated_at,
+      CONCAT_WS(
+        ' ',
+        n.node_id,
+        n.title,
+        n.summary,
+        n.node_type,
+        n.domain,
+        n.status
+      ) AS searchable_text
+    FROM nodes n
+    LEFT JOIN imported_bundles ib
+      ON ib.bundle_id = n.bundle_id
+
+    UNION ALL
+
+    SELECT
+      'assertion'::TEXT AS result_type,
+      a.assertion_id AS id,
+      a.bundle_id,
+      COALESCE(
+        NULLIF(a.label, ''),
+        a.assertion_id
+      ) AS title,
+      COALESCE(a.summary, a.body) AS summary,
+      COALESCE(a.domain, ib.domain) AS domain,
+      a.assertion_type AS object_type,
+      JSONB_BUILD_OBJECT(
+        'nodeId', a.node_id,
+        'assertionType', a.assertion_type,
+        'confidence', a.confidence,
+        'reviewStatus', a.review_status,
+        'verificationStatus',
+          a.verification_status,
+        'supportLevel', a.support_level,
+        'interpretationLevel',
+          a.interpretation_level
+      ) AS metadata,
+      a.created_at,
+      a.updated_at,
+      CONCAT_WS(
+        ' ',
+        a.assertion_id,
+        a.node_id,
+        a.label,
+        a.summary,
+        a.body,
+        a.assertion_type,
+        a.domain,
+        a.review_status,
+        a.verification_status
+      ) AS searchable_text
+    FROM assertions a
+    LEFT JOIN imported_bundles ib
+      ON ib.bundle_id = a.bundle_id
+
+    UNION ALL
+
+    SELECT
+      'edge'::TEXT AS result_type,
+      e.edge_id AS id,
+      e.bundle_id,
+      COALESCE(
+        NULLIF(e.label, ''),
+        e.edge_id
+      ) AS title,
+      e.summary,
+      COALESCE(e.domain, ib.domain) AS domain,
+      e.relationship_type AS object_type,
+      JSONB_BUILD_OBJECT(
+        'fromNodeId', e.from_node_id,
+        'toNodeId', e.to_node_id,
+        'relationshipType',
+          e.relationship_type,
+        'reviewStatus', e.review_status,
+        'verificationStatus',
+          e.verification_status,
+        'supportLevel', e.support_level,
+        'relationshipStrength',
+          e.relationship_strength,
+        'interpretationLevel',
+          e.interpretation_level
+      ) AS metadata,
+      e.created_at,
+      e.updated_at,
+      CONCAT_WS(
+        ' ',
+        e.edge_id,
+        e.from_node_id,
+        e.to_node_id,
+        e.label,
+        e.summary,
+        e.relationship_type,
+        e.domain,
+        e.review_status,
+        e.verification_status
+      ) AS searchable_text
+    FROM edges e
+    LEFT JOIN imported_bundles ib
+      ON ib.bundle_id = e.bundle_id
+
+    UNION ALL
+
+    SELECT
+      'source'::TEXT AS result_type,
+      s.source_id AS id,
+      s.bundle_id,
+      s.name AS title,
+      s.notes AS summary,
+      COALESCE(s.domain, ib.domain) AS domain,
+      s.source_type AS object_type,
+      JSONB_BUILD_OBJECT(
+        'sourceType', s.source_type,
+        'publisher', s.publisher,
+        'qualityTier', s.quality_tier,
+        'credibilityTier',
+          s.credibility_tier,
+        'reviewStatus', s.review_status,
+        'verificationStatus',
+          s.verification_status,
+        'url', s.url
+      ) AS metadata,
+      s.created_at,
+      s.updated_at,
+      CONCAT_WS(
+        ' ',
+        s.source_id,
+        s.name,
+        s.source_type,
+        s.domain,
+        s.publisher,
+        s.notes,
+        s.url,
+        s.review_status,
+        s.verification_status
+      ) AS searchable_text
+    FROM sources s
+    LEFT JOIN imported_bundles ib
+      ON ib.bundle_id = s.bundle_id
+
+    UNION ALL
+
+    SELECT
+      'revision'::TEXT AS result_type,
+      r.revision_id AS id,
+      r.bundle_id,
+      COALESCE(
+        NULLIF(r.summary, ''),
+        r.revision_id
+      ) AS title,
+      r.summary,
+      ib.domain,
+      r.object_type,
+      JSONB_BUILD_OBJECT(
+        'objectType', r.object_type,
+        'objectId', r.object_id,
+        'revisionType', r.revision_type,
+        'status', r.status
+      ) AS metadata,
+      r.created_at,
+      r.updated_at,
+      CONCAT_WS(
+        ' ',
+        r.revision_id,
+        r.object_type,
+        r.object_id,
+        r.revision_type,
+        r.summary,
+        r.status,
+        ib.domain
+      ) AS searchable_text
+    FROM revisions r
+    LEFT JOIN imported_bundles ib
+      ON ib.bundle_id = r.bundle_id
+  )
+`;
+
+export async function searchKnowledge(
+  options: SearchOptions,
+): Promise<SearchResponse> {
+  const database = requireDatabase();
+
+  const offset =
+    (options.page - 1) * options.limit;
+
+  const searchPattern = `%${options.query}%`;
+  const prefixPattern = `${options.query}%`;
+
+  const parameters = [
+    searchPattern,
+    options.type ?? null,
+    options.bundleId ?? null,
+    options.domain ?? null,
+  ];
+
+  const [countResult, searchResult] =
+    await Promise.all([
+      database.query<{ count: string }>(
+        `
+          ${searchRecordsCte}
+          SELECT COUNT(*) AS count
+          FROM search_records
+          WHERE searchable_text ILIKE $1
+            AND (
+              $2::TEXT IS NULL
+              OR result_type = $2
+            )
+            AND (
+              $3::TEXT IS NULL
+              OR bundle_id = $3
+            )
+            AND (
+              $4::TEXT IS NULL
+              OR domain = $4
+            );
+        `,
+        parameters,
+      ),
+      database.query<SearchRow>(
+        `
+          ${searchRecordsCte}
+          SELECT
+            result_type,
+            id,
+            bundle_id,
+            title,
+            summary,
+            domain,
+            object_type,
+            metadata,
+            created_at,
+            updated_at
+          FROM search_records
+          WHERE searchable_text ILIKE $1
+            AND (
+              $2::TEXT IS NULL
+              OR result_type = $2
+            )
+            AND (
+              $3::TEXT IS NULL
+              OR bundle_id = $3
+            )
+            AND (
+              $4::TEXT IS NULL
+              OR domain = $4
+            )
+          ORDER BY
+            CASE
+              WHEN LOWER(title) =
+                LOWER($5)
+                THEN 0
+              WHEN title ILIKE $6
+                THEN 1
+              ELSE 2
+            END,
+            title ASC,
+            result_type ASC,
+            id ASC
+          LIMIT $7
+          OFFSET $8;
+        `,
+        [
+          ...parameters,
+          options.query,
+          prefixPattern,
+          options.limit,
+          offset,
+        ],
+      ),
+    ]);
+
+  const total = Number(
+    countResult.rows[0]?.count ?? 0,
+  );
+
+  return {
+    query: options.query,
+    page: options.page,
+    limit: options.limit,
+    total,
+    totalPages:
+      total === 0
+        ? 0
+        : Math.ceil(
+            total / options.limit,
+          ),
+    results:
+      searchResult.rows.map(mapSearchRow),
+  };
+}

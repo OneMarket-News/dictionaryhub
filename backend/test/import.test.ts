@@ -1293,6 +1293,214 @@ test("GET /api/v1/revisions/:revisionId returns 404 for an unknown revision", as
   assert.match(response.body.message, /does-not-exist/);
 });
 
+test("GET /api/v1/search searches across normalized record types", async () => {
+  const bundle = await readJsonFixture(validFixtureUrl);
+
+  await request(app)
+    .post("/api/v1/import")
+    .send(bundle)
+    .expect(201);
+
+  const response = await request(app)
+    .get("/api/v1/search?q=fire")
+    .expect("Content-Type", /json/)
+    .expect(200);
+
+  assert.equal(response.body.query, "fire");
+  assert.equal(response.body.page, 1);
+  assert.equal(response.body.limit, 25);
+  assert.ok(response.body.total > 0);
+  assert.ok(response.body.totalPages > 0);
+  assert.ok(response.body.results.length > 0);
+
+  const resultTypes = new Set(
+    response.body.results.map(
+      (result: { resultType: string }) => result.resultType,
+    ),
+  );
+
+  assert.ok(resultTypes.has("node"));
+  assert.ok(resultTypes.has("assertion"));
+  assert.ok(resultTypes.has("edge"));
+  assert.ok(resultTypes.has("source"));
+
+  const greatChicagoFire = response.body.results.find(
+    (result: { resultType: string; id: string }) =>
+      result.resultType === "node" &&
+      result.id === "event-great-chicago-fire",
+  );
+
+  assert.ok(greatChicagoFire);
+  assert.equal(
+    greatChicagoFire.bundleId,
+    "historyroot-fire-events-v2",
+  );
+  assert.equal(greatChicagoFire.title, "Great Chicago Fire");
+  assert.equal(greatChicagoFire.domain, "HistoryRoot");
+  assert.equal(greatChicagoFire.objectType, "event");
+  assert.equal(typeof greatChicagoFire.metadata, "object");
+  assert.equal(typeof greatChicagoFire.createdAt, "string");
+  assert.equal(typeof greatChicagoFire.updatedAt, "string");
+});
+
+test("GET /api/v1/search filters results by type", async () => {
+  const bundle = await readJsonFixture(validFixtureUrl);
+
+  await request(app)
+    .post("/api/v1/import")
+    .send(bundle)
+    .expect(201);
+
+  const response = await request(app)
+    .get("/api/v1/search?q=fire&type=node")
+    .expect("Content-Type", /json/)
+    .expect(200);
+
+  assert.equal(response.body.query, "fire");
+  assert.ok(response.body.total > 0);
+  assert.equal(response.body.results.length, response.body.total);
+
+  for (const result of response.body.results) {
+    assert.equal(result.resultType, "node");
+  }
+
+  assert.ok(
+    response.body.results.some(
+      (result: { id: string }) =>
+        result.id === "event-great-chicago-fire",
+    ),
+  );
+});
+
+test("GET /api/v1/search filters results by bundle and domain", async () => {
+  const bundle = await readJsonFixture(validFixtureUrl);
+
+  await request(app)
+    .post("/api/v1/import")
+    .send(bundle)
+    .expect(201);
+
+  const response = await request(app)
+    .get(
+      "/api/v1/search?q=fire&bundleId=historyroot-fire-events-v2&domain=HistoryRoot",
+    )
+    .expect("Content-Type", /json/)
+    .expect(200);
+
+  assert.ok(response.body.total > 0);
+
+  for (const result of response.body.results) {
+    assert.equal(
+      result.bundleId,
+      "historyroot-fire-events-v2",
+    );
+    assert.equal(result.domain, "HistoryRoot");
+  }
+});
+
+test("GET /api/v1/search paginates results", async () => {
+  const bundle = await readJsonFixture(validFixtureUrl);
+
+  await request(app)
+    .post("/api/v1/import")
+    .send(bundle)
+    .expect(201);
+
+  const firstPage = await request(app)
+    .get("/api/v1/search?q=fire&page=1&limit=2")
+    .expect("Content-Type", /json/)
+    .expect(200);
+
+  assert.equal(firstPage.body.page, 1);
+  assert.equal(firstPage.body.limit, 2);
+  assert.ok(firstPage.body.total > 2);
+  assert.equal(firstPage.body.results.length, 2);
+  assert.equal(
+    firstPage.body.totalPages,
+    Math.ceil(firstPage.body.total / 2),
+  );
+
+  const secondPage = await request(app)
+    .get("/api/v1/search?q=fire&page=2&limit=2")
+    .expect("Content-Type", /json/)
+    .expect(200);
+
+  assert.equal(secondPage.body.page, 2);
+  assert.equal(secondPage.body.limit, 2);
+  assert.equal(secondPage.body.total, firstPage.body.total);
+  assert.equal(
+    secondPage.body.totalPages,
+    firstPage.body.totalPages,
+  );
+  assert.equal(secondPage.body.results.length, 2);
+
+  assert.notDeepEqual(
+    secondPage.body.results.map(
+      (result: { resultType: string; id: string }) =>
+        `${result.resultType}:${result.id}`,
+    ),
+    firstPage.body.results.map(
+      (result: { resultType: string; id: string }) =>
+        `${result.resultType}:${result.id}`,
+    ),
+  );
+});
+
+test("GET /api/v1/search rejects a missing query", async () => {
+  const response = await request(app)
+    .get("/api/v1/search")
+    .expect("Content-Type", /json/)
+    .expect(400);
+
+  assert.equal(response.body.error, "INVALID_QUERY");
+  assert.equal(
+    response.body.message,
+    "q must contain a search term.",
+  );
+});
+
+test("GET /api/v1/search rejects an invalid type", async () => {
+  const response = await request(app)
+    .get("/api/v1/search?q=fire&type=unknown")
+    .expect("Content-Type", /json/)
+    .expect(400);
+
+  assert.equal(
+    response.body.error,
+    "INVALID_SEARCH_TYPE",
+  );
+  assert.equal(
+    response.body.message,
+    "type must be node, assertion, edge, source, or revision.",
+  );
+});
+
+test("GET /api/v1/search rejects an invalid page", async () => {
+  const response = await request(app)
+    .get("/api/v1/search?q=fire&page=0")
+    .expect("Content-Type", /json/)
+    .expect(400);
+
+  assert.equal(response.body.error, "INVALID_PAGE");
+  assert.equal(
+    response.body.message,
+    "page must be a positive integer.",
+  );
+});
+
+test("GET /api/v1/search rejects an invalid limit", async () => {
+  const response = await request(app)
+    .get("/api/v1/search?q=fire&limit=101")
+    .expect("Content-Type", /json/)
+    .expect(400);
+
+  assert.equal(response.body.error, "INVALID_LIMIT");
+  assert.equal(
+    response.body.message,
+    "limit must be an integer between 1 and 100.",
+  );
+});
+
 test("GET /api/v1/import/:bundleId retrieves an imported bundle", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
