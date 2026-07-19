@@ -48,7 +48,7 @@ export function createApp(options: CreateAppOptions = {}) {
   const jsonLimit =
     options.jsonLimit ||
     process.env.SOURCEROOT_JSON_LIMIT ||
-    "50mb";
+    "100mb";
 
   app.disable("x-powered-by");
 
