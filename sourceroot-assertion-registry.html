@@ -304,6 +304,110 @@
       font-size: 13px;
     }
 
+
+    .api-status {
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 12px;
+      background: #fff8e6;
+      border: 1px solid #ead59a;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .pagination {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .pagination button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .open-button {
+      margin-top: 14px;
+      width: 100%;
+    }
+
+    .detail-panel {
+      display: none;
+    }
+
+    .detail-panel.visible {
+      display: block;
+    }
+
+    .detail-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .detail-header h2 {
+      margin-bottom: 4px;
+    }
+
+    .close-detail {
+      background: white;
+      color: #1f2933;
+      border-color: #d6cdbd;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .detail-item {
+      background: #fffdf8;
+      border: 1px solid #eee2c7;
+      border-radius: 12px;
+      padding: 10px;
+    }
+
+    .detail-item span {
+      display: block;
+      color: #6b7280;
+      font-size: 11px;
+      margin-bottom: 4px;
+    }
+
+    .detail-item strong {
+      font-size: 13px;
+      word-break: break-word;
+    }
+
+    .linked-card {
+      background: #fffdf8;
+      border: 1px solid #eee2c7;
+      border-radius: 14px;
+      padding: 14px;
+      margin-top: 10px;
+    }
+
+    .linked-card h3 {
+      margin: 0 0 6px;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #f3f4f6;
+      border-radius: 10px;
+      padding: 12px;
+      overflow: auto;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
     @media (max-width: 950px) {
       .controls {
         grid-template-columns: 1fr;
@@ -334,8 +438,7 @@
       <h1>SourceRoot Assertion Registry</h1>
 
       <div class="subtitle">
-        A registry of SourceRoot claims across DictionaryHub, BibleRoot, Wiki, and future hubs.
-        Assertions are the claim layer: definitions, summaries, interpretations, examples, symbolic meanings, and external statements connected to nodes and supported by sources.
+        Live registry of normalized SourceRoot claims loaded from PostgreSQL through the SourceRoot API. Filter assertions, inspect trust metadata, open linked nodes, and review source provenance.
       </div>
 
       <div class="top-links">
@@ -363,6 +466,7 @@
         This page makes those claims inspectable by showing assertion type, source support, credibility tier, confidence, verification status, review status, support level, and interpretation level.
       </p>
 
+      <div id="apiStatus" class="api-status">Checking SourceRoot API...</div>
       <div class="summary-grid" id="summaryGrid"></div>
     </section>
 
@@ -397,327 +501,369 @@
 
       <div class="results-meta" id="resultsMeta"></div>
       <div id="assertionGrid" class="assertion-grid"></div>
+
+      <div id="pagination" class="pagination"></div>
+    </section>
+
+    <section id="detailPanel" class="panel detail-panel">
+      <div class="detail-header">
+        <div>
+          <h2 id="detailTitle">Assertion Detail</h2>
+          <div id="detailId" class="assertion-id"></div>
+        </div>
+
+        <button id="closeDetailBtn" class="close-detail" type="button">
+          Close
+        </button>
+      </div>
+
+      <div id="detailContent"></div>
     </section>
   </main>
 
   <footer>
-    SourceRoot Assertion Registry. Current status: static prototype registry powered by local SourceRoot data files and adapters.
+    SourceRoot Assertion Registry. Live data supplied by the SourceRoot backend API.
   </footer>
 
   <script type="module">
-    import { adaptDictionaryConcepts } from "./engine/adapters/dictionaryAdapter.js";
-    import { adaptBibleNodes } from "./engine/adapters/bibleAdapter.js";
-    import { adaptWikidataNodes, adaptWikidataAssertions } from "./engine/adapters/wikidataAdapter.js";
-
-    const dataPaths = {
-      dictionaryNodes: "./data/nodes-v2-root.json",
-      bibleNodes: "./data/bible-root-nodes.json",
-      bibleAssertions: "./data/bible-root-assertions.json",
-      wikidataNodes: "./data/wikidata-root-nodes.json"
-    };
+    const API_BASE = "http://localhost:3000/api/v1";
+    const PAGE_LIMIT = 12;
 
     let allAssertions = [];
-    let allNodes = [];
     let filteredAssertions = [];
+    let currentPage = 1;
+    let totalPages = 1;
+    let totalAssertions = 0;
+    let searchTimer = null;
 
-    const fallbackTrust = {
-      credibilityTier: "prototype",
-      confidence: "working",
-      verificationStatus: "prototype",
-      reviewStatus: "needs-review",
-      supportLevel: "contextual",
-      interpretationLevel: "medium"
-    };
+    const apiStatus = document.getElementById("apiStatus");
+    const summaryGrid = document.getElementById("summaryGrid");
+    const assertionGrid = document.getElementById("assertionGrid");
+    const resultsMeta = document.getElementById("resultsMeta");
+    const pagination = document.getElementById("pagination");
+    const detailPanel = document.getElementById("detailPanel");
+    const detailTitle = document.getElementById("detailTitle");
+    const detailId = document.getElementById("detailId");
+    const detailContent = document.getElementById("detailContent");
 
-    async function loadJson(path, fallback = []) {
+    const searchInput = document.getElementById("searchInput");
+    const domainFilter = document.getElementById("domainFilter");
+    const typeFilter = document.getElementById("typeFilter");
+    const credibilityFilter = document.getElementById("credibilityFilter");
+    const verificationFilter = document.getElementById("verificationFilter");
+    const supportFilter = document.getElementById("supportFilter");
+    const clearFiltersBtn = document.getElementById("clearFiltersBtn");
+    const closeDetailBtn = document.getElementById("closeDetailBtn");
+
+    async function fetchJson(url) {
+      const response = await fetch(url, {
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
+      let body;
+
       try {
-        const response = await fetch(path);
-
-        if (!response.ok) {
-          console.warn(`Could not load ${path}`);
-          return fallback;
-        }
-
-        return await response.json();
-      } catch (error) {
-        console.warn(`Failed to load ${path}`, error);
-        return fallback;
+        body = await response.json();
+      } catch {
+        body = {};
       }
+
+      if (!response.ok) {
+        throw new Error(
+          body.message ||
+          `Request failed with HTTP ${response.status}.`,
+        );
+      }
+
+      return body;
+    }
+
+    function escapeHtml(value = "") {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function displayValue(value, fallback = "Not listed") {
+      return value === null || value === undefined || value === ""
+        ? fallback
+        : escapeHtml(value);
     }
 
     async function init() {
-      const [
-        dictionaryRawNodes,
-        bibleRawNodes,
-        bibleRawAssertions,
-        wikidataRawNodes
-      ] = await Promise.all([
-        loadJson(dataPaths.dictionaryNodes),
-        loadJson(dataPaths.bibleNodes),
-        loadJson(dataPaths.bibleAssertions),
-        loadJson(dataPaths.wikidataNodes)
-      ]);
-
-      const dictionaryNodes = adaptDictionaryConcepts(dictionaryRawNodes);
-      const bibleNodes = adaptBibleNodes(bibleRawNodes);
-      const wikidataNodes = adaptWikidataNodes(wikidataRawNodes);
-
-      allNodes = [
-        ...dictionaryNodes,
-        ...bibleNodes,
-        ...wikidataNodes
-      ];
-
-      const dictionaryAssertions = buildDictionaryAssertions(dictionaryNodes);
-      const bibleAssertions = normalizeAssertions(bibleRawAssertions, "BibleRoot");
-      const wikidataAssertions = adaptWikidataAssertions(wikidataRawNodes);
-
-      allAssertions = [
-        ...dictionaryAssertions,
-        ...bibleAssertions,
-        ...wikidataAssertions
-      ].map(normalizeAssertion);
-
-      filteredAssertions = [...allAssertions];
-
-      populateFilters();
-      renderSummary();
-      renderAssertions();
-
-      document.getElementById("searchInput").addEventListener("input", applyFilters);
-      document.getElementById("domainFilter").addEventListener("change", applyFilters);
-      document.getElementById("typeFilter").addEventListener("change", applyFilters);
-      document.getElementById("credibilityFilter").addEventListener("change", applyFilters);
-      document.getElementById("verificationFilter").addEventListener("change", applyFilters);
-      document.getElementById("supportFilter").addEventListener("change", applyFilters);
-      document.getElementById("clearFiltersBtn").addEventListener("click", clearFilters);
+      bindEvents();
+      await checkApi();
+      await loadAssertions();
     }
 
-    function buildDictionaryAssertions(nodes = []) {
-      const assertions = [];
-
-      nodes.forEach(node => {
-        if (node.summary) {
-          assertions.push({
-            id: `assertion-${node.id}-summary`,
-            nodeId: node.id,
-            assertionType: "short-definition",
-            label: "Short Definition",
-            summary: node.summary,
-            body: node.summary,
-            sourceIds: node.sourceIds || [],
-            domain: "DictionaryHub",
-            credibilityTier: "high",
-            confidence: "strong",
-            verificationStatus: "source-backed",
-            reviewStatus: "reviewed",
-            supportLevel: "derived",
-            interpretationLevel: "low"
-          });
-        }
-
-        if (node.description && node.description !== node.summary) {
-          assertions.push({
-            id: `assertion-${node.id}-description`,
-            nodeId: node.id,
-            assertionType: "full-definition",
-            label: "Full Definition",
-            summary: node.description,
-            body: node.description,
-            sourceIds: node.sourceIds || [],
-            domain: "DictionaryHub",
-            credibilityTier: "high",
-            confidence: "strong",
-            verificationStatus: "source-backed",
-            reviewStatus: "reviewed",
-            supportLevel: "derived",
-            interpretationLevel: "low"
-          });
-        }
+    function bindEvents() {
+      searchInput.addEventListener("input", () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+          currentPage = 1;
+          loadAssertions();
+        }, 300);
       });
 
-      return assertions;
+      [
+        domainFilter,
+        typeFilter,
+        credibilityFilter,
+        verificationFilter,
+        supportFilter,
+      ].forEach((control) => {
+        control.addEventListener("change", () => {
+          currentPage = 1;
+          loadAssertions();
+        });
+      });
+
+      clearFiltersBtn.addEventListener("click", clearFilters);
+      closeDetailBtn.addEventListener("click", closeDetail);
     }
 
-    function normalizeAssertions(assertions = [], defaultDomain = "SourceRoot") {
-      return assertions.map(assertion => ({
-        ...assertion,
-        domain: assertion.domain || defaultDomain
-      }));
+    async function checkApi() {
+      try {
+        const health = await fetchJson("http://localhost:3000/health");
+
+        apiStatus.innerHTML = `
+          <strong>SourceRoot API: Connected</strong><br>
+          Service: ${displayValue(health.service, "SourceRoot backend")} ·
+          Status: ${displayValue(health.status, "available")} ·
+          Endpoint: <code>${API_BASE}/assertions</code>
+        `;
+      } catch (error) {
+        apiStatus.innerHTML = `
+          <strong>SourceRoot API: Offline</strong><br>
+          ${escapeHtml(error.message)}<br>
+          Start the backend with <code>npm.cmd run dev</code>.
+        `;
+      }
     }
 
-    function normalizeAssertion(assertion) {
-      const node = findNode(assertion.nodeId);
+    function buildQuery() {
+      const params = new URLSearchParams({
+        page: String(currentPage),
+        limit: String(PAGE_LIMIT),
+      });
 
-      return {
-        id: assertion.id || "missing-assertion-id",
-        nodeId: assertion.nodeId || "",
-        nodeTitle: node?.title || assertion.nodeTitle || assertion.nodeId || "Unknown Node",
-        assertionType: assertion.assertionType || assertion.type || "unknown",
-        label: assertion.label || assertion.assertionType || assertion.type || "Assertion",
-        summary: assertion.summary || "",
-        body: assertion.body || assertion.description || assertion.summary || "",
-        sourceIds: Array.isArray(assertion.sourceIds) ? assertion.sourceIds : [],
-        domain: getDisplayDomain(assertion.domain || node?.domain || "SourceRoot"),
-        credibilityTier: assertion.credibilityTier || fallbackTrust.credibilityTier,
-        confidence: assertion.confidence || fallbackTrust.confidence,
-        verificationStatus: assertion.verificationStatus || fallbackTrust.verificationStatus,
-        reviewStatus: assertion.reviewStatus || fallbackTrust.reviewStatus,
-        supportLevel: assertion.supportLevel || fallbackTrust.supportLevel,
-        interpretationLevel: assertion.interpretationLevel || fallbackTrust.interpretationLevel,
-        status: assertion.status || ""
-      };
-    }
-
-    function findNode(nodeId) {
-      return allNodes.find(node => node.id === nodeId || node.originalId === nodeId);
-    }
-
-    function getDisplayDomain(domain) {
-      if (domain === "WikidataRoot") {
-        return "Wiki";
+      if (domainFilter.value) {
+        params.set("domain", domainFilter.value);
       }
 
-      return domain || "SourceRoot";
+      if (typeFilter.value) {
+        params.set("assertionType", typeFilter.value);
+      }
+
+      if (verificationFilter.value) {
+        params.set("verificationStatus", verificationFilter.value);
+      }
+
+      if (supportFilter.value) {
+        params.set("supportLevel", supportFilter.value);
+      }
+
+      return params;
     }
 
-    function populateFilters() {
-      populateSelect("domainFilter", uniqueValues(allAssertions.map(assertion => assertion.domain)));
-      populateSelect("typeFilter", uniqueValues(allAssertions.map(assertion => assertion.assertionType)));
-      populateSelect("credibilityFilter", uniqueValues(allAssertions.map(assertion => assertion.credibilityTier)));
-      populateSelect("verificationFilter", uniqueValues(allAssertions.map(assertion => assertion.verificationStatus)));
-      populateSelect("supportFilter", uniqueValues(allAssertions.map(assertion => assertion.supportLevel)));
+    async function loadAssertions() {
+      assertionGrid.innerHTML = `
+        <div class="empty-state">Loading live assertions...</div>
+      `;
+      resultsMeta.textContent = "";
+      pagination.innerHTML = "";
+
+      try {
+        const response = await fetchJson(
+          `${API_BASE}/assertions?${buildQuery().toString()}`,
+        );
+
+        totalAssertions = response.total;
+        totalPages = response.totalPages;
+        allAssertions = response.assertions || [];
+
+        const searchTerm = searchInput.value.trim().toLowerCase();
+        const credibility = credibilityFilter.value;
+
+        filteredAssertions = allAssertions.filter((assertion) => {
+          const searchableText = [
+            assertion.assertionId,
+            assertion.nodeId,
+            assertion.assertionType,
+            assertion.label,
+            assertion.summary,
+            assertion.body,
+            assertion.domain,
+            assertion.credibilityTier,
+            assertion.confidence,
+            assertion.verificationStatus,
+            assertion.reviewStatus,
+            assertion.supportLevel,
+            assertion.interpretationLevel,
+            ...(assertion.sourceIds || []),
+          ]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase();
+
+          const matchesSearch =
+            !searchTerm ||
+            searchableText.includes(searchTerm);
+
+          const matchesCredibility =
+            !credibility ||
+            assertion.credibilityTier === credibility;
+
+          return matchesSearch && matchesCredibility;
+        });
+
+        await populateFiltersFromLiveData();
+        renderSummary();
+        renderAssertions();
+        renderPagination();
+      } catch (error) {
+        assertionGrid.innerHTML = `
+          <div class="empty-state">
+            ${escapeHtml(error.message)}
+          </div>
+        `;
+      }
     }
 
-    function populateSelect(id, values) {
-      const select = document.getElementById(id);
-      const currentFirstOption = select.querySelector("option");
+    async function populateFiltersFromLiveData() {
+      try {
+        const response = await fetchJson(
+          `${API_BASE}/assertions?page=1&limit=100`,
+        );
 
-      select.innerHTML = "";
-      select.appendChild(currentFirstOption);
+        const assertions = response.assertions || [];
 
-      values.forEach(value => {
-        if (!value) return;
+        populateSelect(
+          domainFilter,
+          uniqueValues(assertions.map((item) => item.domain)),
+          "All Domains",
+        );
+        populateSelect(
+          typeFilter,
+          uniqueValues(assertions.map((item) => item.assertionType)),
+          "All Assertion Types",
+        );
+        populateSelect(
+          credibilityFilter,
+          uniqueValues(assertions.map((item) => item.credibilityTier)),
+          "All Credibility",
+        );
+        populateSelect(
+          verificationFilter,
+          uniqueValues(assertions.map((item) => item.verificationStatus)),
+          "All Verification",
+        );
+        populateSelect(
+          supportFilter,
+          uniqueValues(assertions.map((item) => item.supportLevel)),
+          "All Support Levels",
+        );
+      } catch {
+        // Keep existing filter options if metadata loading fails.
+      }
+    }
 
-        const option = document.createElement("option");
-        option.value = value;
-        option.textContent = value;
-        select.appendChild(option);
-      });
+    function populateSelect(select, values, firstLabel) {
+      const currentValue = select.value;
+
+      select.innerHTML = `
+        <option value="">${escapeHtml(firstLabel)}</option>
+        ${values
+          .map(
+            (value) =>
+              `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`,
+          )
+          .join("")}
+      `;
+
+      if (values.includes(currentValue)) {
+        select.value = currentValue;
+      }
     }
 
     function uniqueValues(values) {
-      return [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b));
-    }
-
-    function applyFilters() {
-      const searchTerm = document.getElementById("searchInput").value.toLowerCase();
-      const domain = document.getElementById("domainFilter").value;
-      const type = document.getElementById("typeFilter").value;
-      const credibility = document.getElementById("credibilityFilter").value;
-      const verification = document.getElementById("verificationFilter").value;
-      const support = document.getElementById("supportFilter").value;
-
-      filteredAssertions = allAssertions.filter(assertion => {
-        const searchableText = [
-          assertion.id,
-          assertion.nodeId,
-          assertion.nodeTitle,
-          assertion.assertionType,
-          assertion.label,
-          assertion.summary,
-          assertion.body,
-          assertion.domain,
-          assertion.credibilityTier,
-          assertion.confidence,
-          assertion.verificationStatus,
-          assertion.reviewStatus,
-          assertion.supportLevel,
-          assertion.interpretationLevel,
-          assertion.sourceIds.join(" ")
-        ].join(" ").toLowerCase();
-
-        const matchesSearch = !searchTerm || searchableText.includes(searchTerm);
-        const matchesDomain = !domain || assertion.domain === domain;
-        const matchesType = !type || assertion.assertionType === type;
-        const matchesCredibility = !credibility || assertion.credibilityTier === credibility;
-        const matchesVerification = !verification || assertion.verificationStatus === verification;
-        const matchesSupport = !support || assertion.supportLevel === support;
-
-        return (
-          matchesSearch &&
-          matchesDomain &&
-          matchesType &&
-          matchesCredibility &&
-          matchesVerification &&
-          matchesSupport
-        );
-      });
-
-      renderAssertions();
+      return [...new Set(values.filter(Boolean))]
+        .sort((a, b) => a.localeCompare(b));
     }
 
     function clearFilters() {
-      document.getElementById("searchInput").value = "";
-      document.getElementById("domainFilter").value = "";
-      document.getElementById("typeFilter").value = "";
-      document.getElementById("credibilityFilter").value = "";
-      document.getElementById("verificationFilter").value = "";
-      document.getElementById("supportFilter").value = "";
-
-      filteredAssertions = [...allAssertions];
-      renderAssertions();
+      searchInput.value = "";
+      domainFilter.value = "";
+      typeFilter.value = "";
+      credibilityFilter.value = "";
+      verificationFilter.value = "";
+      supportFilter.value = "";
+      currentPage = 1;
+      closeDetail();
+      loadAssertions();
     }
 
     function renderSummary() {
-      const total = allAssertions.length;
-      const domains = uniqueValues(allAssertions.map(assertion => assertion.domain)).length;
-      const types = uniqueValues(allAssertions.map(assertion => assertion.assertionType)).length;
-      const sourceBacked = allAssertions.filter(assertion => assertion.sourceIds.length > 0).length;
-      const needsReview = allAssertions.filter(assertion => assertion.reviewStatus === "needs-review").length;
-      const interpretive = allAssertions.filter(assertion => assertion.interpretationLevel === "high" || assertion.supportLevel === "interpretive").length;
+      const sourceBacked = allAssertions.filter(
+        (assertion) => (assertion.sourceIds || []).length > 0,
+      ).length;
 
-      document.getElementById("summaryGrid").innerHTML = `
+      const needsReview = allAssertions.filter(
+        (assertion) => assertion.reviewStatus === "needs-review",
+      ).length;
+
+      const interpretive = allAssertions.filter(
+        (assertion) =>
+          assertion.interpretationLevel === "high" ||
+          assertion.supportLevel === "interpretive",
+      ).length;
+
+      summaryGrid.innerHTML = `
         <div class="summary-card">
-          <strong>${total}</strong>
-          <span>Total Assertions</span>
+          <strong>${totalAssertions}</strong>
+          <span>Total Matching Assertions</span>
         </div>
 
         <div class="summary-card">
-          <strong>${domains}</strong>
-          <span>Domains</span>
+          <strong>${currentPage}</strong>
+          <span>Current Page</span>
         </div>
 
         <div class="summary-card">
-          <strong>${types}</strong>
-          <span>Assertion Types</span>
+          <strong>${totalPages}</strong>
+          <span>Total Pages</span>
         </div>
 
         <div class="summary-card">
           <strong>${sourceBacked}</strong>
-          <span>Source-Backed</span>
+          <span>Source-Backed on Page</span>
         </div>
 
         <div class="summary-card">
           <strong>${needsReview}</strong>
-          <span>Needs Review</span>
+          <span>Needs Review on Page</span>
         </div>
 
         <div class="summary-card">
           <strong>${interpretive}</strong>
-          <span>Interpretive Claims</span>
+          <span>Interpretive on Page</span>
         </div>
       `;
     }
 
     function renderAssertions() {
-      const grid = document.getElementById("assertionGrid");
-      const meta = document.getElementById("resultsMeta");
-
-      meta.textContent = `Showing ${filteredAssertions.length} of ${allAssertions.length} assertions.`;
+      resultsMeta.textContent =
+        `Showing ${filteredAssertions.length} visible assertion` +
+        `${filteredAssertions.length === 1 ? "" : "s"} on page ` +
+        `${currentPage} of ${totalPages}. ${totalAssertions} total match the API filters.`;
 
       if (!filteredAssertions.length) {
-        grid.innerHTML = `
+        assertionGrid.innerHTML = `
           <div class="empty-state">
             No assertions match the current filters.
           </div>
@@ -725,9 +871,17 @@
         return;
       }
 
-      grid.innerHTML = filteredAssertions
-        .map(assertion => renderAssertionCard(assertion))
+      assertionGrid.innerHTML = filteredAssertions
+        .map(renderAssertionCard)
         .join("");
+
+      assertionGrid
+        .querySelectorAll("[data-open-assertion]")
+        .forEach((button) => {
+          button.addEventListener("click", () => {
+            openAssertion(button.dataset.openAssertion);
+          });
+        });
     }
 
     function renderAssertionCard(assertion) {
@@ -735,22 +889,19 @@
 
       return `
         <article class="assertion-card">
-          <h3>${escapeHtml(assertion.label)}</h3>
-          <div class="assertion-id">${escapeHtml(assertion.id)}</div>
+          <h3>${displayValue(assertion.label, assertion.assertionId)}</h3>
+          <div class="assertion-id">${escapeHtml(assertion.assertionId)}</div>
 
           <div class="badge-row">
-            <span class="badge badge-domain">${escapeHtml(assertion.domain)}</span>
-            <span class="badge badge-type">${escapeHtml(assertion.assertionType)}</span>
-            <span class="badge badge-trust">${escapeHtml(assertion.credibilityTier)}</span>
-            <span class="badge badge-review">${escapeHtml(assertion.reviewStatus)}</span>
+            <span class="badge badge-domain">${displayValue(assertion.domain)}</span>
+            <span class="badge badge-type">${displayValue(assertion.assertionType)}</span>
+            <span class="badge badge-trust">${displayValue(assertion.credibilityTier)}</span>
+            <span class="badge badge-review">${displayValue(assertion.reviewStatus)}</span>
             ${warningBadge}
           </div>
 
           <div class="section-label">Attached Node</div>
-          <div class="node-link">
-            ${escapeHtml(assertion.nodeTitle)}<br>
-            ${escapeHtml(assertion.nodeId)}
-          </div>
+          <div class="node-link">${escapeHtml(assertion.nodeId)}</div>
 
           <div class="section-label">Assertion Summary</div>
           <div class="body-text">
@@ -759,76 +910,242 @@
 
           <div class="section-label">Trust Context</div>
           <div class="trust-grid">
-            <div class="trust-item">
-              <span>Credibility</span>
-              <strong>${escapeHtml(assertion.credibilityTier)}</strong>
-            </div>
-
-            <div class="trust-item">
-              <span>Confidence</span>
-              <strong>${escapeHtml(assertion.confidence)}</strong>
-            </div>
-
-            <div class="trust-item">
-              <span>Verification</span>
-              <strong>${escapeHtml(assertion.verificationStatus)}</strong>
-            </div>
-
-            <div class="trust-item">
-              <span>Review</span>
-              <strong>${escapeHtml(assertion.reviewStatus)}</strong>
-            </div>
-
-            <div class="trust-item">
-              <span>Support</span>
-              <strong>${escapeHtml(assertion.supportLevel)}</strong>
-            </div>
-
-            <div class="trust-item">
-              <span>Interpretation</span>
-              <strong>${escapeHtml(assertion.interpretationLevel)}</strong>
-            </div>
+            ${renderTrustItem("Credibility", assertion.credibilityTier)}
+            ${renderTrustItem("Confidence", assertion.confidence)}
+            ${renderTrustItem("Verification", assertion.verificationStatus)}
+            ${renderTrustItem("Review", assertion.reviewStatus)}
+            ${renderTrustItem("Support", assertion.supportLevel)}
+            ${renderTrustItem("Interpretation", assertion.interpretationLevel)}
           </div>
 
           <div class="section-label">Sources</div>
           <div class="source-list">
-            ${
-              assertion.sourceIds.length
-                ? assertion.sourceIds.map(sourceId => `<span class="source-pill">${escapeHtml(sourceId)}</span>`).join("")
-                : `<span class="badge badge-warning">No source linked</span>`
-            }
+            ${(assertion.sourceIds || []).length
+              ? assertion.sourceIds
+                  .map(
+                    (sourceId) =>
+                      `<span class="source-pill">${escapeHtml(sourceId)}</span>`,
+                  )
+                  .join("")
+              : '<span class="badge badge-warning">No source linked</span>'}
           </div>
+
+          <button
+            class="open-button"
+            type="button"
+            data-open-assertion="${escapeHtml(assertion.assertionId)}"
+          >
+            Inspect Assertion
+          </button>
         </article>
       `;
     }
 
+    function renderTrustItem(label, value) {
+      return `
+        <div class="trust-item">
+          <span>${escapeHtml(label)}</span>
+          <strong>${displayValue(value)}</strong>
+        </div>
+      `;
+    }
+
     function getWarningBadge(assertion) {
-      if (!assertion.sourceIds.length) {
-        return `<span class="badge badge-warning">Unsourced</span>`;
+      if (!(assertion.sourceIds || []).length) {
+        return '<span class="badge badge-warning">Unsourced</span>';
       }
 
-      if (assertion.reviewStatus === "needs-review" || assertion.verificationStatus === "needs-review") {
-        return `<span class="badge badge-warning">Needs Review</span>`;
+      if (
+        assertion.reviewStatus === "needs-review" ||
+        assertion.verificationStatus === "needs-review"
+      ) {
+        return '<span class="badge badge-warning">Needs Review</span>';
       }
 
       if (assertion.supportLevel === "unsupported") {
-        return `<span class="badge badge-warning">Unsupported</span>`;
+        return '<span class="badge badge-warning">Unsupported</span>';
       }
 
       return "";
     }
 
-    function formatBody(value) {
-      return escapeHtml(String(value || "")).replace(/\n/g, "<br>");
+    function renderPagination() {
+      if (totalPages <= 1) {
+        pagination.innerHTML = "";
+        return;
+      }
+
+      pagination.innerHTML = `
+        <button id="previousPageBtn" type="button" ${currentPage <= 1 ? "disabled" : ""}>
+          Previous
+        </button>
+
+        <span>Page ${currentPage} of ${totalPages}</span>
+
+        <button id="nextPageBtn" type="button" ${currentPage >= totalPages ? "disabled" : ""}>
+          Next
+        </button>
+      `;
+
+      document
+        .getElementById("previousPageBtn")
+        .addEventListener("click", () => {
+          if (currentPage > 1) {
+            currentPage -= 1;
+            loadAssertions();
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }
+        });
+
+      document
+        .getElementById("nextPageBtn")
+        .addEventListener("click", () => {
+          if (currentPage < totalPages) {
+            currentPage += 1;
+            loadAssertions();
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }
+        });
     }
 
-    function escapeHtml(value) {
-      return String(value || "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+    async function openAssertion(assertionId) {
+      detailPanel.classList.add("visible");
+      detailTitle.textContent = "Loading assertion...";
+      detailId.textContent = assertionId;
+      detailContent.innerHTML =
+        '<div class="empty-state">Loading normalized assertion, linked node, and sources...</div>';
+
+      try {
+        const assertion = await fetchJson(
+          `${API_BASE}/assertions/${encodeURIComponent(assertionId)}`,
+        );
+
+        const [node, sources] = await Promise.all([
+          fetchJson(
+            `${API_BASE}/nodes/${encodeURIComponent(assertion.nodeId)}`,
+          ).catch(() => null),
+          Promise.all(
+            (assertion.sourceIds || []).map(async (sourceId) => {
+              try {
+                return await fetchJson(
+                  `${API_BASE}/sources/${encodeURIComponent(sourceId)}`,
+                );
+              } catch {
+                return {
+                  sourceId,
+                  name: sourceId,
+                  notes: "Referenced source could not be loaded.",
+                };
+              }
+            }),
+          ),
+        ]);
+
+        detailTitle.textContent =
+          assertion.label ||
+          assertion.assertionId;
+        detailId.textContent = assertion.assertionId;
+
+        detailContent.innerHTML = `
+          <div class="badge-row">
+            <span class="badge badge-domain">${displayValue(assertion.domain)}</span>
+            <span class="badge badge-type">${displayValue(assertion.assertionType)}</span>
+            <span class="badge badge-trust">${displayValue(assertion.credibilityTier)}</span>
+            <span class="badge badge-review">${displayValue(assertion.reviewStatus)}</span>
+          </div>
+
+          <div class="section-label">Full Assertion</div>
+          <div class="body-text">
+            ${formatBody(assertion.body || assertion.summary || "No assertion body provided.")}
+          </div>
+
+          <div class="detail-grid">
+            ${renderDetailItem("Bundle", assertion.bundleId)}
+            ${renderDetailItem("Node ID", assertion.nodeId)}
+            ${renderDetailItem("Confidence", assertion.confidence)}
+            ${renderDetailItem("Verification", assertion.verificationStatus)}
+            ${renderDetailItem("Review", assertion.reviewStatus)}
+            ${renderDetailItem("Support", assertion.supportLevel)}
+            ${renderDetailItem("Interpretation", assertion.interpretationLevel)}
+            ${renderDetailItem("Created", assertion.createdAt)}
+            ${renderDetailItem("Updated", assertion.updatedAt)}
+          </div>
+
+          <div class="section-label">Linked Node</div>
+          ${node
+            ? `
+              <div class="linked-card">
+                <h3>${escapeHtml(node.title)}</h3>
+                <div class="results-meta">
+                  ${displayValue(node.nodeType)} · ${displayValue(node.domain)}
+                </div>
+                <p>${displayValue(node.summary, "No node summary.")}</p>
+                <div class="node-link">${escapeHtml(node.nodeId)}</div>
+              </div>
+            `
+            : '<div class="empty-state">Linked node could not be loaded.</div>'}
+
+          <div class="section-label">Source Provenance</div>
+          ${sources.length
+            ? sources.map(renderSourceDetail).join("")
+            : '<div class="empty-state">No sources are linked to this assertion.</div>'}
+
+          <div class="section-label">Raw API Record</div>
+          <details>
+            <summary>View normalized assertion JSON</summary>
+            <pre>${escapeHtml(JSON.stringify(assertion, null, 2))}</pre>
+          </details>
+        `;
+
+        detailPanel.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      } catch (error) {
+        detailTitle.textContent = "Could not load assertion";
+        detailContent.innerHTML = `
+          <div class="empty-state">
+            ${escapeHtml(error.message)}
+          </div>
+        `;
+      }
+    }
+
+    function renderDetailItem(label, value) {
+      return `
+        <div class="detail-item">
+          <span>${escapeHtml(label)}</span>
+          <strong>${displayValue(value)}</strong>
+        </div>
+      `;
+    }
+
+    function renderSourceDetail(source) {
+      return `
+        <div class="linked-card">
+          <h3>${displayValue(source.name, source.sourceId)}</h3>
+          <div class="results-meta">
+            ${displayValue(source.sourceType, "Source")} ·
+            ${displayValue(source.publisher)}
+          </div>
+          <p>${displayValue(source.notes, "")}</p>
+          <div class="source-pill">${escapeHtml(source.sourceId)}</div>
+          ${source.url
+            ? `<p><a href="${escapeHtml(source.url)}" target="_blank" rel="noopener">Open original source</a></p>`
+            : ""}
+        </div>
+      `;
+    }
+
+    function closeDetail() {
+      detailPanel.classList.remove("visible");
+      detailTitle.textContent = "Assertion Detail";
+      detailId.textContent = "";
+      detailContent.innerHTML = "";
+    }
+
+    function formatBody(value) {
+      return escapeHtml(String(value || "")).replace(/\n/g, "<br>");
     }
 
     init();

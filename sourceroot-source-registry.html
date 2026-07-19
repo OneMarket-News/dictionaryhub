@@ -269,6 +269,113 @@
       line-height: 1.5;
     }
 
+
+    .api-status {
+      background: #fff8e6;
+      border: 1px solid #ead59a;
+      border-radius: 12px;
+      padding: 12px;
+      margin-top: 14px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .pagination {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .pagination button {
+      border: 1px solid #111827;
+      background: #111827;
+      color: white;
+      border-radius: 10px;
+      padding: 9px 12px;
+      cursor: pointer;
+    }
+
+    .pagination button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .inspect-button,
+    .record-button {
+      border: 1px solid #cfc7b8;
+      background: #fff8e6;
+      color: #1f2933;
+      border-radius: 9px;
+      padding: 7px 9px;
+      cursor: pointer;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+
+    .inspect-button {
+      width: 100%;
+    }
+
+    .detail-panel {
+      display: none;
+    }
+
+    .detail-panel.visible {
+      display: block;
+    }
+
+    .detail-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .detail-header h2 {
+      margin: 0 0 6px;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 10px;
+      margin: 14px 0;
+    }
+
+    .detail-item {
+      background: #fffdf8;
+      border: 1px solid #eee2c7;
+      border-radius: 12px;
+      padding: 10px;
+    }
+
+    .detail-item span {
+      display: block;
+      color: #6b7280;
+      font-size: 11px;
+      margin-bottom: 4px;
+    }
+
+    .detail-item strong {
+      font-size: 13px;
+      word-break: break-word;
+    }
+
+    .linked-card {
+      background: #fffdf8;
+      border: 1px solid #eee2c7;
+      border-radius: 14px;
+      padding: 14px;
+      margin-top: 10px;
+    }
+
+    .linked-card h3 {
+      margin: 0 0 6px;
+    }
+
     @media (max-width: 950px) {
       .controls {
         grid-template-columns: 1fr;
@@ -294,8 +401,7 @@
     <h1>SourceRoot Source Registry</h1>
 
     <div class="subtitle">
-      Master provenance view for SourceRoot. Inspect every loaded source across DictionaryHub, BibleRoot, Wiki, and SourceRoot connections.
-      Filter by domain, type, usage, credibility, and verification status.
+      Live provenance registry backed by PostgreSQL through the SourceRoot API. Inspect normalized sources, usage across nodes, assertions, and edges, review trust metadata, and open original references.
     </div>
 
     <div class="top-links">
@@ -346,6 +452,7 @@
         </button>
       </div>
 
+      <div id="apiStatus" class="api-status">Checking SourceRoot API...</div>
       <div id="registryStats" class="stat-grid"></div>
       <div id="sourceCount" class="registry-count"></div>
     </section>
@@ -354,432 +461,329 @@
       <div id="sourceRegistry">
         Loading source registry...
       </div>
+      <div id="pagination" class="pagination"></div>
+    </section>
+
+    <section id="detailPanel" class="panel detail-panel">
+      <div class="detail-header">
+        <div>
+          <h2 id="detailTitle">Source Detail</h2>
+          <div id="detailId" class="meta"></div>
+        </div>
+
+        <button id="closeDetailButton" class="clear-button" type="button">
+          Close
+        </button>
+      </div>
+
+      <div id="detailContent"></div>
     </section>
   </main>
 
   <script type="module">
-    import { adaptDictionaryConcepts } from "./engine/adapters/dictionaryAdapter.js";
-    import { adaptBibleNodes } from "./engine/adapters/bibleAdapter.js";
-    import { combineNodes } from "./engine/sourceRootEngine.js";
+    const API_BASE = "http://localhost:3000/api/v1";
+    const PAGE_LIMIT = 9;
 
-    import {
-      adaptWikidataNodes,
-      adaptWikidataAssertions,
-      adaptWikidataEdges,
-      adaptWikidataSources
-    } from "./engine/adapters/wikidataAdapter.js";
+    let currentPage = 1;
+    let totalPages = 1;
+    let totalSources = 0;
+    let currentSources = [];
+    let searchTimer = null;
 
-    let allNodes = [];
-    let allEdges = [];
-    let allAssertions = [];
-    let allSources = [];
+    const apiStatus = document.getElementById("apiStatus");
+    const searchInput = document.getElementById("searchInput");
+    const domainFilter = document.getElementById("domainFilter");
+    const typeFilter = document.getElementById("typeFilter");
+    const usageFilter = document.getElementById("usageFilter");
+    const credibilityFilter = document.getElementById("credibilityFilter");
+    const verificationFilter = document.getElementById("verificationFilter");
+    const clearFiltersButton = document.getElementById("clearFiltersButton");
+    const registryStats = document.getElementById("registryStats");
+    const sourceCount = document.getElementById("sourceCount");
+    const sourceRegistry = document.getElementById("sourceRegistry");
+    const pagination = document.getElementById("pagination");
+    const detailPanel = document.getElementById("detailPanel");
+    const detailTitle = document.getElementById("detailTitle");
+    const detailId = document.getElementById("detailId");
+    const detailContent = document.getElementById("detailContent");
+    const closeDetailButton = document.getElementById("closeDetailButton");
 
-    async function loadSourceRegistry() {
+    async function fetchJson(url) {
+      const response = await fetch(url, {
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
+      let body;
+
       try {
-        const [
-          bibleNodesResponse,
-          bibleEdgesResponse,
-          bibleAssertionsResponse,
-          bibleSourcesResponse,
-          dictionaryConceptsResponse,
-          dictionarySourcesResponse,
-          crossHubEdgesResponse,
-          wikidataNodesResponse,
-          wikidataEdgesResponse,
-          wikidataSourcesResponse
-        ] = await Promise.all([
-          fetch("data/bible-root-nodes.json"),
-          fetch("data/bible-root-edges.json"),
-          fetch("data/bible-root-assertions.json"),
-          fetch("data/bible-root-sources.json"),
-          fetch("data/nodes-v2-root.json"),
-          fetch("data/sources-v2.json"),
-          fetch("data/sourceroot-cross-hub-edges.json"),
-          fetch("data/wikidata-root-nodes.json"),
-          fetch("data/wikidata-root-edges.json"),
-          fetch("data/wikidata-root-sources.json")
+        body = await response.json();
+      } catch {
+        body = {};
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          body.message ||
+          `Request failed with HTTP ${response.status}.`,
+        );
+      }
+
+      return body;
+    }
+
+    function escapeHtml(value = "") {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function displayValue(value, fallback = "Not listed") {
+      return value === null || value === undefined || value === ""
+        ? fallback
+        : escapeHtml(value);
+    }
+
+    async function init() {
+      bindEvents();
+      await checkApi();
+      await populateFilters();
+      await loadSources();
+    }
+
+    function bindEvents() {
+      searchInput.addEventListener("input", () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+          currentPage = 1;
+          loadSources();
+        }, 300);
+      });
+
+      [
+        domainFilter,
+        typeFilter,
+        usageFilter,
+        credibilityFilter,
+        verificationFilter,
+      ].forEach((control) => {
+        control.addEventListener("change", () => {
+          currentPage = 1;
+          loadSources();
+        });
+      });
+
+      clearFiltersButton.addEventListener("click", clearFilters);
+      closeDetailButton.addEventListener("click", closeDetail);
+    }
+
+    async function checkApi() {
+      try {
+        const health = await fetchJson("http://localhost:3000/health");
+
+        apiStatus.innerHTML = `
+          <strong>SourceRoot API: Connected</strong><br>
+          Service: ${displayValue(health.service, "SourceRoot backend")} ·
+          Status: ${displayValue(health.status, "available")} ·
+          Endpoint: <code>${API_BASE}/sources</code>
+        `;
+      } catch (error) {
+        apiStatus.innerHTML = `
+          <strong>SourceRoot API: Offline</strong><br>
+          ${escapeHtml(error.message)}<br>
+          Start the backend with <code>npm.cmd run dev</code>.
+        `;
+      }
+    }
+
+    function buildQuery() {
+      const params = new URLSearchParams({
+        page: String(currentPage),
+        limit: String(PAGE_LIMIT),
+      });
+
+      if (domainFilter.value !== "all") {
+        params.set("domain", domainFilter.value);
+      }
+
+      if (typeFilter.value !== "all") {
+        params.set("sourceType", typeFilter.value);
+      }
+
+      if (verificationFilter.value !== "all") {
+        params.set("verificationStatus", verificationFilter.value);
+      }
+
+      return params;
+    }
+
+    async function populateFilters() {
+      try {
+        const response = await fetchJson(
+          `${API_BASE}/sources?page=1&limit=100`,
+        );
+
+        const sources = response.sources || [];
+
+        populateSelect(
+          domainFilter,
+          uniqueValues(sources.map((source) => source.domain)),
+          "All Domains",
+          "all",
+        );
+
+        populateSelect(
+          typeFilter,
+          uniqueValues(sources.map((source) => source.sourceType)),
+          "All Source Types",
+          "all",
+        );
+
+        populateSelect(
+          credibilityFilter,
+          uniqueValues(sources.map((source) => source.credibilityTier)),
+          "All Credibility",
+          "all",
+        );
+
+        populateSelect(
+          verificationFilter,
+          uniqueValues(sources.map((source) => source.verificationStatus)),
+          "All Verification",
+          "all",
+        );
+      } catch {
+        // Preserve the default options.
+      }
+    }
+
+    function populateSelect(select, values, firstLabel, firstValue) {
+      const currentValue = select.value;
+
+      select.innerHTML = `
+        <option value="${firstValue}">${escapeHtml(firstLabel)}</option>
+        ${values
+          .map(
+            (value) =>
+              `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`,
+          )
+          .join("")}
+      `;
+
+      if (values.includes(currentValue) || currentValue === firstValue) {
+        select.value = currentValue;
+      }
+    }
+
+    function uniqueValues(values) {
+      return [...new Set(values.filter(Boolean))]
+        .sort((a, b) => a.localeCompare(b));
+    }
+
+    async function loadSources() {
+      sourceRegistry.innerHTML = '<p class="empty">Loading live sources...</p>';
+      pagination.innerHTML = "";
+      sourceCount.textContent = "";
+
+      try {
+        const response = await fetchJson(
+          `${API_BASE}/sources?${buildQuery().toString()}`,
+        );
+
+        totalSources = response.total;
+        totalPages = response.totalPages;
+        currentSources = response.sources || [];
+
+        const records = await enrichSources(currentSources);
+        const filteredRecords = applyClientFilters(records);
+
+        renderStats(filteredRecords);
+        renderSourceRegistry(filteredRecords);
+        renderPagination();
+      } catch (error) {
+        sourceRegistry.innerHTML = `
+          <p class="empty">${escapeHtml(error.message)}</p>
+        `;
+      }
+    }
+
+    async function enrichSources(sources) {
+      return Promise.all(
+        sources.map(async (source) => ({
+          source,
+          usage: await getSourceUsage(source),
+        })),
+      );
+    }
+
+    async function getSourceUsage(source) {
+      const bundleId = source.bundleId;
+
+      const [nodesResponse, assertionsResponse, edgesResponse] =
+        await Promise.all([
+          fetchJson(
+            `${API_BASE}/bundles/${encodeURIComponent(bundleId)}/nodes?limit=100`,
+          ).catch(() => ({ nodes: [] })),
+          fetchJson(
+            `${API_BASE}/bundles/${encodeURIComponent(bundleId)}/assertions?limit=100`,
+          ).catch(() => ({ assertions: [] })),
+          fetchJson(
+            `${API_BASE}/bundles/${encodeURIComponent(bundleId)}/edges?limit=100`,
+          ).catch(() => ({ edges: [] })),
         ]);
 
-        const bibleNodesRaw = await bibleNodesResponse.json();
-        const bibleEdgesRaw = await bibleEdgesResponse.json();
-        const bibleAssertionsRaw = await bibleAssertionsResponse.json();
-        const bibleSourcesRaw = await bibleSourcesResponse.json();
-        const dictionaryConceptsRaw = await dictionaryConceptsResponse.json();
-        const dictionarySourcesRaw = await dictionarySourcesResponse.json();
-        const crossHubEdgesRaw = await crossHubEdgesResponse.json();
-        const wikidataNodesRaw = await wikidataNodesResponse.json();
-        const wikidataEdgesRaw = await wikidataEdgesResponse.json();
-        const wikidataSourcesRaw = await wikidataSourcesResponse.json();
+      const nodes = (nodesResponse.nodes || []).filter((node) =>
+        (node.sourceIds || []).includes(source.sourceId),
+      );
 
-        const bibleNodes = adaptBibleNodes(bibleNodesRaw);
-        const dictionaryNodes = adaptDictionaryConcepts(dictionaryConceptsRaw);
-        const wikidataNodes = adaptWikidataNodes(wikidataNodesRaw);
+      const assertions = (assertionsResponse.assertions || []).filter(
+        (assertion) =>
+          (assertion.sourceIds || []).includes(source.sourceId),
+      );
 
-        allNodes = combineNodes(
-          bibleNodes,
-          dictionaryNodes,
-          wikidataNodes
-        );
+      const edges = (edgesResponse.edges || []).filter((edge) =>
+        (edge.sourceIds || []).includes(source.sourceId),
+      );
 
-        allEdges = [
-          ...adaptBibleEdges(bibleEdgesRaw),
-          ...adaptDictionaryEdges(dictionaryConceptsRaw),
-          ...adaptCrossHubEdges(crossHubEdgesRaw),
-          ...adaptWikidataEdges(wikidataEdgesRaw).map(edge => ({
-            ...edge,
-            domain: "Wiki"
-          }))
-        ];
-
-        allAssertions = [
-          ...adaptBibleAssertions(bibleAssertionsRaw),
-          ...adaptDictionaryAssertions(dictionaryConceptsRaw),
-          ...adaptWikidataAssertions(wikidataNodesRaw)
-        ];
-
-        allSources = [
-          ...adaptBibleSources(bibleSourcesRaw),
-          ...adaptDictionarySources(dictionarySourcesRaw),
-          ...adaptWikidataSources(wikidataSourcesRaw)
-        ];
-
-        populateFilters();
-        applyFilters();
-
-        document.getElementById("searchInput").addEventListener("input", applyFilters);
-        document.getElementById("domainFilter").addEventListener("change", applyFilters);
-        document.getElementById("typeFilter").addEventListener("change", applyFilters);
-        document.getElementById("usageFilter").addEventListener("change", applyFilters);
-        document.getElementById("credibilityFilter").addEventListener("change", applyFilters);
-        document.getElementById("verificationFilter").addEventListener("change", applyFilters);
-
-        document.getElementById("clearFiltersButton").addEventListener("click", () => {
-          document.getElementById("searchInput").value = "";
-          document.getElementById("domainFilter").value = "all";
-          document.getElementById("typeFilter").value = "all";
-          document.getElementById("usageFilter").value = "all";
-          document.getElementById("credibilityFilter").value = "all";
-          document.getElementById("verificationFilter").value = "all";
-          applyFilters();
-        });
-
-      } catch (error) {
-        document.getElementById("sourceRegistry").innerHTML = `
-          <p class="empty">Could not load source registry. Check file paths and browser console.</p>
-        `;
-        console.error(error);
-      }
+      return {
+        nodes,
+        assertions,
+        edges,
+        total: nodes.length + assertions.length + edges.length,
+      };
     }
 
-    function adaptBibleSources(sources = []) {
-      return sources.map(source => ({
-        id: source.id,
-        name: source.name || source.title || source.id,
-        type: source.type || "BibleRoot Source",
-        domain: "BibleRoot",
-        qualityTier: source.qualityTier || source.tier || "Working Source",
-        credibilityTier: source.credibilityTier || "",
-        verificationStatus: source.verificationStatus || "",
-        sourceClass: source.sourceClass || "",
-        publisher: source.publisher || "",
-        license: source.license || "",
-        licenseStatus: source.licenseStatus || "",
-        reviewStatus: source.reviewStatus || "",
-        url: source.url || "",
-        notes: source.notes || source.description || "",
-        raw: source
-      }));
-    }
+    function applyClientFilters(records) {
+      const searchTerm = searchInput.value.trim().toLowerCase();
+      const usage = usageFilter.value;
+      const credibility = credibilityFilter.value;
 
-    function adaptDictionarySources(sources = []) {
-      return sources.map(source => ({
-        id: source.id,
-        name: source.name || source.title || source.id,
-        type: source.type || "DictionaryHub Source",
-        domain: "DictionaryHub",
-        qualityTier: source.qualityTier || source.tier || "Working Source",
-        credibilityTier: source.credibilityTier || "",
-        verificationStatus: source.verificationStatus || "",
-        sourceClass: source.sourceClass || "",
-        publisher: source.publisher || "",
-        license: source.license || "",
-        licenseStatus: source.licenseStatus || "",
-        reviewStatus: source.reviewStatus || "",
-        url: source.url || "",
-        notes: source.notes || source.description || "",
-        raw: source
-      }));
-    }
-
-    function adaptBibleEdges(edges = []) {
-      return edges.map(edge => ({
-        ...edge,
-        fromNodeId: `bible-${edge.fromNodeId}`,
-        toNodeId: `bible-${edge.toNodeId}`,
-        relationshipType: edge.relationshipType || edge.type || "RELATED_TO",
-        label: edge.label || edge.relationshipType || edge.type || "related to",
-        summary: edge.summary || edge.explanation || "",
-        sourceIds: edge.sourceIds || [],
-        domain: "BibleRoot",
-        raw: edge
-      }));
-    }
-
-    function adaptDictionaryEdges(concepts = []) {
-      const edges = [];
-
-      concepts.forEach(concept => {
-        (concept.relationships || []).forEach((relationship, index) => {
-          edges.push({
-            id: `dictionary-edge-${concept.id}-${relationship.target}-${index}`,
-            fromNodeId: `dictionary-${concept.id}`,
-            toNodeId: `dictionary-${relationship.target}`,
-            relationshipType: relationship.type || "RELATED_TO",
-            label: relationship.direction || relationship.type || "related to",
-            summary: relationship.explanation || relationship.bridge || "",
-            sourceIds: relationship.sourceIds || [],
-            domain: "DictionaryHub",
-            raw: relationship
-          });
-        });
-      });
-
-      return edges;
-    }
-
-    function adaptCrossHubEdges(edges = []) {
-      return edges.map(edge => ({
-        id: edge.id,
-        fromNodeId: edge.fromNodeId,
-        toNodeId: edge.toNodeId,
-        relationshipType: edge.relationshipType || edge.type || "CROSS_HUB_RELATIONSHIP",
-        label: edge.label || edge.relationshipType || "relates to",
-        summary: edge.summary || edge.explanation || "",
-        sourceIds: edge.sourceIds || [],
-        domain: edge.domain || "SourceRoot",
-        raw: edge
-      }));
-    }
-
-    function adaptBibleAssertions(assertions = []) {
-      return assertions.map(assertion => ({
-        ...assertion,
-        nodeId: `bible-${assertion.nodeId}`,
-        assertionType: assertion.assertionType || assertion.type || "assertion",
-        label: assertion.label || assertion.assertionType || assertion.type || "Assertion",
-        summary: assertion.summary || "",
-        body: assertion.body || assertion.description || assertion.summary || "",
-        sourceIds: assertion.sourceIds || [],
-        confidence: assertion.confidence || "working",
-        status: assertion.status || "alpha",
-        domain: "BibleRoot"
-      }));
-    }
-
-    function adaptDictionaryAssertions(concepts = []) {
-      const assertions = [];
-
-      concepts.forEach(concept => {
-        if (concept.shortDefinition) {
-          assertions.push({
-            id: `dictionary-assertion-${concept.id}-short-definition`,
-            nodeId: `dictionary-${concept.id}`,
-            assertionType: "short-definition",
-            label: "Short Definition",
-            summary: concept.shortDefinition,
-            body: concept.shortDefinition,
-            sourceIds: concept.sourceIds || [],
-            confidence: "working",
-            status: concept.status || "v2-draft",
-            domain: "DictionaryHub"
-          });
+      return records.filter(({ source, usage: sourceUsage }) => {
+        if (usage === "used" && sourceUsage.total === 0) {
+          return false;
         }
 
-        if (concept.fullDefinition) {
-          assertions.push({
-            id: `dictionary-assertion-${concept.id}-full-definition`,
-            nodeId: `dictionary-${concept.id}`,
-            assertionType: "full-definition",
-            label: "Full Definition",
-            summary: concept.shortDefinition || "",
-            body: concept.fullDefinition,
-            sourceIds: concept.sourceIds || [],
-            confidence: "working",
-            status: concept.status || "v2-draft",
-            domain: "DictionaryHub"
-          });
+        if (usage === "unused" && sourceUsage.total > 0) {
+          return false;
         }
 
-        if (concept.plainEnglish) {
-          assertions.push({
-            id: `dictionary-assertion-${concept.id}-plain-english`,
-            nodeId: `dictionary-${concept.id}`,
-            assertionType: "plain-english",
-            label: "Plain English",
-            summary: concept.plainEnglish,
-            body: concept.plainEnglish,
-            sourceIds: concept.sourceIds || [],
-            confidence: "working",
-            status: concept.status || "v2-draft",
-            domain: "DictionaryHub"
-          });
+        if (
+          credibility !== "all" &&
+          source.credibilityTier !== credibility
+        ) {
+          return false;
         }
 
-        if (concept.technicalDefinition) {
-          assertions.push({
-            id: `dictionary-assertion-${concept.id}-technical-definition`,
-            nodeId: `dictionary-${concept.id}`,
-            assertionType: "technical-definition",
-            label: "Technical Definition",
-            summary: concept.technicalDefinition,
-            body: concept.technicalDefinition,
-            sourceIds: concept.sourceIds || [],
-            confidence: "working",
-            status: concept.status || "v2-draft",
-            domain: "DictionaryHub"
-          });
-        }
-
-        if (concept.whyItMatters) {
-          assertions.push({
-            id: `dictionary-assertion-${concept.id}-why-it-matters`,
-            nodeId: `dictionary-${concept.id}`,
-            assertionType: "why-it-matters",
-            label: "Why It Matters",
-            summary: concept.whyItMatters,
-            body: concept.whyItMatters,
-            sourceIds: concept.sourceIds || [],
-            confidence: "working",
-            status: concept.status || "v2-draft",
-            domain: "DictionaryHub"
-          });
-        }
-
-        if (Array.isArray(concept.examples) && concept.examples.length) {
-          assertions.push({
-            id: `dictionary-assertion-${concept.id}-examples`,
-            nodeId: `dictionary-${concept.id}`,
-            assertionType: "examples",
-            label: "Examples",
-            summary: `${concept.examples.length} example(s) available`,
-            body: concept.examples.map(example => `• ${example}`).join("<br>"),
-            sourceIds: concept.sourceIds || [],
-            confidence: "working",
-            status: concept.status || "v2-draft",
-            domain: "DictionaryHub"
-          });
-        }
-
-        if (Array.isArray(concept.commonConfusions) && concept.commonConfusions.length) {
-          assertions.push({
-            id: `dictionary-assertion-${concept.id}-common-confusions`,
-            nodeId: `dictionary-${concept.id}`,
-            assertionType: "common-confusions",
-            label: "Common Confusions",
-            summary: `${concept.commonConfusions.length} confusion note(s) available`,
-            body: concept.commonConfusions.map(confusion => `• ${confusion}`).join("<br>"),
-            sourceIds: concept.sourceIds || [],
-            confidence: "working",
-            status: concept.status || "v2-draft",
-            domain: "DictionaryHub"
-          });
-        }
-      });
-
-      return assertions;
-    }
-
-    function populateFilters() {
-      const domainFilter = document.getElementById("domainFilter");
-      const typeFilter = document.getElementById("typeFilter");
-      const credibilityFilter = document.getElementById("credibilityFilter");
-      const verificationFilter = document.getElementById("verificationFilter");
-
-      const domains = [
-        ...new Set(allSources.map(source => getDisplayDomain(source.domain || "Unknown Domain")))
-      ].sort();
-
-      const types = [
-        ...new Set(allSources.map(source => source.type || "Unknown Type"))
-      ].sort();
-
-      const credibilityTiers = [
-        ...new Set(allSources.map(source => source.credibilityTier || "Unclassified"))
-      ].sort();
-
-      const verificationStatuses = [
-        ...new Set(allSources.map(source => source.verificationStatus || "Unclassified"))
-      ].sort();
-
-      domainFilter.innerHTML = `
-        <option value="all">All Domains</option>
-        ${domains.map(domain => `<option value="${domain}">${domain}</option>`).join("")}
-      `;
-
-      typeFilter.innerHTML = `
-        <option value="all">All Source Types</option>
-        ${types.map(type => `<option value="${type}">${type}</option>`).join("")}
-      `;
-
-      credibilityFilter.innerHTML = `
-        <option value="all">All Credibility</option>
-        ${credibilityTiers.map(tier => `<option value="${tier}">${tier}</option>`).join("")}
-      `;
-
-      verificationFilter.innerHTML = `
-        <option value="all">All Verification</option>
-        ${verificationStatuses.map(status => `<option value="${status}">${status}</option>`).join("")}
-      `;
-    }
-
-    function applyFilters() {
-      const searchTerm = document.getElementById("searchInput").value.toLowerCase().trim();
-      const selectedDomain = document.getElementById("domainFilter").value;
-      const selectedType = document.getElementById("typeFilter").value;
-      const selectedUsage = document.getElementById("usageFilter").value;
-      const selectedCredibility = document.getElementById("credibilityFilter").value;
-      const selectedVerification = document.getElementById("verificationFilter").value;
-
-      let filteredSources = [...allSources];
-
-      if (selectedDomain !== "all") {
-        filteredSources = filteredSources.filter(source =>
-          getDisplayDomain(source.domain) === selectedDomain
-        );
-      }
-
-      if (selectedType !== "all") {
-        filteredSources = filteredSources.filter(source => source.type === selectedType);
-      }
-
-      if (selectedUsage === "used") {
-        filteredSources = filteredSources.filter(source => getSourceUsage(source.id).total > 0);
-      }
-
-      if (selectedUsage === "unused") {
-        filteredSources = filteredSources.filter(source => getSourceUsage(source.id).total === 0);
-      }
-
-      if (selectedCredibility !== "all") {
-        filteredSources = filteredSources.filter(source =>
-          (source.credibilityTier || "Unclassified") === selectedCredibility
-        );
-      }
-
-      if (selectedVerification !== "all") {
-        filteredSources = filteredSources.filter(source =>
-          (source.verificationStatus || "Unclassified") === selectedVerification
-        );
-      }
-
-      if (searchTerm) {
-        filteredSources = filteredSources.filter(source => {
+        if (searchTerm) {
           const searchableText = [
-            source.id,
+            source.sourceId,
             source.name,
-            source.type,
+            source.sourceType,
             source.domain,
-            getDisplayDomain(source.domain),
             source.qualityTier,
             source.credibilityTier,
             source.verificationStatus,
@@ -789,183 +793,362 @@
             source.licenseStatus,
             source.reviewStatus,
             source.url,
-            source.notes
-          ].join(" ").toLowerCase();
+            source.notes,
+          ]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase();
 
-          return searchableText.includes(searchTerm);
-        });
-      }
+          if (!searchableText.includes(searchTerm)) {
+            return false;
+          }
+        }
 
-      renderStats(filteredSources);
-      renderSourceRegistry(filteredSources);
+        return true;
+      });
     }
 
-    function renderStats(sources) {
-      const domainCount = new Set(sources.map(source => getDisplayDomain(source.domain))).size;
-      const typeCount = new Set(sources.map(source => source.type)).size;
-      const usedCount = sources.filter(source => getSourceUsage(source.id).total > 0).length;
-      const linkedCount = sources.filter(source => source.url).length;
-      const reviewedCount = sources.filter(source =>
-        source.reviewStatus === "reviewed" ||
-        source.reviewStatus === "approved" ||
-        source.verificationStatus === "verified" ||
-        source.verificationStatus === "official-documentation"
+    function clearFilters() {
+      searchInput.value = "";
+      domainFilter.value = "all";
+      typeFilter.value = "all";
+      usageFilter.value = "all";
+      credibilityFilter.value = "all";
+      verificationFilter.value = "all";
+      currentPage = 1;
+      closeDetail();
+      loadSources();
+    }
+
+    function renderStats(records) {
+      const domainCount = new Set(
+        records.map(({ source }) => source.domain),
+      ).size;
+
+      const typeCount = new Set(
+        records.map(({ source }) => source.sourceType),
+      ).size;
+
+      const usedCount = records.filter(
+        ({ usage }) => usage.total > 0,
       ).length;
 
-      document.getElementById("registryStats").innerHTML = `
-        <div class="stat-card">
-          <div class="stat-number">${sources.length}</div>
-          <div class="stat-label">Visible Sources</div>
-        </div>
+      const linkedCount = records.filter(
+        ({ source }) => Boolean(source.url),
+      ).length;
 
+      const reviewedCount = records.filter(
+        ({ source }) =>
+          source.reviewStatus === "reviewed" ||
+          source.reviewStatus === "approved" ||
+          source.verificationStatus === "verified" ||
+          source.verificationStatus === "official-documentation",
+      ).length;
+
+      registryStats.innerHTML = `
+        <div class="stat-card">
+          <div class="stat-number">${totalSources}</div>
+          <div class="stat-label">Total Matching Sources</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">${records.length}</div>
+          <div class="stat-label">Visible on Page</div>
+        </div>
         <div class="stat-card">
           <div class="stat-number">${domainCount}</div>
-          <div class="stat-label">Domains</div>
+          <div class="stat-label">Domains on Page</div>
         </div>
-
         <div class="stat-card">
           <div class="stat-number">${typeCount}</div>
           <div class="stat-label">Source Types</div>
         </div>
-
         <div class="stat-card">
           <div class="stat-number">${usedCount}</div>
           <div class="stat-label">Used Sources</div>
         </div>
-
         <div class="stat-card">
-          <div class="stat-number">${linkedCount}</div>
-          <div class="stat-label">With URLs</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-number">${reviewedCount}</div>
-          <div class="stat-label">Reviewed / Verified</div>
+          <div class="stat-number">${reviewedCount || linkedCount}</div>
+          <div class="stat-label">${reviewedCount ? "Reviewed / Verified" : "With URLs"}</div>
         </div>
       `;
     }
 
-    function renderSourceRegistry(sources) {
-      const sourceRegistry = document.getElementById("sourceRegistry");
-      const sourceCount = document.getElementById("sourceCount");
+    function renderSourceRegistry(records) {
+      sourceCount.textContent =
+        `${records.length} visible source${records.length === 1 ? "" : "s"} on page ` +
+        `${currentPage} of ${totalPages}.`;
 
-      sourceCount.textContent = `${sources.length} source${sources.length === 1 ? "" : "s"} shown`;
-
-      if (!sources.length) {
+      if (!records.length) {
         sourceRegistry.innerHTML = `
-          <p class="empty">No sources match this search/filter combination.</p>
+          <p class="empty">No sources match this search and filter combination.</p>
         `;
         return;
       }
 
       sourceRegistry.innerHTML = `
         <div class="source-grid">
-          ${sources.map(source => {
-            const usage = getSourceUsage(source.id);
+          ${records
+            .map(({ source, usage }) => renderSourceCard(source, usage))
+            .join("")}
+        </div>
+      `;
 
-            return `
-              <article class="source-card">
-                ${renderDomainLabel(getDisplayDomain(source.domain))}
-                <h3>${source.name}</h3>
+      sourceRegistry
+        .querySelectorAll("[data-open-source]")
+        .forEach((button) => {
+          button.addEventListener("click", () => {
+            openSource(button.dataset.openSource);
+          });
+        });
+    }
 
-                <div class="meta">
-                  ${source.type || "Source"} · ${source.qualityTier || "Working Source"}
-                </div>
+    function renderSourceCard(source, usage) {
+      return `
+        <article class="source-card">
+          ${renderDomainLabel(source.domain)}
+          <h3>${displayValue(source.name, source.sourceId)}</h3>
 
-                <div class="source-id">
-                  <strong>Source ID:</strong> <code>${source.id}</code>
-                </div>
+          <div class="meta">
+            ${displayValue(source.sourceType, "Source")} ·
+            ${displayValue(source.qualityTier, "Working Source")}
+          </div>
 
-                <div class="usage-grid">
-                  <div class="usage-card">
-                    <div class="usage-number">${usage.nodes}</div>
-                    <div class="usage-label">Nodes</div>
-                  </div>
+          <div class="source-id">
+            <strong>Source ID:</strong>
+            <code>${escapeHtml(source.sourceId)}</code>
+          </div>
 
-                  <div class="usage-card">
-                    <div class="usage-number">${usage.assertions}</div>
-                    <div class="usage-label">Assertions</div>
-                  </div>
+          <div class="usage-grid">
+            ${renderUsageCard(usage.nodes.length, "Nodes")}
+            ${renderUsageCard(usage.assertions.length, "Assertions")}
+            ${renderUsageCard(usage.edges.length, "Edges")}
+            ${renderUsageCard(usage.total, "Total Uses")}
+          </div>
 
-                  <div class="usage-card">
-                    <div class="usage-number">${usage.edges}</div>
-                    <div class="usage-label">Edges</div>
-                  </div>
+          <p>${displayValue(source.notes, "No notes yet.")}</p>
 
-                  <div class="usage-card">
-                    <div class="usage-number">${usage.total}</div>
-                    <div class="usage-label">Total Uses</div>
-                  </div>
-                </div>
+          <div class="meta"><strong>Publisher:</strong> ${displayValue(source.publisher)}</div>
+          <div class="meta"><strong>Credibility:</strong> ${displayValue(source.credibilityTier)}</div>
+          <div class="meta"><strong>Verification:</strong> ${displayValue(source.verificationStatus)}</div>
+          <div class="meta"><strong>Class:</strong> ${displayValue(source.sourceClass)}</div>
+          <div class="meta"><strong>License:</strong> ${displayValue(source.license)}</div>
+          <div class="meta"><strong>License Status:</strong> ${displayValue(source.licenseStatus)}</div>
+          <div class="meta"><strong>Review Status:</strong> ${displayValue(source.reviewStatus)}</div>
 
-                <p>${source.notes || "<span class='empty'>No notes yet.</span>"}</p>
+          ${source.url
+            ? `<a class="open-source-link" href="${escapeHtml(source.url)}" target="_blank" rel="noopener">Open source</a>`
+            : ""}
 
-                <div class="meta"><strong>Publisher:</strong> ${source.publisher || "Not listed"}</div>
-                <div class="meta"><strong>Credibility:</strong> ${source.credibilityTier || "Unclassified"}</div>
-                <div class="meta"><strong>Verification:</strong> ${source.verificationStatus || "Unclassified"}</div>
-                <div class="meta"><strong>Quality Tier:</strong> ${source.qualityTier || "Working Source"}</div>
-                <div class="meta"><strong>Class:</strong> ${source.sourceClass || "Unclassified"}</div>
-                <div class="meta"><strong>License:</strong> ${source.license || "Not listed"}</div>
-                <div class="meta"><strong>License Status:</strong> ${source.licenseStatus || "Unclassified"}</div>
-                <div class="meta"><strong>Review Status:</strong> ${source.reviewStatus || "Not reviewed"}</div>
+          <button
+            class="inspect-button"
+            type="button"
+            data-open-source="${escapeHtml(source.sourceId)}"
+          >
+            Inspect Source
+          </button>
+        </article>
+      `;
+    }
 
-                ${source.url ? `<a class="open-source-link" href="${source.url}" target="_blank" rel="noopener">Open source</a>` : ""}
-
-                <details>
-                  <summary>Raw Source Data</summary>
-                  <pre>${JSON.stringify(source.raw || source, null, 2)}</pre>
-                </details>
-              </article>
-            `;
-          }).join("")}
+    function renderUsageCard(number, label) {
+      return `
+        <div class="usage-card">
+          <div class="usage-number">${number}</div>
+          <div class="usage-label">${escapeHtml(label)}</div>
         </div>
       `;
     }
 
-    function getSourceUsage(sourceId) {
-      const nodeUses = allNodes.filter(node =>
-        (node.sourceIds || []).includes(sourceId)
-      ).length;
-
-      const assertionUses = allAssertions.filter(assertion =>
-        (assertion.sourceIds || []).includes(sourceId)
-      ).length;
-
-      const edgeUses = allEdges.filter(edge =>
-        (edge.sourceIds || []).includes(sourceId)
-      ).length;
-
-      return {
-        nodes: nodeUses,
-        assertions: assertionUses,
-        edges: edgeUses,
-        total: nodeUses + assertionUses + edgeUses
-      };
-    }
-
     function renderDomainLabel(domain = "SourceRoot") {
-      const className = domain === "SourceRoot"
-        ? "domain-source-root"
-        : domain === "BibleRoot"
-          ? "domain-bible-root"
-          : domain === "DictionaryHub"
-            ? "domain-dictionary-hub"
-            : domain === "Wiki"
-              ? "domain-wiki"
-              : "";
-
-      return `<span class="hub-label ${className}">${domain}</span>`;
+      return `<span class="hub-label">${displayValue(domain, "SourceRoot")}</span>`;
     }
 
-    function getDisplayDomain(domain = "") {
-      if (domain === "WikidataRoot") {
-        return "Wiki";
+    function renderPagination() {
+      if (totalPages <= 1) {
+        pagination.innerHTML = "";
+        return;
       }
 
-      return domain;
+      pagination.innerHTML = `
+        <button id="previousPageButton" type="button" ${currentPage <= 1 ? "disabled" : ""}>
+          Previous
+        </button>
+        <span>Page ${currentPage} of ${totalPages}</span>
+        <button id="nextPageButton" type="button" ${currentPage >= totalPages ? "disabled" : ""}>
+          Next
+        </button>
+      `;
+
+      document.getElementById("previousPageButton").addEventListener("click", () => {
+        if (currentPage > 1) {
+          currentPage -= 1;
+          loadSources();
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+      });
+
+      document.getElementById("nextPageButton").addEventListener("click", () => {
+        if (currentPage < totalPages) {
+          currentPage += 1;
+          loadSources();
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+      });
     }
 
-    loadSourceRegistry();
+    async function openSource(sourceId) {
+      detailPanel.classList.add("visible");
+      detailTitle.textContent = "Loading source...";
+      detailId.textContent = sourceId;
+      detailContent.innerHTML =
+        '<p class="empty">Loading source usage and provenance details...</p>';
+
+      try {
+        const source = await fetchJson(
+          `${API_BASE}/sources/${encodeURIComponent(sourceId)}`,
+        );
+
+        const usage = await getSourceUsage(source);
+
+        detailTitle.textContent = source.name || source.sourceId;
+        detailId.textContent = source.sourceId;
+
+        detailContent.innerHTML = `
+          ${renderDomainLabel(source.domain)}
+
+          <p>${displayValue(source.notes, "No source notes.")}</p>
+
+          <div class="detail-grid">
+            ${renderDetailItem("Bundle", source.bundleId)}
+            ${renderDetailItem("Type", source.sourceType)}
+            ${renderDetailItem("Publisher", source.publisher)}
+            ${renderDetailItem("Quality Tier", source.qualityTier)}
+            ${renderDetailItem("Credibility", source.credibilityTier)}
+            ${renderDetailItem("Verification", source.verificationStatus)}
+            ${renderDetailItem("Review", source.reviewStatus)}
+            ${renderDetailItem("Source Class", source.sourceClass)}
+            ${renderDetailItem("License", source.license)}
+            ${renderDetailItem("License Status", source.licenseStatus)}
+            ${renderDetailItem("Last Reviewed", source.lastReviewed)}
+          </div>
+
+          ${source.url
+            ? `<p><a class="open-source-link" href="${escapeHtml(source.url)}" target="_blank" rel="noopener">Open original source</a></p>`
+            : ""}
+
+          <h3>Referenced by Nodes</h3>
+          ${usage.nodes.length
+            ? usage.nodes.map(renderNodeUsage).join("")
+            : '<p class="empty">No nodes reference this source.</p>'}
+
+          <h3>Referenced by Assertions</h3>
+          ${usage.assertions.length
+            ? usage.assertions.map(renderAssertionUsage).join("")
+            : '<p class="empty">No assertions reference this source.</p>'}
+
+          <h3>Referenced by Edges</h3>
+          ${usage.edges.length
+            ? usage.edges.map(renderEdgeUsage).join("")
+            : '<p class="empty">No edges reference this source.</p>'}
+
+          <h3>Raw Normalized Source</h3>
+          <details>
+            <summary>View API response</summary>
+            <pre>${escapeHtml(JSON.stringify(source, null, 2))}</pre>
+          </details>
+        `;
+
+        detailContent
+          .querySelectorAll("[data-open-node]")
+          .forEach((button) => {
+            button.addEventListener("click", () => {
+              openNodeInInspector(button.dataset.openNode);
+            });
+          });
+
+        detailPanel.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      } catch (error) {
+        detailTitle.textContent = "Could not load source";
+        detailContent.innerHTML = `
+          <p class="empty">${escapeHtml(error.message)}</p>
+        `;
+      }
+    }
+
+    function renderDetailItem(label, value) {
+      return `
+        <div class="detail-item">
+          <span>${escapeHtml(label)}</span>
+          <strong>${displayValue(value)}</strong>
+        </div>
+      `;
+    }
+
+    function renderNodeUsage(node) {
+      return `
+        <div class="linked-card">
+          <h3>${escapeHtml(node.title)}</h3>
+          <div class="meta">
+            ${displayValue(node.nodeType)} · ${displayValue(node.domain)}
+          </div>
+          <p>${displayValue(node.summary, "")}</p>
+          <button
+            class="record-button"
+            type="button"
+            data-open-node="${escapeHtml(node.nodeId)}"
+          >
+            Open node in Inspector
+          </button>
+        </div>
+      `;
+    }
+
+    function renderAssertionUsage(assertion) {
+      return `
+        <div class="linked-card">
+          <h3>${displayValue(assertion.label, assertion.assertionId)}</h3>
+          <div class="meta">
+            ${displayValue(assertion.assertionType)} ·
+            ${displayValue(assertion.reviewStatus)}
+          </div>
+          <p>${displayValue(assertion.summary, "")}</p>
+          <code>${escapeHtml(assertion.assertionId)}</code>
+        </div>
+      `;
+    }
+
+    function renderEdgeUsage(edge) {
+      return `
+        <div class="linked-card">
+          <h3>${displayValue(edge.label, edge.relationshipType)}</h3>
+          <div class="meta">
+            ${displayValue(edge.relationshipType)} ·
+            ${displayValue(edge.reviewStatus)}
+          </div>
+          <p>${displayValue(edge.summary, "")}</p>
+          <code>${escapeHtml(edge.edgeId)}</code>
+        </div>
+      `;
+    }
+
+    function openNodeInInspector(nodeId) {
+      const url = new URL("sourceroot-inspector.html", window.location.href);
+      url.searchParams.set("type", "node");
+      url.searchParams.set("id", nodeId);
+      window.location.href = url.toString();
+    }
+
+    function closeDetail() {
+      detailPanel.classList.remove("visible");
+      detailTitle.textContent = "Source Detail";
+      detailId.textContent = "";
+      detailContent.innerHTML = "";
+    }
+
+    init();
   </script>
 </body>
 </html>

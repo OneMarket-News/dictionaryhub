@@ -262,6 +262,47 @@
       line-height: 1.5;
     }
 
+
+    .live-status {
+      margin-top: 16px;
+      border: 1px solid #ead59a;
+      background: #fff8e6;
+      border-radius: 14px;
+      padding: 14px;
+      line-height: 1.5;
+      color: #92400e;
+    }
+
+    .live-status.connected {
+      background: #f0fdf4;
+      border-color: #86efac;
+      color: #166534;
+    }
+
+    .live-metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .live-metric {
+      border: 1px solid #d1d5db;
+      background: white;
+      border-radius: 12px;
+      padding: 11px;
+    }
+
+    .live-metric strong {
+      display: block;
+      font-size: 22px;
+    }
+
+    .live-metric span {
+      color: #6b7280;
+      font-size: 12px;
+    }
+
     @media (max-width: 800px) {
       header {
         padding: 26px 16px;
@@ -296,7 +337,7 @@
       <h1>SourceRoot MVP Walkthrough</h1>
 
       <div class="subtitle">
-        A guided demo path for showing SourceRoot from start to finish. Use this page when presenting the MVP to someone new.
+        A guided live demo path for showing SourceRoot from bundle validation through PostgreSQL import, graph exploration, registry inspection, search, and API retrieval.
       </div>
 
       <div class="top-links">
@@ -306,7 +347,7 @@
         <a href="sourceroot-import-preview.html">Import Preview</a>
         <a href="sourceroot-light-graph.html">Light Graph</a>
         <a href="sourceroot-inspector.html">Inspector</a>
-        <a href="sourceroot-api-preview.html">API Preview</a>
+        <a href="sourceroot-api-preview.html">API Explorer</a>
       </div>
     </div>
   </header>
@@ -316,8 +357,7 @@
       <h2>Walkthrough Purpose</h2>
 
       <p class="overview-text">
-        This walkthrough explains the current SourceRoot MVP using the Light MVP Bundle.
-        The goal is to show that SourceRoot is not just a static page or graph. It is a structured provenance system for inspecting knowledge before trusting it.
+        This walkthrough explains the current live SourceRoot MVP using an imported Light bundle. The goal is to show that SourceRoot is not just a static page or graph: it is an API-backed provenance system that validates, stores, queries, and inspects knowledge before trusting it.
       </p>
 
       <div class="hero-grid">
@@ -338,8 +378,14 @@
       </div>
 
       <div class="model-box">
-        <code>Node → Assertion → Edge → Source → Credibility → Identity → Revision → Import Validation</code>
+        <code>Bundle → Validation → PostgreSQL Import → Node → Assertion → Edge → Source → Credibility → Identity → Revision → Search</code>
       </div>
+
+      <div id="walkthroughApiStatus" class="live-status">
+        Checking the SourceRoot API...
+      </div>
+
+      <div id="walkthroughMetrics" class="live-metrics"></div>
     </section>
 
     <section class="panel">
@@ -370,12 +416,12 @@
           <div class="step-content">
             <h3>Open the SourceRoot Dashboard</h3>
             <p>
-              Show the main control center. This is where the MVP components are organized.
+              Show the live control center. It displays backend connection status, PostgreSQL counts, imported bundles, and links into each SourceRoot layer.
             </p>
 
             <ul>
               <li>Point out the main demo path.</li>
-              <li>Show the cards for Inspector, Import Bundle Registry, Import Preview, Light Graph, registries, and API Preview.</li>
+              <li>Show the cards for Inspector, Import Bundle Registry, Import Preview, Light Graph, registries, and API Explorer.</li>
               <li>Explain that each page inspects a different layer of the same knowledge system.</li>
             </ul>
 
@@ -390,14 +436,13 @@
           <div class="step-content">
             <h3>Open the Import Bundle Registry</h3>
             <p>
-              Show that SourceRoot can catalog available bundles instead of treating imports as hidden files.
+              Show that SourceRoot catalogs bundles already imported into PostgreSQL instead of treating them as hidden local files.
             </p>
 
             <ul>
-              <li>Review the Light MVP Bundle.</li>
-              <li>Show the status: Ready With Warnings.</li>
-              <li>Show the counts: 8 nodes, 10 assertions, 9 edges, 11 sources, 12 revisions.</li>
-              <li>Explain that warnings are visible instead of hidden.</li>
+              <li>Review the imported Light bundle or another bundle already in PostgreSQL.</li>
+              <li>Show its normalized counts for nodes, assertions, edges, sources, and revisions.</li>
+              <li>Open the bundle drill-down to prove records are retrievable by bundle ID.</li>
             </ul>
 
             <div class="action-row">
@@ -409,16 +454,16 @@
         <article class="step-card">
           <div class="step-number">4</div>
           <div class="step-content">
-            <h3>Validate the Light MVP Bundle</h3>
+            <h3>Validate and Import a Bundle</h3>
             <p>
-              Open Import Preview and validate the bundle before trusting it.
+              Open Import Preview, validate a registered or local bundle through the backend, review issues, and import approved data into PostgreSQL.
             </p>
 
             <ul>
-              <li>Click Load Light MVP Bundle.</li>
-              <li>Confirm Ready With Warnings.</li>
-              <li>Confirm Errors: 0.</li>
-              <li>Explain that safe-to-preview is different from public-release-ready.</li>
+              <li>Load a registered bundle or choose a local JSON bundle.</li>
+              <li>Run backend validation and review errors, warnings, counts, and readiness.</li>
+              <li>Click Import Bundle to Database.</li>
+              <li>Explain that validation and persistence are separate controlled steps.</li>
             </ul>
 
             <div class="action-row">
@@ -432,11 +477,11 @@
           <div class="step-content">
             <h3>Open the Light MVP Graph</h3>
             <p>
-              Show the same bundle as a visual graph of meaning.
+              Show the imported bundle as a live graph loaded from bundle-scoped API endpoints.
             </p>
 
             <ul>
-              <li>Confirm 8 nodes and 9 relationships appear.</li>
+              <li>Confirm the graph reports an API connection and the active imported bundle ID.</li>
               <li>Click a Light node.</li>
               <li>Show assertions, relationships, sources, credibility metadata, and revisions in the detail panel.</li>
               <li>Explain solid vs interpretive/contextual relationship types.</li>
@@ -453,7 +498,7 @@
           <div class="step-content">
             <h3>Inspect the Nodes</h3>
             <p>
-              Open the Inspector to show that the Light MVP Bundle is loaded into the universal SourceRoot inspection layer.
+              Open the Inspector to show that normalized PostgreSQL records are available through the universal SourceRoot inspection layer.
             </p>
 
             <ul>
@@ -533,24 +578,21 @@
         <article class="step-card">
           <div class="step-number">10</div>
           <div class="step-content">
-            <h3>Open the API Preview</h3>
+            <h3>Open the API Explorer</h3>
             <p>
-              Show how this model could become a real API contract.
+              Run real GET and POST requests against the implemented SourceRoot API.
             </p>
 
             <ul>
-              <li>Show node retrieval.</li>
-              <li>Show import validation.</li>
-              <li>Show assertion credibility and relationship credibility.</li>
-              <li>Open the exportable API response examples.</li>
-              <li>Explain how this supports future AI citation and provenance workflows.</li>
+              <li>Run a health request.</li>
+              <li>Retrieve nodes, assertions, edges, sources, revisions, and imported bundles.</li>
+              <li>Run unified search.</li>
+              <li>Send a validation request.</li>
+              <li>Explain how the same contract can support domain applications and future AI citation workflows.</li>
             </ul>
 
             <div class="action-row">
-              <a class="action-link primary" href="sourceroot-api-preview.html">Open API Preview</a>
-              <a class="action-link" href="data/api-examples/sourceRoot-light-node-response.json" target="_blank" rel="noopener">Node API Example</a>
-              <a class="action-link" href="data/api-examples/sourceRoot-light-validation-response.json" target="_blank" rel="noopener">Validation API Example</a>
-              <a class="action-link" href="data/api-examples/sourceRoot-light-citation-response.json" target="_blank" rel="noopener">Citation API Example</a>
+              <a class="action-link primary" href="sourceroot-api-preview.html">Open API Explorer</a>
             </div>
           </div>
         </article>
@@ -598,7 +640,7 @@
 
       <div class="script-box">
         <p>
-          SourceRoot is a prototype trust layer for knowledge. Instead of flattening information into one answer or one page, it separates knowledge into nodes, assertions, relationships, sources, credibility metadata, identity context, revisions, and import validation.
+          SourceRoot is a working API-backed trust and provenance layer for knowledge. Instead of flattening information into one answer or one page, it separates knowledge into nodes, assertions, relationships, sources, credibility metadata, identity context, revisions, and import validation.
         </p>
 
         <p>
@@ -606,7 +648,7 @@
         </p>
 
         <p>
-          The important part is not just the word light. The important part is that SourceRoot can show what is being claimed, where it came from, how it connects, how trustworthy it is, what still needs review, and whether the data is safe to import.
+          The important part is not just the word light. The important part is that SourceRoot can show what is being claimed, where it came from, how it connects, how trustworthy it is, what still needs review, whether the data is safe to import, and how it is stored and retrieved.
         </p>
 
         <p>
@@ -617,7 +659,77 @@
   </main>
 
   <footer>
-    SourceRoot MVP Walkthrough. Use this page as the guided demo path for presenting the current prototype.
+    SourceRoot MVP Walkthrough. Use this page as the guided demo path for presenting the live validation, PostgreSQL import, retrieval, graph, registry, and API workflow.
   </footer>
+
+  <script>
+    const WALKTHROUGH_API_ORIGIN = "http://localhost:3000";
+    const WALKTHROUGH_API_BASE = `${WALKTHROUGH_API_ORIGIN}/api/v1`;
+
+    async function walkthroughFetch(url) {
+      const response = await fetch(url, {
+        headers: { Accept: "application/json" }
+      });
+
+      const body = await response.json();
+
+      if (!response.ok) {
+        throw new Error(body.message || `HTTP ${response.status}`);
+      }
+
+      return body;
+    }
+
+    function walkthroughMetric(value, label) {
+      return `
+        <div class="live-metric">
+          <strong>${Number(value || 0)}</strong>
+          <span>${label}</span>
+        </div>
+      `;
+    }
+
+    async function loadWalkthroughStatus() {
+      const status = document.getElementById("walkthroughApiStatus");
+      const metrics = document.getElementById("walkthroughMetrics");
+
+      try {
+        const [health, bundles, nodes, assertions, edges, sources, revisions] =
+          await Promise.all([
+            walkthroughFetch(`${WALKTHROUGH_API_ORIGIN}/health`),
+            walkthroughFetch(`${WALKTHROUGH_API_BASE}/import?page=1&limit=1`),
+            walkthroughFetch(`${WALKTHROUGH_API_BASE}/nodes?page=1&limit=1`),
+            walkthroughFetch(`${WALKTHROUGH_API_BASE}/assertions?page=1&limit=1`),
+            walkthroughFetch(`${WALKTHROUGH_API_BASE}/edges?page=1&limit=1`),
+            walkthroughFetch(`${WALKTHROUGH_API_BASE}/sources?page=1&limit=1`),
+            walkthroughFetch(`${WALKTHROUGH_API_BASE}/revisions?page=1&limit=1`)
+          ]);
+
+        status.classList.add("connected");
+        status.innerHTML = `
+          <strong>${health.service || "SourceRoot backend"} connected.</strong><br>
+          The walkthrough is ready to demonstrate live PostgreSQL-backed data.
+        `;
+
+        metrics.innerHTML = [
+          walkthroughMetric(bundles.total, "Imported Bundles"),
+          walkthroughMetric(nodes.total, "Nodes"),
+          walkthroughMetric(assertions.total, "Assertions"),
+          walkthroughMetric(edges.total, "Edges"),
+          walkthroughMetric(sources.total, "Sources"),
+          walkthroughMetric(revisions.total, "Revisions")
+        ].join("");
+      } catch (error) {
+        status.innerHTML = `
+          <strong>SourceRoot API unavailable.</strong><br>
+          Start the backend with <code>npm.cmd run dev</code>. ${error.message}
+        `;
+        metrics.innerHTML = "";
+      }
+    }
+
+    loadWalkthroughStatus();
+  </script>
+
 </body>
 </html>

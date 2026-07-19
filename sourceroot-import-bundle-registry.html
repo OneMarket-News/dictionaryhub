@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>SourceRoot Staged Bundles Registry</title>
+  <title>SourceRoot Import Bundle Registry</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
@@ -322,6 +322,89 @@
       font-size: 13px;
     }
 
+
+    .pagination {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .pagination button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .detail-panel {
+      display: none;
+    }
+
+    .detail-panel.visible {
+      display: block;
+    }
+
+    .detail-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .detail-header h2 {
+      margin: 0 0 6px;
+    }
+
+    .record-section {
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid #ddd6c8;
+    }
+
+    .record-section h3 {
+      margin-bottom: 10px;
+    }
+
+    .record-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .record-card {
+      background: #fffdf8;
+      border: 1px solid #eee2c7;
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .record-card h4 {
+      margin: 0 0 5px;
+    }
+
+    .record-meta {
+      color: #6b7280;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .empty {
+      color: #6b7280;
+      font-style: italic;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #f3f4f6;
+      border-radius: 10px;
+      padding: 12px;
+      overflow: auto;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
     @media (max-width: 760px) {
       header {
         padding: 24px 16px;
@@ -341,11 +424,10 @@
 <body>
   <header>
     <div class="header-inner">
-      <h1>SourceRoot Staged Bundles Registry</h1>
+      <h1>SourceRoot Import Bundle Registry</h1>
 
       <div class="subtitle">
-        Review and manage bundles staged locally through SourceRoot Import Preview.
-        Staged records remain in this browser until they are removed.
+        Browse bundles imported into PostgreSQL through the SourceRoot API. Open bundle details and inspect normalized nodes, assertions, edges, sources, and revisions.
       </div>
 
       <div class="top-links">
@@ -363,183 +445,194 @@
 
   <main>
     <section class="panel">
-      <h2>Staging Overview</h2>
+      <h2>Imported Bundle Overview</h2>
 
       <p class="overview-text">
-        This registry reads the same browser-persistent staging records created by Import Preview.
-        It does not import data into a backend or modify the original bundle files.
+        This registry reads live imported bundle metadata from the SourceRoot backend. Bundle records and normalized knowledge objects come directly from PostgreSQL.
       </p>
 
       <div class="toolbar">
         <button id="refreshButton" type="button">Refresh Registry</button>
-        <button id="clearAllButton" class="danger-button" type="button">Remove All Staged Bundles</button>
       </div>
 
       <div id="summaryGrid" class="summary-grid"></div>
 
-      <div class="storage-note">
-        Storage key: <code>sourceroot-staged-bundles-v1</code>. Records are scoped to this browser and site origin.
+      <div id="apiStatus" class="storage-note">
+        Checking SourceRoot API...
       </div>
     </section>
 
     <section class="panel">
-      <h2>Staged Bundles</h2>
+      <h2>Imported Bundles</h2>
 
       <p class="overview-text">
-        Open a staged bundle in Import Preview to revalidate it, or remove the staged record when it is no longer needed.
+        Open an imported bundle to inspect its normalized knowledge records and live database counts.
       </p>
 
       <div id="registryGrid" class="registry-grid"></div>
+      <div id="pagination" class="pagination"></div>
+    </section>
+
+    <section id="detailPanel" class="panel detail-panel">
+      <div class="detail-header">
+        <div>
+          <h2 id="detailTitle">Bundle Detail</h2>
+          <div id="detailId" class="source-path"></div>
+        </div>
+
+        <button id="closeDetailButton" type="button">
+          Close
+        </button>
+      </div>
+
+      <div id="detailContent"></div>
     </section>
   </main>
 
   <footer>
-    SourceRoot Staged Bundles Registry. Current status: browser-local staging management, not a live database registry.
+    SourceRoot Import Bundle Registry. Live bundle metadata supplied by the SourceRoot backend API.
   </footer>
 
   <script>
-    const STAGING_STORAGE_KEY = "sourceroot-staged-bundles-v1";
+    const API_BASE = "http://localhost:3000/api/v1";
+    const PAGE_LIMIT = 10;
 
-    document
-      .getElementById("refreshButton")
-      .addEventListener("click", renderRegistry);
+    let currentPage = 1;
+    let totalPages = 1;
+    let totalBundles = 0;
+    let currentBundles = [];
 
-    document
-      .getElementById("clearAllButton")
-      .addEventListener("click", removeAllStagedBundles);
+    const refreshButton = document.getElementById("refreshButton");
+    const summaryGrid = document.getElementById("summaryGrid");
+    const registryGrid = document.getElementById("registryGrid");
+    const pagination = document.getElementById("pagination");
+    const apiStatus = document.getElementById("apiStatus");
+    const detailPanel = document.getElementById("detailPanel");
+    const detailTitle = document.getElementById("detailTitle");
+    const detailId = document.getElementById("detailId");
+    const detailContent = document.getElementById("detailContent");
+    const closeDetailButton = document.getElementById("closeDetailButton");
 
-    document
-      .getElementById("registryGrid")
-      .addEventListener("click", event => {
-        const removeButton = event.target.closest("[data-remove-bundle]");
+    refreshButton.addEventListener("click", loadRegistry);
+    closeDetailButton.addEventListener("click", closeDetail);
 
-        if (!removeButton) {
-          return;
-        }
-
-        removeStagedBundle(removeButton.dataset.removeBundle);
+    async function fetchJson(url) {
+      const response = await fetch(url, {
+        headers: {
+          Accept: "application/json",
+        },
       });
 
-    function getStagingMap() {
+      let body;
+
       try {
-        const rawValue = localStorage.getItem(STAGING_STORAGE_KEY);
-
-        if (!rawValue) {
-          return {};
-        }
-
-        const parsedValue = JSON.parse(rawValue);
-
-        return parsedValue && typeof parsedValue === "object"
-          ? parsedValue
-          : {};
-      } catch (error) {
-        console.error("Could not read SourceRoot staged bundles:", error);
-        return {};
+        body = await response.json();
+      } catch {
+        body = {};
       }
-    }
 
-    function saveStagingMap(stagingMap) {
-      try {
-        localStorage.setItem(
-          STAGING_STORAGE_KEY,
-          JSON.stringify(stagingMap)
+      if (!response.ok) {
+        throw new Error(
+          body.message ||
+          `Request failed with HTTP ${response.status}.`,
         );
+      }
+
+      return body;
+    }
+
+    async function checkApi() {
+      try {
+        const health = await fetchJson("http://localhost:3000/health");
+
+        apiStatus.innerHTML = `
+          <strong>SourceRoot API: Connected</strong><br>
+          Service: ${escapeHtml(health.service || "SourceRoot backend")} ·
+          Status: ${escapeHtml(health.status || "available")} ·
+          Endpoint: <code>${API_BASE}/import</code>
+        `;
       } catch (error) {
-        console.error("Could not save SourceRoot staged bundles:", error);
+        apiStatus.innerHTML = `
+          <strong>SourceRoot API: Offline</strong><br>
+          ${escapeHtml(error.message)}<br>
+          Start the backend with <code>npm.cmd run dev</code>.
+        `;
       }
     }
 
-    function getStagedRecords() {
-      return Object.values(getStagingMap())
-        .filter(record =>
-          record &&
-          typeof record === "object" &&
-          typeof record.bundleId === "string"
-        )
-        .sort((left, right) =>
-          String(right.stagedAt || "").localeCompare(
-            String(left.stagedAt || "")
-          )
-        );
-    }
-
-    async function renderRegistry() {
-      const records = getStagedRecords();
-      const verifiedRecords = await Promise.all(
-        records.map(verifyStagedRecord)
-      );
-
-      renderSummary(verifiedRecords);
-      renderCards(verifiedRecords);
-    }
-
-    async function verifyStagedRecord(record) {
-      if (
-        typeof record.source !== "string" ||
-        !record.source.startsWith("data/")
-      ) {
-        return {
-          ...record,
-          integrityStatus: record.bundleHash
-            ? "unavailable"
-            : "legacy"
-        };
-      }
+    async function loadRegistry() {
+      registryGrid.innerHTML = `
+        <div class="empty-state">Loading imported bundles...</div>
+      `;
+      pagination.innerHTML = "";
 
       try {
-        const response = await fetch(record.source);
+        const response = await fetchJson(
+          `${API_BASE}/import?page=${currentPage}&limit=${PAGE_LIMIT}`,
+        );
 
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
+        currentBundles = response.bundles || [];
+        totalBundles = response.total;
+        totalPages = response.totalPages;
 
-        const bundle = await response.json();
-        const currentHash = await createBundleHash(bundle);
+        const enrichedBundles = await Promise.all(
+          currentBundles.map(enrichBundle),
+        );
 
-        return {
-          ...record,
-          currentBundleHash: currentHash,
-          integrityStatus:
-            record.bundleHash === currentHash
-              ? "current"
-              : "stale"
-        };
+        renderSummary(enrichedBundles);
+        renderCards(enrichedBundles);
+        renderPagination();
       } catch (error) {
-        return {
-          ...record,
-          integrityStatus: "unavailable",
-          integrityError: error.message
-        };
+        registryGrid.innerHTML = `
+          <div class="empty-state">
+            ${escapeHtml(error.message)}
+          </div>
+        `;
       }
     }
 
-    async function createBundleHash(bundle) {
-      const normalizedBundle = JSON.stringify(bundle);
-      const bytes = new TextEncoder().encode(normalizedBundle);
-      const digest = await crypto.subtle.digest("SHA-256", bytes);
+    async function enrichBundle(bundle) {
+      const bundleId = bundle.bundleId;
 
-      return Array.from(new Uint8Array(digest))
-        .map(byte => byte.toString(16).padStart(2, "0"))
-        .join("");
+      const [nodes, assertions, edges, sources, revisions] =
+        await Promise.all([
+          fetchJson(
+            `${API_BASE}/bundles/${encodeURIComponent(bundleId)}/nodes?limit=1`,
+          ).catch(() => ({ total: 0 })),
+          fetchJson(
+            `${API_BASE}/bundles/${encodeURIComponent(bundleId)}/assertions?limit=1`,
+          ).catch(() => ({ total: 0 })),
+          fetchJson(
+            `${API_BASE}/bundles/${encodeURIComponent(bundleId)}/edges?limit=1`,
+          ).catch(() => ({ total: 0 })),
+          fetchJson(
+            `${API_BASE}/bundles/${encodeURIComponent(bundleId)}/sources?limit=1`,
+          ).catch(() => ({ total: 0 })),
+          fetchJson(
+            `${API_BASE}/bundles/${encodeURIComponent(bundleId)}/revisions?limit=1`,
+          ).catch(() => ({ total: 0 })),
+        ]);
+
+      return {
+        ...bundle,
+        counts: {
+          nodes: Number(nodes.total || 0),
+          assertions: Number(assertions.total || 0),
+          edges: Number(edges.total || 0),
+          sources: Number(sources.total || 0),
+          revisions: Number(revisions.total || 0),
+        },
+      };
     }
 
-    function renderSummary(records) {
-      const totals = records.reduce(
-        (summary, record) => {
-          const counts = record.counts || {};
-
-          summary.nodes += numberValue(counts.nodes);
-          summary.assertions += numberValue(counts.assertions);
-          summary.edges += numberValue(counts.edges);
-          summary.sources += numberValue(counts.sources);
-          summary.revisions += numberValue(counts.revisions);
-          summary.warnings += numberValue(record.warningCount);
-
-          if (record.integrityStatus === "stale") {
-            summary.stale += 1;
-          }
-
+    function renderSummary(bundles) {
+      const totals = bundles.reduce(
+        (summary, bundle) => {
+          summary.nodes += bundle.counts.nodes;
+          summary.assertions += bundle.counts.assertions;
+          summary.edges += bundle.counts.edges;
+          summary.sources += bundle.counts.sources;
+          summary.revisions += bundle.counts.revisions;
           return summary;
         },
         {
@@ -548,9 +641,7 @@
           edges: 0,
           sources: 0,
           revisions: 0,
-          warnings: 0,
-          stale: 0
-        }
+        },
       );
 
       const totalObjects =
@@ -560,16 +651,16 @@
         totals.sources +
         totals.revisions;
 
-      document.getElementById("summaryGrid").innerHTML = `
-        ${renderSummaryCard(records.length, "Staged Bundles")}
-        ${renderSummaryCard(totalObjects, "Total Objects")}
+      summaryGrid.innerHTML = `
+        ${renderSummaryCard(totalBundles, "Imported Bundles")}
+        ${renderSummaryCard(totalObjects, "Objects on Page")}
         ${renderSummaryCard(totals.nodes, "Nodes")}
         ${renderSummaryCard(totals.assertions, "Assertions")}
         ${renderSummaryCard(totals.edges, "Edges")}
         ${renderSummaryCard(totals.sources, "Sources")}
         ${renderSummaryCard(totals.revisions, "Revisions")}
-        ${renderSummaryCard(totals.warnings, "Warnings")}
-        ${renderSummaryCard(totals.stale, "Stale Snapshots")}
+        ${renderSummaryCard(currentPage, "Current Page")}
+        ${renderSummaryCard(totalPages, "Total Pages")}
       `;
     }
 
@@ -582,54 +673,54 @@
       `;
     }
 
-    function renderCards(records) {
-      const registryGrid = document.getElementById("registryGrid");
-
-      if (!records.length) {
+    function renderCards(bundles) {
+      if (!bundles.length) {
         registryGrid.innerHTML = `
           <div class="empty-state">
-            No staged bundles are currently saved in this browser.<br>
-            Open Import Preview, validate a routable bundle, and click
-            <strong>Stage Bundle</strong>.
+            No bundles have been imported into the live database.
           </div>
         `;
         return;
       }
 
-      registryGrid.innerHTML = records
-        .map(renderStagedCard)
+      registryGrid.innerHTML = bundles
+        .map(renderBundleCard)
         .join("");
+
+      registryGrid
+        .querySelectorAll("[data-open-bundle]")
+        .forEach((button) => {
+          button.addEventListener("click", () => {
+            openBundle(button.dataset.openBundle);
+          });
+        });
     }
 
-    function renderStagedCard(record) {
-      const counts = record.counts || {};
+    function renderBundleCard(bundle) {
+      const counts = bundle.counts;
       const totalObjects =
-        numberValue(counts.nodes) +
-        numberValue(counts.assertions) +
-        numberValue(counts.edges) +
-        numberValue(counts.sources) +
-        numberValue(counts.revisions);
-
-      const previewHref = buildPreviewHref(record.source);
+        counts.nodes +
+        counts.assertions +
+        counts.edges +
+        counts.sources +
+        counts.revisions;
 
       return `
         <article class="staged-card">
           <div class="card-header">
             <div>
               <h3 class="card-title">
-                ${escapeHtml(record.bundleId)}
+                ${escapeHtml(bundle.bundleId)}
               </h3>
 
               <div class="source-path">
-                ${escapeHtml(record.source || "unknown")}
+                ${escapeHtml(bundle.bundleType || "sourceroot-import-bundle")}
               </div>
             </div>
 
             <div>
-              <span class="status-pill">
-                ${escapeHtml(record.status || "staged-preview")}
-              </span>
-              ${renderIntegrityPill(record)}
+              <span class="status-pill">Imported</span>
+              <span class="integrity-pill integrity-current">Database Current</span>
             </div>
           </div>
 
@@ -639,89 +730,28 @@
             ${renderCountCard(counts.edges, "Edges")}
             ${renderCountCard(counts.sources, "Sources")}
             ${renderCountCard(counts.revisions, "Revisions")}
-            ${renderCountCard(record.warningCount, "Warnings")}
             ${renderCountCard(totalObjects, "Total Objects")}
           </div>
 
           <div class="meta-grid">
-            <div class="meta-card">
-              <strong>Staged At</strong>
-              <span>${escapeHtml(formatDate(record.stagedAt))}</span>
-            </div>
-
-            <div class="meta-card">
-              <strong>Storage Scope</strong>
-              <span>Current browser and site origin</span>
-            </div>
-
-            <div class="meta-card">
-              <strong>Persistence</strong>
-              <span>localStorage</span>
-            </div>
-
-            <div class="meta-card">
-              <strong>Snapshot Hash</strong>
-              <span>${escapeHtml((record.bundleHash || "Not recorded").slice(0, 20))}${record.bundleHash ? "…" : ""}</span>
-            </div>
-
-            <div class="meta-card">
-              <strong>Integrity Check</strong>
-              <span>${escapeHtml(getIntegrityDescription(record))}</span>
-            </div>
+            ${renderMetaCard("Domain", bundle.domain)}
+            ${renderMetaCard("Version", bundle.version)}
+            ${renderMetaCard("Bundle Type", bundle.bundleType)}
+            ${renderMetaCard("Created", formatDate(bundle.createdAt))}
+            ${renderMetaCard("Updated", formatDate(bundle.updatedAt))}
           </div>
 
           <div class="action-row">
-            ${previewHref
-              ? `
-                <a
-                  class="button-link primary-button"
-                  href="${escapeAttribute(previewHref)}"
-                >
-                  Open in Import Preview
-                </a>
-              `
-              : ""}
-
             <button
-              class="danger-button"
+              class="primary-button"
               type="button"
-              data-remove-bundle="${escapeAttribute(record.bundleId)}"
+              data-open-bundle="${escapeAttribute(bundle.bundleId)}"
             >
-              Remove Stage
+              Inspect Imported Bundle
             </button>
           </div>
         </article>
       `;
-    }
-
-    function renderIntegrityPill(record) {
-      if (record.integrityStatus === "current") {
-        return `<span class="integrity-pill integrity-current">Snapshot Current</span>`;
-      }
-
-      if (record.integrityStatus === "stale") {
-        return `<span class="integrity-pill integrity-stale">Snapshot Stale</span>`;
-      }
-
-      return `<span class="integrity-pill integrity-unavailable">Integrity Unknown</span>`;
-    }
-
-    function getIntegrityDescription(record) {
-      if (!record.bundleHash) {
-        return "No snapshot hash exists. Restage this bundle to create one.";
-      }
-
-      if (record.integrityStatus === "current") {
-        return "The source bundle matches the staged snapshot.";
-      }
-
-      if (record.integrityStatus === "stale") {
-        return "The source bundle changed after this record was staged.";
-      }
-
-      return record.integrityError
-        ? `Could not verify source bundle: ${record.integrityError}`
-        : "The staged source cannot be verified automatically.";
     }
 
     function renderCountCard(value, label) {
@@ -733,53 +763,242 @@
       `;
     }
 
-    function buildPreviewHref(source) {
-      if (
-        typeof source !== "string" ||
-        !source.startsWith("data/")
-      ) {
-        return "";
-      }
-
-      const url = new URL(
-        "sourceroot-import-preview.html",
-        window.location.href
-      );
-
-      url.searchParams.set("bundle", source);
-
-      return `${url.pathname}${url.search}`;
+    function renderMetaCard(label, value) {
+      return `
+        <div class="meta-card">
+          <strong>${escapeHtml(label)}</strong>
+          <span>${escapeHtml(value || "Not listed")}</span>
+        </div>
+      `;
     }
 
-    function removeStagedBundle(bundleId) {
-      const stagingMap = getStagingMap();
+    async function openBundle(bundleId) {
+      detailPanel.classList.add("visible");
+      detailTitle.textContent = "Loading bundle...";
+      detailId.textContent = bundleId;
+      detailContent.innerHTML = `
+        <div class="empty-state">
+          Loading normalized bundle records...
+        </div>
+      `;
 
-      if (!(bundleId in stagingMap)) {
-        return;
+      try {
+        const [
+          bundle,
+          nodesResponse,
+          assertionsResponse,
+          edgesResponse,
+          sourcesResponse,
+          revisionsResponse,
+        ] = await Promise.all([
+          fetchJson(
+            `${API_BASE}/import/${encodeURIComponent(bundleId)}`,
+          ),
+          fetchJson(
+            `${API_BASE}/bundles/${encodeURIComponent(bundleId)}/nodes?limit=100`,
+          ),
+          fetchJson(
+            `${API_BASE}/bundles/${encodeURIComponent(bundleId)}/assertions?limit=100`,
+          ),
+          fetchJson(
+            `${API_BASE}/bundles/${encodeURIComponent(bundleId)}/edges?limit=100`,
+          ),
+          fetchJson(
+            `${API_BASE}/bundles/${encodeURIComponent(bundleId)}/sources?limit=100`,
+          ),
+          fetchJson(
+            `${API_BASE}/bundles/${encodeURIComponent(bundleId)}/revisions?limit=100`,
+          ),
+        ]);
+
+        detailTitle.textContent = bundle.bundleId;
+        detailId.textContent = bundle.bundleType || "Imported bundle";
+
+        detailContent.innerHTML = `
+          <div class="meta-grid">
+            ${renderMetaCard("Domain", bundle.domain)}
+            ${renderMetaCard("Version", bundle.version)}
+            ${renderMetaCard("Bundle Type", bundle.bundleType)}
+            ${renderMetaCard("Nodes", nodesResponse.total)}
+            ${renderMetaCard("Assertions", assertionsResponse.total)}
+            ${renderMetaCard("Edges", edgesResponse.total)}
+            ${renderMetaCard("Sources", sourcesResponse.total)}
+            ${renderMetaCard("Revisions", revisionsResponse.total)}
+          </div>
+
+          ${renderRecordSection(
+            "Nodes",
+            nodesResponse.nodes || [],
+            renderNodeRecord,
+          )}
+
+          ${renderRecordSection(
+            "Assertions",
+            assertionsResponse.assertions || [],
+            renderAssertionRecord,
+          )}
+
+          ${renderRecordSection(
+            "Edges",
+            edgesResponse.edges || [],
+            renderEdgeRecord,
+          )}
+
+          ${renderRecordSection(
+            "Sources",
+            sourcesResponse.sources || [],
+            renderSourceRecord,
+          )}
+
+          ${renderRecordSection(
+            "Revisions",
+            revisionsResponse.revisions || [],
+            renderRevisionRecord,
+          )}
+
+          <div class="record-section">
+            <h3>Raw Imported Bundle</h3>
+            <details>
+              <summary>View complete bundle JSON</summary>
+              <pre>${escapeHtml(JSON.stringify(bundle, null, 2))}</pre>
+            </details>
+          </div>
+        `;
+
+        detailPanel.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      } catch (error) {
+        detailTitle.textContent = "Could not load bundle";
+        detailContent.innerHTML = `
+          <div class="empty-state">
+            ${escapeHtml(error.message)}
+          </div>
+        `;
       }
-
-      delete stagingMap[bundleId];
-      saveStagingMap(stagingMap);
-      renderRegistry();
     }
 
-    function removeAllStagedBundles() {
-      const records = getStagedRecords();
+    function renderRecordSection(title, records, renderer) {
+      return `
+        <div class="record-section">
+          <h3>${escapeHtml(title)} (${records.length})</h3>
+          ${
+            records.length
+              ? `<div class="record-list">${records.map(renderer).join("")}</div>`
+              : '<p class="empty">No records found.</p>'
+          }
+        </div>
+      `;
+    }
 
-      if (!records.length) {
+    function renderNodeRecord(node) {
+      return `
+        <article class="record-card">
+          <h4>${escapeHtml(node.title)}</h4>
+          <div class="record-meta">
+            ${escapeHtml(node.nodeType)} ·
+            ${escapeHtml(node.domain)} ·
+            <code>${escapeHtml(node.nodeId)}</code>
+          </div>
+          <p>${escapeHtml(node.summary || "")}</p>
+        </article>
+      `;
+    }
+
+    function renderAssertionRecord(assertion) {
+      return `
+        <article class="record-card">
+          <h4>${escapeHtml(assertion.label || assertion.assertionId)}</h4>
+          <div class="record-meta">
+            ${escapeHtml(assertion.assertionType)} ·
+            Node: <code>${escapeHtml(assertion.nodeId)}</code>
+          </div>
+          <p>${escapeHtml(assertion.summary || "")}</p>
+        </article>
+      `;
+    }
+
+    function renderEdgeRecord(edge) {
+      return `
+        <article class="record-card">
+          <h4>${escapeHtml(edge.label || edge.relationshipType)}</h4>
+          <div class="record-meta">
+            <code>${escapeHtml(edge.fromNodeId)}</code>
+            →
+            <code>${escapeHtml(edge.toNodeId)}</code>
+          </div>
+          <p>${escapeHtml(edge.summary || "")}</p>
+        </article>
+      `;
+    }
+
+    function renderSourceRecord(source) {
+      return `
+        <article class="record-card">
+          <h4>${escapeHtml(source.name || source.sourceId)}</h4>
+          <div class="record-meta">
+            ${escapeHtml(source.sourceType || "Source")} ·
+            ${escapeHtml(source.publisher || "Publisher not listed")}
+          </div>
+          <p>${escapeHtml(source.notes || "")}</p>
+        </article>
+      `;
+    }
+
+    function renderRevisionRecord(revision) {
+      return `
+        <article class="record-card">
+          <h4>${escapeHtml(revision.revisionType || revision.revisionId)}</h4>
+          <div class="record-meta">
+            ${escapeHtml(revision.objectType || "Object")} ·
+            <code>${escapeHtml(revision.objectId || "")}</code>
+          </div>
+          <p>${escapeHtml(revision.summary || "")}</p>
+        </article>
+      `;
+    }
+
+    function renderPagination() {
+      if (totalPages <= 1) {
+        pagination.innerHTML = "";
         return;
       }
 
-      const confirmed = window.confirm(
-        `Remove all ${records.length} staged bundle record${records.length === 1 ? "" : "s"} from this browser?`
-      );
+      pagination.innerHTML = `
+        <button id="previousPageButton" type="button" ${currentPage <= 1 ? "disabled" : ""}>
+          Previous
+        </button>
+        <span>Page ${currentPage} of ${totalPages}</span>
+        <button id="nextPageButton" type="button" ${currentPage >= totalPages ? "disabled" : ""}>
+          Next
+        </button>
+      `;
 
-      if (!confirmed) {
-        return;
-      }
+      document
+        .getElementById("previousPageButton")
+        .addEventListener("click", () => {
+          if (currentPage > 1) {
+            currentPage -= 1;
+            loadRegistry();
+          }
+        });
 
-      localStorage.removeItem(STAGING_STORAGE_KEY);
-      renderRegistry();
+      document
+        .getElementById("nextPageButton")
+        .addEventListener("click", () => {
+          if (currentPage < totalPages) {
+            currentPage += 1;
+            loadRegistry();
+          }
+        });
+    }
+
+    function closeDetail() {
+      detailPanel.classList.remove("visible");
+      detailTitle.textContent = "Bundle Detail";
+      detailId.textContent = "";
+      detailContent.innerHTML = "";
     }
 
     function formatDate(value) {
@@ -818,13 +1037,8 @@
         .replaceAll(">", "&gt;");
     }
 
-    window.addEventListener("storage", event => {
-      if (event.key === STAGING_STORAGE_KEY) {
-        renderRegistry();
-      }
-    });
-
-    renderRegistry();
+    checkApi();
+    loadRegistry();
   </script>
 </body>
 </html>

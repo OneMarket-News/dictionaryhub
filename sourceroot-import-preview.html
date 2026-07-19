@@ -549,6 +549,56 @@
       font-size: 13px;
     }
 
+
+    .api-status {
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 12px;
+      background: #fff8e6;
+      border: 1px solid #ead59a;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .import-button {
+      background: #111827;
+      border-color: #111827;
+      color: white;
+      font-weight: bold;
+    }
+
+    .import-button:hover {
+      background: #374151;
+      border-color: #374151;
+    }
+
+    .import-button:disabled {
+      background: #d1d5db;
+      border-color: #d1d5db;
+      color: #6b7280;
+      cursor: not-allowed;
+    }
+
+    .import-result {
+      margin-top: 14px;
+      border-radius: 12px;
+      padding: 13px;
+      line-height: 1.5;
+      font-size: 13px;
+    }
+
+    .import-success {
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      color: #166534;
+    }
+
+    .import-error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+    }
+
     @media (max-width: 900px) {
       main {
         padding: 18px 14px;
@@ -585,8 +635,7 @@
       <h1>SourceRoot Import Preview</h1>
 
       <div class="subtitle">
-        Preview and validate SourceRoot import bundles before loading them into the system.
-        This page checks bundle structure, duplicate IDs, broken references, source references, credibility metadata, and import readiness.
+        Validate and import SourceRoot bundles through the live backend. This page sends bundle JSON to the SourceRoot API, shows validation issues, and writes approved bundles into PostgreSQL.
       </div>
 
       <div class="top-links">
@@ -611,8 +660,7 @@
       <h2>Import Bundle Preview</h2>
 
       <p class="overview-text">
-        Routable bundle controls are generated directly from the SourceRoot bundle registry.
-        The validator does not import data yet. It only previews whether the selected bundle is structurally safe.
+        Load a registered bundle or choose a local JSON file. Validation and import are performed by the live SourceRoot backend.
       </p>
 
       <div class="button-row">
@@ -632,7 +680,8 @@
         <button id="clearButton" type="button">Clear Preview</button>
       </div>
 
-<div id="loadedFileNote" class="loaded-file-note"></div>
+<div id="apiStatus" class="api-status">Checking SourceRoot API...</div>
+      <div id="loadedFileNote" class="loaded-file-note"></div>
 
       <div id="statusPanel"></div>
       <div id="summaryStats"></div>
@@ -648,10 +697,9 @@
     </section>
 
     <section class="panel">
-      <h2>Staging Summary</h2>
+      <h2>Import Summary</h2>
       <p class="overview-text">
-        A bundle can be staged only after it passes structural validation.
-        Staging is stored locally in this browser and does not write to a database.
+        A bundle can be imported only after the backend confirms that it is safe to import. Successful imports are written to PostgreSQL and become available in the live registries.
       </p>
 
       <div id="stagingSummary">
@@ -675,144 +723,106 @@
   </main>
 
   <footer>
-    SourceRoot Import Preview. Registry-driven validation preview, not a live import engine yet.
+    SourceRoot Import Preview. Live validation and PostgreSQL import powered by the SourceRoot backend API.
   </footer>
 
-  <script src="./engine/packageLifecycle.js"></script>
 
   <script type="module">
-  import { validateBundle } from "./engine/importValidator.js";
+    const API_ORIGIN = "http://localhost:3000";
+    const API_BASE = `${API_ORIGIN}/api/v1`;
+    const REGISTRY_PATH = "data/sourceroot-bundle-registry.json";
 
-  const REGISTRY_PATH = "data/sourceroot-bundle-registry.json";
-  const packageLifecycle = window.SourceRootPackageLifecycle;
-  const { STAGING_STORAGE_KEY } = packageLifecycle;
+    let approvedBundlePaths = [];
+    let approvedBundleEntries = [];
+    let activeBundle = null;
+    let activeValidationResult = null;
+    let activeSourceLabel = "";
 
-  let approvedBundlePaths = [];
-  let approvedBundleEntries = [];
-  let activeBundle = null;
-  let activeValidationResult = null;
-  let stagedRecord = null;
+    const apiStatus = document.getElementById("apiStatus");
+    const loadedFileNote = document.getElementById("loadedFileNote");
+    const statusPanel = document.getElementById("statusPanel");
+    const summaryStats = document.getElementById("summaryStats");
+    const issueResults = document.getElementById("issueResults");
+    const stagingSummary = document.getElementById("stagingSummary");
+    const bundleObjects = document.getElementById("bundleObjects");
+    const rawBundle = document.getElementById("rawBundle");
+    const bundleFileInput = document.getElementById("bundleFileInput");
 
-  document.getElementById("clearButton").addEventListener("click", () => {
-    clearPreview({ clearRoute: true });
-  });
+    document.getElementById("clearButton").addEventListener("click", () => clearPreview(true));
+    bundleFileInput.addEventListener("change", handleLocalBundleUpload);
 
-  document.getElementById("bundleFileInput").addEventListener("change", handleLocalBundleUpload);
+    stagingSummary.addEventListener("click", async (event) => {
+      if (event.target.id === "importBundleButton") await importActiveBundle();
+      if (event.target.id === "openImportedBundleButton") {
+        window.location.href = "sourceroot-import-bundle-registry.html";
+      }
+    });
 
-  document.getElementById("stagingSummary").addEventListener("click", event => {
-    if (event.target.id === "stageBundleButton") {
-      stageActiveBundle();
+    async function fetchJson(url, options = {}) {
+      const response = await fetch(url, {
+        ...options,
+        headers: {
+          Accept: "application/json",
+          ...(options.body ? { "Content-Type": "application/json" } : {}),
+          ...(options.headers || {})
+        }
+      });
+
+      let body = {};
+      try { body = await response.json(); } catch {}
+
+      if (!response.ok) {
+        throw new Error(body.message || body.error || `Request failed with HTTP ${response.status}.`);
+      }
+
+      return body;
     }
 
-    if (event.target.id === "unstageBundleButton") {
-      unstageActiveBundle();
+    async function checkApi() {
+      try {
+        const health = await fetchJson(`${API_ORIGIN}/health`);
+        apiStatus.innerHTML = `
+          <strong>SourceRoot API: Connected</strong><br>
+          Service: ${escapeHtml(health.service || "SourceRoot backend")} ·
+          Status: ${escapeHtml(health.status || "available")} ·
+          Validate: <code>${API_BASE}/validate</code> ·
+          Import: <code>${API_BASE}/import</code>
+        `;
+      } catch (error) {
+        apiStatus.innerHTML = `
+          <strong>SourceRoot API: Offline</strong><br>
+          ${escapeHtml(error.message)}<br>
+          Start the backend with <code>npm.cmd run dev</code>.
+        `;
+      }
     }
 
-    if (event.target.id === "exportStagedRecordButton") {
-      exportActiveStagedRecord();
-    }
-  });
+    async function loadApprovedBundlePaths() {
+      const response = await fetch(REGISTRY_PATH);
+      if (!response.ok) throw new Error(`Could not load bundle registry. HTTP ${response.status}`);
 
-  window.addEventListener("popstate", async () => {
-    const requestedStagedBundleId = getRequestedStagedBundleId();
-    const requestedBundlePath = getRequestedBundlePath();
+      const registry = await response.json();
+      if (!Array.isArray(registry.bundles)) {
+        throw new Error("Bundle registry does not contain a valid bundles array.");
+      }
 
-    if (requestedStagedBundleId) {
-      await loadStagedBundle(requestedStagedBundleId);
-    } else if (requestedBundlePath) {
-      await loadBundle(requestedBundlePath);
-    } else {
-      clearPreview();
-    }
-  });
-
-  function openBundleRoute(path) {
-    if (!approvedBundlePaths.includes(path)) {
-      const result = {
-        bundleId: "unapproved-bundle",
-        status: "invalid-format",
-        canImport: false,
-        summary: {
-          nodes: 0,
-          assertions: 0,
-          edges: 0,
-          sources: 0,
-          revisions: 0,
-          errors: 1,
-          warnings: 0
-        },
-        errors: [
-          {
-            code: "UNAPPROVED_BUNDLE_PATH",
-            objectType: "bundle",
-            objectId: path,
-            message: "The selected bundle is not marked routable in the SourceRoot bundle registry."
-          }
-        ],
-        warnings: []
-      };
-
-      clearPreview();
-      document.getElementById("loadedFileNote").innerHTML = `
-        Bundle route rejected: <strong>${path}</strong>
-      `;
-      renderStatus(result);
-      renderSummary(result);
-      renderIssues(result);
-      return;
+      approvedBundleEntries = registry.bundles.filter(
+        (entry) => entry && entry.routable === true && typeof entry.path === "string" && entry.path.length
+      );
+      approvedBundlePaths = approvedBundleEntries.map((entry) => entry.path);
+      renderRegistryBundleButtons();
     }
 
-    const url = new URL(window.location.href);
-    url.searchParams.delete("staged");
-    url.searchParams.set("bundle", path);
+    function renderRegistryBundleButtons() {
+      const container = document.getElementById("registryBundleButtons");
 
-    window.history.pushState(
-      { bundle: path },
-      "",
-      `${url.pathname}${url.search}`
-    );
+      if (!approvedBundleEntries.length) {
+        container.innerHTML = '<span class="empty">No routable registry bundles are available.</span>';
+        return;
+      }
 
-    loadBundle(path);
-  }
-
-  async function loadApprovedBundlePaths() {
-    const response = await fetch(REGISTRY_PATH);
-
-    if (!response.ok) {
-      throw new Error(`Could not load bundle registry. HTTP ${response.status}`);
-    }
-
-    const registry = await response.json();
-
-    if (!Array.isArray(registry.bundles)) {
-      throw new Error("Bundle registry does not contain a valid bundles array.");
-    }
-
-    approvedBundleEntries = registry.bundles.filter(entry =>
-      entry &&
-      entry.routable === true &&
-      typeof entry.path === "string" &&
-      entry.path.length > 0
-    );
-
-    approvedBundlePaths = approvedBundleEntries.map(entry => entry.path);
-
-    renderRegistryBundleButtons();
-  }
-
-  function renderRegistryBundleButtons() {
-    const container = document.getElementById("registryBundleButtons");
-
-    if (!approvedBundleEntries.length) {
-      container.innerHTML = `
-        <span class="empty">No routable registry bundles are available.</span>
-      `;
-      return;
-    }
-
-    container.innerHTML = approvedBundleEntries
-      .map(entry => {
-        const buttonLabel = entry.previewButtonLabel || `Load ${entry.title || entry.bundleId || "Bundle"}`;
+      container.innerHTML = approvedBundleEntries.map((entry) => {
+        const label = entry.previewButtonLabel || `Load ${entry.title || entry.bundleId || "Bundle"}`;
         const dangerClass = String(entry.bundleId || "").toLowerCase().includes("broken")
           ? "danger-button"
           : "";
@@ -823,1012 +833,415 @@
             class="registry-bundle-button ${dangerClass}"
             data-bundle-path="${escapeAttribute(entry.path)}"
           >
-            ${escapeHtml(buttonLabel)}
+            ${escapeHtml(label)}
           </button>
         `;
-      })
-      .join("");
+      }).join("");
 
-    container.querySelectorAll("[data-bundle-path]").forEach(button => {
-      button.addEventListener("click", () => {
-        openBundleRoute(button.dataset.bundlePath);
+      container.querySelectorAll("[data-bundle-path]").forEach((button) => {
+        button.addEventListener("click", () => openBundleRoute(button.dataset.bundlePath));
       });
-    });
-  }
-
-  function getRequestedStagedBundleId() {
-    const params = new URLSearchParams(window.location.search);
-    const bundleId = params.get("staged");
-
-    if (!bundleId) {
-      return "";
     }
 
-    const record = packageLifecycle.getStagedRecord(bundleId);
-
-    return record &&
-      record.embeddedBundle &&
-      typeof record.embeddedBundle === "object"
-        ? bundleId
-        : "";
-  }
-
-  async function loadStagedBundle(bundleId) {
-    clearPreview();
-
-    const record = packageLifecycle.getStagedRecord(bundleId);
-
-    if (
-      !record ||
-      !record.embeddedBundle ||
-      typeof record.embeddedBundle !== "object"
-    ) {
-      const result = {
-        bundleId: bundleId || "unknown",
-        status: "invalid-format",
-        canImport: false,
-        summary: {
-          nodes: 0,
-          assertions: 0,
-          edges: 0,
-          sources: 0,
-          revisions: 0,
-          errors: 1,
-          warnings: 0
-        },
-        errors: [
-          {
-            code: "STAGED_PACKAGE_NOT_AVAILABLE",
-            objectType: "staged-package",
-            objectId: bundleId || "unknown",
-            message: "The requested staged package does not contain an embedded bundle."
-          }
-        ],
-        warnings: []
-      };
-
-      activeBundle = null;
-      activeValidationResult = result;
-      stagedRecord = null;
-
-      document.getElementById("loadedFileNote").innerHTML = `
-        Staged package unavailable: <strong>${escapeHtml(bundleId || "unknown")}</strong>
-      `;
-
-      renderStatus(result);
-      renderSummary(result);
-      renderIssues(result);
-      renderStagingSummary(null, result);
-      return;
-    }
-
-    const bundle = record.embeddedBundle;
-    const result = validateBundle(bundle);
-
-    packageLifecycle.recordValidationEvent(bundle, result, {
-      source: "embedded-package",
-      eventType: "bundle-revalidated",
-      metadata: {
-        route: "staged",
-        restoredRecordFound: true
-      }
-    });
-
-    const currentHash = await createBundleHash(bundle);
-
-    activeBundle = bundle;
-    activeValidationResult = result;
-    stagedRecord = {
-      ...record,
-      currentBundleHash: currentHash,
-      integrityStatus:
-        record.bundleHash === currentHash
-          ? "current"
-          : "stale",
-      changeComparison: compareBundleSnapshot(
-        record.snapshot,
-        createBundleSnapshot(bundle, result)
-      )
-    };
-
-    document.getElementById("loadedFileNote").innerHTML = `
-      Loaded embedded staged package: <strong>${escapeHtml(bundleId)}</strong>
-    `;
-
-    renderStatus(result);
-    renderSummary(result);
-    renderIssues(result);
-    renderStagingSummary(bundle, result);
-    renderBundleObjects(bundle);
-    renderRawBundle(bundle);
-  }
-
-  function getRequestedBundlePath() {
-    const params = new URLSearchParams(window.location.search);
-    const requestedBundle = params.get("bundle");
-
-    if (!requestedBundle) {
-      return "";
-    }
-
-    return approvedBundlePaths.includes(requestedBundle)
-      ? requestedBundle
-      : "";
-  }
-
-  async function loadRequestedBundleFromUrl() {
-    const params = new URLSearchParams(window.location.search);
-    const rawRequestedStagedBundle = params.get("staged");
-    const rawRequestedBundle = params.get("bundle");
-
-    if (rawRequestedStagedBundle) {
-      const requestedStagedBundleId = getRequestedStagedBundleId();
-
-      if (!requestedStagedBundleId) {
-        await loadStagedBundle(rawRequestedStagedBundle);
+    function openBundleRoute(path) {
+      if (!approvedBundlePaths.includes(path)) {
+        renderFailure("unapproved-bundle", "UNAPPROVED_BUNDLE_PATH", path,
+          "The selected bundle is not marked routable in the SourceRoot bundle registry.");
         return;
       }
 
-      await loadStagedBundle(requestedStagedBundleId);
-      return;
-    }
-
-    if (!rawRequestedBundle) {
-      return;
-    }
-
-    const requestedBundlePath = getRequestedBundlePath();
-
-    if (!requestedBundlePath) {
-      const result = {
-        bundleId: "unapproved-bundle",
-        status: "invalid-format",
-        canImport: false,
-        summary: {
-          nodes: 0,
-          assertions: 0,
-          edges: 0,
-          sources: 0,
-          revisions: 0,
-          errors: 1,
-          warnings: 0
-        },
-        errors: [
-          {
-            code: "UNAPPROVED_BUNDLE_PATH",
-            objectType: "bundle",
-            objectId: rawRequestedBundle,
-            message: "The requested bundle is not marked routable in the SourceRoot bundle registry."
-          }
-        ],
-        warnings: []
-      };
-
-      document.getElementById("loadedFileNote").innerHTML = `
-        Registry bundle request rejected: <strong>${escapeHtml(rawRequestedBundle)}</strong>
-      `;
-
-      renderStatus(result);
-      renderSummary(result);
-      renderIssues(result);
-      return;
-    }
-
-    await loadBundle(requestedBundlePath);
-
-    document.getElementById("loadedFileNote").innerHTML = `
-      Loaded registry bundle: <strong>${escapeHtml(requestedBundlePath)}</strong>
-    `;
-  }
-
-  async function loadBundle(path) {
-    clearPreview();
-
-    try {
-      const response = await fetch(path);
-
-      if (!response.ok) {
-        throw new Error(`Could not load bundle at ${path}. HTTP ${response.status}`);
-      }
-
-      const bundle = await response.json();
-      const result = validateBundle(bundle);
-
-      activeBundle = bundle;
-      activeValidationResult = result;
-      stagedRecord = getPersistedStagedRecord(result.bundleId);
-
-      if (stagedRecord) {
-        const currentHash = await createBundleHash(bundle);
-        stagedRecord.integrityStatus =
-          stagedRecord.bundleHash === currentHash
-            ? "current"
-            : "stale";
-        stagedRecord.currentBundleHash = currentHash;
-        stagedRecord.changeComparison = compareBundleSnapshot(
-          stagedRecord.snapshot,
-          createBundleSnapshot(bundle, result)
-        );
-      }
-
-      renderStatus(result);
-      renderSummary(result);
-      renderIssues(result);
-      renderStagingSummary(bundle, result);
-      renderBundleObjects(bundle);
-      renderRawBundle(bundle);
-    } catch (error) {
-      const result = {
-        bundleId: "unknown",
-        status: "invalid-format",
-        canImport: false,
-        summary: {
-          nodes: 0,
-          assertions: 0,
-          edges: 0,
-          sources: 0,
-          revisions: 0,
-          errors: 1,
-          warnings: 0
-        },
-        errors: [
-          {
-            code: "LOAD_FAILED",
-            objectType: "bundle",
-            objectId: "unknown",
-            message: error.message
-          }
-        ],
-        warnings: []
-      };
-
-      activeBundle = null;
-      activeValidationResult = result;
-      stagedRecord = null;
-
-      renderStatus(result);
-      renderSummary(result);
-      renderIssues(result);
-      renderStagingSummary(null, result);
-    }
-  }
-
-  async function handleLocalBundleUpload(event) {
-    const file = event.target.files[0];
-
-    if (!file) {
-      return;
-    }
-
-    clearPreview();
-
-    try {
-      const text = await file.text();
-      const bundle = JSON.parse(text);
-      const result = validateBundle(bundle);
-
-      document.getElementById("loadedFileNote").innerHTML = `
-        Loaded local file: <strong>${file.name}</strong>
-      `;
-
-      activeBundle = bundle;
-      activeValidationResult = result;
-      stagedRecord = getPersistedStagedRecord(result.bundleId);
-
-      if (stagedRecord) {
-        const currentHash = await createBundleHash(bundle);
-        stagedRecord.integrityStatus =
-          stagedRecord.bundleHash === currentHash
-            ? "current"
-            : "stale";
-        stagedRecord.currentBundleHash = currentHash;
-        stagedRecord.changeComparison = compareBundleSnapshot(
-          stagedRecord.snapshot,
-          createBundleSnapshot(bundle, result)
-        );
-      }
-
-      renderStatus(result);
-      renderSummary(result);
-      renderIssues(result);
-      renderStagingSummary(bundle, result);
-      renderBundleObjects(bundle);
-      renderRawBundle(bundle);
-    } catch (error) {
-      const result = {
-        bundleId: "local-file",
-        status: "invalid-format",
-        canImport: false,
-        summary: {
-          nodes: 0,
-          assertions: 0,
-          edges: 0,
-          sources: 0,
-          revisions: 0,
-          errors: 1,
-          warnings: 0
-        },
-        errors: [
-          {
-            code: "LOCAL_FILE_PARSE_FAILED",
-            objectType: "bundle",
-            objectId: file.name,
-            message: error.message
-          }
-        ],
-        warnings: []
-      };
-
-      document.getElementById("loadedFileNote").innerHTML = `
-        Failed to load local file: <strong>${file.name}</strong>
-      `;
-
-      activeBundle = null;
-      activeValidationResult = result;
-      stagedRecord = null;
-
-      renderStatus(result);
-      renderSummary(result);
-      renderIssues(result);
-      renderStagingSummary(null, result);
-    }
-  }
-
-  function renderStatus(result) {
-    const statusPanel = document.getElementById("statusPanel");
-
-    const statusClass = result.status === "ready"
-      ? "status-ready"
-      : result.status === "ready-with-warnings"
-        ? "status-warning"
-        : "status-blocked";
-
-    statusPanel.innerHTML = `
-      <div class="status-card ${statusClass}">
-        <div class="status-title">${formatStatus(result.status)}</div>
-        <div class="status-meta">
-          <strong>Bundle:</strong> ${result.bundleId}<br>
-          <strong>Can Import:</strong> ${result.canImport ? "Yes" : "No"}<br>
-          <strong>Errors:</strong> ${result.summary.errors} ·
-          <strong>Warnings:</strong> ${result.summary.warnings}
-        </div>
-      </div>
-    `;
-  }
-
-  function renderSummary(result) {
-    document.getElementById("summaryStats").innerHTML = `
-      <div class="stat-grid">
-        <div class="stat-card">
-          <div class="stat-number">${result.summary.nodes}</div>
-          <div class="stat-label">Nodes</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-number">${result.summary.assertions}</div>
-          <div class="stat-label">Assertions</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-number">${result.summary.edges}</div>
-          <div class="stat-label">Edges</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-number">${result.summary.sources}</div>
-          <div class="stat-label">Sources</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-number">${result.summary.revisions}</div>
-          <div class="stat-label">Revisions</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-number">${result.summary.errors}</div>
-          <div class="stat-label">Errors</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-number">${result.summary.warnings}</div>
-          <div class="stat-label">Warnings</div>
-        </div>
-      </div>
-    `;
-  }
-
-  function renderIssues(result) {
-    const issueResults = document.getElementById("issueResults");
-
-    if (!result.errors.length && !result.warnings.length) {
-      issueResults.innerHTML = `<p class="empty">No errors or warnings found.</p>`;
-      return;
-    }
-
-    issueResults.innerHTML = `
-      <div class="issue-grid">
-        ${result.errors.map(error => renderIssue(error, "error")).join("")}
-        ${result.warnings.map(warning => renderIssue(warning, "warning")).join("")}
-      </div>
-    `;
-  }
-
-  function renderIssue(item, severity) {
-    return `
-      <div class="issue-card issue-${severity}">
-        <span class="issue-code">${severity.toUpperCase()} · ${item.code}</span>
-        <div class="issue-message">
-          <strong>${item.objectType}:</strong> ${item.objectId}<br>
-          ${item.message}
-        </div>
-      </div>
-    `;
-  }
-
-  function renderStagingSummary(bundle, result) {
-    const container = document.getElementById("stagingSummary");
-    const summary = result?.summary || {};
-    const canStage = Boolean(bundle && result?.canImport);
-
-    container.innerHTML = `
-      <div class="staging-panel ${canStage ? "ready" : "blocked"}">
-        <div class="staging-header">
-          <div>
-            <h3>
-              ${canStage ? "Ready to Stage" : "Staging Unavailable"}
-              ${stagedRecord
-                ? `<span class="staging-status-badge">Persisted Stage</span>`
-                : ""}
-            </h3>
-            <p class="staging-description">
-              ${canStage
-                ? "This validated bundle can be staged locally for review. The staged record persists in this browser until it is removed."
-                : "Resolve validation errors before this bundle can be staged."}
-            </p>
-          </div>
-
-          <div class="staging-action-row">
-            <button
-              id="stageBundleButton"
-              class="stage-button"
-              type="button"
-              ${canStage && !stagedRecord ? "" : "disabled"}
-            >
-              ${stagedRecord ? "Bundle Staged" : "Stage Bundle"}
-            </button>
-
-            ${stagedRecord
-              ? `
-                <button
-                  id="exportStagedRecordButton"
-                  class="export-button"
-                  type="button"
-                >
-                  Export Staged Package
-                </button>
-
-                <button
-                  id="unstageBundleButton"
-                  class="unstage-button"
-                  type="button"
-                >
-                  Remove Stage
-                </button>
-              `
-              : ""}
-          </div>
-        </div>
-
-        <div class="staging-grid">
-          <div class="staging-stat bundle-id-stat">
-            <strong>${escapeHtml(result?.bundleId || "—")}</strong>
-            <span>Bundle ID</span>
-          </div>
-
-          <div class="staging-stat">
-            <strong>${numberValue(summary.nodes)}</strong>
-            <span>Nodes to Stage</span>
-          </div>
-
-          <div class="staging-stat">
-            <strong>${numberValue(summary.assertions)}</strong>
-            <span>Assertions to Stage</span>
-          </div>
-
-          <div class="staging-stat">
-            <strong>${numberValue(summary.edges)}</strong>
-            <span>Edges to Stage</span>
-          </div>
-
-          <div class="staging-stat">
-            <strong>${numberValue(summary.sources)}</strong>
-            <span>Sources to Stage</span>
-          </div>
-
-          <div class="staging-stat">
-            <strong>${numberValue(summary.revisions)}</strong>
-            <span>Revisions to Stage</span>
-          </div>
-
-          <div class="staging-stat">
-            <strong>${numberValue(summary.warnings)}</strong>
-            <span>Warnings</span>
-          </div>
-        </div>
-
-        <div id="stagedRecordResult">
-          ${renderStagedRecord()}
-        </div>
-      </div>
-    `;
-  }
-
-  async function stageActiveBundle() {
-    if (!activeBundle || !activeValidationResult?.canImport) {
-      return;
-    }
-
-    const summary = activeValidationResult.summary || {};
-    const bundleHash = await createBundleHash(activeBundle);
-
-    stagedRecord = {
-      bundleId: activeValidationResult.bundleId,
-      stagedAt: new Date().toISOString(),
-      status: "staged-preview",
-      source: getActiveBundleSource(),
-      bundleHash,
-      integrityStatus: "current",
-      snapshot: createBundleSnapshot(activeBundle, activeValidationResult),
-      counts: {
-        nodes: numberValue(summary.nodes),
-        assertions: numberValue(summary.assertions),
-        edges: numberValue(summary.edges),
-        sources: numberValue(summary.sources),
-        revisions: numberValue(summary.revisions)
-      },
-      warningCount: numberValue(summary.warnings)
-    };
-
-    persistStagedRecord(stagedRecord);
-    renderStagingSummary(activeBundle, activeValidationResult);
-  }
-
-  function unstageActiveBundle() {
-    const bundleId = activeValidationResult?.bundleId;
-
-    if (!bundleId) {
-      return;
-    }
-
-    removePersistedStagedRecord(bundleId);
-    stagedRecord = null;
-    renderStagingSummary(activeBundle, activeValidationResult);
-  }
-
-  function createBundleSnapshot(bundle, result) {
-    const getIds = (items = []) =>
-      items
-        .map(item =>
-          item?.id ||
-          item?.revisionId ||
-          item?.bundleId ||
-          ""
-        )
-        .filter(Boolean)
-        .sort();
-
-    return {
-      counts: {
-        nodes: numberValue(result?.summary?.nodes),
-        assertions: numberValue(result?.summary?.assertions),
-        edges: numberValue(result?.summary?.edges),
-        sources: numberValue(result?.summary?.sources),
-        revisions: numberValue(result?.summary?.revisions),
-        warnings: numberValue(result?.summary?.warnings)
-      },
-      ids: {
-        nodes: getIds(bundle?.nodes),
-        assertions: getIds(bundle?.assertions),
-        edges: getIds(bundle?.edges),
-        sources: getIds(bundle?.sources),
-        revisions: getIds(bundle?.revisions)
-      }
-    };
-  }
-
-  function compareBundleSnapshot(previousSnapshot, currentSnapshot) {
-    if (!previousSnapshot || !currentSnapshot) {
-      return null;
-    }
-
-    const categories = [
-      "nodes",
-      "assertions",
-      "edges",
-      "sources",
-      "revisions"
-    ];
-
-    const counts = {};
-    const objects = {};
-
-    for (const category of categories) {
-      const previousCount = numberValue(previousSnapshot.counts?.[category]);
-      const currentCount = numberValue(currentSnapshot.counts?.[category]);
-
-      counts[category] = {
-        previous: previousCount,
-        current: currentCount,
-        delta: currentCount - previousCount
-      };
-
-      const previousIds = new Set(previousSnapshot.ids?.[category] || []);
-      const currentIds = new Set(currentSnapshot.ids?.[category] || []);
-
-      objects[category] = {
-        added: [...currentIds].filter(id => !previousIds.has(id)),
-        removed: [...previousIds].filter(id => !currentIds.has(id))
-      };
-    }
-
-    counts.warnings = {
-      previous: numberValue(previousSnapshot.counts?.warnings),
-      current: numberValue(currentSnapshot.counts?.warnings),
-      delta:
-        numberValue(currentSnapshot.counts?.warnings) -
-        numberValue(previousSnapshot.counts?.warnings)
-    };
-
-    return { counts, objects };
-  }
-
-  async function createBundleHash(bundle) {
-    return packageLifecycle.createBundleHash(bundle);
-  }
-
-  async function exportActiveStagedRecord() {
-    if (!stagedRecord || !activeBundle) {
-      return;
-    }
-
-    const currentHash = await createBundleHash(activeBundle);
-
-    if (currentHash !== stagedRecord.bundleHash) {
-      window.alert(
-        "The current bundle no longer matches the staged snapshot. Review the changes and restage before exporting a package."
-      );
-      return;
-    }
-
-    const exportArtifact = createStagedPackageExport(
-      stagedRecord,
-      activeBundle
-    );
-
-    const filename =
-      `${sanitizeFilename(stagedRecord.bundleId)}-staged-package.json`;
-
-    downloadJsonFile(exportArtifact, filename);
-  }
-
-  function createStagedPackageExport(record, bundle) {
-    return packageLifecycle.createStagedPackageExport(record, bundle);
-  }
-
-  function downloadJsonFile(value, filename) {
-    return packageLifecycle.downloadJsonFile(value, filename);
-  }
-
-  function sanitizeFilename(value) {
-    return packageLifecycle.sanitizeFilename(
-      value,
-      "sourceroot-staged-record"
-    );
-  }
-
-  function getActiveBundleSource() {
-    const params = new URLSearchParams(window.location.search);
-    const stagedBundleId = params.get("staged");
-
-    if (stagedBundleId) {
-      return "embedded-package";
-    }
-
-    return params.get("bundle") || "local-file";
-  }
-
-  function getPersistedStagingMap() {
-    return packageLifecycle.getStagingMap();
-  }
-
-  function savePersistedStagingMap(stagingMap) {
-    return packageLifecycle.saveStagingMap(stagingMap);
-  }
-
-  function persistStagedRecord(record) {
-    return packageLifecycle.saveStagedRecord(record);
-  }
-
-  function getPersistedStagedRecord(bundleId) {
-    return packageLifecycle.getStagedRecord(bundleId);
-  }
-
-  function removePersistedStagedRecord(bundleId) {
-    return packageLifecycle.removeStagedRecord(bundleId);
-  }
-
-  function renderStagedRecord() {
-    if (!stagedRecord) {
-      return "";
-    }
-
-    return `
-      <div class="staged-record">
-        <strong>Staged Preview Created</strong><br>
-        Bundle: ${escapeHtml(stagedRecord.bundleId)}<br>
-        Status: ${escapeHtml(stagedRecord.status)}<br>
-        Source: ${escapeHtml(stagedRecord.source || "unknown")}<br>
-        Staged at: ${escapeHtml(stagedRecord.stagedAt)}<br>
-        Objects staged: ${
-          stagedRecord.counts.nodes +
-          stagedRecord.counts.assertions +
-          stagedRecord.counts.edges +
-          stagedRecord.counts.sources +
-          stagedRecord.counts.revisions
-        }<br>
-        Warnings carried forward: ${stagedRecord.warningCount}<br>
-        Snapshot hash: ${escapeHtml((stagedRecord.bundleHash || "not-recorded").slice(0, 16))}…
-        ${renderIntegrityNote(stagedRecord)}
-        ${renderChangeComparison(stagedRecord.changeComparison)}
-      </div>
-    `;
-  }
-
-  function renderChangeComparison(comparison) {
-    if (!comparison) {
-      return "";
-    }
-
-    const countCards = [
-      ["Nodes", comparison.counts.nodes],
-      ["Assertions", comparison.counts.assertions],
-      ["Edges", comparison.counts.edges],
-      ["Sources", comparison.counts.sources],
-      ["Revisions", comparison.counts.revisions],
-      ["Warnings", comparison.counts.warnings]
-    ].map(([label, value]) => `
-      <div class="change-card">
-        <strong>${escapeHtml(label)}</strong>
-        ${numberValue(value.previous)} → ${numberValue(value.current)}
-        ${value.delta === 0
-          ? " (unchanged)"
-          : ` (${value.delta > 0 ? "+" : ""}${value.delta})`}
-      </div>
-    `).join("");
-
-    const objectChanges = [];
-
-    for (const [category, changes] of Object.entries(comparison.objects || {})) {
-      for (const id of changes.added || []) {
-        objectChanges.push(
-          `<li><strong>Added ${escapeHtml(category.slice(0, -1))}:</strong> <code>${escapeHtml(id)}</code></li>`
-        );
-      }
-
-      for (const id of changes.removed || []) {
-        objectChanges.push(
-          `<li><strong>Removed ${escapeHtml(category.slice(0, -1))}:</strong> <code>${escapeHtml(id)}</code></li>`
-        );
-      }
-    }
-
-    return `
-      <div class="change-summary">
-        <h4>Changes Since Staging</h4>
-        <div class="change-grid">${countCards}</div>
-        ${objectChanges.length
-          ? `<ul class="change-list">${objectChanges.join("")}</ul>`
-          : `<p class="empty">No object IDs were added or removed.</p>`}
-      </div>
-    `;
-  }
-
-  function renderIntegrityNote(record) {
-    if (!record.bundleHash) {
-      return `
-        <div class="integrity-note integrity-stale">
-          This staged record predates integrity snapshots. Remove and stage it again to create a bundle hash.
-        </div>
-      `;
-    }
-
-    if (record.integrityStatus === "stale") {
-      return `
-        <div class="integrity-note integrity-stale">
-          The current bundle differs from the staged snapshot. Remove and stage it again after reviewing the changes.
-        </div>
-      `;
-    }
-
-    return `
-      <div class="integrity-note integrity-current">
-        The current bundle matches the staged snapshot.
-      </div>
-    `;
-  }
-
-  function numberValue(value) {
-    return packageLifecycle.numberValue(value);
-  }
-
-  function renderBundleObjects(bundle) {
-    document.getElementById("bundleObjects").innerHTML = `
-      <h3>Nodes</h3>
-      ${renderObjectGrid(bundle.nodes || [], "node")}
-
-      <h3>Assertions</h3>
-      ${renderObjectGrid(bundle.assertions || [], "assertion")}
-
-      <h3>Edges</h3>
-      ${renderObjectGrid(bundle.edges || [], "edge")}
-
-      <h3>Sources</h3>
-      ${renderObjectGrid(bundle.sources || [], "source")}
-
-      <h3>Revisions</h3>
-      ${renderObjectGrid(bundle.revisions || [], "revision")}
-    `;
-  }
-
-  function renderObjectGrid(items, type) {
-    if (!items.length) {
-      return `<p class="empty">No ${type}s found.</p>`;
-    }
-
-    return `
-      <div class="object-grid">
-        ${items.map(item => renderObjectCard(item, type)).join("")}
-      </div>
-    `;
-  }
-
-  function renderObjectCard(item, type) {
-    const id = item.id || item.revisionId || item.bundleId || "unknown";
-    const title = item.title || item.name || item.label || item.relationshipType || item.objectType || id;
-
-    return `
-      <div class="object-card">
-        <h3>${title || "Untitled"}</h3>
-        <div class="meta"><strong>Type:</strong> ${type}</div>
-        <div class="meta"><strong>ID:</strong> ${id}</div>
-        ${item.domain ? `<div class="meta"><strong>Domain:</strong> ${item.domain}</div>` : ""}
-        ${item.nodeId ? `<div class="meta"><strong>Node:</strong> ${item.nodeId}</div>` : ""}
-        ${item.fromNodeId ? `<div class="meta"><strong>From:</strong> ${item.fromNodeId}</div>` : ""}
-        ${item.toNodeId ? `<div class="meta"><strong>To:</strong> ${item.toNodeId}</div>` : ""}
-        ${item.summary ? `<div class="meta"><strong>Summary:</strong> ${item.summary}</div>` : ""}
-
-        <div class="pill-row">
-          ${item.credibilityTier ? `<span class="pill">${item.credibilityTier}</span>` : ""}
-          ${item.confidence ? `<span class="pill">${item.confidence}</span>` : ""}
-          ${item.verificationStatus ? `<span class="pill">${item.verificationStatus}</span>` : ""}
-          ${item.reviewStatus ? `<span class="pill">${item.reviewStatus}</span>` : ""}
-          ${item.supportLevel ? `<span class="pill">${item.supportLevel}</span>` : ""}
-          ${item.relationshipStrength ? `<span class="pill">${item.relationshipStrength}</span>` : ""}
-          ${item.interpretationLevel ? `<span class="pill">${item.interpretationLevel}</span>` : ""}
-        </div>
-
-        <details>
-          <summary>Raw ${type} data</summary>
-          <pre>${JSON.stringify(item, null, 2)}</pre>
-        </details>
-      </div>
-    `;
-  }
-
-  function renderRawBundle(bundle) {
-    document.getElementById("rawBundle").innerHTML = `
-      <details open>
-        <summary>Raw Bundle JSON</summary>
-        <pre>${JSON.stringify(bundle, null, 2)}</pre>
-      </details>
-    `;
-  }
-
-  function clearPreview({ clearRoute = false } = {}) {
-    document.getElementById("statusPanel").innerHTML = "";
-    document.getElementById("summaryStats").innerHTML = "";
-    document.getElementById("issueResults").innerHTML = `<p class="empty">No bundle loaded yet.</p>`;
-    document.getElementById("bundleObjects").innerHTML = `<p class="empty">No bundle loaded yet.</p>`;
-    document.getElementById("rawBundle").innerHTML = `<p class="empty">No bundle loaded yet.</p>`;
-    document.getElementById("stagingSummary").innerHTML = `<p class="empty">Load and validate a bundle to review its staging summary.</p>`;
-    document.getElementById("loadedFileNote").innerHTML = "";
-    document.getElementById("bundleFileInput").value = "";
-
-    activeBundle = null;
-    activeValidationResult = null;
-    stagedRecord = null;
-
-    if (clearRoute) {
       const url = new URL(window.location.href);
-      url.searchParams.delete("bundle");
-      url.searchParams.delete("staged");
-
-      window.history.replaceState(
-        {},
-        "",
-        `${url.pathname}${url.search}`
-      );
+      url.searchParams.set("bundle", path);
+      window.history.pushState({ bundle: path }, "", `${url.pathname}${url.search}`);
+      loadBundle(path);
     }
-  }
 
-  function formatStatus(status) {
-    return status
-      .split("-")
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
-  }
+    async function loadBundle(path) {
+      clearPreview(false);
 
-  function escapeHtml(value) {
-    return String(value ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
+      try {
+        const response = await fetch(path);
+        if (!response.ok) throw new Error(`Could not load bundle at ${path}. HTTP ${response.status}`);
 
-  function escapeAttribute(value) {
-    return String(value ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;");
-  }
+        const bundle = await response.json();
+        activeSourceLabel = path;
+        loadedFileNote.innerHTML = `Loaded registry bundle: <strong>${escapeHtml(path)}</strong>`;
+        await validateActiveBundle(bundle);
+      } catch (error) {
+        renderFailure("unknown", "LOAD_FAILED", path, error.message);
+      }
+    }
 
-  async function initializeImportPreview() {
-    clearPreview();
+    async function handleLocalBundleUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
 
-    try {
-      await loadApprovedBundlePaths();
-      await loadRequestedBundleFromUrl();
-    } catch (error) {
+      clearPreview(false);
+
+      try {
+        const bundle = JSON.parse(await file.text());
+        activeSourceLabel = file.name;
+        loadedFileNote.innerHTML = `Loaded local file: <strong>${escapeHtml(file.name)}</strong>`;
+        await validateActiveBundle(bundle);
+      } catch (error) {
+        renderFailure("local-file", "LOCAL_FILE_PARSE_FAILED", file.name, error.message);
+      }
+    }
+
+    async function validateActiveBundle(bundle) {
+      activeBundle = bundle;
+      activeValidationResult = null;
+
+      statusPanel.innerHTML = '<div class="status-card"><div class="status-title">Validating...</div></div>';
+      issueResults.innerHTML = '<p class="empty">Waiting for backend validation...</p>';
+      stagingSummary.innerHTML = '<p class="empty">Validation is still running.</p>';
+
+      try {
+        const result = await fetchJson(`${API_BASE}/validate`, {
+          method: "POST",
+          body: JSON.stringify(bundle)
+        });
+
+        activeValidationResult = result;
+        renderStatus(result);
+        renderSummary(result);
+        renderIssues(result);
+        renderImportSummary(bundle, result);
+        renderBundleObjects(bundle);
+        renderRawBundle(bundle);
+      } catch (error) {
+        renderFailure(bundle?.bundleId || "unknown", "VALIDATION_REQUEST_FAILED",
+          bundle?.bundleId || "unknown", error.message);
+      }
+    }
+
+    async function importActiveBundle() {
+      if (!activeBundle || !activeValidationResult?.canImport) return;
+
+      const button = document.getElementById("importBundleButton");
+      if (button) {
+        button.disabled = true;
+        button.textContent = "Importing...";
+      }
+
+      try {
+        const result = await fetchJson(`${API_BASE}/import`, {
+          method: "POST",
+          body: JSON.stringify(activeBundle)
+        });
+        renderImportSuccess(result);
+      } catch (error) {
+        renderImportError(error.message);
+      }
+    }
+
+    function renderImportSummary(bundle, result) {
+      const summary = result?.summary || {};
+      const canImport = Boolean(bundle && result?.canImport);
+
+      stagingSummary.innerHTML = `
+        <div class="staging-panel ${canImport ? "ready" : "blocked"}">
+          <div class="staging-header">
+            <div>
+              <h3>${canImport ? "Ready to Import" : "Import Unavailable"}</h3>
+              <p class="staging-description">
+                ${canImport
+                  ? "The backend validated this bundle. Importing will write its normalized records into PostgreSQL."
+                  : "Resolve the validation errors before this bundle can be imported."}
+              </p>
+            </div>
+
+            <div class="staging-action-row">
+              <button
+                id="importBundleButton"
+                class="import-button"
+                type="button"
+                ${canImport ? "" : "disabled"}
+              >
+                Import Bundle to Database
+              </button>
+            </div>
+          </div>
+
+          <div class="staging-grid">
+            <div class="staging-stat bundle-id-stat">
+              <strong>${escapeHtml(result?.bundleId || "—")}</strong>
+              <span>Bundle ID</span>
+            </div>
+            ${renderImportStat(summary.nodes, "Nodes")}
+            ${renderImportStat(summary.assertions, "Assertions")}
+            ${renderImportStat(summary.edges, "Edges")}
+            ${renderImportStat(summary.sources, "Sources")}
+            ${renderImportStat(summary.revisions, "Revisions")}
+            ${renderImportStat(summary.warnings, "Warnings")}
+          </div>
+
+          <div id="importResult"></div>
+        </div>
+      `;
+    }
+
+    function renderImportStat(value, label) {
+      return `<div class="staging-stat"><strong>${numberValue(value)}</strong><span>${escapeHtml(label)}</span></div>`;
+    }
+
+    function renderImportSuccess(result) {
+      const container = document.getElementById("importResult");
+      if (!container) return;
+
+      container.innerHTML = `
+        <div class="import-result import-success">
+          <strong>Bundle imported successfully.</strong><br>
+          Bundle: ${escapeHtml(result.bundleId || activeValidationResult?.bundleId || "unknown")}<br>
+          Source: ${escapeHtml(activeSourceLabel || "loaded bundle")}<br>
+          The imported records are now available through the live registries.
+          <div class="button-row">
+            <button id="openImportedBundleButton" type="button">Open Import Bundle Registry</button>
+          </div>
+        </div>
+      `;
+
+      const button = document.getElementById("importBundleButton");
+      if (button) {
+        button.disabled = true;
+        button.textContent = "Bundle Imported";
+      }
+    }
+
+    function renderImportError(message) {
+      const container = document.getElementById("importResult");
+      if (!container) return;
+
+      container.innerHTML = `
+        <div class="import-result import-error">
+          <strong>Import failed.</strong><br>${escapeHtml(message)}
+        </div>
+      `;
+
+      const button = document.getElementById("importBundleButton");
+      if (button) {
+        button.disabled = false;
+        button.textContent = "Retry Import";
+      }
+    }
+
+    function renderStatus(result) {
+      const statusClass = result.status === "ready"
+        ? "status-ready"
+        : result.status === "ready-with-warnings"
+          ? "status-warning"
+          : "status-blocked";
+
+      statusPanel.innerHTML = `
+        <div class="status-card ${statusClass}">
+          <div class="status-title">${formatStatus(result.status)}</div>
+          <div class="status-meta">
+            <strong>Bundle:</strong> ${escapeHtml(result.bundleId)}<br>
+            <strong>Can Import:</strong> ${result.canImport ? "Yes" : "No"}<br>
+            <strong>Errors:</strong> ${numberValue(result.summary?.errors)} ·
+            <strong>Warnings:</strong> ${numberValue(result.summary?.warnings)}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSummary(result) {
+      const summary = result.summary || {};
+      summaryStats.innerHTML = `
+        <div class="stat-grid">
+          ${renderStat(summary.nodes, "Nodes")}
+          ${renderStat(summary.assertions, "Assertions")}
+          ${renderStat(summary.edges, "Edges")}
+          ${renderStat(summary.sources, "Sources")}
+          ${renderStat(summary.revisions, "Revisions")}
+          ${renderStat(summary.errors, "Errors")}
+          ${renderStat(summary.warnings, "Warnings")}
+        </div>
+      `;
+    }
+
+    function renderStat(value, label) {
+      return `<div class="stat-card"><div class="stat-number">${numberValue(value)}</div><div class="stat-label">${escapeHtml(label)}</div></div>`;
+    }
+
+    function renderIssues(result) {
+      const errors = result.errors || [];
+      const warnings = result.warnings || [];
+
+      if (!errors.length && !warnings.length) {
+        issueResults.innerHTML = '<p class="empty">No errors or warnings found.</p>';
+        return;
+      }
+
+      issueResults.innerHTML = `
+        <div class="issue-grid">
+          ${errors.map((item) => renderIssue(item, "error")).join("")}
+          ${warnings.map((item) => renderIssue(item, "warning")).join("")}
+        </div>
+      `;
+    }
+
+    function renderIssue(item, severity) {
+      return `
+        <div class="issue-card issue-${severity}">
+          <span class="issue-code">${severity.toUpperCase()} · ${escapeHtml(item.code)}</span>
+          <div class="issue-message">
+            <strong>${escapeHtml(item.objectType)}:</strong> ${escapeHtml(item.objectId)}<br>
+            ${escapeHtml(item.message)}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderBundleObjects(bundle) {
+      bundleObjects.innerHTML = `
+        <h3>Nodes</h3>${renderObjectGrid(bundle.nodes || [], "node")}
+        <h3>Assertions</h3>${renderObjectGrid(bundle.assertions || [], "assertion")}
+        <h3>Edges</h3>${renderObjectGrid(bundle.edges || [], "edge")}
+        <h3>Sources</h3>${renderObjectGrid(bundle.sources || [], "source")}
+        <h3>Revisions</h3>${renderObjectGrid(bundle.revisions || [], "revision")}
+      `;
+    }
+
+    function renderObjectGrid(items, type) {
+      if (!items.length) return `<p class="empty">No ${escapeHtml(type)}s found.</p>`;
+      return `<div class="object-grid">${items.map((item) => renderObjectCard(item, type)).join("")}</div>`;
+    }
+
+    function renderObjectCard(item, type) {
+      const id = item.id || item.nodeId || item.assertionId || item.edgeId ||
+        item.sourceId || item.revisionId || item.bundleId || "unknown";
+      const title = item.title || item.name || item.label ||
+        item.relationshipType || item.objectType || id;
+
+      return `
+        <div class="object-card">
+          <h3>${escapeHtml(title || "Untitled")}</h3>
+          <div class="meta"><strong>Type:</strong> ${escapeHtml(type)}</div>
+          <div class="meta"><strong>ID:</strong> ${escapeHtml(id)}</div>
+          ${item.domain ? `<div class="meta"><strong>Domain:</strong> ${escapeHtml(item.domain)}</div>` : ""}
+          ${item.nodeId ? `<div class="meta"><strong>Node:</strong> ${escapeHtml(item.nodeId)}</div>` : ""}
+          ${item.fromNodeId ? `<div class="meta"><strong>From:</strong> ${escapeHtml(item.fromNodeId)}</div>` : ""}
+          ${item.toNodeId ? `<div class="meta"><strong>To:</strong> ${escapeHtml(item.toNodeId)}</div>` : ""}
+          ${item.summary ? `<div class="meta"><strong>Summary:</strong> ${escapeHtml(item.summary)}</div>` : ""}
+          <div class="pill-row">
+            ${renderPill(item.credibilityTier)}
+            ${renderPill(item.confidence)}
+            ${renderPill(item.verificationStatus)}
+            ${renderPill(item.reviewStatus)}
+            ${renderPill(item.supportLevel)}
+            ${renderPill(item.relationshipStrength)}
+            ${renderPill(item.interpretationLevel)}
+          </div>
+          <details>
+            <summary>Raw ${escapeHtml(type)} data</summary>
+            <pre>${escapeHtml(JSON.stringify(item, null, 2))}</pre>
+          </details>
+        </div>
+      `;
+    }
+
+    function renderPill(value) {
+      return value ? `<span class="pill">${escapeHtml(value)}</span>` : "";
+    }
+
+    function renderRawBundle(bundle) {
+      rawBundle.innerHTML = `
+        <details open>
+          <summary>Raw Bundle JSON</summary>
+          <pre>${escapeHtml(JSON.stringify(bundle, null, 2))}</pre>
+        </details>
+      `;
+    }
+
+    function renderFailure(bundleId, code, objectId, message) {
       const result = {
-        bundleId: "bundle-registry",
+        bundleId,
         status: "invalid-format",
         canImport: false,
-        summary: {
-          nodes: 0,
-          assertions: 0,
-          edges: 0,
-          sources: 0,
-          revisions: 0,
-          errors: 1,
-          warnings: 0
-        },
-        errors: [
-          {
-            code: "REGISTRY_LOAD_FAILED",
-            objectType: "bundle-registry",
-            objectId: REGISTRY_PATH,
-            message: error.message
-          }
-        ],
+        summary: { nodes: 0, assertions: 0, edges: 0, sources: 0, revisions: 0, errors: 1, warnings: 0 },
+        errors: [{ code, objectType: "bundle", objectId, message }],
         warnings: []
       };
 
-      document.getElementById("loadedFileNote").innerHTML = `
-        Failed to load approved bundle registry: <strong>${REGISTRY_PATH}</strong>
-      `;
-
+      activeBundle = null;
+      activeValidationResult = result;
       renderStatus(result);
       renderSummary(result);
       renderIssues(result);
-
-      console.error("SourceRoot Import Preview failed to initialize:", error);
+      renderImportSummary(null, result);
     }
-  }
 
-  initializeImportPreview();
-</script>
+    function clearPreview(clearRoute = false) {
+      statusPanel.innerHTML = "";
+      summaryStats.innerHTML = "";
+      issueResults.innerHTML = '<p class="empty">No bundle loaded yet.</p>';
+      bundleObjects.innerHTML = '<p class="empty">No bundle loaded yet.</p>';
+      rawBundle.innerHTML = '<p class="empty">No bundle loaded yet.</p>';
+      stagingSummary.innerHTML = '<p class="empty">Load and validate a bundle to review its import summary.</p>';
+      loadedFileNote.innerHTML = "";
+      bundleFileInput.value = "";
+      activeBundle = null;
+      activeValidationResult = null;
+      activeSourceLabel = "";
+
+      if (clearRoute) {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("bundle");
+        window.history.replaceState({}, "", `${url.pathname}${url.search}`);
+      }
+    }
+
+    function formatStatus(status = "unknown") {
+      return String(status).split("-").map((word) =>
+        word.charAt(0).toUpperCase() + word.slice(1)
+      ).join(" ");
+    }
+
+    function numberValue(value) {
+      const number = Number(value);
+      return Number.isFinite(number) ? number : 0;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function escapeAttribute(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+    }
+
+    async function initializeImportPreview() {
+      clearPreview(false);
+      await checkApi();
+
+      try {
+        await loadApprovedBundlePaths();
+        const requestedBundle = new URLSearchParams(window.location.search).get("bundle");
+
+        if (requestedBundle) {
+          if (approvedBundlePaths.includes(requestedBundle)) {
+            await loadBundle(requestedBundle);
+          } else {
+            renderFailure("unapproved-bundle", "UNAPPROVED_BUNDLE_PATH", requestedBundle,
+              "The requested bundle is not marked routable in the SourceRoot bundle registry.");
+          }
+        }
+      } catch (error) {
+        renderFailure("bundle-registry", "REGISTRY_LOAD_FAILED", REGISTRY_PATH, error.message);
+      }
+    }
+
+    initializeImportPreview();
+  </script>
 </body>
 </html>

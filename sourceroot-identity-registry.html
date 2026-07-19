@@ -297,6 +297,113 @@
       margin-top: 12px;
     }
 
+
+    .api-status {
+      background: #fff8e6;
+      border: 1px solid #ead59a;
+      border-radius: 12px;
+      padding: 12px;
+      margin-top: 14px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .pagination {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .pagination button {
+      border: 1px solid #111827;
+      background: #111827;
+      color: white;
+      border-radius: 10px;
+      padding: 9px 12px;
+      cursor: pointer;
+    }
+
+    .pagination button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .inspect-button,
+    .node-button {
+      border: 1px solid #cfc7b8;
+      background: #fff8e6;
+      color: #1f2933;
+      border-radius: 9px;
+      padding: 7px 9px;
+      cursor: pointer;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+
+    .inspect-button {
+      width: 100%;
+    }
+
+    .detail-panel {
+      display: none;
+    }
+
+    .detail-panel.visible {
+      display: block;
+    }
+
+    .detail-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .detail-header h2 {
+      margin: 0 0 6px;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 10px;
+      margin: 14px 0;
+    }
+
+    .detail-item {
+      background: #fffdf8;
+      border: 1px solid #eee2c7;
+      border-radius: 12px;
+      padding: 10px;
+    }
+
+    .detail-item span {
+      display: block;
+      color: #6b7280;
+      font-size: 11px;
+      margin-bottom: 4px;
+    }
+
+    .detail-item strong {
+      font-size: 13px;
+      word-break: break-word;
+    }
+
+    .linked-card {
+      background: #fffdf8;
+      border: 1px solid #eee2c7;
+      border-radius: 14px;
+      padding: 14px;
+      margin-top: 10px;
+    }
+
+    .linked-card h3 {
+      margin: 0 0 6px;
+    }
+
     @media (max-width: 950px) {
       .controls {
         grid-template-columns: 1fr;
@@ -325,7 +432,7 @@
   <header>
     <h1>SourceRoot Identity Registry</h1>
     <div class="subtitle">
-      Meaning-resolution view for SourceRoot. Inspect identity edges that explain whether nodes are the same thing, the same term in different contexts, symbolic mappings, related concepts, derived meanings, contrasts, or disambiguation links.
+      Live meaning-resolution view backed by PostgreSQL through the SourceRoot API. Inspect identity relationships, linked nodes, cross-hub distinctions, source provenance, and normalized edge records.
     </div>
 
     <div class="top-links">
@@ -372,6 +479,7 @@
         </button>
       </div>
 
+      <div id="apiStatus" class="api-status">Checking SourceRoot API...</div>
       <div id="identityStats" class="stat-grid"></div>
       <div id="identityCount" class="registry-count"></div>
 
@@ -385,23 +493,28 @@
       <div id="identityRegistry">
         Loading identity registry...
       </div>
+      <div id="pagination" class="pagination"></div>
+    </section>
+
+    <section id="detailPanel" class="panel detail-panel">
+      <div class="detail-header">
+        <div>
+          <h2 id="detailTitle">Identity Detail</h2>
+          <div id="detailId" class="meta"></div>
+        </div>
+
+        <button id="closeDetailButton" class="clear-button" type="button">
+          Close
+        </button>
+      </div>
+
+      <div id="detailContent"></div>
     </section>
   </main>
 
   <script type="module">
-    import { adaptDictionaryConcepts } from "./engine/adapters/dictionaryAdapter.js";
-    import { adaptBibleNodes } from "./engine/adapters/bibleAdapter.js";
-    import { combineNodes } from "./engine/sourceRootEngine.js";
-
-    import {
-      adaptWikidataNodes,
-      adaptWikidataEdges,
-      adaptWikidataSources
-    } from "./engine/adapters/wikidataAdapter.js";
-
-    let allNodes = [];
-    let allEdges = [];
-    let allSources = [];
+    const API_BASE = "http://localhost:3000/api/v1";
+    const PAGE_LIMIT = 12;
 
     const identityRelationshipTypes = [
       "SAME_AS",
@@ -412,286 +525,309 @@
       "CONTRASTS_WITH",
       "DISAMBIGUATES",
       "SAME_AS_RELATED_CONCEPT",
-      "RELATES_TO"
+      "RELATES_TO",
     ];
 
-    async function loadIdentityRegistry() {
+    let currentPage = 1;
+    let totalPages = 1;
+    let totalIdentityEdges = 0;
+    let searchTimer = null;
+
+    const apiStatus = document.getElementById("apiStatus");
+    const searchInput = document.getElementById("searchInput");
+    const identityTypeFilter = document.getElementById("identityTypeFilter");
+    const domainFilter = document.getElementById("domainFilter");
+    const crossHubFilter = document.getElementById("crossHubFilter");
+    const clearFiltersButton = document.getElementById("clearFiltersButton");
+    const identityStats = document.getElementById("identityStats");
+    const identityCount = document.getElementById("identityCount");
+    const identityRegistry = document.getElementById("identityRegistry");
+    const pagination = document.getElementById("pagination");
+    const detailPanel = document.getElementById("detailPanel");
+    const detailTitle = document.getElementById("detailTitle");
+    const detailId = document.getElementById("detailId");
+    const detailContent = document.getElementById("detailContent");
+    const closeDetailButton = document.getElementById("closeDetailButton");
+
+    async function fetchJson(url) {
+      const response = await fetch(url, {
+        headers: { Accept: "application/json" },
+      });
+
+      let body;
       try {
-        const [
-          bibleNodesResponse,
-          bibleEdgesResponse,
-          bibleSourcesResponse,
-          dictionaryConceptsResponse,
-          dictionarySourcesResponse,
-          crossHubEdgesResponse,
-          wikidataNodesResponse,
-          wikidataEdgesResponse,
-          wikidataSourcesResponse
-        ] = await Promise.all([
-          fetch("data/bible-root-nodes.json"),
-          fetch("data/bible-root-edges.json"),
-          fetch("data/bible-root-sources.json"),
-          fetch("data/nodes-v2-root.json"),
-          fetch("data/sources-v2.json"),
-          fetch("data/sourceroot-cross-hub-edges.json"),
-          fetch("data/wikidata-root-nodes.json"),
-          fetch("data/wikidata-root-edges.json"),
-          fetch("data/wikidata-root-sources.json")
-        ]);
-
-        const bibleNodesRaw = await bibleNodesResponse.json();
-        const bibleEdgesRaw = await bibleEdgesResponse.json();
-        const bibleSourcesRaw = await bibleSourcesResponse.json();
-        const dictionaryConceptsRaw = await dictionaryConceptsResponse.json();
-        const dictionarySourcesRaw = await dictionarySourcesResponse.json();
-        const crossHubEdgesRaw = await crossHubEdgesResponse.json();
-        const wikidataNodesRaw = await wikidataNodesResponse.json();
-        const wikidataEdgesRaw = await wikidataEdgesResponse.json();
-        const wikidataSourcesRaw = await wikidataSourcesResponse.json();
-
-        const bibleNodes = adaptBibleNodes(bibleNodesRaw);
-        const dictionaryNodes = adaptDictionaryConcepts(dictionaryConceptsRaw);
-        const wikidataNodes = adaptWikidataNodes(wikidataNodesRaw);
-
-        allNodes = combineNodes(
-          bibleNodes,
-          dictionaryNodes,
-          wikidataNodes
-        );
-
-        allEdges = [
-          ...adaptBibleEdges(bibleEdgesRaw),
-          ...adaptDictionaryEdges(dictionaryConceptsRaw),
-          ...adaptCrossHubEdges(crossHubEdgesRaw),
-          ...adaptWikidataEdges(wikidataEdgesRaw).map(edge => ({
-            ...edge,
-            domain: "Wiki"
-          }))
-        ];
-
-        allSources = [
-          ...adaptBibleSources(bibleSourcesRaw),
-          ...adaptDictionarySources(dictionarySourcesRaw),
-          ...adaptWikidataSources(wikidataSourcesRaw)
-        ];
-
-        populateFilters();
-        applyFilters();
-
-        document.getElementById("searchInput").addEventListener("input", applyFilters);
-        document.getElementById("identityTypeFilter").addEventListener("change", applyFilters);
-        document.getElementById("domainFilter").addEventListener("change", applyFilters);
-        document.getElementById("crossHubFilter").addEventListener("change", applyFilters);
-
-        document.getElementById("clearFiltersButton").addEventListener("click", () => {
-          document.getElementById("searchInput").value = "";
-          document.getElementById("identityTypeFilter").value = "all";
-          document.getElementById("domainFilter").value = "all";
-          document.getElementById("crossHubFilter").value = "all";
-          applyFilters();
-        });
-
-      } catch (error) {
-        document.getElementById("identityRegistry").innerHTML = `
-          <p class="empty">Could not load identity registry. Check file paths and browser console.</p>
-        `;
-        console.error(error);
+        body = await response.json();
+      } catch {
+        body = {};
       }
+
+      if (!response.ok) {
+        throw new Error(
+          body.message || `Request failed with HTTP ${response.status}.`,
+        );
+      }
+
+      return body;
     }
 
-    function adaptBibleEdges(edges = []) {
-      return edges.map(edge => ({
-        ...edge,
-        fromNodeId: `bible-${edge.fromNodeId}`,
-        toNodeId: `bible-${edge.toNodeId}`,
-        relationshipType: edge.relationshipType || edge.type || "RELATED_TO",
-        label: edge.label || edge.relationshipType || edge.type || "related to",
-        summary: edge.summary || edge.explanation || "",
-        sourceIds: edge.sourceIds || [],
-        domain: "BibleRoot",
-        raw: edge
-      }));
+    function escapeHtml(value = "") {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
     }
 
-    function adaptDictionaryEdges(concepts = []) {
-      const edges = [];
+    function displayValue(value, fallback = "Not listed") {
+      return value === null || value === undefined || value === ""
+        ? fallback
+        : escapeHtml(value);
+    }
 
-      concepts.forEach(concept => {
-        (concept.relationships || []).forEach((relationship, index) => {
-          edges.push({
-            id: `dictionary-edge-${concept.id}-${relationship.target}-${index}`,
-            fromNodeId: `dictionary-${concept.id}`,
-            toNodeId: `dictionary-${relationship.target}`,
-            relationshipType: relationship.type || "RELATED_TO",
-            label: relationship.direction || relationship.type || "related to",
-            summary: relationship.explanation || relationship.bridge || "",
-            sourceIds: relationship.sourceIds || [],
-            domain: "DictionaryHub",
-            raw: relationship
-          });
+    async function init() {
+      bindEvents();
+      await checkApi();
+      await populateFilters();
+      await loadIdentityRegistry();
+    }
+
+    function bindEvents() {
+      searchInput.addEventListener("input", () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+          currentPage = 1;
+          loadIdentityRegistry();
+        }, 300);
+      });
+
+      [identityTypeFilter, domainFilter, crossHubFilter].forEach((control) => {
+        control.addEventListener("change", () => {
+          currentPage = 1;
+          loadIdentityRegistry();
         });
       });
 
-      return edges;
+      clearFiltersButton.addEventListener("click", clearFilters);
+      closeDetailButton.addEventListener("click", closeDetail);
     }
 
-    function adaptCrossHubEdges(edges = []) {
-      return edges.map(edge => ({
-        id: edge.id,
-        fromNodeId: edge.fromNodeId,
-        toNodeId: edge.toNodeId,
-        relationshipType: edge.relationshipType || edge.type || "CROSS_HUB_RELATIONSHIP",
-        label: edge.label || edge.relationshipType || "relates to",
-        summary: edge.summary || edge.explanation || "",
-        sourceIds: edge.sourceIds || [],
-        domain: edge.domain || "SourceRoot",
-        raw: edge
-      }));
-    }
-
-    function adaptBibleSources(sources = []) {
-      return sources.map(source => ({
-        id: source.id,
-        name: source.name || source.title || source.id,
-        type: source.type || "BibleRoot Source",
-        domain: "BibleRoot",
-        qualityTier: source.qualityTier || source.tier || "Working Source",
-        url: source.url || "",
-        notes: source.notes || source.description || "",
-        raw: source
-      }));
-    }
-
-    function adaptDictionarySources(sources = []) {
-      return sources.map(source => ({
-        id: source.id,
-        name: source.name || source.title || source.id,
-        type: source.type || "DictionaryHub Source",
-        domain: "DictionaryHub",
-        qualityTier: source.qualityTier || source.tier || "Working Source",
-        url: source.url || "",
-        notes: source.notes || source.description || "",
-        raw: source
-      }));
-    }
-
-    function populateFilters() {
-      const identityTypeFilter = document.getElementById("identityTypeFilter");
-      const domainFilter = document.getElementById("domainFilter");
-
-      const identityEdges = getIdentityEdges();
-
-      const relationshipTypes = [
-        ...new Set(identityEdges.map(edge => edge.relationshipType || "UNKNOWN"))
-      ].sort();
-
-      const domains = [
-        ...new Set(identityEdges.map(edge => getDisplayDomain(edge.domain || "Unknown Domain")))
-      ].sort();
-
-      identityTypeFilter.innerHTML = `
-        <option value="all">All Identity Types</option>
-        ${relationshipTypes.map(type => `<option value="${type}">${type}</option>`).join("")}
-      `;
-
-      domainFilter.innerHTML = `
-        <option value="all">All Domains</option>
-        ${domains.map(domain => `<option value="${domain}">${domain}</option>`).join("")}
-      `;
-    }
-
-    function applyFilters() {
-      const searchTerm = document.getElementById("searchInput").value.toLowerCase().trim();
-      const selectedIdentityType = document.getElementById("identityTypeFilter").value;
-      const selectedDomain = document.getElementById("domainFilter").value;
-      const selectedCrossHub = document.getElementById("crossHubFilter").value;
-
-      let filteredEdges = getIdentityEdges();
-
-      if (selectedIdentityType !== "all") {
-        filteredEdges = filteredEdges.filter(edge => edge.relationshipType === selectedIdentityType);
+    async function checkApi() {
+      try {
+        const health = await fetchJson("http://localhost:3000/health");
+        apiStatus.innerHTML = `
+          <strong>SourceRoot API: Connected</strong><br>
+          Service: ${displayValue(health.service, "SourceRoot backend")} ·
+          Status: ${displayValue(health.status, "available")} ·
+          Identity data: filtered from <code>${API_BASE}/edges</code>
+        `;
+      } catch (error) {
+        apiStatus.innerHTML = `
+          <strong>SourceRoot API: Offline</strong><br>
+          ${escapeHtml(error.message)}<br>
+          Start the backend with <code>npm.cmd run dev</code>.
+        `;
       }
+    }
 
-      if (selectedDomain !== "all") {
-        filteredEdges = filteredEdges.filter(edge =>
-          getDisplayDomain(edge.domain) === selectedDomain
+    async function populateFilters() {
+      try {
+        const response = await fetchJson(`${API_BASE}/edges?page=1&limit=100`);
+        const identityEdges = (response.edges || []).filter((edge) =>
+          identityRelationshipTypes.includes(edge.relationshipType),
         );
+
+        populateSelect(
+          identityTypeFilter,
+          uniqueValues(identityEdges.map((edge) => edge.relationshipType)),
+          "All Identity Types",
+        );
+
+        populateSelect(
+          domainFilter,
+          uniqueValues(identityEdges.map((edge) => edge.domain)),
+          "All Domains",
+        );
+      } catch {
+        // Preserve defaults if metadata loading fails.
       }
+    }
 
-      if (selectedCrossHub === "cross") {
-        filteredEdges = filteredEdges.filter(edge => isCrossHubEdge(edge));
+    function populateSelect(select, values, firstLabel) {
+      const currentValue = select.value;
+      select.innerHTML = `
+        <option value="all">${escapeHtml(firstLabel)}</option>
+        ${values
+          .map(
+            (value) =>
+              `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`,
+          )
+          .join("")}
+      `;
+
+      if (values.includes(currentValue) || currentValue === "all") {
+        select.value = currentValue;
       }
+    }
 
-      if (selectedCrossHub === "same") {
-        filteredEdges = filteredEdges.filter(edge => !isCrossHubEdge(edge));
+    function uniqueValues(values) {
+      return [...new Set(values.filter(Boolean))].sort((a, b) =>
+        a.localeCompare(b),
+      );
+    }
+
+    async function loadIdentityRegistry() {
+      identityRegistry.innerHTML = '<p class="empty">Loading live identity relationships...</p>';
+      pagination.innerHTML = "";
+      identityCount.textContent = "";
+
+      try {
+        const response = await fetchJson(`${API_BASE}/edges?page=1&limit=100`);
+        const allIdentityEdges = (response.edges || []).filter((edge) =>
+          identityRelationshipTypes.includes(edge.relationshipType),
+        );
+
+        const enriched = await Promise.all(
+          allIdentityEdges.map(async (edge) => {
+            const [fromNode, toNode] = await Promise.all([
+              fetchJson(`${API_BASE}/nodes/${encodeURIComponent(edge.fromNodeId)}`)
+                .catch(() => null),
+              fetchJson(`${API_BASE}/nodes/${encodeURIComponent(edge.toNodeId)}`)
+                .catch(() => null),
+            ]);
+
+            return { edge, fromNode, toNode };
+          }),
+        );
+
+        const filtered = applyFilters(enriched);
+        totalIdentityEdges = filtered.length;
+        totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_LIMIT));
+
+        if (currentPage > totalPages) {
+          currentPage = totalPages;
+        }
+
+        const pageStart = (currentPage - 1) * PAGE_LIMIT;
+        const pageRecords = filtered.slice(pageStart, pageStart + PAGE_LIMIT);
+
+        renderStats(filtered);
+        renderIdentityRegistry(pageRecords);
+        renderPagination();
+      } catch (error) {
+        identityRegistry.innerHTML = `
+          <p class="empty">${escapeHtml(error.message)}</p>
+        `;
       }
+    }
 
-      if (searchTerm) {
-        filteredEdges = filteredEdges.filter(edge => {
-          const fromNode = getNodeById(edge.fromNodeId);
-          const toNode = getNodeById(edge.toNodeId);
+    function applyFilters(records) {
+      const searchTerm = searchInput.value.trim().toLowerCase();
+      const selectedIdentityType = identityTypeFilter.value;
+      const selectedDomain = domainFilter.value;
+      const selectedCrossHub = crossHubFilter.value;
 
+      return records.filter(({ edge, fromNode, toNode }) => {
+        const isCrossHub =
+          fromNode && toNode && fromNode.domain !== toNode.domain;
+
+        if (
+          selectedIdentityType !== "all" &&
+          edge.relationshipType !== selectedIdentityType
+        ) {
+          return false;
+        }
+
+        if (
+          selectedDomain !== "all" &&
+          edge.domain !== selectedDomain
+        ) {
+          return false;
+        }
+
+        if (selectedCrossHub === "cross" && !isCrossHub) {
+          return false;
+        }
+
+        if (selectedCrossHub === "same" && isCrossHub) {
+          return false;
+        }
+
+        if (searchTerm) {
           const searchableText = [
-            edge.id,
+            edge.edgeId,
             edge.fromNodeId,
             edge.toNodeId,
             edge.relationshipType,
             edge.label,
             edge.summary,
             edge.domain,
-            getDisplayDomain(edge.domain),
             ...(edge.sourceIds || []),
-            fromNode ? fromNode.title : "",
-            fromNode ? fromNode.domain : "",
-            fromNode ? getDisplayDomain(fromNode.domain) : "",
-            fromNode ? fromNode.type : "",
-            toNode ? toNode.title : "",
-            toNode ? toNode.domain : "",
-            toNode ? getDisplayDomain(toNode.domain) : "",
-            toNode ? toNode.type : ""
-          ].join(" ").toLowerCase();
+            fromNode?.title,
+            fromNode?.domain,
+            fromNode?.nodeType,
+            toNode?.title,
+            toNode?.domain,
+            toNode?.nodeType,
+          ]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase();
 
-          return searchableText.includes(searchTerm);
-        });
-      }
+          if (!searchableText.includes(searchTerm)) {
+            return false;
+          }
+        }
 
-      renderStats(filteredEdges);
-      renderIdentityRegistry(filteredEdges);
+        return true;
+      });
     }
 
-    function getIdentityEdges() {
-      return allEdges.filter(edge =>
-        identityRelationshipTypes.includes(edge.relationshipType)
-      );
+    function clearFilters() {
+      searchInput.value = "";
+      identityTypeFilter.value = "all";
+      domainFilter.value = "all";
+      crossHubFilter.value = "all";
+      currentPage = 1;
+      closeDetail();
+      loadIdentityRegistry();
     }
 
-    function renderStats(edges) {
-      const crossHubCount = edges.filter(edge => isCrossHubEdge(edge)).length;
-      const sourcedCount = edges.filter(edge => (edge.sourceIds || []).length > 0).length;
-      const relationshipTypeCount = new Set(edges.map(edge => edge.relationshipType)).size;
-      const domainCount = new Set(edges.map(edge => getDisplayDomain(edge.domain))).size;
+    function renderStats(records) {
+      const crossHubCount = records.filter(
+        ({ fromNode, toNode }) =>
+          fromNode && toNode && fromNode.domain !== toNode.domain,
+      ).length;
 
-      document.getElementById("identityStats").innerHTML = `
+      const sourcedCount = records.filter(
+        ({ edge }) => (edge.sourceIds || []).length > 0,
+      ).length;
+
+      const relationshipTypeCount = new Set(
+        records.map(({ edge }) => edge.relationshipType),
+      ).size;
+
+      const domainCount = new Set(
+        records.map(({ edge }) => edge.domain),
+      ).size;
+
+      identityStats.innerHTML = `
         <div class="stat-card">
-          <div class="stat-number">${edges.length}</div>
-          <div class="stat-label">Visible Identity Edges</div>
+          <div class="stat-number">${records.length}</div>
+          <div class="stat-label">Matching Identity Edges</div>
         </div>
-
         <div class="stat-card">
           <div class="stat-number">${crossHubCount}</div>
           <div class="stat-label">Cross-Hub Identity</div>
         </div>
-
         <div class="stat-card">
           <div class="stat-number">${sourcedCount}</div>
           <div class="stat-label">With Sources</div>
         </div>
-
         <div class="stat-card">
           <div class="stat-number">${relationshipTypeCount}</div>
           <div class="stat-label">Identity Types</div>
         </div>
-
         <div class="stat-card">
           <div class="stat-number">${domainCount}</div>
           <div class="stat-label">Domains</div>
@@ -699,65 +835,90 @@
       `;
     }
 
-    function renderIdentityRegistry(edges) {
-      const identityRegistry = document.getElementById("identityRegistry");
-      const identityCount = document.getElementById("identityCount");
+    function renderIdentityRegistry(records) {
+      identityCount.textContent =
+        `${records.length} visible identity edge${records.length === 1 ? "" : "s"} on page ` +
+        `${currentPage} of ${totalPages}. ${totalIdentityEdges} total match.`;
 
-      identityCount.textContent = `${edges.length} identity edge${edges.length === 1 ? "" : "s"} shown`;
-
-      if (!edges.length) {
+      if (!records.length) {
         identityRegistry.innerHTML = `
-          <p class="empty">No identity edges match this search/filter combination.</p>
+          <p class="empty">No identity edges match this search and filter combination.</p>
         `;
         return;
       }
 
       identityRegistry.innerHTML = `
         <div class="identity-grid">
-          ${edges.map(edge => {
-            const fromNode = getNodeById(edge.fromNodeId);
-            const toNode = getNodeById(edge.toNodeId);
-
-            return `
-              <article class="identity-card">
-                ${renderDomainLabel(getDisplayDomain(edge.domain))}
-                <br>
-                <span class="relationship-pill">${edge.relationshipType || "relationship"}</span>
-
-                <h3>${edge.label || "Identity relationship"}</h3>
-
-                <div class="node-row">
-                  ${renderNodeBox(fromNode, edge.fromNodeId)}
-                  <div class="arrow">→</div>
-                  ${renderNodeBox(toNode, edge.toNodeId)}
-                </div>
-
-                <div class="summary">
-                  ${edge.summary || "<span class='empty'>No summary yet.</span>"}
-                </div>
-
-                <div class="meta">
-                  <strong>Edge ID:</strong> <code>${edge.id}</code>
-                </div>
-
-                <div class="meta">
-                  <strong>Cross-hub:</strong> ${isCrossHubEdge(edge) ? "Yes" : "No"}
-                </div>
-
-                <div class="meta">
-                  <strong>Source IDs:</strong>
-                </div>
-
-                ${renderSourceList(edge.sourceIds || [])}
-
-                <details>
-                  <summary>Raw Identity Edge Data</summary>
-                  <pre>${JSON.stringify(edge.raw || edge, null, 2)}</pre>
-                </details>
-              </article>
-            `;
-          }).join("")}
+          ${records
+            .map(({ edge, fromNode, toNode }) =>
+              renderIdentityCard(edge, fromNode, toNode),
+            )
+            .join("")}
         </div>
+      `;
+
+      identityRegistry
+        .querySelectorAll("[data-open-identity]")
+        .forEach((button) => {
+          button.addEventListener("click", () => {
+            openIdentity(button.dataset.openIdentity);
+          });
+        });
+
+      identityRegistry
+        .querySelectorAll("[data-open-node]")
+        .forEach((button) => {
+          button.addEventListener("click", () => {
+            openNodeInInspector(button.dataset.openNode);
+          });
+        });
+    }
+
+    function renderIdentityCard(edge, fromNode, toNode) {
+      const isCrossHub =
+        fromNode && toNode && fromNode.domain !== toNode.domain;
+
+      return `
+        <article class="identity-card">
+          ${renderDomainLabel(edge.domain)}
+          <br>
+          <span class="relationship-pill">${displayValue(edge.relationshipType, "relationship")}</span>
+
+          <h3>${displayValue(edge.label, "Identity relationship")}</h3>
+
+          <div class="node-row">
+            ${renderNodeBox(fromNode, edge.fromNodeId)}
+            <div class="arrow">→</div>
+            ${renderNodeBox(toNode, edge.toNodeId)}
+          </div>
+
+          <div class="summary">
+            ${displayValue(edge.summary, "No summary yet.")}
+          </div>
+
+          <div class="meta">
+            <strong>Edge ID:</strong>
+            <code>${escapeHtml(edge.edgeId)}</code>
+          </div>
+
+          <div class="meta">
+            <strong>Cross-hub:</strong> ${isCrossHub ? "Yes" : "No"}
+          </div>
+
+          <div class="meta">
+            <strong>Source IDs:</strong>
+          </div>
+
+          ${renderSourceList(edge.sourceIds || [])}
+
+          <button
+            class="inspect-button"
+            type="button"
+            data-open-identity="${escapeHtml(edge.edgeId)}"
+          >
+            Inspect Identity Relationship
+          </button>
+        </article>
       `;
     }
 
@@ -766,81 +927,222 @@
         return `
           <div class="node-box">
             <div class="node-title">Missing node</div>
-            <div class="meta"><code>${fallbackId}</code></div>
+            <div class="meta"><code>${escapeHtml(fallbackId)}</code></div>
           </div>
         `;
       }
 
       return `
         <div class="node-box">
-          <div class="node-title">${node.title}</div>
-          <div class="meta">${getDisplayDomain(node.domain)} · ${node.type}</div>
-          <div class="meta"><code>${node.id}</code></div>
+          <div class="node-title">${escapeHtml(node.title)}</div>
+          <div class="meta">${displayValue(node.domain)} · ${displayValue(node.nodeType)}</div>
+          <div class="meta"><code>${escapeHtml(node.nodeId)}</code></div>
+          <button
+            class="node-button"
+            type="button"
+            data-open-node="${escapeHtml(node.nodeId)}"
+          >
+            Open in Inspector
+          </button>
         </div>
       `;
     }
 
     function renderSourceList(sourceIds = []) {
       if (!sourceIds.length) {
-        return `<p class="empty">No sources yet.</p>`;
+        return '<p class="empty">No sources yet.</p>';
       }
 
       return `
         <div class="source-list">
-          ${sourceIds.map(sourceId => {
-            const source = getSourceById(sourceId);
-            const title = source
-              ? `${source.name} | ${source.type} | ${getDisplayDomain(source.domain)}`
-              : "Source ID not found in loaded registry";
-
-            return `<span class="source-chip" title="${title}">${sourceId}</span>`;
-          }).join("")}
+          ${sourceIds
+            .map(
+              (sourceId) =>
+                `<span class="source-chip">${escapeHtml(sourceId)}</span>`,
+            )
+            .join("")}
         </div>
       `;
     }
 
     function renderDomainLabel(domain = "SourceRoot") {
-      const className = domain === "SourceRoot"
-        ? "domain-source-root"
-        : domain === "BibleRoot"
-          ? "domain-bible-root"
-          : domain === "DictionaryHub"
-            ? "domain-dictionary-hub"
-            : domain === "Wiki"
-              ? "domain-wiki"
-              : "";
-
-      return `<span class="hub-label ${className}">${domain}</span>`;
+      return `<span class="hub-label">${displayValue(domain, "SourceRoot")}</span>`;
     }
 
-    function getNodeById(nodeId) {
-      return allNodes.find(node => node.id === nodeId);
-    }
-
-    function getSourceById(sourceId) {
-      return allSources.find(source => source.id === sourceId);
-    }
-
-    function isCrossHubEdge(edge) {
-      const fromNode = getNodeById(edge.fromNodeId);
-      const toNode = getNodeById(edge.toNodeId);
-
-      if (!fromNode || !toNode) {
-        return false;
+    function renderPagination() {
+      if (totalPages <= 1) {
+        pagination.innerHTML = "";
+        return;
       }
 
-      return getDisplayDomain(fromNode.domain) !== getDisplayDomain(toNode.domain);
+      pagination.innerHTML = `
+        <button id="previousPageButton" type="button" ${currentPage <= 1 ? "disabled" : ""}>
+          Previous
+        </button>
+        <span>Page ${currentPage} of ${totalPages}</span>
+        <button id="nextPageButton" type="button" ${currentPage >= totalPages ? "disabled" : ""}>
+          Next
+        </button>
+      `;
+
+      document
+        .getElementById("previousPageButton")
+        .addEventListener("click", () => {
+          if (currentPage > 1) {
+            currentPage -= 1;
+            loadIdentityRegistry();
+          }
+        });
+
+      document
+        .getElementById("nextPageButton")
+        .addEventListener("click", () => {
+          if (currentPage < totalPages) {
+            currentPage += 1;
+            loadIdentityRegistry();
+          }
+        });
     }
 
-    function getDisplayDomain(domain = "") {
-      if (domain === "WikidataRoot") {
-        return "Wiki";
+    async function openIdentity(edgeId) {
+      detailPanel.classList.add("visible");
+      detailTitle.textContent = "Loading identity relationship...";
+      detailId.textContent = edgeId;
+      detailContent.innerHTML =
+        '<p class="empty">Loading linked nodes and source provenance...</p>';
+
+      try {
+        const edge = await fetchJson(
+          `${API_BASE}/edges/${encodeURIComponent(edgeId)}`,
+        );
+
+        const [fromNode, toNode, sources] = await Promise.all([
+          fetchJson(`${API_BASE}/nodes/${encodeURIComponent(edge.fromNodeId)}`)
+            .catch(() => null),
+          fetchJson(`${API_BASE}/nodes/${encodeURIComponent(edge.toNodeId)}`)
+            .catch(() => null),
+          Promise.all(
+            (edge.sourceIds || []).map(async (sourceId) => {
+              try {
+                return await fetchJson(
+                  `${API_BASE}/sources/${encodeURIComponent(sourceId)}`,
+                );
+              } catch {
+                return {
+                  sourceId,
+                  name: sourceId,
+                  notes: "Referenced source could not be loaded.",
+                };
+              }
+            }),
+          ),
+        ]);
+
+        detailTitle.textContent =
+          edge.label || edge.relationshipType || "Identity relationship";
+        detailId.textContent = edge.edgeId;
+
+        detailContent.innerHTML = `
+          <div class="node-row">
+            ${renderNodeBox(fromNode, edge.fromNodeId)}
+            <div class="arrow">→</div>
+            ${renderNodeBox(toNode, edge.toNodeId)}
+          </div>
+
+          <div class="summary">
+            ${displayValue(edge.summary, "No identity summary.")}
+          </div>
+
+          <div class="detail-grid">
+            ${renderDetailItem("Bundle", edge.bundleId)}
+            ${renderDetailItem("Domain", edge.domain)}
+            ${renderDetailItem("Identity Type", edge.relationshipType)}
+            ${renderDetailItem("Credibility", edge.credibilityTier)}
+            ${renderDetailItem("Confidence", edge.confidence)}
+            ${renderDetailItem("Verification", edge.verificationStatus)}
+            ${renderDetailItem("Review", edge.reviewStatus)}
+            ${renderDetailItem("Support", edge.supportLevel)}
+            ${renderDetailItem("Strength", edge.relationshipStrength)}
+            ${renderDetailItem("Interpretation", edge.interpretationLevel)}
+          </div>
+
+          <h3>Source Provenance</h3>
+          ${
+            sources.length
+              ? sources.map(renderSourceCard).join("")
+              : '<p class="empty">No sources are linked to this identity relationship.</p>'
+          }
+
+          <h3>Raw Normalized Edge</h3>
+          <details>
+            <summary>View API response</summary>
+            <pre>${escapeHtml(JSON.stringify(edge, null, 2))}</pre>
+          </details>
+        `;
+
+        detailContent
+          .querySelectorAll("[data-open-node]")
+          .forEach((button) => {
+            button.addEventListener("click", () => {
+              openNodeInInspector(button.dataset.openNode);
+            });
+          });
+
+        detailPanel.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      } catch (error) {
+        detailTitle.textContent = "Could not load identity relationship";
+        detailContent.innerHTML = `
+          <p class="empty">${escapeHtml(error.message)}</p>
+        `;
       }
-
-      return domain;
     }
 
-    loadIdentityRegistry();
+    function renderDetailItem(label, value) {
+      return `
+        <div class="detail-item">
+          <span>${escapeHtml(label)}</span>
+          <strong>${displayValue(value)}</strong>
+        </div>
+      `;
+    }
+
+    function renderSourceCard(source) {
+      return `
+        <div class="linked-card">
+          <h3>${displayValue(source.name, source.sourceId)}</h3>
+          <div class="meta">
+            ${displayValue(source.sourceType, "Source")} ·
+            ${displayValue(source.publisher)}
+          </div>
+          <p>${displayValue(source.notes, "")}</p>
+          <code>${escapeHtml(source.sourceId)}</code>
+          ${
+            source.url
+              ? `<p><a href="${escapeHtml(source.url)}" target="_blank" rel="noopener">Open original source</a></p>`
+              : ""
+          }
+        </div>
+      `;
+    }
+
+    function openNodeInInspector(nodeId) {
+      const url = new URL("sourceroot-inspector.html", window.location.href);
+      url.searchParams.set("type", "node");
+      url.searchParams.set("id", nodeId);
+      window.location.href = url.toString();
+    }
+
+    function closeDetail() {
+      detailPanel.classList.remove("visible");
+      detailTitle.textContent = "Identity Detail";
+      detailId.textContent = "";
+      detailContent.innerHTML = "";
+    }
+
+    init();
   </script>
 </body>
 </html>

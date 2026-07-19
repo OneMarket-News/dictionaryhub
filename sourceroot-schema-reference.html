@@ -449,6 +449,31 @@
       font-size: 13px;
     }
 
+
+    .live-schema-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .live-schema-card {
+      border: 1px solid var(--green-line);
+      background: var(--green-soft);
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .live-schema-card h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
+
+    .live-schema-card pre {
+      max-height: 330px;
+      margin-top: 10px;
+    }
+
     @media (max-width: 950px) {
       .layout {
         grid-template-columns: 1fr;
@@ -494,18 +519,15 @@
       <h1>SourceRoot Schema Reference</h1>
 
       <div class="subtitle">
-        The current developer contract for SourceRoot knowledge objects, import
-        bundles, staging records, portable packages, inspection history,
-        controlled trust vocabularies, HistoryRoot extensions, and future backend
-        boundaries.
+        The live developer contract for SourceRoot knowledge objects, PostgreSQL imports, API responses, controlled trust vocabularies, HistoryRoot extensions, and legacy package-lifecycle records.
       </div>
 
       <nav class="top-nav">
         <a href="sourceroot.html">SourceRoot Home</a>
         <a href="sourceroot-import-preview.html">Import Preview</a>
-        <a href="sourceroot-lifecycle-tests.html">Lifecycle Tests</a>
-        <a href="sourceroot-staged-bundle-registry.html">Staged Bundles</a>
-        <a href="sourceroot-package-inspector.html">Package Inspector</a>
+        <a href="sourceroot-api-preview.html">API Explorer</a>
+        <a href="sourceroot-import-bundle-registry.html">Imported Bundles</a>
+        <a href="sourceroot-inspector.html">Inspector</a>
         <a href="historyroot.html">HistoryRoot</a>
       </nav>
     </div>
@@ -525,6 +547,7 @@
 
       <div class="side-title">Core knowledge</div>
       <nav class="side-nav">
+        <a href="#live-api-examples">Live API Examples</a>
         <a href="#node-schema">Node</a>
         <a href="#assertion-schema">Assertion</a>
         <a href="#edge-schema">Edge</a>
@@ -561,17 +584,14 @@
         <h2>Current Contract</h2>
 
         <p class="overview">
-          SourceRoot currently uses a browser-based JSON contract. The core
-          knowledge graph is made of nodes, assertions, edges, sources, and
-          revisions. Bundles move through validation, staging, hashing, package
-          export, inspection, restoration, and embedded revalidation.
+          SourceRoot now uses a live API and PostgreSQL-backed persistence contract. The core knowledge graph remains nodes, assertions, edges, sources, and revisions. Bundles move through backend validation, normalized import, database storage, retrieval, search, and inspection.
         </p>
 
         <div class="status-row">
           <span class="pill current">Current reference: 0.1</span>
           <span class="pill current">Package version: 1.0.0</span>
           <span class="pill current">HistoryRoot import validated</span>
-          <span class="pill prototype">Browser-local prototype</span>
+          <span id="apiContractStatus" class="pill prototype">Checking live API</span>
         </div>
 
         <div class="summary-grid">
@@ -581,26 +601,39 @@
           </div>
 
           <div class="summary-card">
-            <div class="summary-number">5</div>
-            <div class="summary-label">Lifecycle record types</div>
+            <div id="liveBundleCount" class="summary-number">—</div>
+            <div class="summary-label">Imported bundles</div>
           </div>
 
           <div class="summary-card">
-            <div class="summary-number">8</div>
-            <div class="summary-label">Controlled vocabulary groups</div>
+            <div id="liveObjectCount" class="summary-number">—</div>
+            <div class="summary-label">Database objects</div>
           </div>
 
           <div class="summary-card">
-            <div class="summary-number">2</div>
-            <div class="summary-label">Browser storage namespaces</div>
+            <div id="liveApiCount" class="summary-number">10+</div>
+            <div class="summary-label">Live API routes</div>
           </div>
         </div>
 
         <div class="notice warn">
-          <strong>Important:</strong> this page documents the current working
-          contract. Fields marked optional may become required when the backend
-          and formal schema migrations are introduced.
+          <strong>Important:</strong> this page documents both the current live normalized API contract and older browser-local package records. Legacy lifecycle sections are retained for compatibility and historical reference.
         </div>
+      </section>
+
+      <section id="live-api-examples" class="schema-section" data-search="live api examples normalized postgres node assertion edge source revision">
+        <h2>Live Normalized API Examples</h2>
+
+        <p class="overview">
+          These examples are loaded directly from the running SourceRoot backend.
+          They show the current normalized response field names returned by PostgreSQL-backed endpoints.
+        </p>
+
+        <div id="liveSchemaStatus" class="notice info">
+          Checking <code>http://localhost:3000</code>...
+        </div>
+
+        <div id="liveSchemaGrid" class="live-schema-grid"></div>
       </section>
 
       <section id="node-schema" class="schema-section" data-search="node title type domain summary sourceids metadata status core entity">
@@ -1461,27 +1494,31 @@
 
         <h3>First API boundary</h3>
 
-        <pre>POST /validate
-POST /bundles
-GET  /bundles/:bundleId
-POST /bundles/:bundleId/stage
-POST /packages
-GET  /packages/:packageId
-POST /packages/:packageId/inspections
-POST /packages/:packageId/restore
-GET  /nodes/:nodeId</pre>
+        <pre>GET  /health
+POST /api/v1/validate
+POST /api/v1/import
+GET  /api/v1/import
+GET  /api/v1/import/:bundleId
+GET  /api/v1/nodes
+GET  /api/v1/nodes/:nodeId
+GET  /api/v1/nodes/:nodeId/assertions
+GET  /api/v1/nodes/:nodeId/edges
+GET  /api/v1/assertions
+GET  /api/v1/edges
+GET  /api/v1/sources
+GET  /api/v1/revisions
+GET  /api/v1/search?q=...
+GET  /api/v1/bundles/:bundleId/{nodes|assertions|edges|sources|revisions}</pre>
 
         <div class="notice info">
-          The safest backend transition is to preserve the current JSON objects
-          at the API boundary first, then normalize database storage behind the
-          API. That avoids rewriting every existing interface at once.
+          That backend transition is now implemented: import bundles retain their transport shape, while PostgreSQL stores normalized records behind stable API endpoints.
         </div>
       </section>
     </main>
   </div>
 
   <footer>
-    SourceRoot Schema Reference · Current browser contract before backend persistence.
+    SourceRoot Schema Reference · Live Express and PostgreSQL contract with legacy browser-lifecycle documentation.
   </footer>
 
   <script>
@@ -1512,6 +1549,112 @@ GET  /nodes/:nodeId</pre>
         }
       });
     });
+
+
+    const API_ORIGIN = "http://localhost:3000";
+    const API_BASE = `${API_ORIGIN}/api/v1`;
+
+    async function fetchLiveJson(url) {
+      const response = await fetch(url, {
+        headers: { Accept: "application/json" }
+      });
+
+      const body = await response.json();
+
+      if (!response.ok) {
+        throw new Error(body.message || `HTTP ${response.status}`);
+      }
+
+      return body;
+    }
+
+    function liveEscape(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function liveRecordCard(title, record) {
+      return `
+        <article class="live-schema-card">
+          <h3>${liveEscape(title)}</h3>
+          <div class="meta">Live response example</div>
+          <pre>${liveEscape(JSON.stringify(record, null, 2))}</pre>
+        </article>
+      `;
+    }
+
+    async function loadLiveSchemaExamples() {
+      const status = document.getElementById("liveSchemaStatus");
+      const grid = document.getElementById("liveSchemaGrid");
+      const contractStatus = document.getElementById("apiContractStatus");
+
+      try {
+        const [
+          health,
+          bundles,
+          nodes,
+          assertions,
+          edges,
+          sources,
+          revisions
+        ] = await Promise.all([
+          fetchLiveJson(`${API_ORIGIN}/health`),
+          fetchLiveJson(`${API_BASE}/import?page=1&limit=1`),
+          fetchLiveJson(`${API_BASE}/nodes?page=1&limit=1`),
+          fetchLiveJson(`${API_BASE}/assertions?page=1&limit=1`),
+          fetchLiveJson(`${API_BASE}/edges?page=1&limit=1`),
+          fetchLiveJson(`${API_BASE}/sources?page=1&limit=1`),
+          fetchLiveJson(`${API_BASE}/revisions?page=1&limit=1`)
+        ]);
+
+        const examples = [
+          ["Node", (nodes.nodes || [])[0]],
+          ["Assertion", (assertions.assertions || [])[0]],
+          ["Edge", (edges.edges || [])[0]],
+          ["Source", (sources.sources || [])[0]],
+          ["Revision", (revisions.revisions || [])[0]]
+        ].filter(([, record]) => record);
+
+        const totalObjects =
+          Number(nodes.total || 0) +
+          Number(assertions.total || 0) +
+          Number(edges.total || 0) +
+          Number(sources.total || 0) +
+          Number(revisions.total || 0);
+
+        document.getElementById("liveBundleCount").textContent =
+          Number(bundles.total || 0);
+        document.getElementById("liveObjectCount").textContent =
+          totalObjects;
+
+        contractStatus.textContent = "Live API connected";
+        contractStatus.classList.remove("prototype");
+        contractStatus.classList.add("current");
+
+        status.className = "notice good";
+        status.innerHTML = `
+          <strong>${liveEscape(health.service || "SourceRoot backend")} connected.</strong>
+          Examples below were loaded from the current database.
+        `;
+
+        grid.innerHTML = examples.length
+          ? examples.map(([title, record]) => liveRecordCard(title, record)).join("")
+          : '<div class="notice warn">The API is connected, but no normalized records were returned.</div>';
+      } catch (error) {
+        status.className = "notice warn";
+        status.innerHTML = `
+          <strong>Live API unavailable.</strong>
+          ${liveEscape(error.message)} Start the backend with <code>npm.cmd run dev</code>.
+        `;
+        grid.innerHTML = "";
+      }
+    }
+
+    loadLiveSchemaExamples();
 
     function filterSections() {
       const query = searchInput.value.trim().toLowerCase();

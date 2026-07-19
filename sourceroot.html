@@ -273,6 +273,88 @@
       font-size: 13px;
     }
 
+
+    .live-overview {
+      background: #fffdf8;
+      border: 1px solid #eee2c7;
+      border-radius: 16px;
+      padding: 18px;
+      margin-top: 18px;
+    }
+
+    .live-status-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .connection-pill {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 7px 11px;
+      font-size: 12px;
+      font-weight: bold;
+      background: #fffbeb;
+      color: #92400e;
+      border: 1px solid #fde68a;
+    }
+
+    .connection-pill.connected {
+      background: #dcfce7;
+      color: #166534;
+      border-color: #86efac;
+    }
+
+    .live-count-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .live-count-card {
+      background: white;
+      border: 1px solid #ddd6c8;
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .live-count-number {
+      font-size: 25px;
+      font-weight: bold;
+    }
+
+    .live-count-label {
+      margin-top: 3px;
+      color: #6b7280;
+      font-size: 12px;
+    }
+
+    .bundle-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .bundle-row {
+      background: white;
+      border: 1px solid #eee2c7;
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .bundle-row strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .bundle-row span {
+      color: #6b7280;
+      font-size: 12px;
+    }
+
     @media (max-width: 700px) {
       header h1 {
         font-size: 30px;
@@ -299,8 +381,7 @@
       <h1>SourceRoot</h1>
 
       <div class="subtitle">
-        A prototype provenance engine for connecting knowledge across hubs, sources, assertions, relationships, credibility, identity, revisions, and import validation.
-        SourceRoot turns separate knowledge systems into one inspectable, source-aware graph.
+        A live provenance engine connecting imported knowledge, claims, relationships, sources, credibility, identity, revisions, and validation through PostgreSQL and the SourceRoot API. SourceRoot turns separate knowledge systems into one inspectable, source-aware graph.
       </div>
 
       <div class="badge-row">
@@ -321,31 +402,51 @@
 
   <main>
     <section class="panel">
-      <h2>Prototype Dashboard</h2>
+      <h2>Live SourceRoot Dashboard</h2>
 
       <p class="overview-text">
-        SourceRoot is the shared engine layer under DictionaryHub, BibleRoot, Wiki integrations, and future knowledge hubs.
-        It separates concepts, assertions, relationships, sources, credibility metadata, identity resolution, revisions, and import validation so knowledge can be inspected, verified, connected, trusted, and reused.
+        SourceRoot is now operating as a live engine layer beneath DictionaryHub, BibleRoot, HistoryRoot, external integrations, and future knowledge hubs. Bundles can be validated, imported into PostgreSQL, queried through the API, and inspected across the live registry pages.
       </p>
+
+      <div class="live-overview">
+        <div class="live-status-row">
+          <div>
+            <strong>Live Backend Overview</strong>
+            <div class="status-note">
+              Counts below are loaded directly from the SourceRoot API.
+            </div>
+          </div>
+
+          <span id="connectionPill" class="connection-pill">Checking API...</span>
+        </div>
+
+        <div id="liveCountGrid" class="live-count-grid">
+          <div class="live-count-card">
+            <div class="live-count-number">—</div>
+            <div class="live-count-label">Loading database counts</div>
+          </div>
+        </div>
+
+        <div id="recentBundleList" class="bundle-list"></div>
+      </div>
 
       <section class="hero-demo-panel">
         <div>
           <span class="card-label label-source-root">Main MVP Demo</span>
-          <h2>Start the Light MVP Demo</h2>
+          <h2>Start the Live SourceRoot Workflow</h2>
           <p>
-            Follow the main SourceRoot demo path to see how one concept — <strong>light</strong> —
-            can be validated, inspected, sourced, connected, and reviewed before it becomes trusted.
+            Load a bundle, validate it through the backend, import it into PostgreSQL, and inspect its nodes, assertions, relationships, sources, identity links, and revisions.
           </p>
 
           <p>
-            This demo proves the core SourceRoot model:
+            This live workflow proves the core SourceRoot model:
             <strong>Node → Assertion → Edge → Source → Credibility → Identity → Revision → Import Validation</strong>.
           </p>
         </div>
 
         <div class="hero-demo-actions">
           <a class="primary-demo-button" href="sourceroot-import-preview.html">
-            Start Demo: Validate Light MVP Bundle
+            Validate and Import a Bundle
           </a>
 
           <a class="secondary-demo-button" href="sourceroot-mvp-walkthrough.html">
@@ -383,13 +484,13 @@
           <span class="card-label label-source-root">SourceRoot</span>
           <h3>Import Bundle Registry</h3>
           <p>
-            Browse available import bundles, review validation status, inspect object counts, and open related demos or API examples.
+            Browse bundles imported into PostgreSQL, inspect live object counts, and drill into their normalized nodes, assertions, edges, sources, and revisions.
           </p>
         </a>
 
         <a class="dashboard-card" href="sourceroot-staged-bundle-registry.html">
   <span class="card-label label-source-root">SourceRoot</span>
-  <h3>Staged Bundles Registry</h3>
+  <h3>Legacy Staged Bundles</h3>
   <p>
     Review bundles staged in this browser, inspect staged object counts and warnings, reopen bundles in Import Preview, or remove staged records.
   </p>
@@ -397,7 +498,7 @@
 
         <a class="dashboard-card" href="sourceroot-package-inspector.html">
           <span class="card-label label-source-root">SourceRoot</span>
-          <h3>Package Inspector</h3>
+          <h3>Legacy Package Inspector</h3>
           <p>
             Open self-contained staged packages, verify embedded bundle integrity, inspect package contents, and restore approved records to the staged registry.
           </p>
@@ -405,7 +506,7 @@
 
         <a class="dashboard-card" href="sourceroot-lifecycle-event-registry.html">
           <span class="card-label label-source-root">SourceRoot</span>
-          <h3>Lifecycle Event Registry</h3>
+          <h3>Legacy Lifecycle Events</h3>
           <p>
             Review append-only validation, staging, package export, verification,
             inspection, restoration, revalidation, and record-removal history.
@@ -414,7 +515,7 @@
 
         <a class="dashboard-card" href="sourceroot-package-registry.html">
           <span class="card-label label-source-root">SourceRoot</span>
-          <h3>Package Registry</h3>
+          <h3>Legacy Package Registry</h3>
           <p>
             Review saved package inspections, integrity results, approval decisions, issues, hashes, and package inspection history.
           </p>
@@ -480,7 +581,7 @@
           <span class="card-label label-source-root">SourceRoot</span>
           <h3>API Preview</h3>
           <p>
-            Preview the future SourceRoot API structure for nodes, assertions, edges, relationship credibility, sources, search, citations, and revisions.
+            Run live GET and POST requests against the SourceRoot backend and inspect formatted JSON responses.
           </p>
         </a>
 
@@ -488,7 +589,7 @@
           <span class="card-label label-source-root">SourceRoot</span>
           <h3>Import Preview</h3>
           <p>
-            Load and validate SourceRoot import bundles before adding larger datasets to the system. Checks nodes, assertions, edges, sources, revisions, credibility metadata, and broken references.
+            Load registered or local bundles, validate them through the backend, and import approved records directly into PostgreSQL.
           </p>
         </a>
 
@@ -587,7 +688,7 @@ DictionaryHub / BibleRoot / Wiki / Future Hubs</code>
     </section>
 
     <section class="panel">
-      <h2>Prototype Status</h2>
+      <h2>Live System Status</h2>
 
       <div class="status-grid">
         <div class="status-card">
@@ -616,13 +717,13 @@ DictionaryHub / BibleRoot / Wiki / Future Hubs</code>
         </div>
 
         <div class="status-card">
-          <div class="status-title">API Preview</div>
-          <div class="status-note">Static API contract now includes source, assertion, and relationship credibility.</div>
+          <div class="status-title">API Explorer</div>
+          <div class="status-note">Live request explorer for nodes, assertions, edges, sources, revisions, search, imports, and validation.</div>
         </div>
 
         <div class="status-card">
-          <div class="status-title">Import Preview</div>
-          <div class="status-note">Working first-pass import validator for SourceRoot bundles with errors, warnings, and readiness status.</div>
+          <div class="status-title">Import Workflow</div>
+          <div class="status-note">Live backend validation and PostgreSQL import from registered or locally uploaded JSON bundles.</div>
         </div>
 
         <div class="status-card">
@@ -749,7 +850,7 @@ DictionaryHub / BibleRoot / Wiki / Future Hubs</code>
         <div class="status-card">
           <div class="status-title">API Proof</div>
           <div class="status-note">
-            Static API examples show node retrieval, import validation, and citation-style answer responses with provenance metadata.
+            The API Explorer runs live backend requests while preserving roadmap examples for future citation and trust endpoints.
           </div>
         </div>
       </div>
@@ -790,30 +891,139 @@ DictionaryHub / BibleRoot / Wiki / Future Hubs</code>
 
       <div class="next-list">
         <div class="next-item">
-          <strong>1. Polish public demo copy</strong>
-          Tighten the landing page, walkthrough, and dashboard language so a stranger understands SourceRoot in under two minutes.
+          <strong>1. Add authentication and permissions</strong>
+          Introduce users, roles, protected imports, and review permissions before opening write access beyond the local development environment.
         </div>
 
         <div class="next-item">
-          <strong>2. Add schema documentation</strong>
-          Document the current SourceRoot object shapes for nodes, assertions, edges, sources, revisions, import bundles, and API examples.
+          <strong>2. Add review and revision workflows</strong>
+          Allow authorized reviewers to approve, reject, revise, and annotate assertions, edges, sources, and identity mappings.
         </div>
 
         <div class="next-item">
-          <strong>3. Add richer real source examples</strong>
-          Replace prototype references with stronger public-domain or reusable source records where possible.
+          <strong>3. Connect domain applications</strong>
+          Move DictionaryHub, BibleRoot, and HistoryRoot from static datasets toward the shared SourceRoot API and database.
         </div>
 
         <div class="next-item">
-          <strong>4. Prepare backend prototype path</strong>
-          Plan the first live API version for validation, node retrieval, source lookup, and citation-ready responses.
+          <strong>4. Prepare deployment</strong>
+          Configure hosted PostgreSQL, environment variables, production CORS, API hosting, monitoring, and backup strategy.
         </div>
       </div>
     </section>
   </main>
 
   <footer>
-    SourceRoot prototype dashboard. Current hubs: DictionaryHub, BibleRoot, Wiki. Core model: Node → Assertion → Edge → Source → Credibility → Identity → Revision → Import Validation.
+    SourceRoot live development dashboard. Backend: Express + PostgreSQL. Core model: Node → Assertion → Edge → Source → Credibility → Identity → Revision → Validation → Import.
   </footer>
+
+  <script>
+    const SOURCE_ROOT_API = "http://localhost:3000/api/v1";
+    const SOURCE_ROOT_ORIGIN = "http://localhost:3000";
+
+    const connectionPill = document.getElementById("connectionPill");
+    const liveCountGrid = document.getElementById("liveCountGrid");
+    const recentBundleList = document.getElementById("recentBundleList");
+
+    async function dashboardFetch(url) {
+      const response = await fetch(url, {
+        headers: { Accept: "application/json" }
+      });
+
+      const body = await response.json();
+
+      if (!response.ok) {
+        throw new Error(body.message || `HTTP ${response.status}`);
+      }
+
+      return body;
+    }
+
+    function countCard(value, label) {
+      return `
+        <div class="live-count-card">
+          <div class="live-count-number">${Number(value || 0)}</div>
+          <div class="live-count-label">${label}</div>
+        </div>
+      `;
+    }
+
+    function dashboardEscape(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    async function loadLiveDashboard() {
+      try {
+        const [
+          health,
+          bundles,
+          nodes,
+          assertions,
+          edges,
+          sources,
+          revisions
+        ] = await Promise.all([
+          dashboardFetch(`${SOURCE_ROOT_ORIGIN}/health`),
+          dashboardFetch(`${SOURCE_ROOT_API}/import?page=1&limit=5`),
+          dashboardFetch(`${SOURCE_ROOT_API}/nodes?page=1&limit=1`),
+          dashboardFetch(`${SOURCE_ROOT_API}/assertions?page=1&limit=1`),
+          dashboardFetch(`${SOURCE_ROOT_API}/edges?page=1&limit=1`),
+          dashboardFetch(`${SOURCE_ROOT_API}/sources?page=1&limit=1`),
+          dashboardFetch(`${SOURCE_ROOT_API}/revisions?page=1&limit=1`)
+        ]);
+
+        connectionPill.textContent =
+          `${health.service || "SourceRoot backend"} connected`;
+        connectionPill.classList.add("connected");
+
+        liveCountGrid.innerHTML = [
+          countCard(bundles.total, "Imported Bundles"),
+          countCard(nodes.total, "Nodes"),
+          countCard(assertions.total, "Assertions"),
+          countCard(edges.total, "Edges"),
+          countCard(sources.total, "Sources"),
+          countCard(revisions.total, "Revisions")
+        ].join("");
+
+        const importedBundles = bundles.bundles || [];
+
+        recentBundleList.innerHTML = importedBundles.length
+          ? `
+              <strong>Recently Imported Bundles</strong>
+              ${importedBundles.map((bundle) => `
+                <div class="bundle-row">
+                  <strong>${dashboardEscape(bundle.bundleId)}</strong>
+                  <span>
+                    ${dashboardEscape(bundle.domain || "Domain not listed")} ·
+                    ${dashboardEscape(bundle.version || "Version not listed")} ·
+                    ${dashboardEscape(bundle.updatedAt || bundle.createdAt || "")}
+                  </span>
+                </div>
+              `).join("")}
+            `
+          : '<div class="status-note">No imported bundles were returned.</div>';
+      } catch (error) {
+        connectionPill.textContent = "SourceRoot API offline";
+        liveCountGrid.innerHTML = `
+          <div class="live-count-card">
+            <div class="live-count-number">!</div>
+            <div class="live-count-label">
+              Start the backend with npm.cmd run dev
+            </div>
+          </div>
+        `;
+        recentBundleList.innerHTML =
+          `<div class="status-note">${dashboardEscape(error.message)}</div>`;
+      }
+    }
+
+    loadLiveDashboard();
+  </script>
+
 </body>
 </html>

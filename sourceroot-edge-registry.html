@@ -304,6 +304,109 @@
       line-height: 1.5;
     }
 
+
+    .api-status {
+      background: #fff8e6;
+      border: 1px solid #ead59a;
+      border-radius: 12px;
+      padding: 12px;
+      margin-top: 14px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .pagination {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .pagination button {
+      border: 1px solid #111827;
+      background: #111827;
+      color: white;
+      border-radius: 10px;
+      padding: 9px 12px;
+      cursor: pointer;
+    }
+
+    .pagination button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .inspect-button,
+    .node-action {
+      border: 1px solid #cfc7b8;
+      background: #fff8e6;
+      color: #1f2933;
+      border-radius: 9px;
+      padding: 7px 9px;
+      cursor: pointer;
+      font-size: 12px;
+      margin-top: 7px;
+    }
+
+    .detail-panel {
+      display: none;
+    }
+
+    .detail-panel.visible {
+      display: block;
+    }
+
+    .detail-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .detail-header h2 {
+      margin: 0 0 6px;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 10px;
+      margin: 14px 0;
+    }
+
+    .detail-item {
+      background: #fffdf8;
+      border: 1px solid #eee2c7;
+      border-radius: 12px;
+      padding: 10px;
+    }
+
+    .detail-item span {
+      display: block;
+      color: #6b7280;
+      font-size: 11px;
+      margin-bottom: 4px;
+    }
+
+    .detail-item strong {
+      font-size: 13px;
+      word-break: break-word;
+    }
+
+    .linked-card {
+      background: #fffdf8;
+      border: 1px solid #eee2c7;
+      border-radius: 14px;
+      padding: 14px;
+      margin-top: 10px;
+    }
+
+    .linked-card h3 {
+      margin: 0 0 6px;
+    }
+
     @media (max-width: 1100px) {
       .controls {
         grid-template-columns: 1fr;
@@ -320,8 +423,7 @@
   <header>
     <h1>SourceRoot Edge Registry</h1>
     <div class="subtitle">
-      Master relationship view for SourceRoot. Inspect every edge across DictionaryHub, BibleRoot, Wiki, and cross-hub SourceRoot connections.
-      Relationships now include credibility, verification, support, strength, and interpretation metadata.
+      Live relationship registry backed by PostgreSQL through the SourceRoot API. Inspect normalized edges, linked nodes, trust metadata, source provenance, and raw API records.
     </div>
 
     <div class="top-links">
@@ -373,6 +475,7 @@
         </button>
       </div>
 
+      <div id="apiStatus" class="api-status">Checking SourceRoot API...</div>
       <div id="registryStats" class="stat-grid"></div>
       <div id="edgeCount" class="registry-count"></div>
       <div id="warnings"></div>
@@ -382,396 +485,427 @@
       <div id="edgeRegistry" class="edge-table-wrap">
         Loading edge registry...
       </div>
+      <div id="pagination" class="pagination"></div>
+    </section>
+
+    <section id="detailPanel" class="panel detail-panel">
+      <div class="detail-header">
+        <div>
+          <h2 id="detailTitle">Edge Detail</h2>
+          <div id="detailId" class="meta"></div>
+        </div>
+
+        <button id="closeDetailButton" class="clear-button" type="button">
+          Close
+        </button>
+      </div>
+
+      <div id="detailContent"></div>
     </section>
   </main>
 
   <script type="module">
-    import { adaptDictionaryConcepts } from "./engine/adapters/dictionaryAdapter.js";
-    import { adaptBibleNodes } from "./engine/adapters/bibleAdapter.js";
-    import { combineNodes } from "./engine/sourceRootEngine.js";
+    const API_BASE = "http://localhost:3000/api/v1";
+    const PAGE_LIMIT = 10;
 
-    import {
-      adaptWikidataNodes,
-      adaptWikidataEdges,
-      adaptWikidataSources
-    } from "./engine/adapters/wikidataAdapter.js";
+    let currentPage = 1;
+    let totalPages = 1;
+    let totalEdges = 0;
+    let currentEdges = [];
+    let searchTimer = null;
 
-    let allNodes = [];
-    let allEdges = [];
-    let allSources = [];
+    const apiStatus = document.getElementById("apiStatus");
+    const searchInput = document.getElementById("searchInput");
+    const domainFilter = document.getElementById("domainFilter");
+    const relationshipFilter = document.getElementById("relationshipFilter");
+    const crossHubFilter = document.getElementById("crossHubFilter");
+    const credibilityFilter = document.getElementById("credibilityFilter");
+    const verificationFilter = document.getElementById("verificationFilter");
+    const clearFiltersButton = document.getElementById("clearFiltersButton");
+    const registryStats = document.getElementById("registryStats");
+    const edgeCount = document.getElementById("edgeCount");
+    const warnings = document.getElementById("warnings");
+    const edgeRegistry = document.getElementById("edgeRegistry");
+    const pagination = document.getElementById("pagination");
+    const detailPanel = document.getElementById("detailPanel");
+    const detailTitle = document.getElementById("detailTitle");
+    const detailId = document.getElementById("detailId");
+    const detailContent = document.getElementById("detailContent");
+    const closeDetailButton = document.getElementById("closeDetailButton");
 
-    async function loadEdgeRegistry() {
+    async function fetchJson(url) {
+      const response = await fetch(url, {
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
+      let body;
+
       try {
-        const [
-          bibleNodesResponse,
-          bibleEdgesResponse,
-          bibleSourcesResponse,
-          dictionaryConceptsResponse,
-          dictionarySourcesResponse,
-          crossHubEdgesResponse,
-          wikidataNodesResponse,
-          wikidataEdgesResponse,
-          wikidataSourcesResponse
-        ] = await Promise.all([
-          fetch("data/bible-root-nodes.json"),
-          fetch("data/bible-root-edges.json"),
-          fetch("data/bible-root-sources.json"),
-          fetch("data/nodes-v2-root.json"),
-          fetch("data/sources-v2.json"),
-          fetch("data/sourceroot-cross-hub-edges.json"),
-          fetch("data/wikidata-root-nodes.json"),
-          fetch("data/wikidata-root-edges.json"),
-          fetch("data/wikidata-root-sources.json")
-        ]);
-
-        const bibleNodesRaw = await bibleNodesResponse.json();
-        const bibleEdgesRaw = await bibleEdgesResponse.json();
-        const bibleSourcesRaw = await bibleSourcesResponse.json();
-        const dictionaryConceptsRaw = await dictionaryConceptsResponse.json();
-        const dictionarySourcesRaw = await dictionarySourcesResponse.json();
-        const crossHubEdgesRaw = await crossHubEdgesResponse.json();
-        const wikidataNodesRaw = await wikidataNodesResponse.json();
-        const wikidataEdgesRaw = await wikidataEdgesResponse.json();
-        const wikidataSourcesRaw = await wikidataSourcesResponse.json();
-
-        const bibleNodes = adaptBibleNodes(bibleNodesRaw);
-        const dictionaryNodes = adaptDictionaryConcepts(dictionaryConceptsRaw);
-        const wikidataNodes = adaptWikidataNodes(wikidataNodesRaw);
-
-        allNodes = combineNodes(
-          bibleNodes,
-          dictionaryNodes,
-          wikidataNodes
-        );
-
-        allEdges = [
-          ...adaptBibleEdges(bibleEdgesRaw),
-          ...adaptDictionaryEdges(dictionaryConceptsRaw),
-          ...adaptCrossHubEdges(crossHubEdgesRaw),
-          ...adaptWikidataEdges(wikidataEdgesRaw).map(edge => ({
-            ...edge,
-            domain: "Wiki"
-          }))
-        ];
-
-        allSources = [
-          ...adaptBibleSources(bibleSourcesRaw),
-          ...adaptDictionarySources(dictionarySourcesRaw),
-          ...adaptWikidataSources(wikidataSourcesRaw)
-        ];
-
-        populateFilters();
-        renderStats(allEdges);
-        renderWarnings();
-        applyFilters();
-
-        document.getElementById("searchInput").addEventListener("input", applyFilters);
-        document.getElementById("domainFilter").addEventListener("change", applyFilters);
-        document.getElementById("relationshipFilter").addEventListener("change", applyFilters);
-        document.getElementById("crossHubFilter").addEventListener("change", applyFilters);
-        document.getElementById("credibilityFilter").addEventListener("change", applyFilters);
-        document.getElementById("verificationFilter").addEventListener("change", applyFilters);
-
-        document.getElementById("clearFiltersButton").addEventListener("click", () => {
-          document.getElementById("searchInput").value = "";
-          document.getElementById("domainFilter").value = "all";
-          document.getElementById("relationshipFilter").value = "all";
-          document.getElementById("crossHubFilter").value = "all";
-          document.getElementById("credibilityFilter").value = "all";
-          document.getElementById("verificationFilter").value = "all";
-          applyFilters();
-        });
-
-      } catch (error) {
-        document.getElementById("edgeRegistry").innerHTML = `
-          <p class="empty">Could not load edge registry. Check file paths and browser console.</p>
-        `;
-        console.error(error);
+        body = await response.json();
+      } catch {
+        body = {};
       }
+
+      if (!response.ok) {
+        throw new Error(
+          body.message ||
+          `Request failed with HTTP ${response.status}.`,
+        );
+      }
+
+      return body;
     }
 
-    function adaptBibleEdges(edges = []) {
-      return edges.map(edge => ({
-        ...edge,
-        fromNodeId: `bible-${edge.fromNodeId}`,
-        toNodeId: `bible-${edge.toNodeId}`,
-        relationshipType: edge.relationshipType || edge.type || "RELATED_TO",
-        label: edge.label || edge.relationshipType || edge.type || "related to",
-        summary: edge.summary || edge.explanation || "",
-        sourceIds: edge.sourceIds || [],
-
-        credibilityTier: edge.credibilityTier || "medium",
-        confidence: edge.confidence || "moderate",
-        verificationStatus: edge.verificationStatus || "interpretive",
-        reviewStatus: edge.reviewStatus || "needs-review",
-        supportLevel: edge.supportLevel || "contextual",
-        relationshipStrength: edge.relationshipStrength || "contextual",
-        interpretationLevel: edge.interpretationLevel || "medium",
-
-        domain: "BibleRoot",
-        raw: edge
-      }));
+    function escapeHtml(value = "") {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
     }
 
-    function adaptDictionaryEdges(concepts = []) {
-      const edges = [];
+    function displayValue(value, fallback = "Not listed") {
+      return value === null || value === undefined || value === ""
+        ? fallback
+        : escapeHtml(value);
+    }
 
-      concepts.forEach(concept => {
-        (concept.relationships || []).forEach((relationship, index) => {
-          edges.push({
-            id: `dictionary-edge-${concept.id}-${relationship.target}-${index}`,
-            fromNodeId: `dictionary-${concept.id}`,
-            toNodeId: `dictionary-${relationship.target}`,
-            relationshipType: relationship.type || "RELATED_TO",
-            label: relationship.direction || relationship.type || "related to",
-            summary: relationship.explanation || relationship.bridge || "",
-            sourceIds: relationship.sourceIds || [],
+    async function init() {
+      bindEvents();
+      await checkApi();
+      await populateFilters();
+      await loadEdges();
+    }
 
-            credibilityTier: relationship.credibilityTier || "high",
-            confidence: relationship.confidence || "strong",
-            verificationStatus: relationship.verificationStatus || "source-backed",
-            reviewStatus: relationship.reviewStatus || "reviewed",
-            supportLevel: relationship.supportLevel || "derived",
-            relationshipStrength: relationship.relationshipStrength || "strong",
-            interpretationLevel: relationship.interpretationLevel || "low",
+    function bindEvents() {
+      searchInput.addEventListener("input", () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+          currentPage = 1;
+          loadEdges();
+        }, 300);
+      });
 
-            domain: "DictionaryHub",
-            raw: relationship
-          });
+      [
+        domainFilter,
+        relationshipFilter,
+        crossHubFilter,
+        credibilityFilter,
+        verificationFilter,
+      ].forEach((control) => {
+        control.addEventListener("change", () => {
+          currentPage = 1;
+          loadEdges();
         });
       });
 
-      return edges;
+      clearFiltersButton.addEventListener("click", clearFilters);
+      closeDetailButton.addEventListener("click", closeDetail);
     }
 
-    function adaptCrossHubEdges(edges = []) {
-      return edges.map(edge => ({
-        id: edge.id,
-        fromNodeId: edge.fromNodeId,
-        toNodeId: edge.toNodeId,
-        relationshipType: edge.relationshipType || edge.type || "CROSS_HUB_RELATIONSHIP",
-        label: edge.label || edge.relationshipType || "relates to",
-        summary: edge.summary || edge.explanation || "",
-        sourceIds: edge.sourceIds || [],
+    async function checkApi() {
+      try {
+        const health = await fetchJson("http://localhost:3000/health");
 
-        credibilityTier: edge.credibilityTier || "medium",
-        confidence: edge.confidence || "moderate",
-        verificationStatus: edge.verificationStatus || "inferred",
-        reviewStatus: edge.reviewStatus || "needs-review",
-        supportLevel: edge.supportLevel || "contextual",
-        relationshipStrength: edge.relationshipStrength || "contextual",
-        interpretationLevel: edge.interpretationLevel || "medium",
-
-        domain: edge.domain || "SourceRoot",
-        raw: edge
-      }));
+        apiStatus.innerHTML = `
+          <strong>SourceRoot API: Connected</strong><br>
+          Service: ${displayValue(health.service, "SourceRoot backend")} ·
+          Status: ${displayValue(health.status, "available")} ·
+          Endpoint: <code>${API_BASE}/edges</code>
+        `;
+      } catch (error) {
+        apiStatus.innerHTML = `
+          <strong>SourceRoot API: Offline</strong><br>
+          ${escapeHtml(error.message)}<br>
+          Start the backend with <code>npm.cmd run dev</code>.
+        `;
+      }
     }
 
-    function adaptBibleSources(sources = []) {
-      return sources.map(source => ({
-        id: source.id,
-        name: source.name || source.title || source.id,
-        type: source.type || "BibleRoot Source",
-        domain: "BibleRoot",
-        qualityTier: source.qualityTier || source.tier || "Working Source",
-        credibilityTier: source.credibilityTier || "",
-        verificationStatus: source.verificationStatus || "",
-        licenseStatus: source.licenseStatus || "",
-        reviewStatus: source.reviewStatus || "",
-        url: source.url || "",
-        notes: source.notes || source.description || "",
-        raw: source
-      }));
+    function buildQuery() {
+      const params = new URLSearchParams({
+        page: String(currentPage),
+        limit: String(PAGE_LIMIT),
+      });
+
+      if (domainFilter.value !== "all") {
+        params.set("domain", domainFilter.value);
+      }
+
+      if (relationshipFilter.value !== "all") {
+        params.set("relationshipType", relationshipFilter.value);
+      }
+
+      if (verificationFilter.value !== "all") {
+        params.set("verificationStatus", verificationFilter.value);
+      }
+
+      return params;
     }
 
-    function adaptDictionarySources(sources = []) {
-      return sources.map(source => ({
-        id: source.id,
-        name: source.name || source.title || source.id,
-        type: source.type || "DictionaryHub Source",
-        domain: "DictionaryHub",
-        qualityTier: source.qualityTier || source.tier || "Working Source",
-        credibilityTier: source.credibilityTier || "",
-        verificationStatus: source.verificationStatus || "",
-        licenseStatus: source.licenseStatus || "",
-        reviewStatus: source.reviewStatus || "",
-        url: source.url || "",
-        notes: source.notes || source.description || "",
-        raw: source
-      }));
+    async function populateFilters() {
+      try {
+        const response = await fetchJson(
+          `${API_BASE}/edges?page=1&limit=100`,
+        );
+
+        const edges = response.edges || [];
+
+        populateSelect(
+          domainFilter,
+          uniqueValues(edges.map((edge) => edge.domain)),
+          "All Domains",
+          "all",
+        );
+
+        populateSelect(
+          relationshipFilter,
+          uniqueValues(edges.map((edge) => edge.relationshipType)),
+          "All Relationship Types",
+          "all",
+        );
+
+        populateSelect(
+          credibilityFilter,
+          uniqueValues(edges.map((edge) => edge.credibilityTier)),
+          "All Credibility",
+          "all",
+        );
+
+        populateSelect(
+          verificationFilter,
+          uniqueValues(edges.map((edge) => edge.verificationStatus)),
+          "All Verification",
+          "all",
+        );
+      } catch {
+        // Preserve default options.
+      }
     }
 
-    function populateFilters() {
-      const domainFilter = document.getElementById("domainFilter");
-      const relationshipFilter = document.getElementById("relationshipFilter");
-      const credibilityFilter = document.getElementById("credibilityFilter");
-      const verificationFilter = document.getElementById("verificationFilter");
+    function populateSelect(select, values, firstLabel, firstValue) {
+      const currentValue = select.value;
 
-      const domains = [...new Set(allEdges.map(edge => edge.domain || "Unknown Domain"))].sort();
-      const relationshipTypes = [...new Set(allEdges.map(edge => edge.relationshipType || "UNKNOWN"))].sort();
-      const credibilityTiers = [...new Set(allEdges.map(edge => edge.credibilityTier || "unclassified"))].sort();
-      const verificationStatuses = [...new Set(allEdges.map(edge => edge.verificationStatus || "unclassified"))].sort();
-
-      domainFilter.innerHTML = `
-        <option value="all">All Domains</option>
-        ${domains.map(domain => `<option value="${domain}">${getDisplayDomain(domain)}</option>`).join("")}
+      select.innerHTML = `
+        <option value="${firstValue}">${escapeHtml(firstLabel)}</option>
+        ${values
+          .map(
+            (value) =>
+              `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`,
+          )
+          .join("")}
       `;
 
-      relationshipFilter.innerHTML = `
-        <option value="all">All Relationship Types</option>
-        ${relationshipTypes.map(type => `<option value="${type}">${type}</option>`).join("")}
-      `;
-
-      credibilityFilter.innerHTML = `
-        <option value="all">All Credibility</option>
-        ${credibilityTiers.map(tier => `<option value="${tier}">${tier}</option>`).join("")}
-      `;
-
-      verificationFilter.innerHTML = `
-        <option value="all">All Verification</option>
-        ${verificationStatuses.map(status => `<option value="${status}">${status}</option>`).join("")}
-      `;
+      if (values.includes(currentValue) || currentValue === firstValue) {
+        select.value = currentValue;
+      }
     }
 
-    function applyFilters() {
-      const searchTerm = document.getElementById("searchInput").value.toLowerCase().trim();
-      const selectedDomain = document.getElementById("domainFilter").value;
-      const selectedRelationship = document.getElementById("relationshipFilter").value;
-      const selectedCrossHub = document.getElementById("crossHubFilter").value;
-      const selectedCredibility = document.getElementById("credibilityFilter").value;
-      const selectedVerification = document.getElementById("verificationFilter").value;
-
-      let filteredEdges = [...allEdges];
-
-      if (selectedDomain !== "all") {
-        filteredEdges = filteredEdges.filter(edge => edge.domain === selectedDomain);
-      }
-
-      if (selectedRelationship !== "all") {
-        filteredEdges = filteredEdges.filter(edge => edge.relationshipType === selectedRelationship);
-      }
-
-      if (selectedCrossHub === "cross") {
-        filteredEdges = filteredEdges.filter(edge => isCrossHubEdge(edge));
-      }
-
-      if (selectedCrossHub === "same") {
-        filteredEdges = filteredEdges.filter(edge => !isCrossHubEdge(edge));
-      }
-
-      if (selectedCredibility !== "all") {
-        filteredEdges = filteredEdges.filter(edge => (edge.credibilityTier || "unclassified") === selectedCredibility);
-      }
-
-      if (selectedVerification !== "all") {
-        filteredEdges = filteredEdges.filter(edge => (edge.verificationStatus || "unclassified") === selectedVerification);
-      }
-
-      if (searchTerm) {
-        filteredEdges = filteredEdges.filter(edge => {
-          const fromNode = getNodeById(edge.fromNodeId);
-          const toNode = getNodeById(edge.toNodeId);
-
-          const searchableText = [
-            edge.id,
-            edge.fromNodeId,
-            edge.toNodeId,
-            edge.relationshipType,
-            edge.label,
-            edge.summary,
-            edge.domain,
-            edge.credibilityTier,
-            edge.confidence,
-            edge.verificationStatus,
-            edge.reviewStatus,
-            edge.supportLevel,
-            edge.relationshipStrength,
-            edge.interpretationLevel,
-            ...(edge.sourceIds || []),
-            fromNode ? fromNode.title : "",
-            fromNode ? fromNode.domain : "",
-            fromNode ? fromNode.type : "",
-            toNode ? toNode.title : "",
-            toNode ? toNode.domain : "",
-            toNode ? toNode.type : ""
-          ].join(" ").toLowerCase();
-
-          return searchableText.includes(searchTerm);
-        });
-      }
-
-      renderStats(filteredEdges);
-      renderEdgeRegistry(filteredEdges);
+    function uniqueValues(values) {
+      return [...new Set(values.filter(Boolean))]
+        .sort((a, b) => a.localeCompare(b));
     }
 
-    function renderStats(edges) {
-      const crossHubCount = edges.filter(edge => isCrossHubEdge(edge)).length;
-      const sourcedCount = edges.filter(edge => (edge.sourceIds || []).length > 0).length;
-      const reviewedCount = edges.filter(edge => edge.reviewStatus === "reviewed").length;
-      const needsReviewCount = edges.filter(edge => edge.reviewStatus === "needs-review").length;
-      const relationshipTypeCount = new Set(edges.map(edge => edge.relationshipType)).size;
+    async function loadEdges() {
+      edgeRegistry.innerHTML = '<p class="empty">Loading live edges...</p>';
+      pagination.innerHTML = "";
+      edgeCount.textContent = "";
 
-      document.getElementById("registryStats").innerHTML = `
+      try {
+        const response = await fetchJson(
+          `${API_BASE}/edges?${buildQuery().toString()}`,
+        );
+
+        totalEdges = response.total;
+        totalPages = response.totalPages;
+        currentEdges = response.edges || [];
+
+        const filteredEdges = await applyClientFilters(currentEdges);
+
+        renderStats(filteredEdges);
+        renderWarnings(filteredEdges);
+        renderEdgeRegistry(filteredEdges);
+        renderPagination();
+      } catch (error) {
+        edgeRegistry.innerHTML = `
+          <p class="empty">${escapeHtml(error.message)}</p>
+        `;
+      }
+    }
+
+    async function applyClientFilters(edges) {
+      const searchTerm = searchInput.value.trim().toLowerCase();
+      const credibility = credibilityFilter.value;
+      const crossHub = crossHubFilter.value;
+
+      return Promise.all(
+        edges.map(async (edge) => {
+          const [fromNode, toNode] = await Promise.all([
+            fetchJson(`${API_BASE}/nodes/${encodeURIComponent(edge.fromNodeId)}`)
+              .catch(() => null),
+            fetchJson(`${API_BASE}/nodes/${encodeURIComponent(edge.toNodeId)}`)
+              .catch(() => null),
+          ]);
+
+          return {
+            edge,
+            fromNode,
+            toNode,
+          };
+        }),
+      ).then((records) =>
+        records.filter(({ edge, fromNode, toNode }) => {
+          const isCrossHub =
+            fromNode &&
+            toNode &&
+            fromNode.domain !== toNode.domain;
+
+          if (crossHub === "cross" && !isCrossHub) {
+            return false;
+          }
+
+          if (crossHub === "same" && isCrossHub) {
+            return false;
+          }
+
+          if (
+            credibility !== "all" &&
+            edge.credibilityTier !== credibility
+          ) {
+            return false;
+          }
+
+          if (searchTerm) {
+            const searchableText = [
+              edge.edgeId,
+              edge.fromNodeId,
+              edge.toNodeId,
+              edge.relationshipType,
+              edge.label,
+              edge.summary,
+              edge.domain,
+              edge.credibilityTier,
+              edge.confidence,
+              edge.verificationStatus,
+              edge.reviewStatus,
+              edge.supportLevel,
+              edge.relationshipStrength,
+              edge.interpretationLevel,
+              ...(edge.sourceIds || []),
+              fromNode?.title,
+              fromNode?.domain,
+              fromNode?.nodeType,
+              toNode?.title,
+              toNode?.domain,
+              toNode?.nodeType,
+            ]
+              .filter(Boolean)
+              .join(" ")
+              .toLowerCase();
+
+            if (!searchableText.includes(searchTerm)) {
+              return false;
+            }
+          }
+
+          return true;
+        }),
+      );
+    }
+
+    function clearFilters() {
+      searchInput.value = "";
+      domainFilter.value = "all";
+      relationshipFilter.value = "all";
+      crossHubFilter.value = "all";
+      credibilityFilter.value = "all";
+      verificationFilter.value = "all";
+      currentPage = 1;
+      closeDetail();
+      loadEdges();
+    }
+
+    function renderStats(records) {
+      const crossHubCount = records.filter(
+        ({ fromNode, toNode }) =>
+          fromNode &&
+          toNode &&
+          fromNode.domain !== toNode.domain,
+      ).length;
+
+      const sourcedCount = records.filter(
+        ({ edge }) => (edge.sourceIds || []).length > 0,
+      ).length;
+
+      const reviewedCount = records.filter(
+        ({ edge }) => edge.reviewStatus === "reviewed",
+      ).length;
+
+      const needsReviewCount = records.filter(
+        ({ edge }) => edge.reviewStatus === "needs-review",
+      ).length;
+
+      const relationshipTypeCount = new Set(
+        records.map(({ edge }) => edge.relationshipType),
+      ).size;
+
+      registryStats.innerHTML = `
         <div class="stat-card">
-          <div class="stat-number">${edges.length}</div>
-          <div class="stat-label">Visible Edges</div>
+          <div class="stat-number">${totalEdges}</div>
+          <div class="stat-label">Total Matching Edges</div>
         </div>
-
+        <div class="stat-card">
+          <div class="stat-number">${records.length}</div>
+          <div class="stat-label">Visible on Page</div>
+        </div>
         <div class="stat-card">
           <div class="stat-number">${crossHubCount}</div>
-          <div class="stat-label">Cross-Hub Edges</div>
+          <div class="stat-label">Cross-Hub on Page</div>
         </div>
-
         <div class="stat-card">
           <div class="stat-number">${sourcedCount}</div>
-          <div class="stat-label">Edges With Sources</div>
+          <div class="stat-label">With Sources</div>
         </div>
-
         <div class="stat-card">
           <div class="stat-number">${reviewedCount}</div>
-          <div class="stat-label">Reviewed Edges</div>
+          <div class="stat-label">Reviewed</div>
         </div>
-
         <div class="stat-card">
-          <div class="stat-number">${needsReviewCount}</div>
-          <div class="stat-label">Needs Review</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-number">${relationshipTypeCount}</div>
-          <div class="stat-label">Relationship Types</div>
+          <div class="stat-number">${needsReviewCount || relationshipTypeCount}</div>
+          <div class="stat-label">${needsReviewCount ? "Needs Review" : "Relationship Types"}</div>
         </div>
       `;
     }
 
-    function renderWarnings() {
-      const missingNodeEdges = allEdges.filter(edge =>
-        !getNodeById(edge.fromNodeId) || !getNodeById(edge.toNodeId)
+    function renderWarnings(records) {
+      const missingNodeEdges = records.filter(
+        ({ fromNode, toNode }) => !fromNode || !toNode,
       );
 
       if (!missingNodeEdges.length) {
-        document.getElementById("warnings").innerHTML = "";
+        warnings.innerHTML = "";
         return;
       }
 
-      document.getElementById("warnings").innerHTML = `
+      warnings.innerHTML = `
         <div class="warning">
           <strong>Registry warning:</strong>
-          ${missingNodeEdges.length} edge(s) point to a missing node ID.
-          Use the Raw Edge Data dropdowns to inspect the broken references.
+          ${missingNodeEdges.length} visible edge(s) point to a node that could not be loaded.
         </div>
       `;
     }
 
-    function renderEdgeRegistry(edges) {
-      const edgeRegistry = document.getElementById("edgeRegistry");
-      const edgeCount = document.getElementById("edgeCount");
+    function renderEdgeRegistry(records) {
+      edgeCount.textContent =
+        `${records.length} visible edge${records.length === 1 ? "" : "s"} on page ` +
+        `${currentPage} of ${totalPages}.`;
 
-      edgeCount.textContent = `${edges.length} edge${edges.length === 1 ? "" : "s"} shown`;
-
-      if (!edges.length) {
+      if (!records.length) {
         edgeRegistry.innerHTML = `
-          <p class="empty">No edges match this search/filter combination.</p>
+          <p class="empty">No edges match this search and filter combination.</p>
         `;
         return;
       }
@@ -789,54 +923,72 @@
               <th>Details</th>
             </tr>
           </thead>
-
           <tbody>
-            ${edges.map(edge => {
-              const fromNode = getNodeById(edge.fromNodeId);
-              const toNode = getNodeById(edge.toNodeId);
-
-              return `
-                <tr>
-                  <td>
-                    ${renderNodeCell(fromNode, edge.fromNodeId)}
-                  </td>
-
-                  <td>
-                    <span class="relationship-pill">${edge.label || "relates to"}</span>
-                    <div class="meta">${edge.relationshipType || "relationship"}</div>
-                    ${isCrossHubEdge(edge) ? `<div class="meta"><strong>Cross-hub edge</strong></div>` : ""}
-                  </td>
-
-                  <td>
-                    ${renderNodeCell(toNode, edge.toNodeId)}
-                  </td>
-
-                  <td>
-                    ${renderRelationshipTrust(edge)}
-                  </td>
-
-                  <td>
-                    ${renderDomainLabel(edge.domain)}
-                    <div class="meta">${edge.id}</div>
-                  </td>
-
-                  <td>
-                    ${renderSourceList(edge.sourceIds || [])}
-                  </td>
-
-                  <td>
-                    <div>${edge.summary || "<span class='empty'>No summary yet.</span>"}</div>
-
-                    <details>
-                      <summary>Raw Edge Data</summary>
-                      <pre>${JSON.stringify(edge.raw || edge, null, 2)}</pre>
-                    </details>
-                  </td>
-                </tr>
-              `;
-            }).join("")}
+            ${records.map(({ edge, fromNode, toNode }) => `
+              <tr>
+                <td>${renderNodeCell(fromNode, edge.fromNodeId)}</td>
+                <td>
+                  <span class="relationship-pill">${displayValue(edge.label, "relates to")}</span>
+                  <div class="meta">${displayValue(edge.relationshipType, "relationship")}</div>
+                  ${fromNode && toNode && fromNode.domain !== toNode.domain
+                    ? '<div class="meta"><strong>Cross-hub edge</strong></div>'
+                    : ""}
+                </td>
+                <td>${renderNodeCell(toNode, edge.toNodeId)}</td>
+                <td>${renderRelationshipTrust(edge)}</td>
+                <td>
+                  ${renderDomainLabel(edge.domain)}
+                  <div class="meta">${escapeHtml(edge.edgeId)}</div>
+                </td>
+                <td>${renderSourceList(edge.sourceIds || [])}</td>
+                <td>
+                  <div>${displayValue(edge.summary, "No summary yet.")}</div>
+                  <button
+                    class="inspect-button"
+                    type="button"
+                    data-open-edge="${escapeHtml(edge.edgeId)}"
+                  >
+                    Inspect Edge
+                  </button>
+                </td>
+              </tr>
+            `).join("")}
           </tbody>
         </table>
+      `;
+
+      edgeRegistry.querySelectorAll("[data-open-edge]").forEach((button) => {
+        button.addEventListener("click", () => {
+          openEdge(button.dataset.openEdge);
+        });
+      });
+
+      edgeRegistry.querySelectorAll("[data-open-node]").forEach((button) => {
+        button.addEventListener("click", () => {
+          openNodeInInspector(button.dataset.openNode);
+        });
+      });
+    }
+
+    function renderNodeCell(node, fallbackId) {
+      if (!node) {
+        return `
+          <span class="node-pill">Missing node</span>
+          <div class="meta"><code>${escapeHtml(fallbackId)}</code></div>
+        `;
+      }
+
+      return `
+        <span class="node-pill">${escapeHtml(node.title)}</span>
+        <div class="meta">${displayValue(node.domain)} · ${displayValue(node.nodeType)}</div>
+        <div class="meta"><code>${escapeHtml(node.nodeId)}</code></div>
+        <button
+          class="node-action"
+          type="button"
+          data-open-node="${escapeHtml(node.nodeId)}"
+        >
+          Open in Inspector
+        </button>
       `;
     }
 
@@ -844,95 +996,206 @@
       return `
         <div class="trust-box">
           <div class="trust-title">Relationship Credibility</div>
-          <div class="meta"><strong>Credibility:</strong> ${edge.credibilityTier || "unclassified"}</div>
-          <div class="meta"><strong>Confidence:</strong> ${edge.confidence || "unclassified"}</div>
-          <div class="meta"><strong>Verification:</strong> ${edge.verificationStatus || "unclassified"}</div>
-          <div class="meta"><strong>Review:</strong> ${edge.reviewStatus || "not-reviewed"}</div>
-          <div class="meta"><strong>Support:</strong> ${edge.supportLevel || "unclassified"}</div>
-          <div class="meta"><strong>Strength:</strong> ${edge.relationshipStrength || "unclassified"}</div>
-          <div class="meta"><strong>Interpretation:</strong> ${edge.interpretationLevel || "unclassified"}</div>
+          <div class="meta"><strong>Credibility:</strong> ${displayValue(edge.credibilityTier)}</div>
+          <div class="meta"><strong>Confidence:</strong> ${displayValue(edge.confidence)}</div>
+          <div class="meta"><strong>Verification:</strong> ${displayValue(edge.verificationStatus)}</div>
+          <div class="meta"><strong>Review:</strong> ${displayValue(edge.reviewStatus)}</div>
+          <div class="meta"><strong>Support:</strong> ${displayValue(edge.supportLevel)}</div>
+          <div class="meta"><strong>Strength:</strong> ${displayValue(edge.relationshipStrength)}</div>
+          <div class="meta"><strong>Interpretation:</strong> ${displayValue(edge.interpretationLevel)}</div>
         </div>
-      `;
-    }
-
-    function getDisplayDomain(domain = "") {
-      if (domain === "WikidataRoot") {
-        return "Wiki";
-      }
-
-      return domain;
-    }
-
-    function renderNodeCell(node, fallbackId) {
-      if (!node) {
-        return `
-          <span class="node-pill">Missing node</span>
-          <div class="meta"><code>${fallbackId}</code></div>
-        `;
-      }
-
-      return `
-        <span class="node-pill">${node.title}</span>
-        <div class="meta">${getDisplayDomain(node.domain)} · ${node.type}</div>
-        <div class="meta"><code>${node.id}</code></div>
       `;
     }
 
     function renderDomainLabel(domain = "SourceRoot") {
-      const displayDomain = getDisplayDomain(domain);
-
-      const className = displayDomain === "SourceRoot"
-        ? "domain-source-root"
-        : displayDomain === "BibleRoot"
-          ? "domain-bible-root"
-          : displayDomain === "DictionaryHub"
-            ? "domain-dictionary-hub"
-            : displayDomain === "Wiki"
-              ? "domain-wiki"
-              : "";
-
-      return `<span class="hub-label ${className}">${displayDomain}</span>`;
+      const displayDomain = domain || "SourceRoot";
+      return `<span class="hub-label">${escapeHtml(displayDomain)}</span>`;
     }
 
     function renderSourceList(sourceIds = []) {
       if (!sourceIds.length) {
-        return `<span class="empty">No sources yet.</span>`;
+        return '<span class="empty">No sources yet.</span>';
       }
 
       return `
         <div class="source-list">
-          ${sourceIds.map(sourceId => {
-            const source = getSourceById(sourceId);
-            const title = source
-              ? `${source.name} | ${source.type} | ${source.domain} | ${source.credibilityTier || "unclassified"}`
-              : "Source ID not found in loaded registry";
-
-            return `<span class="source-chip" title="${title}">${sourceId}</span>`;
-          }).join("")}
+          ${sourceIds
+            .map(
+              (sourceId) =>
+                `<span class="source-chip">${escapeHtml(sourceId)}</span>`,
+            )
+            .join("")}
         </div>
       `;
     }
 
-    function getNodeById(nodeId) {
-      return allNodes.find(node => node.id === nodeId);
-    }
-
-    function getSourceById(sourceId) {
-      return allSources.find(source => source.id === sourceId);
-    }
-
-    function isCrossHubEdge(edge) {
-      const fromNode = getNodeById(edge.fromNodeId);
-      const toNode = getNodeById(edge.toNodeId);
-
-      if (!fromNode || !toNode) {
-        return false;
+    function renderPagination() {
+      if (totalPages <= 1) {
+        pagination.innerHTML = "";
+        return;
       }
 
-      return fromNode.domain !== toNode.domain;
+      pagination.innerHTML = `
+        <button id="previousPageButton" type="button" ${currentPage <= 1 ? "disabled" : ""}>
+          Previous
+        </button>
+        <span>Page ${currentPage} of ${totalPages}</span>
+        <button id="nextPageButton" type="button" ${currentPage >= totalPages ? "disabled" : ""}>
+          Next
+        </button>
+      `;
+
+      document.getElementById("previousPageButton").addEventListener("click", () => {
+        if (currentPage > 1) {
+          currentPage -= 1;
+          loadEdges();
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+      });
+
+      document.getElementById("nextPageButton").addEventListener("click", () => {
+        if (currentPage < totalPages) {
+          currentPage += 1;
+          loadEdges();
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+      });
     }
 
-    loadEdgeRegistry();
+    async function openEdge(edgeId) {
+      detailPanel.classList.add("visible");
+      detailTitle.textContent = "Loading edge...";
+      detailId.textContent = edgeId;
+      detailContent.innerHTML = '<p class="empty">Loading linked nodes and source provenance...</p>';
+
+      try {
+        const edge = await fetchJson(
+          `${API_BASE}/edges/${encodeURIComponent(edgeId)}`,
+        );
+
+        const [fromNode, toNode, sources] = await Promise.all([
+          fetchJson(`${API_BASE}/nodes/${encodeURIComponent(edge.fromNodeId)}`)
+            .catch(() => null),
+          fetchJson(`${API_BASE}/nodes/${encodeURIComponent(edge.toNodeId)}`)
+            .catch(() => null),
+          Promise.all(
+            (edge.sourceIds || []).map(async (sourceId) => {
+              try {
+                return await fetchJson(
+                  `${API_BASE}/sources/${encodeURIComponent(sourceId)}`,
+                );
+              } catch {
+                return {
+                  sourceId,
+                  name: sourceId,
+                  notes: "Referenced source could not be loaded.",
+                };
+              }
+            }),
+          ),
+        ]);
+
+        detailTitle.textContent = edge.label || edge.relationshipType;
+        detailId.textContent = edge.edgeId;
+
+        detailContent.innerHTML = `
+          <div class="linked-card">
+            <div class="relationship-line">
+              ${fromNode
+                ? `<button class="node-action" type="button" data-open-node="${escapeHtml(fromNode.nodeId)}">${escapeHtml(fromNode.title)}</button>`
+                : `<code>${escapeHtml(edge.fromNodeId)}</code>`}
+              <strong>${displayValue(edge.label, edge.relationshipType)}</strong>
+              ${toNode
+                ? `<button class="node-action" type="button" data-open-node="${escapeHtml(toNode.nodeId)}">${escapeHtml(toNode.title)}</button>`
+                : `<code>${escapeHtml(edge.toNodeId)}</code>`}
+            </div>
+            <p>${displayValue(edge.summary, "No edge summary.")}</p>
+          </div>
+
+          <div class="detail-grid">
+            ${renderDetailItem("Bundle", edge.bundleId)}
+            ${renderDetailItem("Domain", edge.domain)}
+            ${renderDetailItem("Relationship Type", edge.relationshipType)}
+            ${renderDetailItem("Credibility", edge.credibilityTier)}
+            ${renderDetailItem("Confidence", edge.confidence)}
+            ${renderDetailItem("Verification", edge.verificationStatus)}
+            ${renderDetailItem("Review", edge.reviewStatus)}
+            ${renderDetailItem("Support", edge.supportLevel)}
+            ${renderDetailItem("Strength", edge.relationshipStrength)}
+            ${renderDetailItem("Interpretation", edge.interpretationLevel)}
+          </div>
+
+          <h3>Source Provenance</h3>
+          ${sources.length
+            ? sources.map(renderSourceCard).join("")
+            : '<p class="empty">No sources are linked to this edge.</p>'}
+
+          <h3>Raw Normalized Edge</h3>
+          <details>
+            <summary>View API response</summary>
+            <pre>${escapeHtml(JSON.stringify(edge, null, 2))}</pre>
+          </details>
+        `;
+
+        detailContent.querySelectorAll("[data-open-node]").forEach((button) => {
+          button.addEventListener("click", () => {
+            openNodeInInspector(button.dataset.openNode);
+          });
+        });
+
+        detailPanel.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      } catch (error) {
+        detailTitle.textContent = "Could not load edge";
+        detailContent.innerHTML = `
+          <p class="empty">${escapeHtml(error.message)}</p>
+        `;
+      }
+    }
+
+    function renderDetailItem(label, value) {
+      return `
+        <div class="detail-item">
+          <span>${escapeHtml(label)}</span>
+          <strong>${displayValue(value)}</strong>
+        </div>
+      `;
+    }
+
+    function renderSourceCard(source) {
+      return `
+        <div class="linked-card">
+          <h3>${displayValue(source.name, source.sourceId)}</h3>
+          <div class="meta">
+            ${displayValue(source.sourceType, "Source")} ·
+            ${displayValue(source.publisher)}
+          </div>
+          <p>${displayValue(source.notes, "")}</p>
+          <code>${escapeHtml(source.sourceId)}</code>
+          ${source.url
+            ? `<p><a href="${escapeHtml(source.url)}" target="_blank" rel="noopener">Open original source</a></p>`
+            : ""}
+        </div>
+      `;
+    }
+
+    function openNodeInInspector(nodeId) {
+      const url = new URL("sourceroot-inspector.html", window.location.href);
+      url.searchParams.set("type", "node");
+      url.searchParams.set("id", nodeId);
+      window.location.href = url.toString();
+    }
+
+    function closeDetail() {
+      detailPanel.classList.remove("visible");
+      detailTitle.textContent = "Edge Detail";
+      detailId.textContent = "";
+      detailContent.innerHTML = "";
+    }
+
+    init();
   </script>
 </body>
 </html>

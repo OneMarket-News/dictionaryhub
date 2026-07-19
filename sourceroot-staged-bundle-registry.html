@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>SourceRoot Staged Bundles Registry</title>
+  <title>SourceRoot Legacy Staged Bundles Registry</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
@@ -28,6 +28,34 @@
     footer {
       max-width: 1250px;
       margin: 0 auto;
+    }
+
+    .api-banner {
+      margin-top: 14px;
+      border-radius: 12px;
+      padding: 12px;
+      border: 1px solid #fde68a;
+      background: #fffbeb;
+      color: #92400e;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .api-banner.connected {
+      border-color: #86efac;
+      background: #f0fdf4;
+      color: #166534;
+    }
+
+    .migration-button {
+      background: #eff6ff;
+      border-color: #93c5fd;
+      color: #1d4ed8;
+    }
+
+    .migration-button:hover {
+      background: #dbeafe;
+      border-color: #60a5fa;
     }
 
     h1 {
@@ -413,11 +441,10 @@
 <body>
   <header>
     <div class="header-inner">
-      <h1>SourceRoot Staged Bundles Registry</h1>
+      <h1>SourceRoot Legacy Staged Bundles Registry</h1>
 
       <div class="subtitle">
-        Review and manage bundles staged locally through SourceRoot Import Preview.
-        Staged records remain in this browser until they are removed.
+        Review legacy browser-local staged bundles and migrate their embedded or source-backed bundle data into the live SourceRoot API and PostgreSQL database.
       </div>
 
       <div class="top-links">
@@ -425,11 +452,11 @@
         <a href="sourceroot.html">SourceRoot Home</a>
         <a href="sourceroot-mvp-walkthrough.html">MVP Walkthrough</a>
         <a href="sourceroot-import-bundle-registry.html">Import Bundle Registry</a>
-        <a href="sourceroot-package-registry.html">Package Registry</a>
+        <a href="sourceroot-api-preview.html">API Explorer</a>
         <a href="sourceroot-import-preview.html">Import Preview</a>
         <a href="sourceroot-package-inspector.html">Package Inspector</a>
         <a href="sourceroot-inspector.html">Inspector</a>
-        <a href="sourceroot-api-preview.html">API Preview</a>
+        <a href="sourceroot-api-preview.html">API Explorer</a>
       </div>
     </div>
   </header>
@@ -439,15 +466,16 @@
       <h2>Staging Overview</h2>
 
       <p class="overview-text">
-        This registry reads the same browser-persistent staging records created by Import Preview.
-        It does not import data into a backend or modify the original bundle files.
+        This registry preserves browser-persistent staging records created by the earlier SourceRoot workflow. Records can now be validated and imported into PostgreSQL through the live API without deleting the legacy local snapshot.
       </p>
+
+      <div id="stagedApiStatus" class="api-banner">Checking SourceRoot API...</div>
 
       <div class="toolbar">
         <button id="refreshButton" type="button">Refresh Registry</button>
 
         <label class="button-link" for="importFileInput">
-          Import Staged Packages
+          Import Legacy Packages
         </label>
         <input
           id="importFileInput"
@@ -457,11 +485,11 @@
         />
 
         <button id="exportAllButton" class="primary-button" type="button">
-          Export All Staged Packages
+          Export All Legacy Packages
         </button>
 
         <button id="clearAllButton" class="danger-button" type="button">
-          Remove All Staged Bundles
+          Remove All Local Records
         </button>
       </div>
 
@@ -478,7 +506,7 @@
       <h2>Staged Bundles</h2>
 
       <p class="overview-text">
-        Open source-backed or embedded staged bundles in Import Preview to revalidate them, or remove records when they are no longer needed.
+        Inspect each legacy staged bundle, compare its snapshot, validate it through the backend, import it into PostgreSQL, export it as a package, or remove the local record.
       </p>
 
       <div id="registryGrid" class="registry-grid"></div>
@@ -486,7 +514,7 @@
   </main>
 
   <footer>
-    SourceRoot Staged Bundles Registry. Current status: browser-local staging management, not a live database registry.
+    SourceRoot Legacy Staged Bundles Registry. Browser-local records are preserved and can be migrated into the live PostgreSQL-backed SourceRoot system.
   </footer>
 
   <script src="./engine/packageLifecycle.js"></script>
@@ -494,6 +522,8 @@
   <script>
     const packageLifecycle = window.SourceRootPackageLifecycle;
     const { STAGING_STORAGE_KEY } = packageLifecycle;
+    const API_ORIGIN = "http://localhost:3000";
+    const API_BASE = `${API_ORIGIN}/api/v1`;
 
     document
       .getElementById("refreshButton")
@@ -515,10 +545,22 @@
       .getElementById("registryGrid")
       .addEventListener("click", event => {
         const exportButton = event.target.closest("[data-export-bundle]");
+        const validateButton = event.target.closest("[data-validate-bundle]");
+        const importButton = event.target.closest("[data-import-bundle]");
         const removeButton = event.target.closest("[data-remove-bundle]");
 
         if (exportButton) {
           exportSingleStagedRecord(exportButton.dataset.exportBundle);
+          return;
+        }
+
+        if (validateButton) {
+          validateStagedBundle(validateButton.dataset.validateBundle);
+          return;
+        }
+
+        if (importButton) {
+          importStagedBundle(importButton.dataset.importBundle);
           return;
         }
 
@@ -841,6 +883,8 @@
 
           ${renderChangeComparison(record.changeComparison)}
 
+          <div id="migration-result-${escapeAttribute(record.bundleId)}"></div>
+
           <div class="action-row">
             ${previewHref
               ? `
@@ -854,10 +898,26 @@
               : ""}
 
             <button
+              class="migration-button"
+              type="button"
+              data-validate-bundle="${escapeAttribute(record.bundleId)}"
+            >
+              Validate Through API
+            </button>
+
+            <button
+              class="primary-button"
+              type="button"
+              data-import-bundle="${escapeAttribute(record.bundleId)}"
+            >
+              Import to PostgreSQL
+            </button>
+
+            <button
               type="button"
               data-export-bundle="${escapeAttribute(record.bundleId)}"
             >
-              Export Staged Package
+              Export Legacy Package
             </button>
 
             <button
@@ -1006,7 +1066,7 @@
 
         const summary = importStagedRecords(parsedRecords);
         renderImportSummary(summary, file.name);
-        renderRegistry();
+        await renderRegistry();
       } catch (error) {
         importResults.innerHTML = `
           <div class="import-result error">
@@ -1265,6 +1325,164 @@
       `;
     }
 
+
+    async function apiRequest(path, options = {}) {
+      const response = await fetch(`${API_BASE}${path}`, {
+        ...options,
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          ...(options.headers || {})
+        }
+      });
+
+      let body = {};
+
+      try {
+        body = await response.json();
+      } catch {}
+
+      if (!response.ok) {
+        throw new Error(
+          body.message ||
+          body.error ||
+          `Request failed with HTTP ${response.status}.`
+        );
+      }
+
+      return body;
+    }
+
+    function migrationResultElement(bundleId) {
+      return document.getElementById(`migration-result-${bundleId}`);
+    }
+
+    async function resolveStagedBundle(bundleId) {
+      const record = packageLifecycle.getStagedRecord(bundleId);
+
+      if (!record) {
+        throw new Error(`Staged record "${bundleId}" was not found.`);
+      }
+
+      const bundle = await resolveBundleForPackage(record);
+
+      if (!bundle) {
+        throw new Error(
+          "The bundle content is unavailable. The staged record must contain an embedded bundle or point to a reachable data file."
+        );
+      }
+
+      const calculatedHash = await createBundleHash(bundle);
+
+      if (
+        record.bundleHash &&
+        calculatedHash !== record.bundleHash
+      ) {
+        throw new Error(
+          "The current bundle does not match the staged snapshot hash."
+        );
+      }
+
+      return { record, bundle };
+    }
+
+    async function validateStagedBundle(bundleId) {
+      const resultBox = migrationResultElement(bundleId);
+
+      if (resultBox) {
+        resultBox.innerHTML = `
+          <div class="import-result warning">
+            Validating ${escapeHtml(bundleId)} through the SourceRoot API...
+          </div>
+        `;
+      }
+
+      try {
+        const { bundle } = await resolveStagedBundle(bundleId);
+        const result = await apiRequest("/validate", {
+          method: "POST",
+          body: JSON.stringify(bundle)
+        });
+
+        const errorCount =
+          result.errorCount ??
+          result.errors?.length ??
+          0;
+
+        const warningCount =
+          result.warningCount ??
+          result.warnings?.length ??
+          0;
+
+        if (resultBox) {
+          resultBox.innerHTML = `
+            <div class="import-result ${errorCount ? "error" : "success"}">
+              <strong>Backend validation complete.</strong><br>
+              Status: ${escapeHtml(result.status || result.readiness || "Completed")} ·
+              Errors: ${escapeHtml(errorCount)} ·
+              Warnings: ${escapeHtml(warningCount)}
+            </div>
+          `;
+        }
+      } catch (error) {
+        if (resultBox) {
+          resultBox.innerHTML = `
+            <div class="import-result error">
+              <strong>Validation failed.</strong><br>
+              ${escapeHtml(error.message)}
+            </div>
+          `;
+        }
+      }
+    }
+
+    async function importStagedBundle(bundleId) {
+      const confirmed = window.confirm(
+        `Import staged bundle "${bundleId}" into PostgreSQL?`
+      );
+
+      if (!confirmed) {
+        return;
+      }
+
+      const resultBox = migrationResultElement(bundleId);
+
+      if (resultBox) {
+        resultBox.innerHTML = `
+          <div class="import-result warning">
+            Importing ${escapeHtml(bundleId)} into PostgreSQL...
+          </div>
+        `;
+      }
+
+      try {
+        const { bundle } = await resolveStagedBundle(bundleId);
+        const result = await apiRequest("/import", {
+          method: "POST",
+          body: JSON.stringify(bundle)
+        });
+
+        if (resultBox) {
+          resultBox.innerHTML = `
+            <div class="import-result success">
+              <strong>Bundle imported successfully.</strong><br>
+              ${escapeHtml(result.bundleId || bundleId)}
+              is now available in the Imported Bundle Registry.
+            </div>
+          `;
+        }
+      } catch (error) {
+        if (resultBox) {
+          resultBox.innerHTML = `
+            <div class="import-result error">
+              <strong>Import failed.</strong><br>
+              ${escapeHtml(error.message)}
+            </div>
+          `;
+        }
+      }
+    }
+
     async function exportSingleStagedRecord(bundleId) {
       const stagingMap = getStagingMap();
       const record = stagingMap[bundleId];
@@ -1457,12 +1675,42 @@
         .replaceAll(">", "&gt;");
     }
 
+    async function checkStagedRegistryApi() {
+      const banner = document.getElementById("stagedApiStatus");
+
+      try {
+        const response = await fetch(`${API_ORIGIN}/health`, {
+          headers: { Accept: "application/json" }
+        });
+
+        const body = await response.json();
+
+        if (!response.ok) {
+          throw new Error(body.message || `HTTP ${response.status}`);
+        }
+
+        banner.classList.add("connected");
+        banner.innerHTML = `
+          <strong>${escapeHtml(body.service || "SourceRoot backend")} connected.</strong>
+          Legacy staged bundles can be validated and imported into PostgreSQL.
+        `;
+      } catch (error) {
+        banner.classList.remove("connected");
+        banner.innerHTML = `
+          <strong>SourceRoot API unavailable.</strong>
+          Local staged-record management still works. Start the backend with
+          <code>npm.cmd run dev</code> to validate or import records.
+        `;
+      }
+    }
+
     window.addEventListener("storage", event => {
       if (event.key === STAGING_STORAGE_KEY) {
         renderRegistry();
       }
     });
 
+    checkStagedRegistryApi();
     renderRegistry();
   </script>
 </body>

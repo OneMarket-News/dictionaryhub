@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>SourceRoot Inspector Prototype</title>
+  <title>SourceRoot Live Inspector</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
@@ -384,11 +384,10 @@
 
 <body>
   <header>
-    <h1>SourceRoot Inspector</h1>
+    <h1>SourceRoot Live Inspector</h1>
 
     <div class="subtitle">
-      Master prototype view for SourceRoot: DictionaryHub + BibleRoot + Wiki through one adapter layer.
-      Search, filter, inspect, follow relationships, verify assertions, and open source records from one universal engine.
+      Live PostgreSQL-backed SourceRoot inspector. Search normalized knowledge, open records, follow node relationships, and inspect sources and revisions through the API.
     </div>
 
     <div class="top-links">
@@ -409,17 +408,27 @@
 
   <main>
     <section class="panel left-panel">
-      <h2>Universal Nodes</h2>
+      <h2>Live Knowledge Search</h2>
 
       <div class="controls">
-        <input id="searchInput" type="text" placeholder="Search SourceRoot..." />
+        <input id="searchInput" type="text" placeholder="Search live SourceRoot data..." />
 
         <select id="hubFilter">
-          <option value="all">All Hubs</option>
+          <option value="all">All Domains</option>
+          <option value="HistoryRoot">HistoryRoot</option>
+          <option value="DictionaryHub">DictionaryHub</option>
+          <option value="BibleRoot">BibleRoot</option>
+          <option value="WikidataRoot">WikidataRoot</option>
+          <option value="SourceRoot">SourceRoot</option>
         </select>
 
         <select id="typeFilter">
-          <option value="all">All Types</option>
+          <option value="all">All Record Types</option>
+          <option value="node">Nodes</option>
+          <option value="assertion">Assertions</option>
+          <option value="edge">Edges</option>
+          <option value="source">Sources</option>
+          <option value="revision">Revisions</option>
         </select>
 
         <button id="clearFiltersButton" class="clear-button" type="button">
@@ -438,873 +447,1020 @@
     <section class="panel">
       <div id="inspector">
         <div class="demo-panel">
-          <h3>Light MVP Demo Path</h3>
-
+          <h3>Live API Connection</h3>
           <p>
-            Use this guided path to inspect how SourceRoot separates physical meaning, dictionary meaning, biblical symbolism, truth, knowledge, guidance, revelation, visibility, sources, and trust metadata.
+            This page reads from <code>http://localhost:3000/api/v1</code>.
+            Start the backend, import a bundle, then search or select a live record.
           </p>
-
           <div class="demo-button-row">
-            <button class="demo-button" type="button" onclick="window.selectDemoNode('wikidata-light')">Wiki Light</button>
-            <button class="demo-button" type="button" onclick="window.selectDemoNode('dictionary-light')">Dictionary Light</button>
-            <button class="demo-button" type="button" onclick="window.selectDemoNode('bible-light')">BibleRoot Light</button>
-            <button class="demo-button" type="button" onclick="window.selectDemoNode('dictionary-truth')">Truth</button>
-            <button class="demo-button" type="button" onclick="window.selectDemoNode('dictionary-knowledge')">Knowledge</button>
+            <button class="demo-button" type="button" onclick="window.runDemoSearch('fire')">Search “fire”</button>
+            <button class="demo-button" type="button" onclick="window.runDemoSearch('Chicago')">Search “Chicago”</button>
+            <button class="demo-button" type="button" onclick="window.loadLiveNodes()">Load nodes</button>
           </div>
-
           <div class="demo-note">
-            Tip: Search <strong>light</strong> on the left, then click each node to compare assertions, incoming relationships, outgoing relationships, sources, and credibility metadata.
+            Node records expand into assertions, incoming and outgoing edges, referenced sources, revisions, and raw normalized data.
           </div>
         </div>
 
-        <h2>Select a node</h2>
+        <h2>Select a live record</h2>
         <p class="empty">
-          Click a node on the left to inspect its assertions, relationships, sources, revisions, and raw SourceRoot data.
+          Search the live database or load nodes, then click a result to inspect it.
         </p>
       </div>
     </section>
   </main>
 
   <script type="module">
-    import { adaptDictionaryConcepts } from "./engine/adapters/dictionaryAdapter.js";
-    import { adaptBibleNodes } from "./engine/adapters/bibleAdapter.js";
-    import { combineNodes, searchNodes } from "./engine/sourceRootEngine.js";
+    const API_BASE = "http://localhost:3000/api/v1";
 
-    import {
-      adaptWikidataNodes,
-      adaptWikidataAssertions,
-      adaptWikidataEdges,
-      adaptWikidataSources
-    } from "./engine/adapters/wikidataAdapter.js";
+    let currentResults = [];
+    let selectedResultKey = null;
+    let searchTimer = null;
 
-    import {
-  adaptImportBundleNodes,
-  adaptImportBundleAssertions,
-  adaptImportBundleEdges,
-  adaptImportBundleSources
-} from "./engine/adapters/importBundleAdapter.js";
+    const searchInput = document.getElementById("searchInput");
+    const hubFilter = document.getElementById("hubFilter");
+    const typeFilter = document.getElementById("typeFilter");
+    const clearFiltersButton = document.getElementById("clearFiltersButton");
+    const engineStatus = document.getElementById("engineStatus");
+    const nodeCount = document.getElementById("nodeCount");
+    const nodeList = document.getElementById("nodeList");
+    const inspector = document.getElementById("inspector");
 
-    let allNodes = [];
-    let allEdges = [];
-    let allAssertions = [];
-    let allSources = [];
-    let selectedNodeId = null;
+    function escapeHtml(value = "") {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
 
-    async function loadSourceRootInspector() {
+    function displayValue(value, fallback = "Not listed") {
+      return value === null || value === undefined || value === ""
+        ? fallback
+        : escapeHtml(value);
+    }
+
+    function resultKey(result) {
+      return `${result.resultType}:${result.id}`;
+    }
+
+    function getDetailPath(resultType, id) {
+      const paths = {
+        node: "nodes",
+        assertion: "assertions",
+        edge: "edges",
+        source: "sources",
+        revision: "revisions",
+      };
+
+      const path = paths[resultType];
+
+      if (!path) {
+        throw new Error(`Unsupported result type: ${resultType}`);
+      }
+
+      return `${API_BASE}/${path}/${encodeURIComponent(id)}`;
+    }
+
+    async function fetchJson(url) {
+      const response = await fetch(url, {
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
+      let body;
+
       try {
-        const [
-  bibleNodesResponse,
-  bibleEdgesResponse,
-  bibleAssertionsResponse,
-  bibleSourcesResponse,
-  dictionaryConceptsResponse,
-  dictionarySourcesResponse,
-  crossHubEdgesResponse,
-  wikidataNodesResponse,
-  wikidataEdgesResponse,
-  wikidataSourcesResponse,
-  lightMvpBundleResponse
-] = await Promise.all([
-  fetch("data/bible-root-nodes.json"),
-  fetch("data/bible-root-edges.json"),
-  fetch("data/bible-root-assertions.json"),
-  fetch("data/bible-root-sources.json"),
-  fetch("data/nodes-v2-root.json"),
-  fetch("data/sources-v2.json"),
-  fetch("data/sourceroot-cross-hub-edges.json"),
-  fetch("data/wikidata-root-nodes.json"),
-  fetch("data/wikidata-root-edges.json"),
-  fetch("data/wikidata-root-sources.json"),
-  fetch("data/sourceroot-light-mvp-bundle.json")
-]);
+        body = await response.json();
+      } catch {
+        body = {};
+      }
 
-        const bibleNodesRaw = await bibleNodesResponse.json();
-        const bibleEdgesRaw = await bibleEdgesResponse.json();
-        const bibleAssertionsRaw = await bibleAssertionsResponse.json();
-        const bibleSourcesRaw = await bibleSourcesResponse.json();
-        const dictionaryConceptsRaw = await dictionaryConceptsResponse.json();
-        const dictionarySourcesRaw = await dictionarySourcesResponse.json();
-        const crossHubEdgesRaw = await crossHubEdgesResponse.json();
-        const wikidataNodesRaw = await wikidataNodesResponse.json();
-        const wikidataEdgesRaw = await wikidataEdgesResponse.json();
-        const wikidataSourcesRaw = await wikidataSourcesResponse.json();
-        const lightMvpBundleRaw = await lightMvpBundleResponse.json();
+      if (!response.ok) {
+        throw new Error(
+          body.message ||
+          `Request failed with HTTP ${response.status}.`,
+        );
+      }
 
-        const bibleNodes = adaptBibleNodes(bibleNodesRaw);
-        const dictionaryNodes = adaptDictionaryConcepts(dictionaryConceptsRaw);
-        const wikidataNodes = adaptWikidataNodes(wikidataNodesRaw);
+      return body;
+    }
 
-        const lightMvpNodes = adaptImportBundleNodes(lightMvpBundleRaw.nodes || []);
+    async function renderEngineStatus() {
+      engineStatus.innerHTML = `
+        <strong>SourceRoot API</strong><br>
+        Checking backend connection...
+      `;
 
-allNodes = combineNodes(
-  bibleNodes,
-  dictionaryNodes,
-  wikidataNodes,
-  lightMvpNodes
-);
+      try {
+        const health = await fetchJson("http://localhost:3000/health");
 
-        allEdges = [
-  ...adaptBibleEdges(bibleEdgesRaw),
-  ...adaptDictionaryEdges(dictionaryConceptsRaw),
-  ...adaptCrossHubEdges(crossHubEdgesRaw),
-  ...adaptWikidataEdges(wikidataEdgesRaw),
-  ...adaptImportBundleEdges(lightMvpBundleRaw.edges || [])
-];
-
-        allAssertions = [
-  ...adaptBibleAssertions(bibleAssertionsRaw),
-  ...adaptDictionaryAssertions(dictionaryConceptsRaw),
-  ...adaptWikidataAssertions(wikidataNodesRaw),
-  ...adaptImportBundleAssertions(lightMvpBundleRaw.assertions || [])
-];
-
-        allSources = [
-  ...adaptBibleSources(bibleSourcesRaw),
-  ...adaptDictionarySources(dictionarySourcesRaw),
-  ...adaptWikidataSources(wikidataSourcesRaw),
-  ...adaptImportBundleSources(lightMvpBundleRaw.sources || [])
-];
-
-        renderEngineStatus();
-        populateFilters();
-        applyFilters();
-
-        document.getElementById("searchInput").addEventListener("input", applyFilters);
-        document.getElementById("hubFilter").addEventListener("change", applyFilters);
-        document.getElementById("typeFilter").addEventListener("change", applyFilters);
-
-        document.getElementById("clearFiltersButton").addEventListener("click", () => {
-          document.getElementById("searchInput").value = "";
-          document.getElementById("hubFilter").value = "all";
-          document.getElementById("typeFilter").value = "all";
-          applyFilters();
-        });
-
+        engineStatus.innerHTML = `
+          <strong>SourceRoot API: Connected</strong><br>
+          Service: ${displayValue(health.service, "SourceRoot backend")}<br>
+          Status: ${displayValue(health.status, "available")}<br>
+          API base: <code>${API_BASE}</code>
+        `;
       } catch (error) {
-        document.getElementById("nodeList").innerHTML =
-          "<p class='empty'>Could not load SourceRoot data. Check file paths and browser console.</p>";
-        console.error(error);
+        engineStatus.innerHTML = `
+          <strong>SourceRoot API: Offline</strong><br>
+          ${escapeHtml(error.message)}<br>
+          Start the backend with <code>npm.cmd run dev</code>.
+        `;
       }
     }
 
-    function renderEngineStatus() {
-      const hubs = new Set(allNodes.map(node => getDisplayDomain(node.domain)));
-      const nodeTypes = new Set(allNodes.map(node => node.type));
+    async function loadLiveNodes() {
+      setListLoading("Loading normalized nodes...");
 
-      document.getElementById("engineStatus").innerHTML = `
-        <strong>SourceRoot Engine Status</strong><br>
-        Loaded Hubs: ${hubs.size}<br>
-        Node Types: ${nodeTypes.size}<br>
-        Nodes: ${allNodes.length}<br>
-        Assertions: ${allAssertions.length}<br>
-        Relationships: ${allEdges.length}<br>
-        Sources: ${allSources.length}
-      `;
+      try {
+        const response = await fetchJson(
+          `${API_BASE}/nodes?page=1&limit=100`,
+        );
+
+        currentResults = response.nodes.map((node) => ({
+          resultType: "node",
+          id: node.nodeId,
+          bundleId: node.bundleId,
+          title: node.title,
+          summary: node.summary,
+          domain: node.domain,
+          objectType: node.nodeType,
+          metadata: {
+            status: node.status,
+            sourceIds: node.sourceIds,
+          },
+          createdAt: node.createdAt,
+          updatedAt: node.updatedAt,
+        }));
+
+        renderResults(currentResults, {
+          total: response.total,
+          label: "live node",
+        });
+      } catch (error) {
+        renderListError(error);
+      }
     }
 
-    function populateFilters() {
-      const hubFilter = document.getElementById("hubFilter");
-      const typeFilter = document.getElementById("typeFilter");
+    async function runSearch() {
+      const query = searchInput.value.trim();
+      const selectedDomain = hubFilter.value;
+      const selectedType = typeFilter.value;
 
-      const hubs = [
-        ...new Set(allNodes.map(node => getDisplayDomain(node.domain || "Unknown Hub")))
-      ].sort();
+      if (!query) {
+        await loadLiveNodes();
+        return;
+      }
 
-      const types = [
-        ...new Set(allNodes.map(node => node.type || "Unknown Type"))
-      ].sort();
+      setListLoading(`Searching for “${escapeHtml(query)}”...`);
 
-      hubFilter.innerHTML = `
-        <option value="all">All Hubs</option>
-        ${hubs.map(hub => `<option value="${hub}">${hub}</option>`).join("")}
-      `;
+      const params = new URLSearchParams({
+        q: query,
+        page: "1",
+        limit: "100",
+      });
 
-      typeFilter.innerHTML = `
-        <option value="all">All Types</option>
-        ${types.map(type => `<option value="${type}">${type}</option>`).join("")}
-      `;
-    }
-
-    function applyFilters() {
-      const searchTerm = document.getElementById("searchInput").value;
-      const selectedHub = document.getElementById("hubFilter").value;
-      const selectedType = document.getElementById("typeFilter").value;
-
-      let filteredNodes = searchNodes(allNodes, searchTerm);
-
-      if (selectedHub !== "all") {
-        filteredNodes = filteredNodes.filter(node => getDisplayDomain(node.domain) === selectedHub);
+      if (selectedDomain !== "all") {
+        params.set("domain", selectedDomain);
       }
 
       if (selectedType !== "all") {
-        filteredNodes = filteredNodes.filter(node => node.type === selectedType);
+        params.set("type", selectedType);
       }
 
-      renderNodeList(filteredNodes);
-    }
+      try {
+        const response = await fetchJson(
+          `${API_BASE}/search?${params.toString()}`,
+        );
 
-    function adaptBibleSources(sources = []) {
-      return sources.map(source => ({
-        id: source.id,
-        name: source.name || source.title || source.id,
-        type: source.type || "BibleRoot Source",
-        domain: "BibleRoot",
-        qualityTier: source.qualityTier || source.tier || "Working Source",
-        credibilityTier: source.credibilityTier || "",
-        verificationStatus: source.verificationStatus || "",
-        sourceClass: source.sourceClass || "",
-        publisher: source.publisher || "",
-        license: source.license || "",
-        licenseStatus: source.licenseStatus || "",
-        reviewStatus: source.reviewStatus || "",
-        lastReviewed: source.lastReviewed || "",
-        url: source.url || "",
-        notes: source.notes || source.description || "",
-        raw: source
-      }));
-    }
-
-    function adaptDictionarySources(sources = []) {
-      return sources.map(source => ({
-        id: source.id,
-        name: source.name || source.title || source.id,
-        type: source.type || "DictionaryHub Source",
-        domain: "DictionaryHub",
-        qualityTier: source.qualityTier || source.tier || "Working Source",
-        credibilityTier: source.credibilityTier || "",
-        verificationStatus: source.verificationStatus || "",
-        sourceClass: source.sourceClass || "",
-        publisher: source.publisher || "",
-        license: source.license || "",
-        licenseStatus: source.licenseStatus || "",
-        reviewStatus: source.reviewStatus || "",
-        lastReviewed: source.lastReviewed || "",
-        url: source.url || "",
-        notes: source.notes || source.description || "",
-        raw: source
-      }));
-    }
-
-    function adaptBibleEdges(edges = []) {
-      return edges.map(edge => ({
-        ...edge,
-        fromNodeId: `bible-${edge.fromNodeId}`,
-        toNodeId: `bible-${edge.toNodeId}`,
-        relationshipType: edge.relationshipType || edge.type || "RELATED_TO",
-        label: edge.label || edge.relationshipType || edge.type || "related to",
-        summary: edge.summary || edge.explanation || "",
-        sourceIds: edge.sourceIds || [],
-        credibilityTier: edge.credibilityTier || "medium",
-        confidence: edge.confidence || "moderate",
-        verificationStatus: edge.verificationStatus || "interpretive",
-        reviewStatus: edge.reviewStatus || "needs-review",
-        supportLevel: edge.supportLevel || "contextual",
-        relationshipStrength: edge.relationshipStrength || "contextual",
-        interpretationLevel: edge.interpretationLevel || "medium",
-        domain: "BibleRoot"
-      }));
-    }
-
-    function adaptCrossHubEdges(edges = []) {
-      return edges.map(edge => ({
-        id: edge.id,
-        fromNodeId: edge.fromNodeId,
-        toNodeId: edge.toNodeId,
-        relationshipType: edge.relationshipType || edge.type || "CROSS_HUB_RELATIONSHIP",
-        label: edge.label || edge.relationshipType || "relates to",
-        summary: edge.summary || edge.explanation || "",
-        sourceIds: edge.sourceIds || [],
-        credibilityTier: edge.credibilityTier || "medium",
-        confidence: edge.confidence || "moderate",
-        verificationStatus: edge.verificationStatus || "inferred",
-        reviewStatus: edge.reviewStatus || "needs-review",
-        supportLevel: edge.supportLevel || "contextual",
-        relationshipStrength: edge.relationshipStrength || "contextual",
-        interpretationLevel: edge.interpretationLevel || "medium",
-        domain: edge.domain || "SourceRoot"
-      }));
-    }
-
-    function adaptBibleAssertions(assertions = []) {
-      return assertions.map(assertion => ({
-        ...assertion,
-        nodeId: `bible-${assertion.nodeId}`,
-        assertionType: assertion.assertionType || assertion.type || "assertion",
-        label: assertion.label || assertion.assertionType || assertion.type || "Assertion",
-        summary: assertion.summary || "",
-        body: assertion.body || assertion.description || assertion.summary || "",
-        sourceIds: assertion.sourceIds || [],
-        credibilityTier: assertion.credibilityTier || "medium",
-        confidence: assertion.confidence || "moderate",
-        verificationStatus: assertion.verificationStatus || "interpretive",
-        reviewStatus: assertion.reviewStatus || "needs-review",
-        supportLevel: assertion.supportLevel || "interpretive",
-        interpretationLevel: assertion.interpretationLevel || "high",
-        status: assertion.status || "alpha",
-        domain: "BibleRoot"
-      }));
-    }
-
-    function adaptDictionaryEdges(concepts = []) {
-      const edges = [];
-
-      concepts.forEach(concept => {
-        (concept.relationships || []).forEach((relationship, index) => {
-          edges.push({
-            id: `dictionary-edge-${concept.id}-${relationship.target}-${index}`,
-            fromNodeId: `dictionary-${concept.id}`,
-            toNodeId: `dictionary-${relationship.target}`,
-            relationshipType: relationship.type || "RELATED_TO",
-            label: relationship.direction || relationship.type || "related to",
-            summary: relationship.explanation || relationship.bridge || "",
-            sourceIds: relationship.sourceIds || [],
-            credibilityTier: relationship.credibilityTier || "high",
-            confidence: relationship.confidence || "strong",
-            verificationStatus: relationship.verificationStatus || "source-backed",
-            reviewStatus: relationship.reviewStatus || "reviewed",
-            supportLevel: relationship.supportLevel || "derived",
-            relationshipStrength: relationship.relationshipStrength || "strong",
-            interpretationLevel: relationship.interpretationLevel || "low",
-            domain: "DictionaryHub"
-          });
+        currentResults = response.results;
+        renderResults(currentResults, {
+          total: response.total,
+          label: "search result",
         });
-      });
-
-      return edges;
+      } catch (error) {
+        renderListError(error);
+      }
     }
 
-    function adaptDictionaryAssertions(concepts = []) {
-      const assertions = [];
-
-      concepts.forEach(concept => {
-        const baseCredibility = {
-          credibilityTier: "high",
-          confidence: "strong",
-          verificationStatus: "source-backed",
-          reviewStatus: "reviewed",
-          supportLevel: "derived",
-          interpretationLevel: "low",
-          status: concept.status || "v2-draft",
-          domain: "DictionaryHub"
-        };
-
-        if (concept.shortDefinition) {
-          assertions.push({
-            id: `dictionary-assertion-${concept.id}-short-definition`,
-            nodeId: `dictionary-${concept.id}`,
-            assertionType: "short-definition",
-            label: "Short Definition",
-            summary: concept.shortDefinition,
-            body: concept.shortDefinition,
-            sourceIds: concept.sourceIds || [],
-            ...baseCredibility
-          });
-        }
-
-        if (concept.fullDefinition) {
-          assertions.push({
-            id: `dictionary-assertion-${concept.id}-full-definition`,
-            nodeId: `dictionary-${concept.id}`,
-            assertionType: "full-definition",
-            label: "Full Definition",
-            summary: concept.shortDefinition || "",
-            body: concept.fullDefinition,
-            sourceIds: concept.sourceIds || [],
-            ...baseCredibility
-          });
-        }
-
-        if (concept.plainEnglish) {
-          assertions.push({
-            id: `dictionary-assertion-${concept.id}-plain-english`,
-            nodeId: `dictionary-${concept.id}`,
-            assertionType: "plain-english",
-            label: "Plain English",
-            summary: concept.plainEnglish,
-            body: concept.plainEnglish,
-            sourceIds: concept.sourceIds || [],
-            ...baseCredibility
-          });
-        }
-
-        if (concept.technicalDefinition) {
-          assertions.push({
-            id: `dictionary-assertion-${concept.id}-technical-definition`,
-            nodeId: `dictionary-${concept.id}`,
-            assertionType: "technical-definition",
-            label: "Technical Definition",
-            summary: concept.technicalDefinition,
-            body: concept.technicalDefinition,
-            sourceIds: concept.sourceIds || [],
-            ...baseCredibility
-          });
-        }
-
-        if (concept.whyItMatters) {
-          assertions.push({
-            id: `dictionary-assertion-${concept.id}-why-it-matters`,
-            nodeId: `dictionary-${concept.id}`,
-            assertionType: "why-it-matters",
-            label: "Why It Matters",
-            summary: concept.whyItMatters,
-            body: concept.whyItMatters,
-            sourceIds: concept.sourceIds || [],
-            credibilityTier: "medium",
-            confidence: "moderate",
-            verificationStatus: "inferred",
-            reviewStatus: "needs-review",
-            supportLevel: "inferred",
-            interpretationLevel: "medium",
-            status: concept.status || "v2-draft",
-            domain: "DictionaryHub"
-          });
-        }
-
-        if (Array.isArray(concept.examples) && concept.examples.length) {
-          assertions.push({
-            id: `dictionary-assertion-${concept.id}-examples`,
-            nodeId: `dictionary-${concept.id}`,
-            assertionType: "examples",
-            label: "Examples",
-            summary: `${concept.examples.length} example(s) available`,
-            body: concept.examples.map(example => `• ${example}`).join("<br>"),
-            sourceIds: concept.sourceIds || [],
-            credibilityTier: "medium",
-            confidence: "moderate",
-            verificationStatus: "source-backed",
-            reviewStatus: "needs-review",
-            supportLevel: "contextual",
-            interpretationLevel: "medium",
-            status: concept.status || "v2-draft",
-            domain: "DictionaryHub"
-          });
-        }
-
-        if (Array.isArray(concept.commonConfusions) && concept.commonConfusions.length) {
-          assertions.push({
-            id: `dictionary-assertion-${concept.id}-common-confusions`,
-            nodeId: `dictionary-${concept.id}`,
-            assertionType: "common-confusions",
-            label: "Common Confusions",
-            summary: `${concept.commonConfusions.length} confusion note(s) available`,
-            body: concept.commonConfusions.map(confusion => `• ${confusion}`).join("<br>"),
-            sourceIds: concept.sourceIds || [],
-            credibilityTier: "medium",
-            confidence: "moderate",
-            verificationStatus: "inferred",
-            reviewStatus: "needs-review",
-            supportLevel: "inferred",
-            interpretationLevel: "medium",
-            status: concept.status || "v2-draft",
-            domain: "DictionaryHub"
-          });
-        }
-      });
-
-      return assertions;
+    function setListLoading(message) {
+      nodeCount.textContent = "";
+      nodeList.innerHTML = `<p class="empty">${message}</p>`;
     }
 
-    function renderNodeList(nodes) {
-      const nodeList = document.getElementById("nodeList");
-      const nodeCount = document.getElementById("nodeCount");
+    function renderListError(error) {
+      nodeCount.textContent = "";
+      nodeList.innerHTML = `
+        <p class="empty">
+          ${escapeHtml(error.message)}
+        </p>
+      `;
+    }
 
-      nodeCount.textContent = `${nodes.length} node${nodes.length === 1 ? "" : "s"} shown`;
+    function renderResults(results, { total, label }) {
+      nodeCount.textContent =
+        `${total} ${label}${total === 1 ? "" : "s"} found`;
 
-      if (!nodes.length) {
+      if (!results.length) {
         nodeList.innerHTML = `
           <p class="empty">
-            No nodes match this search/filter combination.
+            No live records match this search and filter combination.
           </p>
         `;
         return;
       }
 
-      const groupedNodes = nodes.reduce((groups, node) => {
-        const hubName = getDisplayDomain(node.domain || "Unknown Hub");
+      const grouped = results.reduce((groups, result) => {
+        const groupName = result.domain || "Unknown Domain";
 
-        if (!groups[hubName]) {
-          groups[hubName] = [];
+        if (!groups[groupName]) {
+          groups[groupName] = [];
         }
 
-        groups[hubName].push(node);
+        groups[groupName].push(result);
         return groups;
       }, {});
 
-      nodeList.innerHTML = Object.keys(groupedNodes).sort().map(hubName => `
-        <div class="hub-group">
-          <div class="hub-group-title">
-            ${hubName}
-            <span class="hub-count">(${groupedNodes[hubName].length})</span>
-          </div>
-
-          ${groupedNodes[hubName].map(node => `
-            <div
-              class="node-card ${node.id === selectedNodeId ? "active" : ""}"
-              onclick="window.selectNode('${node.id}')"
-            >
-              <span class="hub-label">${getDisplayDomain(node.domain)}</span>
-              <div class="node-title-row">
-                <strong>${node.title}</strong>
-              </div>
-              <div class="meta">${node.type}</div>
-              <div>${node.summary || ""}</div>
+      nodeList.innerHTML = Object.keys(grouped)
+        .sort()
+        .map((domain) => `
+          <div class="hub-group">
+            <div class="hub-group-title">
+              ${escapeHtml(domain)}
+              <span class="hub-count">(${grouped[domain].length})</span>
             </div>
-          `).join("")}
-        </div>
-      `).join("");
+
+            ${grouped[domain]
+              .map((result) => `
+                <div
+                  class="node-card ${resultKey(result) === selectedResultKey ? "active" : ""}"
+                  data-result-type="${escapeHtml(result.resultType)}"
+                  data-result-id="${escapeHtml(result.id)}"
+                >
+                  <span class="hub-label">${escapeHtml(result.resultType)}</span>
+                  <div class="node-title-row">
+                    <strong>${escapeHtml(result.title || result.id)}</strong>
+                  </div>
+                  <div class="meta">${displayValue(result.objectType, "Unclassified")}</div>
+                  <div>${displayValue(result.summary, "")}</div>
+                </div>
+              `)
+              .join("")}
+          </div>
+        `)
+        .join("");
+
+      nodeList.querySelectorAll(".node-card").forEach((card) => {
+        card.addEventListener("click", () => {
+          selectRecord(
+            card.dataset.resultType,
+            card.dataset.resultId,
+          );
+        });
+      });
     }
 
-    function getDisplayDomain(domain = "") {
-      if (domain === "WikidataRoot") {
-        return "Wiki";
-      }
-
-      return domain;
-    }
-
-    function getNodeTitle(nodeId) {
-      const foundNode = allNodes.find(node => node.id === nodeId);
-      return foundNode ? foundNode.title : nodeId;
-    }
-
-    function getNodeById(nodeId) {
-      return allNodes.find(node => node.id === nodeId);
-    }
-
-    function getSourceIdsForNode(node, assertions, outgoingEdges, incomingEdges) {
-      return new Set([
-        ...(node.sourceIds || []),
-        ...assertions.flatMap(assertion => assertion.sourceIds || []),
-        ...outgoingEdges.flatMap(edge => edge.sourceIds || []),
-        ...incomingEdges.flatMap(edge => edge.sourceIds || [])
-      ]);
-    }
-
-
-    window.selectDemoNode = function(demoKey) {
-      const demoSearchMap = {
-        "wikidata-light": {
-          terms: ["light", "physical"],
-          domains: ["Wiki", "WikidataRoot", "SourceRoot", "Light MVP Bundle"]
-        },
-        "dictionary-light": {
-          terms: ["light", "dictionary"],
-          domains: ["DictionaryHub", "SourceRoot", "Light MVP Bundle"]
-        },
-        "bible-light": {
-          terms: ["light", "biblical"],
-          domains: ["BibleRoot", "SourceRoot", "Light MVP Bundle"]
-        },
-        "dictionary-truth": {
-          terms: ["truth"],
-          domains: ["DictionaryHub", "SourceRoot", "Light MVP Bundle"]
-        },
-        "dictionary-knowledge": {
-          terms: ["knowledge"],
-          domains: ["DictionaryHub", "SourceRoot", "Light MVP Bundle"]
-        }
-      };
-
-      const demoSearch = demoSearchMap[demoKey];
-
-      if (!demoSearch) {
-        return;
-      }
-
-      const foundNode = allNodes.find(node => {
-        const searchableText = [
-          node.id,
-          node.originalId,
-          node.raw?.id,
-          node.title,
-          node.type,
-          node.summary,
-          node.description
-        ]
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase();
-
-        const displayDomain = getDisplayDomain(node.domain || "");
-
-        const matchesTerms = demoSearch.terms.every(term =>
-          searchableText.includes(term.toLowerCase())
-        );
-
-        const matchesDomain =
-          demoSearch.domains.includes(displayDomain) ||
-          demoSearch.domains.includes(node.domain);
-
-        return matchesTerms && matchesDomain;
+    async function selectRecord(resultType, id) {
+      selectedResultKey = `${resultType}:${id}`;
+      renderResults(currentResults, {
+        total: currentResults.length,
+        label: "visible result",
       });
 
-      if (foundNode) {
-        document.getElementById("searchInput").value = "";
-        document.getElementById("hubFilter").value = "all";
-        document.getElementById("typeFilter").value = "all";
-        window.selectNode(foundNode.id);
-        return;
-      }
-
-      const fallbackTerm = demoSearch.terms[0] || "light";
-
-      document.getElementById("searchInput").value = fallbackTerm;
-      document.getElementById("hubFilter").value = "all";
-      document.getElementById("typeFilter").value = "all";
-      applyFilters();
-
-      document.getElementById("inspector").innerHTML = `
-        <div class="demo-panel">
-          <h3>Demo Node Not Found Yet</h3>
-          <p>
-            This guided button could not find a matching <strong>${demoKey}</strong> node in the currently loaded Inspector dataset.
-          </p>
-          <p>
-            Search has been set to <strong>${fallbackTerm}</strong> so you can pick the closest available node manually.
-          </p>
-          <div class="demo-note">
-            Check that <code>data/sourceroot-light-mvp-bundle.json</code> exists and is loading correctly.
-          </div>
-        </div>
+      inspector.innerHTML = `
+        <h2>Loading record...</h2>
+        <p class="empty">${escapeHtml(resultType)}: ${escapeHtml(id)}</p>
       `;
-    };
 
-    window.selectNode = function(nodeId) {
-      selectedNodeId = nodeId;
+      try {
+        const record = await fetchJson(
+          getDetailPath(resultType, id),
+        );
 
-      const selectedNode = getNodeById(nodeId);
-      const nodeAssertions = allAssertions.filter(assertion => assertion.nodeId === nodeId);
-      const outgoingEdges = allEdges.filter(edge => edge.fromNodeId === nodeId);
-      const incomingEdges = allEdges.filter(edge => edge.toNodeId === nodeId);
+        if (resultType === "node") {
+          await renderNodeInspector(record);
+          return;
+        }
 
-      applyFilters();
-      renderInspector(selectedNode, nodeAssertions, outgoingEdges, incomingEdges);
-    };
+        if (resultType === "assertion") {
+          await renderAssertionInspector(record);
+          return;
+        }
 
-    function renderInspector(node, assertions, outgoingEdges, incomingEdges) {
-      const inspector = document.getElementById("inspector");
+        if (resultType === "edge") {
+          await renderEdgeInspector(record);
+          return;
+        }
 
-      if (!node) {
-        inspector.innerHTML = `<p class="empty">Node not found.</p>`;
-        return;
+        if (resultType === "source") {
+          await renderSourceInspector(record);
+          return;
+        }
+
+        if (resultType === "revision") {
+          await renderRevisionInspector(record);
+          return;
+        }
+
+        renderGenericInspector(resultType, record);
+      } catch (error) {
+        inspector.innerHTML = `
+          <h2>Could not load record</h2>
+          <p class="empty">${escapeHtml(error.message)}</p>
+        `;
       }
+    }
 
-      const sourceIds = getSourceIdsForNode(node, assertions, outgoingEdges, incomingEdges);
-      const matchingSources = allSources.filter(source => sourceIds.has(source.id));
-      const revisionCount = (node.revisions || []).length;
+    async function renderNodeInspector(node) {
+      const [assertionResponse, edgeResponse, revisionResponse] =
+        await Promise.all([
+          fetchJson(
+            `${API_BASE}/nodes/${encodeURIComponent(node.nodeId)}/assertions`,
+          ),
+          fetchJson(
+            `${API_BASE}/nodes/${encodeURIComponent(node.nodeId)}/edges`,
+          ),
+          fetchJson(
+            `${API_BASE}/revisions?objectId=${encodeURIComponent(node.nodeId)}&limit=100`,
+          ),
+        ]);
+
+      const assertions = assertionResponse.assertions || [];
+      const incomingEdges = edgeResponse.incoming || [];
+      const outgoingEdges = edgeResponse.outgoing || [];
+      const revisions = revisionResponse.revisions || [];
+
+      const sourceIds = new Set([
+        ...(node.sourceIds || []),
+        ...assertions.flatMap((assertion) => assertion.sourceIds || []),
+        ...incomingEdges.flatMap((edge) => edge.sourceIds || []),
+        ...outgoingEdges.flatMap((edge) => edge.sourceIds || []),
+      ]);
+
+      const sources = await Promise.all(
+        [...sourceIds].map(async (sourceId) => {
+          try {
+            return await fetchJson(
+              `${API_BASE}/sources/${encodeURIComponent(sourceId)}`,
+            );
+          } catch {
+            return {
+              sourceId,
+              name: sourceId,
+              notes: "Referenced source could not be loaded.",
+            };
+          }
+        }),
+      );
 
       inspector.innerHTML = `
-        <span class="hub-label">${getDisplayDomain(node.domain)}</span>
-        <h2>${node.title}</h2>
-        <div class="meta">${node.type}</div>
+        <span class="hub-label">${displayValue(node.domain, "Unknown Domain")}</span>
+        <h2>${escapeHtml(node.title)}</h2>
+        <div class="meta">${displayValue(node.nodeType, "Unclassified node")}</div>
 
-        <p><strong>Summary:</strong> ${node.summary || ""}</p>
-        <p>${node.description || ""}</p>
-
-        <p><strong>Node ID:</strong> <code>${node.id}</code></p>
+        <p><strong>Summary:</strong> ${displayValue(node.summary, "No summary.")}</p>
+        <p><strong>Node ID:</strong> <code>${escapeHtml(node.nodeId)}</code></p>
+        <p><strong>Bundle ID:</strong> <code>${escapeHtml(node.bundleId)}</code></p>
+        <p><strong>Status:</strong> ${displayValue(node.status)}</p>
 
         <div class="stat-grid">
           <div class="stat-card">
             <div class="stat-number">${assertions.length}</div>
             <div class="stat-label">Assertions</div>
           </div>
-
           <div class="stat-card">
             <div class="stat-number">${outgoingEdges.length}</div>
             <div class="stat-label">Outgoing</div>
           </div>
-
           <div class="stat-card">
             <div class="stat-number">${incomingEdges.length}</div>
             <div class="stat-label">Incoming</div>
           </div>
-
           <div class="stat-card">
-            <div class="stat-number">${matchingSources.length}</div>
+            <div class="stat-number">${sources.length}</div>
             <div class="stat-label">Sources</div>
           </div>
-
           <div class="stat-card">
-            <div class="stat-number">${revisionCount}</div>
+            <div class="stat-number">${revisions.length}</div>
             <div class="stat-label">Revisions</div>
           </div>
         </div>
 
         <div class="section">
           <h3>Assertions</h3>
-          ${assertions.length ? assertions.map(assertion => `
-            <article class="assertion-card">
-              <h4>${assertion.label}</h4>
-
-              <div class="meta">
-                ${assertion.assertionType} · ${assertion.status || "working"} · ${assertion.confidence || "working"}
-              </div>
-
-              <div class="meta">
-                <strong>Credibility:</strong> ${assertion.credibilityTier || "Unclassified"} ·
-                <strong>Verification:</strong> ${assertion.verificationStatus || "Unclassified"} ·
-                <strong>Review:</strong> ${assertion.reviewStatus || "Not reviewed"}
-              </div>
-
-              <div class="meta">
-                <strong>Support:</strong> ${assertion.supportLevel || "Unclassified"} ·
-                <strong>Interpretation:</strong> ${assertion.interpretationLevel || "Unclassified"}
-              </div>
-
-              <p><strong>Summary:</strong> ${assertion.summary || ""}</p>
-              <p>${assertion.body || ""}</p>
-
-              <p>
-                <strong>Source IDs:</strong>
-                ${(assertion.sourceIds || []).length
-                  ? assertion.sourceIds.map(id => `<code>${id}</code>`).join(" ")
-                  : "None yet"
-                }
-              </p>
-            </article>
-          `).join("") : `<p class="empty">No assertions yet.</p>`}
+          ${assertions.length
+            ? assertions.map(renderAssertionCard).join("")
+            : '<p class="empty">No assertions found.</p>'}
         </div>
 
         <div class="section">
           <h3>Outgoing Relationships</h3>
-          ${outgoingEdges.length ? outgoingEdges.map(edge => `
-            <div class="relationship-card">
-              <div class="relationship-line">
-                <strong>${node.title}</strong>
-                <span>${edge.label}</span>
-                <button class="relationship-button" onclick="window.selectNode('${edge.toNodeId}')">
-                  ${getNodeTitle(edge.toNodeId)}
-                </button>
-              </div>
-
-              <p>${edge.summary || ""}</p>
-
-              <div class="meta">
-                ${edge.relationshipType || "relationship"} · ${getDisplayDomain(edge.domain || "SourceRoot")}
-              </div>
-
-              <div class="meta">
-                <strong>Credibility:</strong> ${edge.credibilityTier || "Unclassified"} ·
-                <strong>Verification:</strong> ${edge.verificationStatus || "Unclassified"} ·
-                <strong>Review:</strong> ${edge.reviewStatus || "Not reviewed"}
-              </div>
-
-              <div class="meta">
-                <strong>Support:</strong> ${edge.supportLevel || "Unclassified"} ·
-                <strong>Strength:</strong> ${edge.relationshipStrength || "Unclassified"} ·
-                <strong>Interpretation:</strong> ${edge.interpretationLevel || "Unclassified"}
-              </div>
-
-              <p>
-                <strong>Source IDs:</strong>
-                ${(edge.sourceIds || []).length
-                  ? edge.sourceIds.map(id => `<code>${id}</code>`).join(" ")
-                  : "None yet"
-                }
-              </p>
-            </div>
-          `).join("") : `<p class="empty">No outgoing relationships yet.</p>`}
+          ${outgoingEdges.length
+            ? outgoingEdges.map((edge) => renderEdgeCard(edge, node)).join("")
+            : '<p class="empty">No outgoing relationships found.</p>'}
         </div>
 
         <div class="section">
           <h3>Incoming Relationships</h3>
-          ${incomingEdges.length ? incomingEdges.map(edge => `
-            <div class="relationship-card">
-              <div class="relationship-line">
-                <button class="relationship-button" onclick="window.selectNode('${edge.fromNodeId}')">
-                  ${getNodeTitle(edge.fromNodeId)}
-                </button>
-                <span>${edge.label}</span>
-                <strong>${node.title}</strong>
-              </div>
-
-              <p>${edge.summary || ""}</p>
-
-              <div class="meta">
-                ${edge.relationshipType || "relationship"} · ${getDisplayDomain(edge.domain || "SourceRoot")}
-              </div>
-
-              <div class="meta">
-                <strong>Credibility:</strong> ${edge.credibilityTier || "Unclassified"} ·
-                <strong>Verification:</strong> ${edge.verificationStatus || "Unclassified"} ·
-                <strong>Review:</strong> ${edge.reviewStatus || "Not reviewed"}
-              </div>
-
-              <div class="meta">
-                <strong>Support:</strong> ${edge.supportLevel || "Unclassified"} ·
-                <strong>Strength:</strong> ${edge.relationshipStrength || "Unclassified"} ·
-                <strong>Interpretation:</strong> ${edge.interpretationLevel || "Unclassified"}
-              </div>
-
-              <p>
-                <strong>Source IDs:</strong>
-                ${(edge.sourceIds || []).length
-                  ? edge.sourceIds.map(id => `<code>${id}</code>`).join(" ")
-                  : "None yet"
-                }
-              </p>
-            </div>
-          `).join("") : `<p class="empty">No incoming relationships yet.</p>`}
+          ${incomingEdges.length
+            ? incomingEdges.map((edge) => renderEdgeCard(edge, node)).join("")
+            : '<p class="empty">No incoming relationships found.</p>'}
         </div>
 
         <div class="section">
           <h3>Sources</h3>
-          ${matchingSources.length ? matchingSources.map(source => `
-            <article class="source-card">
-              <h4>${source.name}</h4>
-
-              <div class="meta">
-                ${getDisplayDomain(source.domain || "SourceRoot")} · ${source.type || "Source"} · ${source.qualityTier || "Working Source"}
-              </div>
-
-              <div class="meta">
-                <strong>Credibility:</strong> ${source.credibilityTier || "Unclassified"} ·
-                <strong>Verification:</strong> ${source.verificationStatus || "Unclassified"} ·
-                <strong>Review:</strong> ${source.reviewStatus || "Not reviewed"}
-              </div>
-
-              <div class="meta">
-                <strong>Publisher:</strong> ${source.publisher || "Not listed"} ·
-                <strong>License:</strong> ${source.licenseStatus || source.license || "Not listed"}
-              </div>
-
-              <p>${source.notes || ""}</p>
-              <p><strong>Source ID:</strong> <code>${source.id}</code></p>
-
-              ${source.url ? `<a class="open-source-link" href="${source.url}" target="_blank" rel="noopener">Open source</a>` : ""}
-            </article>
-          `).join("") : `
-            <p class="empty">No full source cards found yet.</p>
-            <p><strong>Referenced Source IDs:</strong> ${Array.from(sourceIds).map(id => `<code>${id}</code>`).join(" ") || "None yet"}</p>
-          `}
+          ${sources.length
+            ? sources.map(renderSourceCard).join("")
+            : '<p class="empty">No referenced sources found.</p>'}
         </div>
 
         <div class="section">
           <h3>Revisions</h3>
-          ${(node.revisions || []).length ? node.revisions.map(revision => `
-            <p><strong>${revision.version || "Revision"}</strong> — ${revision.summary || revision.note || ""}</p>
-          `).join("") : `<p class="empty">No revisions yet.</p>`}
+          ${revisions.length
+            ? revisions.map(renderRevisionCard).join("")
+            : '<p class="empty">No revisions found for this node ID.</p>'}
         </div>
 
         <div class="section">
-          <h3>Raw Node Data</h3>
-
+          <h3>Raw Normalized Node</h3>
           <details>
-            <summary>View raw adapted node object</summary>
-            <pre>${JSON.stringify(node, null, 2)}</pre>
+            <summary>View API response</summary>
+            <pre>${escapeHtml(JSON.stringify(node, null, 2))}</pre>
           </details>
+        </div>
+      `;
 
-          ${node.raw ? `
-            <details>
-              <summary>View original source object</summary>
-              <pre>${JSON.stringify(node.raw, null, 2)}</pre>
-            </details>
-          ` : ""}
+      inspector.querySelectorAll("[data-open-node]").forEach((button) => {
+        button.addEventListener("click", () => {
+          selectRecord("node", button.dataset.openNode);
+        });
+      });
+    }
+
+    function renderAssertionCard(assertion) {
+      return `
+        <article class="assertion-card">
+          <h4>${displayValue(assertion.label, assertion.assertionId)}</h4>
+          <div class="meta">
+            ${displayValue(assertion.assertionType)} ·
+            ${displayValue(assertion.confidence, "Unclassified confidence")}
+          </div>
+          <div class="meta">
+            <strong>Credibility:</strong> ${displayValue(assertion.credibilityTier)} ·
+            <strong>Verification:</strong> ${displayValue(assertion.verificationStatus)} ·
+            <strong>Review:</strong> ${displayValue(assertion.reviewStatus)}
+          </div>
+          <p><strong>Summary:</strong> ${displayValue(assertion.summary, "No summary.")}</p>
+          <p>${displayValue(assertion.body, "")}</p>
+          <p><strong>Assertion ID:</strong> <code>${escapeHtml(assertion.assertionId)}</code></p>
+        </article>
+      `;
+    }
+
+    function renderEdgeCard(edge, selectedNode) {
+      const otherNodeId =
+        edge.fromNodeId === selectedNode.nodeId
+          ? edge.toNodeId
+          : edge.fromNodeId;
+
+      return `
+        <div class="relationship-card">
+          <div class="relationship-line">
+            <strong>${escapeHtml(edge.fromNodeId)}</strong>
+            <span>${displayValue(edge.label, edge.relationshipType)}</span>
+            <button
+              class="relationship-button"
+              type="button"
+              data-open-node="${escapeHtml(otherNodeId)}"
+            >
+              ${escapeHtml(edge.toNodeId)}
+            </button>
+          </div>
+          <p>${displayValue(edge.summary, "")}</p>
+          <div class="meta">
+            ${displayValue(edge.relationshipType)} ·
+            ${displayValue(edge.domain, "Unknown Domain")}
+          </div>
+          <div class="meta">
+            <strong>Support:</strong> ${displayValue(edge.supportLevel)} ·
+            <strong>Strength:</strong> ${displayValue(edge.relationshipStrength)} ·
+            <strong>Review:</strong> ${displayValue(edge.reviewStatus)}
+          </div>
+          <p><strong>Edge ID:</strong> <code>${escapeHtml(edge.edgeId)}</code></p>
         </div>
       `;
     }
 
-    loadSourceRootInspector();
+    function renderSourceCard(source) {
+      return `
+        <article class="source-card">
+          <h4>${displayValue(source.name, source.sourceId)}</h4>
+          <div class="meta">
+            ${displayValue(source.domain, "Unknown Domain")} ·
+            ${displayValue(source.sourceType, "Source")}
+          </div>
+          <div class="meta">
+            <strong>Publisher:</strong> ${displayValue(source.publisher)} ·
+            <strong>Verification:</strong> ${displayValue(source.verificationStatus)} ·
+            <strong>Review:</strong> ${displayValue(source.reviewStatus)}
+          </div>
+          <p>${displayValue(source.notes, "")}</p>
+          <p><strong>Source ID:</strong> <code>${escapeHtml(source.sourceId)}</code></p>
+          ${source.url
+            ? `<a class="open-source-link" href="${escapeHtml(source.url)}" target="_blank" rel="noopener">Open source</a>`
+            : ""}
+        </article>
+      `;
+    }
+
+    function renderRevisionCard(revision) {
+      return `
+        <article class="assertion-card">
+          <h4>${displayValue(revision.revisionType, "Revision")}</h4>
+          <div class="meta">
+            ${displayValue(revision.objectType)} ·
+            ${displayValue(revision.status)}
+          </div>
+          <p>${displayValue(revision.summary, "No summary.")}</p>
+          <p><strong>Revision ID:</strong> <code>${escapeHtml(revision.revisionId)}</code></p>
+        </article>
+      `;
+    }
+
+    async function renderAssertionInspector(assertion) {
+      let node = null;
+      const sources = await Promise.all(
+        (assertion.sourceIds || []).map(async (sourceId) => {
+          try {
+            return await fetchJson(
+              `${API_BASE}/sources/${encodeURIComponent(sourceId)}`,
+            );
+          } catch {
+            return {
+              sourceId,
+              name: sourceId,
+              notes: "Referenced source could not be loaded.",
+            };
+          }
+        }),
+      );
+
+      if (assertion.nodeId) {
+        try {
+          node = await fetchJson(
+            `${API_BASE}/nodes/${encodeURIComponent(assertion.nodeId)}`,
+          );
+        } catch {
+          node = null;
+        }
+      }
+
+      inspector.innerHTML = `
+        <span class="hub-label">assertion</span>
+        <h2>${displayValue(assertion.label, assertion.assertionId)}</h2>
+
+        <div class="meta">
+          ${displayValue(assertion.assertionType, "Unclassified assertion")} ·
+          ${displayValue(assertion.domain, "Unknown Domain")}
+        </div>
+
+        <p><strong>Summary:</strong> ${displayValue(assertion.summary, "No summary.")}</p>
+        <p>${displayValue(assertion.body, "")}</p>
+
+        <p><strong>Assertion ID:</strong> <code>${escapeHtml(assertion.assertionId)}</code></p>
+        <p><strong>Bundle ID:</strong> <code>${escapeHtml(assertion.bundleId)}</code></p>
+
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-number">${sources.length}</div>
+            <div class="stat-label">Sources</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">${node ? 1 : 0}</div>
+            <div class="stat-label">Linked Node</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">${displayValue(assertion.confidence, "—")}</div>
+            <div class="stat-label">Confidence</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">${displayValue(assertion.supportLevel, "—")}</div>
+            <div class="stat-label">Support</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">${displayValue(assertion.reviewStatus, "—")}</div>
+            <div class="stat-label">Review</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h3>Linked Node</h3>
+          ${node
+            ? `
+              <article class="assertion-card">
+                <h4>${escapeHtml(node.title)}</h4>
+                <div class="meta">${displayValue(node.nodeType)} · ${displayValue(node.domain)}</div>
+                <p>${displayValue(node.summary, "No summary.")}</p>
+                <button
+                  class="relationship-button"
+                  type="button"
+                  data-open-node="${escapeHtml(node.nodeId)}"
+                >
+                  Open linked node
+                </button>
+              </article>
+            `
+            : '<p class="empty">Linked node could not be loaded.</p>'}
+        </div>
+
+        <div class="section">
+          <h3>Verification and Review</h3>
+          <p><strong>Credibility tier:</strong> ${displayValue(assertion.credibilityTier)}</p>
+          <p><strong>Verification status:</strong> ${displayValue(assertion.verificationStatus)}</p>
+          <p><strong>Review status:</strong> ${displayValue(assertion.reviewStatus)}</p>
+          <p><strong>Support level:</strong> ${displayValue(assertion.supportLevel)}</p>
+          <p><strong>Interpretation level:</strong> ${displayValue(assertion.interpretationLevel)}</p>
+        </div>
+
+        <div class="section">
+          <h3>Sources</h3>
+          ${sources.length
+            ? sources.map(renderSourceCard).join("")
+            : '<p class="empty">No referenced sources found.</p>'}
+        </div>
+
+        <div class="section">
+          <h3>Raw Normalized Assertion</h3>
+          <details>
+            <summary>View API response</summary>
+            <pre>${escapeHtml(JSON.stringify(assertion, null, 2))}</pre>
+          </details>
+        </div>
+      `;
+
+      inspector.querySelectorAll("[data-open-node]").forEach((button) => {
+        button.addEventListener("click", () => {
+          selectRecord("node", button.dataset.openNode);
+        });
+      });
+    }
+
+    async function renderEdgeInspector(edge) {
+      const [fromNode, toNode, sources] = await Promise.all([
+        fetchJson(`${API_BASE}/nodes/${encodeURIComponent(edge.fromNodeId)}`)
+          .catch(() => null),
+        fetchJson(`${API_BASE}/nodes/${encodeURIComponent(edge.toNodeId)}`)
+          .catch(() => null),
+        Promise.all(
+          (edge.sourceIds || []).map(async (sourceId) => {
+            try {
+              return await fetchJson(
+                `${API_BASE}/sources/${encodeURIComponent(sourceId)}`,
+              );
+            } catch {
+              return {
+                sourceId,
+                name: sourceId,
+                notes: "Referenced source could not be loaded.",
+              };
+            }
+          }),
+        ),
+      ]);
+
+      inspector.innerHTML = `
+        <span class="hub-label">edge</span>
+        <h2>${displayValue(edge.label, edge.relationshipType)}</h2>
+
+        <div class="relationship-card">
+          <div class="relationship-line">
+            <button
+              class="relationship-button"
+              type="button"
+              data-open-node="${escapeHtml(edge.fromNodeId)}"
+            >
+              ${escapeHtml(fromNode?.title || edge.fromNodeId)}
+            </button>
+
+            <strong>${displayValue(edge.label, edge.relationshipType)}</strong>
+
+            <button
+              class="relationship-button"
+              type="button"
+              data-open-node="${escapeHtml(edge.toNodeId)}"
+            >
+              ${escapeHtml(toNode?.title || edge.toNodeId)}
+            </button>
+          </div>
+
+          <p>${displayValue(edge.summary, "No relationship summary.")}</p>
+        </div>
+
+        <p><strong>Edge ID:</strong> <code>${escapeHtml(edge.edgeId)}</code></p>
+        <p><strong>Bundle ID:</strong> <code>${escapeHtml(edge.bundleId)}</code></p>
+        <p><strong>Relationship type:</strong> ${displayValue(edge.relationshipType)}</p>
+        <p><strong>Domain:</strong> ${displayValue(edge.domain)}</p>
+
+        <div class="section">
+          <h3>Relationship Quality</h3>
+          <p><strong>Credibility tier:</strong> ${displayValue(edge.credibilityTier)}</p>
+          <p><strong>Confidence:</strong> ${displayValue(edge.confidence)}</p>
+          <p><strong>Verification status:</strong> ${displayValue(edge.verificationStatus)}</p>
+          <p><strong>Review status:</strong> ${displayValue(edge.reviewStatus)}</p>
+          <p><strong>Support level:</strong> ${displayValue(edge.supportLevel)}</p>
+          <p><strong>Relationship strength:</strong> ${displayValue(edge.relationshipStrength)}</p>
+          <p><strong>Interpretation level:</strong> ${displayValue(edge.interpretationLevel)}</p>
+        </div>
+
+        <div class="section">
+          <h3>Sources</h3>
+          ${sources.length
+            ? sources.map(renderSourceCard).join("")
+            : '<p class="empty">No referenced sources found.</p>'}
+        </div>
+
+        <div class="section">
+          <h3>Raw Normalized Edge</h3>
+          <details>
+            <summary>View API response</summary>
+            <pre>${escapeHtml(JSON.stringify(edge, null, 2))}</pre>
+          </details>
+        </div>
+      `;
+
+      inspector.querySelectorAll("[data-open-node]").forEach((button) => {
+        button.addEventListener("click", () => {
+          selectRecord("node", button.dataset.openNode);
+        });
+      });
+    }
+
+    async function renderSourceInspector(source) {
+      const bundleId = source.bundleId;
+      const [nodesResponse, assertionsResponse, edgesResponse] =
+        await Promise.all([
+          fetchJson(
+            `${API_BASE}/bundles/${encodeURIComponent(bundleId)}/nodes?limit=100`,
+          ).catch(() => ({ nodes: [] })),
+          fetchJson(
+            `${API_BASE}/bundles/${encodeURIComponent(bundleId)}/assertions?limit=100`,
+          ).catch(() => ({ assertions: [] })),
+          fetchJson(
+            `${API_BASE}/bundles/${encodeURIComponent(bundleId)}/edges?limit=100`,
+          ).catch(() => ({ edges: [] })),
+        ]);
+
+      const linkedNodes = (nodesResponse.nodes || []).filter((node) =>
+        (node.sourceIds || []).includes(source.sourceId),
+      );
+      const linkedAssertions = (assertionsResponse.assertions || []).filter(
+        (assertion) =>
+          (assertion.sourceIds || []).includes(source.sourceId),
+      );
+      const linkedEdges = (edgesResponse.edges || []).filter((edge) =>
+        (edge.sourceIds || []).includes(source.sourceId),
+      );
+
+      inspector.innerHTML = `
+        <span class="hub-label">source</span>
+        <h2>${displayValue(source.name, source.sourceId)}</h2>
+
+        <div class="meta">
+          ${displayValue(source.sourceType, "Source")} ·
+          ${displayValue(source.domain, "Unknown Domain")}
+        </div>
+
+        <p>${displayValue(source.notes, "No source notes.")}</p>
+
+        <p><strong>Source ID:</strong> <code>${escapeHtml(source.sourceId)}</code></p>
+        <p><strong>Bundle ID:</strong> <code>${escapeHtml(source.bundleId)}</code></p>
+        <p><strong>Publisher:</strong> ${displayValue(source.publisher)}</p>
+        <p><strong>License:</strong> ${displayValue(source.licenseStatus || source.license)}</p>
+
+        ${source.url
+          ? `<a class="open-source-link" href="${escapeHtml(source.url)}" target="_blank" rel="noopener">Open original source</a>`
+          : ""}
+
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-number">${linkedNodes.length}</div>
+            <div class="stat-label">Nodes</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">${linkedAssertions.length}</div>
+            <div class="stat-label">Assertions</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">${linkedEdges.length}</div>
+            <div class="stat-label">Edges</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">${displayValue(source.qualityTier, "—")}</div>
+            <div class="stat-label">Quality</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">${displayValue(source.reviewStatus, "—")}</div>
+            <div class="stat-label">Review</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h3>Referenced by Nodes</h3>
+          ${linkedNodes.length
+            ? linkedNodes.map((node) => `
+                <article class="assertion-card">
+                  <h4>${escapeHtml(node.title)}</h4>
+                  <div class="meta">${displayValue(node.nodeType)} · ${displayValue(node.domain)}</div>
+                  <p>${displayValue(node.summary, "")}</p>
+                  <button
+                    class="relationship-button"
+                    type="button"
+                    data-open-node="${escapeHtml(node.nodeId)}"
+                  >
+                    Open node
+                  </button>
+                </article>
+              `).join("")
+            : '<p class="empty">No nodes in this bundle reference this source.</p>'}
+        </div>
+
+        <div class="section">
+          <h3>Referenced by Assertions</h3>
+          ${linkedAssertions.length
+            ? linkedAssertions.map(renderAssertionCard).join("")
+            : '<p class="empty">No assertions in this bundle reference this source.</p>'}
+        </div>
+
+        <div class="section">
+          <h3>Referenced by Edges</h3>
+          ${linkedEdges.length
+            ? linkedEdges.map((edge) => `
+                <article class="relationship-card">
+                  <h4>${displayValue(edge.label, edge.relationshipType)}</h4>
+                  <p>${displayValue(edge.summary, "")}</p>
+                  <p><strong>Edge ID:</strong> <code>${escapeHtml(edge.edgeId)}</code></p>
+                </article>
+              `).join("")
+            : '<p class="empty">No edges in this bundle reference this source.</p>'}
+        </div>
+
+        <div class="section">
+          <h3>Raw Normalized Source</h3>
+          <details>
+            <summary>View API response</summary>
+            <pre>${escapeHtml(JSON.stringify(source, null, 2))}</pre>
+          </details>
+        </div>
+      `;
+
+      inspector.querySelectorAll("[data-open-node]").forEach((button) => {
+        button.addEventListener("click", () => {
+          selectRecord("node", button.dataset.openNode);
+        });
+      });
+    }
+
+    async function renderRevisionInspector(revision) {
+      let linkedRecord = null;
+      let linkedRecordType = null;
+
+      const endpointByObjectType = {
+        node: "nodes",
+        assertion: "assertions",
+        edge: "edges",
+        source: "sources",
+        revision: "revisions",
+      };
+
+      const endpoint = endpointByObjectType[revision.objectType];
+
+      if (endpoint && revision.objectId) {
+        try {
+          linkedRecord = await fetchJson(
+            `${API_BASE}/${endpoint}/${encodeURIComponent(revision.objectId)}`,
+          );
+          linkedRecordType = revision.objectType;
+        } catch {
+          linkedRecord = null;
+        }
+      }
+
+      inspector.innerHTML = `
+        <span class="hub-label">revision</span>
+        <h2>${displayValue(revision.revisionType, "Revision")}</h2>
+
+        <p>${displayValue(revision.summary, "No revision summary.")}</p>
+
+        <p><strong>Revision ID:</strong> <code>${escapeHtml(revision.revisionId)}</code></p>
+        <p><strong>Bundle ID:</strong> <code>${escapeHtml(revision.bundleId)}</code></p>
+        <p><strong>Object type:</strong> ${displayValue(revision.objectType)}</p>
+        <p><strong>Object ID:</strong> <code>${displayValue(revision.objectId)}</code></p>
+        <p><strong>Status:</strong> ${displayValue(revision.status)}</p>
+
+        <div class="section">
+          <h3>Linked Record</h3>
+          ${linkedRecord
+            ? `
+              <article class="assertion-card">
+                <h4>${displayValue(
+                  linkedRecord.title ||
+                  linkedRecord.name ||
+                  linkedRecord.label ||
+                  linkedRecord.summary ||
+                  linkedRecord[`${linkedRecordType}Id`],
+                  "Linked record",
+                )}</h4>
+                <p>${displayValue(linkedRecord.summary || linkedRecord.notes, "")}</p>
+                <button
+                  class="relationship-button"
+                  type="button"
+                  data-open-record-type="${escapeHtml(linkedRecordType)}"
+                  data-open-record-id="${escapeHtml(revision.objectId)}"
+                >
+                  Open linked record
+                </button>
+              </article>
+            `
+            : '<p class="empty">A direct linked-record endpoint could not be resolved for this revision object type.</p>'}
+        </div>
+
+        <div class="section">
+          <h3>Raw Normalized Revision</h3>
+          <details>
+            <summary>View API response</summary>
+            <pre>${escapeHtml(JSON.stringify(revision, null, 2))}</pre>
+          </details>
+        </div>
+      `;
+
+      inspector.querySelectorAll("[data-open-record-type]").forEach((button) => {
+        button.addEventListener("click", () => {
+          selectRecord(
+            button.dataset.openRecordType,
+            button.dataset.openRecordId,
+          );
+        });
+      });
+    }
+
+    function renderGenericInspector(resultType, record) {
+      const title =
+        record.title ||
+        record.name ||
+        record.label ||
+        record.summary ||
+        record.assertionId ||
+        record.edgeId ||
+        record.sourceId ||
+        record.revisionId;
+
+      inspector.innerHTML = `
+        <span class="hub-label">${escapeHtml(resultType)}</span>
+        <h2>${displayValue(title, "Normalized record")}</h2>
+        <p><strong>Bundle ID:</strong> <code>${displayValue(record.bundleId)}</code></p>
+        <p><strong>Domain:</strong> ${displayValue(record.domain)}</p>
+        <p><strong>Summary:</strong> ${displayValue(record.summary || record.notes, "No summary.")}</p>
+
+        <div class="section">
+          <h3>Raw Normalized Record</h3>
+          <details open>
+            <summary>View API response</summary>
+            <pre>${escapeHtml(JSON.stringify(record, null, 2))}</pre>
+          </details>
+        </div>
+      `;
+    }
+
+    window.runDemoSearch = async function (term) {
+      searchInput.value = term;
+      hubFilter.value = "all";
+      typeFilter.value = "all";
+      await runSearch();
+    };
+
+    window.loadLiveNodes = loadLiveNodes;
+
+    searchInput.addEventListener("input", () => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(runSearch, 300);
+    });
+
+    hubFilter.addEventListener("change", runSearch);
+    typeFilter.addEventListener("change", runSearch);
+
+    clearFiltersButton.addEventListener("click", async () => {
+      searchInput.value = "";
+      hubFilter.value = "all";
+      typeFilter.value = "all";
+      selectedResultKey = null;
+      await loadLiveNodes();
+    });
+
+    renderEngineStatus();
+    loadLiveNodes();
   </script>
 </body>
 </html>

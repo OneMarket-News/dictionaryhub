@@ -250,6 +250,121 @@
       font-size: 13px;
     }
 
+
+    .api-status {
+      background: #fff8e6;
+      border: 1px solid #ead59a;
+      border-radius: 12px;
+      padding: 12px;
+      margin-top: 14px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .explorer-grid {
+      display: grid;
+      grid-template-columns: minmax(300px, 0.9fr) minmax(420px, 1.4fr);
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .request-box,
+    .response-box {
+      background: #fffdf8;
+      border: 1px solid #eee2c7;
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .request-row {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .request-box select,
+    .request-box input,
+    .request-box textarea {
+      width: 100%;
+      border: 1px solid #d6cdbd;
+      border-radius: 10px;
+      padding: 10px;
+      background: white;
+      color: #1f2933;
+      font-family: inherit;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    .request-box textarea {
+      min-height: 220px;
+      font-family: Consolas, Monaco, monospace;
+      resize: vertical;
+    }
+
+    .run-button {
+      width: 100%;
+      border: 1px solid #111827;
+      border-radius: 10px;
+      padding: 11px;
+      background: #111827;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .run-button:hover {
+      background: #374151;
+    }
+
+    .quick-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .quick-actions button {
+      border: 1px solid #cfc7b8;
+      background: #fff8e6;
+      color: #1f2933;
+      border-radius: 999px;
+      padding: 7px 10px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .response-meta {
+      color: #6b7280;
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    .response-box pre {
+      min-height: 360px;
+      max-height: 680px;
+      margin: 0;
+    }
+
+    .supported-badge {
+      display: inline-block;
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #86efac;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: bold;
+      margin-left: 8px;
+    }
+
+    @media (max-width: 900px) {
+      .explorer-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     @media (max-width: 750px) {
       main {
         padding: 18px 14px;
@@ -276,8 +391,7 @@
       <h1>SourceRoot API Preview</h1>
 
       <div class="subtitle">
-        A prototype view of how SourceRoot could expose import validation, nodes, assertions, assertion credibility, edges, relationship credibility, sources, search, citations, and revisions through an API layer.
-        This is not a live backend yet. It is the product contract for what the engine is becoming.
+        A live explorer for the SourceRoot backend. Run supported requests against PostgreSQL-backed endpoints, inspect normalized JSON responses, and keep the remaining roadmap endpoints visible as the product contract.
       </div>
 
       <div class="top-links">
@@ -317,12 +431,68 @@ Verified, inspectable, source-aware knowledge</code>
     </section>
 
     <section class="panel">
+      <h2>Live API Explorer <span class="supported-badge">Connected Backend</span></h2>
+
+      <p class="overview-text">
+        Choose a supported endpoint, adjust its path or query, and run the request.
+        POST validation accepts a complete SourceRoot bundle as JSON.
+      </p>
+
+      <div id="apiStatus" class="api-status">Checking SourceRoot API...</div>
+
+      <div class="explorer-grid">
+        <div class="request-box">
+          <div class="request-row">
+            <select id="methodSelect" aria-label="HTTP method">
+              <option value="GET">GET</option>
+              <option value="POST">POST</option>
+            </select>
+
+            <input
+              id="pathInput"
+              type="text"
+              value="/nodes?page=1&limit=10"
+              aria-label="API path"
+            />
+          </div>
+
+          <textarea
+            id="requestBody"
+            aria-label="JSON request body"
+            placeholder="JSON body for POST requests"
+          ></textarea>
+
+          <button id="runRequestButton" class="run-button" type="button">
+            Run Request
+          </button>
+
+          <div class="quick-actions">
+            <button type="button" data-example="health">Health</button>
+            <button type="button" data-example="nodes">Nodes</button>
+            <button type="button" data-example="assertions">Assertions</button>
+            <button type="button" data-example="edges">Edges</button>
+            <button type="button" data-example="sources">Sources</button>
+            <button type="button" data-example="revisions">Revisions</button>
+            <button type="button" data-example="search">Search Fire</button>
+            <button type="button" data-example="bundles">Imported Bundles</button>
+            <button type="button" data-example="validate">Validate Bundle</button>
+          </div>
+        </div>
+
+        <div class="response-box">
+          <div id="responseMeta" class="response-meta">
+            No request has been run yet.
+          </div>
+          <pre id="responseOutput">Select an endpoint and click Run Request.</pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
       <h2>Exportable API Response Examples</h2>
 
       <p class="overview-text">
-        These static JSON examples show what SourceRoot API responses could look like for the Light MVP.
-        They are not live backend responses yet, but they model the product contract for node retrieval,
-        import validation, and citation-ready AI answers.
+        The interactive explorer below executes real requests against the local SourceRoot backend. The reference cards farther down remain useful documentation for current and planned API capabilities.
       </p>
 
       <div class="endpoint-grid">
@@ -1060,7 +1230,213 @@ Disputed connection = disputed relationship credibility</code>
   </main>
 
   <footer>
-    SourceRoot API Preview. Current status: static product contract, not a live backend API yet.
+    SourceRoot API Explorer. Live requests use the local SourceRoot backend API; unsupported roadmap endpoints remain documented as product-contract examples.
   </footer>
+
+  <script>
+    const API_ORIGIN = "http://localhost:3000";
+    const API_BASE = `${API_ORIGIN}/api/v1`;
+
+    const methodSelect = document.getElementById("methodSelect");
+    const pathInput = document.getElementById("pathInput");
+    const requestBody = document.getElementById("requestBody");
+    const runRequestButton = document.getElementById("runRequestButton");
+    const responseMeta = document.getElementById("responseMeta");
+    const responseOutput = document.getElementById("responseOutput");
+    const apiStatus = document.getElementById("apiStatus");
+
+    const validationExample = {
+      bundleId: "api-explorer-validation-example",
+      bundleType: "sourceroot-import-bundle",
+      version: "1.0.0",
+      domain: "SourceRoot",
+      nodes: [],
+      assertions: [],
+      edges: [],
+      sources: [],
+      revisions: []
+    };
+
+    const examples = {
+      health: {
+        method: "GET",
+        path: "/health",
+        body: ""
+      },
+      nodes: {
+        method: "GET",
+        path: "/nodes?page=1&limit=10",
+        body: ""
+      },
+      assertions: {
+        method: "GET",
+        path: "/assertions?page=1&limit=10",
+        body: ""
+      },
+      edges: {
+        method: "GET",
+        path: "/edges?page=1&limit=10",
+        body: ""
+      },
+      sources: {
+        method: "GET",
+        path: "/sources?page=1&limit=10",
+        body: ""
+      },
+      revisions: {
+        method: "GET",
+        path: "/revisions?page=1&limit=10",
+        body: ""
+      },
+      search: {
+        method: "GET",
+        path: "/search?q=Fire",
+        body: ""
+      },
+      bundles: {
+        method: "GET",
+        path: "/import?page=1&limit=10",
+        body: ""
+      },
+      validate: {
+        method: "POST",
+        path: "/validate",
+        body: JSON.stringify(validationExample, null, 2)
+      }
+    };
+
+    function escapeText(value) {
+      return String(value ?? "");
+    }
+
+    function resolveUrl(path) {
+      const trimmed = path.trim();
+
+      if (trimmed === "/health" || trimmed === "health") {
+        return `${API_ORIGIN}/health`;
+      }
+
+      if (/^https?:\/\//i.test(trimmed)) {
+        return trimmed;
+      }
+
+      const normalized = trimmed.startsWith("/")
+        ? trimmed
+        : `/${trimmed}`;
+
+      return `${API_BASE}${normalized}`;
+    }
+
+    async function checkApi() {
+      try {
+        const response = await fetch(`${API_ORIGIN}/health`);
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        apiStatus.innerHTML = `
+          <strong>SourceRoot API: Connected</strong><br>
+          Service: ${escapeText(data.service || "SourceRoot backend")} ·
+          Status: ${escapeText(data.status || "available")} ·
+          Base URL: <code>${API_BASE}</code>
+        `;
+      } catch (error) {
+        apiStatus.innerHTML = `
+          <strong>SourceRoot API: Offline</strong><br>
+          ${escapeText(error.message)}<br>
+          Start the backend with <code>npm.cmd run dev</code>.
+        `;
+      }
+    }
+
+    async function runRequest() {
+      const method = methodSelect.value;
+      const url = resolveUrl(pathInput.value);
+      const options = {
+        method,
+        headers: {
+          Accept: "application/json"
+        }
+      };
+
+      if (method !== "GET") {
+        let parsedBody;
+
+        try {
+          parsedBody = requestBody.value.trim()
+            ? JSON.parse(requestBody.value)
+            : {};
+        } catch (error) {
+          responseMeta.textContent = "Request body error";
+          responseOutput.textContent = `Invalid JSON: ${error.message}`;
+          return;
+        }
+
+        options.headers["Content-Type"] = "application/json";
+        options.body = JSON.stringify(parsedBody);
+      }
+
+      runRequestButton.disabled = true;
+      responseMeta.textContent = `${method} ${url} — loading...`;
+      responseOutput.textContent = "Waiting for SourceRoot API...";
+
+      const startedAt = performance.now();
+
+      try {
+        const response = await fetch(url, options);
+        const elapsed = Math.round(performance.now() - startedAt);
+        const text = await response.text();
+
+        let formatted = text;
+
+        try {
+          formatted = JSON.stringify(JSON.parse(text), null, 2);
+        } catch {
+          // Keep non-JSON response text as-is.
+        }
+
+        responseMeta.textContent =
+          `${method} ${url} — HTTP ${response.status} — ${elapsed} ms`;
+        responseOutput.textContent = formatted || "(empty response)";
+      } catch (error) {
+        const elapsed = Math.round(performance.now() - startedAt);
+        responseMeta.textContent =
+          `${method} ${url} — request failed after ${elapsed} ms`;
+        responseOutput.textContent = error.stack || error.message;
+      } finally {
+        runRequestButton.disabled = false;
+      }
+    }
+
+    document
+      .querySelectorAll("[data-example]")
+      .forEach((button) => {
+        button.addEventListener("click", () => {
+          const example = examples[button.dataset.example];
+
+          methodSelect.value = example.method;
+          pathInput.value = example.path;
+          requestBody.value = example.body;
+        });
+      });
+
+    methodSelect.addEventListener("change", () => {
+      requestBody.disabled = methodSelect.value === "GET";
+    });
+
+    runRequestButton.addEventListener("click", runRequest);
+
+    pathInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        runRequest();
+      }
+    });
+
+    requestBody.disabled = true;
+    checkApi();
+  </script>
+
 </body>
 </html>

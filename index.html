@@ -307,6 +307,49 @@
       line-height: 1.45;
     }
 
+
+    .live-status {
+      margin-top: 18px;
+      border: 1px solid #fde68a;
+      background: #fffbeb;
+      color: #92400e;
+      border-radius: 14px;
+      padding: 14px;
+      line-height: 1.5;
+      font-size: 13px;
+    }
+
+    .live-status.connected {
+      background: #f0fdf4;
+      border-color: #86efac;
+      color: #166534;
+    }
+
+    .live-metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .live-metric {
+      background: white;
+      border: 1px solid #ddd6c8;
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .live-metric strong {
+      display: block;
+      font-size: 24px;
+      margin-bottom: 3px;
+    }
+
+    .live-metric span {
+      color: #6b7280;
+      font-size: 12px;
+    }
+
     footer {
       padding: 0 24px 32px;
       color: #6b7280;
@@ -364,13 +407,18 @@
         <h1>Make knowledge inspectable before it becomes trusted.</h1>
 
         <p class="hero-lede">
-          SourceRoot is a prototype engine for organizing knowledge into claims, relationships,
-          sources, credibility metadata, identity context, revisions, and import validation.
+          SourceRoot is a working provenance engine for organizing knowledge into claims, relationships, sources, credibility metadata, identity context, revisions, validation, PostgreSQL storage, and API retrieval.
         </p>
 
         <div class="hero-model">
-          Node → Assertion → Edge → Source → Credibility → Identity → Revision → Import Validation
+          Bundle → Validation → PostgreSQL Import → Node → Assertion → Edge → Source → Credibility → Identity → Revision → Search
         </div>
+
+        <div id="landingApiStatus" class="live-status">
+          Checking SourceRoot API...
+        </div>
+
+        <div id="landingMetrics" class="live-metrics"></div>
 
         <div class="cta-row">
           <a class="primary-button" href="sourceroot.html">
@@ -382,7 +430,7 @@
           </a>
 
           <a class="secondary-button" href="sourceroot-import-preview.html">
-            Validate Light Bundle
+            Validate and Import Bundle
           </a>
         </div>
       </section>
@@ -439,33 +487,32 @@
       <h2>Current MVP: Light</h2>
 
       <p>
-        The current MVP models the concept of <strong>light</strong> across physical,
-        dictionary, biblical, symbolic, truth, knowledge, guidance, revelation, and visibility contexts.
+        The current MVP includes live imported knowledge across SourceRoot bundles. The Light demo remains the clearest cross-domain example, connecting physical, dictionary, biblical, symbolic, truth, knowledge, guidance, revelation, and visibility contexts.
       </p>
 
       <div class="proof-stats">
         <div class="stat">
-          <div class="stat-number">8</div>
+          <div id="landingNodeCount" class="stat-number">8</div>
           <div class="stat-label">Nodes</div>
         </div>
 
         <div class="stat">
-          <div class="stat-number">10</div>
+          <div id="landingAssertionCount" class="stat-number">10</div>
           <div class="stat-label">Assertions</div>
         </div>
 
         <div class="stat">
-          <div class="stat-number">9</div>
+          <div id="landingEdgeCount" class="stat-number">9</div>
           <div class="stat-label">Relationships</div>
         </div>
 
         <div class="stat">
-          <div class="stat-number">11</div>
+          <div id="landingSourceCount" class="stat-number">11</div>
           <div class="stat-label">Sources</div>
         </div>
 
         <div class="stat">
-          <div class="stat-number">12</div>
+          <div id="landingRevisionCount" class="stat-number">12</div>
           <div class="stat-label">Revisions</div>
         </div>
       </div>
@@ -475,17 +522,16 @@
       <h2>Demo Flow</h2>
 
       <p>
-        The MVP demo shows how SourceRoot validates, visualizes, and inspects knowledge before it is trusted.
+        The live demo shows how SourceRoot validates, imports, stores, retrieves, visualizes, searches, and inspects knowledge before it is trusted.
       </p>
 
       <div class="flow">
         <div class="flow-step">
           <div class="step-number">1</div>
           <div>
-            <div class="step-title">Validate the Light MVP Bundle</div>
+            <div class="step-title">Validate and import a bundle</div>
             <div class="step-text">
-              Open Import Preview and confirm the bundle is structurally safe:
-              <code>Ready With Warnings</code>, <code>Errors: 0</code>.
+              Open Import Preview, run backend validation, review errors and warnings, then import approved records into PostgreSQL.
             </div>
           </div>
         </div>
@@ -525,22 +571,22 @@
     </section>
 
     <section class="section">
-      <h2>Open the Prototype</h2>
+      <h2>Open the Live System</h2>
 
       <div class="grid link-grid">
         <a href="sourceroot.html">
           <strong>SourceRoot Dashboard</strong>
-          <span>Main prototype dashboard and demo starting point.</span>
+          <span>Live dashboard with API health, database counts, imported bundles, and direct access to the SourceRoot registries.</span>
         </a>
 
         <a href="sourceroot-import-preview.html">
           <strong>Import Preview</strong>
-          <span>Validate example, broken, local, and Light MVP import bundles.</span>
+          <span>Validate registered or local bundles through the backend and import approved records into PostgreSQL.</span>
         </a>
 
         <a href="sourceroot-import-bundle-registry.html">
   <strong>Import Bundle Registry</strong>
-  <span>Browse available bundles, validation status, counts, warnings, and related API examples.</span>
+  <span>Browse bundles imported into PostgreSQL and inspect their normalized object counts and records.</span>
 </a>
 
 <a href="sourceroot-mvp-walkthrough.html">
@@ -574,8 +620,8 @@
         </a>
 
         <a href="sourceroot-api-preview.html">
-          <strong>API Preview</strong>
-          <span>Preview future SourceRoot retrieval and validation endpoints.</span>
+          <strong>API Explorer</strong>
+          <span>Run live GET and POST requests against the SourceRoot backend.</span>
         </a>
       </div>
     </section>
@@ -600,7 +646,88 @@
 
   <footer>
     SourceRoot prototype. Current MVP: Light Bundle. Core model:
-    Node → Assertion → Edge → Source → Credibility → Identity → Revision → Import Validation.
+    Bundle → Validation → PostgreSQL Import → Node → Assertion → Edge → Source → Credibility → Identity → Revision → Search.
   </footer>
+
+  <script>
+    const LANDING_API_ORIGIN = "http://localhost:3000";
+    const LANDING_API_BASE = `${LANDING_API_ORIGIN}/api/v1`;
+
+    async function landingFetch(url) {
+      const response = await fetch(url, {
+        headers: { Accept: "application/json" }
+      });
+
+      const body = await response.json();
+
+      if (!response.ok) {
+        throw new Error(body.message || `HTTP ${response.status}`);
+      }
+
+      return body;
+    }
+
+    function landingMetric(value, label) {
+      return `
+        <div class="live-metric">
+          <strong>${Number(value || 0)}</strong>
+          <span>${label}</span>
+        </div>
+      `;
+    }
+
+    async function loadLandingStatus() {
+      const status = document.getElementById("landingApiStatus");
+      const metrics = document.getElementById("landingMetrics");
+
+      try {
+        const [health, bundles, nodes, assertions, edges, sources, revisions] =
+          await Promise.all([
+            landingFetch(`${LANDING_API_ORIGIN}/health`),
+            landingFetch(`${LANDING_API_BASE}/import?page=1&limit=1`),
+            landingFetch(`${LANDING_API_BASE}/nodes?page=1&limit=1`),
+            landingFetch(`${LANDING_API_BASE}/assertions?page=1&limit=1`),
+            landingFetch(`${LANDING_API_BASE}/edges?page=1&limit=1`),
+            landingFetch(`${LANDING_API_BASE}/sources?page=1&limit=1`),
+            landingFetch(`${LANDING_API_BASE}/revisions?page=1&limit=1`)
+          ]);
+
+        status.classList.add("connected");
+        status.innerHTML = `
+          <strong>${health.service || "SourceRoot backend"} connected.</strong><br>
+          The live PostgreSQL-backed SourceRoot system is available.
+        `;
+
+        metrics.innerHTML = [
+          landingMetric(bundles.total, "Imported Bundles"),
+          landingMetric(nodes.total, "Nodes"),
+          landingMetric(assertions.total, "Assertions"),
+          landingMetric(edges.total, "Edges"),
+          landingMetric(sources.total, "Sources"),
+          landingMetric(revisions.total, "Revisions")
+        ].join("");
+
+        document.getElementById("landingNodeCount").textContent =
+          Number(nodes.total || 0);
+        document.getElementById("landingAssertionCount").textContent =
+          Number(assertions.total || 0);
+        document.getElementById("landingEdgeCount").textContent =
+          Number(edges.total || 0);
+        document.getElementById("landingSourceCount").textContent =
+          Number(sources.total || 0);
+        document.getElementById("landingRevisionCount").textContent =
+          Number(revisions.total || 0);
+      } catch (error) {
+        status.innerHTML = `
+          <strong>SourceRoot API unavailable.</strong><br>
+          Start the backend with <code>npm.cmd run dev</code>. The public documentation links remain available.
+        `;
+        metrics.innerHTML = "";
+      }
+    }
+
+    loadLandingStatus();
+  </script>
+
 </body>
 </html>

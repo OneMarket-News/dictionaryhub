@@ -27,8 +27,8 @@ footer{padding:0 24px 28px;color:#64748b;font-size:13px}
 </head>
 <body>
 <header><div class="inner"><h1>SourceRoot Backend Blueprint</h1>
-<div class="subtitle">Proposed API, PostgreSQL data model, authentication boundary, migration path, and implementation order for moving SourceRoot beyond localStorage.</div>
-<nav><a href="sourceroot.html">SourceRoot Home</a><a href="sourceroot-schema-reference.html">Schema Reference</a><a href="sourceroot-lifecycle-tests.html">Lifecycle Tests</a><a href="sourceroot-lifecycle-event-registry.html">Lifecycle Events</a></nav></div></header>
+<div class="subtitle">Current SourceRoot backend architecture, implemented API surface, PostgreSQL data model, remaining authentication boundary, deployment path, and next engineering phases.</div>
+<nav><a href="sourceroot.html">SourceRoot Home</a><a href="sourceroot-schema-reference.html">Schema Reference</a><a href="sourceroot-api-preview.html">API Explorer</a><a href="sourceroot-import-bundle-registry.html">Imported Bundles</a></nav></div></header>
 <div class="layout">
 <aside>
 <a href="#decisions">Architecture decisions</a>
@@ -41,16 +41,16 @@ footer{padding:0 24px 28px;color:#64748b;font-size:13px}
 <a href="#risks">Risks</a>
 </aside>
 <main>
-<section class="panel hero"><h2>Recommended Alpha Architecture</h2>
-<p class="overview">Start with one API service and one PostgreSQL database. Keep SourceRoot's existing JSON contract at the API boundary, then normalize core graph objects into relational tables while preserving full original JSON and extension payloads.</p>
+<section class="panel hero"><h2>Implemented Alpha Architecture</h2>
+<p class="overview">SourceRoot now runs as one TypeScript REST API service backed by PostgreSQL. Import bundles are validated at the API boundary, normalized into relational graph tables, and remain retrievable through bundle-scoped and registry endpoints.</p>
 <div class="grid">
-<div class="card"><strong>Frontend</strong><p>Existing HTML/JavaScript pages using a repository adapter.</p></div>
-<div class="card"><strong>API</strong><p>Node.js + TypeScript REST service.</p></div>
-<div class="card"><strong>Database</strong><p>PostgreSQL with JSONB for extensions and original artifacts.</p></div>
-<div class="card"><strong>Authentication</strong><p>Managed identity provider or secure session-based auth.</p></div>
-<div class="card"><strong>Deployment</strong><p>One API deployment, one managed Postgres instance, static frontend hosting.</p></div>
+<div class="card good"><strong>Frontend</strong><p>HTML/JavaScript pages now call the live API for imports, registries, inspection, search, graphs, and dashboard counts.</p></div>
+<div class="card good"><strong>API</strong><p>Implemented Node.js + TypeScript + Express REST service.</p></div>
+<div class="card good"><strong>Database</strong><p>Implemented PostgreSQL persistence with normalized graph records and bundle tracking.</p></div>
+<div class="card warn"><strong>Authentication</strong><p>Not yet implemented. Managed identity or secure session authentication remains the next protection boundary.</p></div>
+<div class="card warn"><strong>Deployment</strong><p>Still local development. Production hosting, managed PostgreSQL, environment configuration, monitoring, and backups remain.</p></div>
 </div>
-<div class="notice warn"><strong>Planning decision:</strong> do not begin with microservices, blockchain storage, a graph database, or multiple databases. The current workload is small and relational integrity matters more than horizontal scale.</div>
+<div class="notice good"><strong>Architecture decision confirmed:</strong> the single-service REST and PostgreSQL approach is working. Microservices, blockchain storage, graph databases, and multiple databases remain unnecessary at the current scale.</div>
 </section>
 
 <section id="decisions" class="panel"><h2>Architecture Decisions</h2>
@@ -67,40 +67,57 @@ footer{padding:0 24px 28px;color:#64748b;font-size:13px}
 
 <section id="services" class="panel"><h2>Service Boundaries</h2>
 <div class="grid">
-<div class="card good"><h3>Validation Service</h3><p>Schema checks, controlled vocabularies, references, counts, readiness, and hashes.</p></div>
-<div class="card"><h3>Bundle Service</h3><p>Bundle creation, version conflicts, retrieval, indexing, and staging.</p></div>
-<div class="card"><h3>Package Service</h3><p>Package creation, exact artifact storage, integrity verification, and restore rules.</p></div>
-<div class="card"><h3>Inspection Service</h3><p>Reviewer decisions, issues, hashes, and approval history.</p></div>
-<div class="card"><h3>Lifecycle Event Service</h3><p>Append-only event writes and searchable audit history.</p></div>
-<div class="card"><h3>Knowledge Query Service</h3><p>Node search, assertions, relationships, sources, and cross-hub lookups.</p></div>
+<div class="card good"><h3>Validation Service</h3><p>Implemented backend schema checks, controlled vocabularies, references, counts, readiness, and validation issues.</p></div>
+<div class="card good"><h3>Import and Bundle Service</h3><p>Implemented validation, normalized import, bundle listing, bundle retrieval, and bundle-scoped registry reads.</p></div>
+<div class="card warn"><h3>Legacy Package Service</h3><p>Browser-local package creation and restoration remain legacy tooling and are not part of the current PostgreSQL workflow.</p></div>
+<div class="card warn"><h3>Review Service</h3><p>Not yet implemented server-side. Future work includes approvals, rejections, review notes, and revision decisions.</p></div>
+<div class="card warn"><h3>Audit Event Service</h3><p>Planned append-only server-side audit history for imports, reviews, revisions, and permission-sensitive writes.</p></div>
+<div class="card good"><h3>Knowledge Query Service</h3><p>Implemented node, assertion, edge, source, revision, node-detail, bundle-scoped, and unified search endpoints.</p></div>
 </div>
 <p class="overview">These are code-level modules inside one application at first—not separately deployed services.</p></section>
 
 <section id="data-model" class="panel"><h2>Database Model</h2>
-<p class="overview">The included SQL blueprint defines users, roles, bundles, nodes, assertions, edges, sources, source links, revisions, snapshots, packages, inspections, lifecycle events, and hub extensions.</p>
+<p class="overview">The implemented database currently stores imported bundles, nodes, assertions, edges, sources, revisions, and source-link join tables. Users, roles, reviews, lifecycle events, and hub-specific workflow tables remain future migrations.</p>
 <div class="grid">
 <div class="card"><strong>Core graph</strong><p><code>nodes</code>, <code>assertions</code>, <code>edges</code>, <code>sources</code></p></div>
-<div class="card"><strong>Lifecycle</strong><p><code>bundle_snapshots</code>, <code>packages</code>, <code>package_inspections</code>, <code>lifecycle_events</code></p></div>
-<div class="card"><strong>Identity</strong><p><code>users</code>, <code>roles</code>, <code>user_roles</code></p></div>
-<div class="card"><strong>Extensibility</strong><p><code>hub_extensions</code> with JSONB payloads</p></div>
+<div class="card warn"><strong>Lifecycle</strong><p>Server-side snapshots, review records, and append-only lifecycle events remain planned.</p></div>
+<div class="card warn"><strong>Identity</strong><p><code>users</code>, <code>roles</code>, and permission assignments are not yet implemented.</p></div>
+<div class="card"><strong>Extensibility</strong><p>Domain adapters and bundle metadata preserve cross-hub structure while dedicated hub tables remain optional.</p></div>
 </div>
 <div class="notice good">Every uploaded bundle and package should preserve its original JSON, even after its objects are normalized into relational rows.</div>
 </section>
 
-<section id="api" class="panel"><h2>API Contract</h2>
-<p class="overview">The included OpenAPI file defines the first public contract. The most important endpoints are:</p>
-<pre>POST /api/v1/validate
-POST /api/v1/bundles
-GET  /api/v1/bundles/:bundleId
-POST /api/v1/bundles/:bundleId/validate
-POST /api/v1/bundles/:bundleId/stage
-POST /api/v1/packages
-POST /api/v1/packages/:packageId/verify
-POST /api/v1/packages/:packageId/inspections
-POST /api/v1/packages/:packageId/restore
+<section id="api" class="panel"><h2>Implemented API Contract</h2>
+<p class="overview">The current backend exposes validation, persistence, registry retrieval, bundle-scoped queries, node detail, and unified search.</p>
+<pre>GET  /health
+
+POST /api/v1/validate
+POST /api/v1/import
+GET  /api/v1/import
+GET  /api/v1/import/:bundleId
+
+GET  /api/v1/nodes
 GET  /api/v1/nodes/:nodeId
-GET  /api/v1/events</pre>
-<div class="notice warn">The first implemented endpoint should be <code>POST /validate</code>. It provides immediate value without requiring authentication, migration, or persistence.</div></section>
+GET  /api/v1/nodes/:nodeId/assertions
+GET  /api/v1/nodes/:nodeId/edges
+
+GET  /api/v1/assertions
+GET  /api/v1/assertions/:assertionId
+GET  /api/v1/edges
+GET  /api/v1/edges/:edgeId
+GET  /api/v1/sources
+GET  /api/v1/sources/:sourceId
+GET  /api/v1/revisions
+GET  /api/v1/revisions/:revisionId
+
+GET  /api/v1/search?q=...
+
+GET  /api/v1/bundles/:bundleId/nodes
+GET  /api/v1/bundles/:bundleId/assertions
+GET  /api/v1/bundles/:bundleId/edges
+GET  /api/v1/bundles/:bundleId/sources
+GET  /api/v1/bundles/:bundleId/revisions</pre>
+<div class="notice good"><strong>Current milestone:</strong> validation, PostgreSQL import, normalized retrieval, bundle-scoped registries, and search are all implemented and connected to the browser interface.</div></section>
 
 <section id="auth" class="panel"><h2>Authentication and Authorization</h2>
 <div class="table-wrap"><table><thead><tr><th>Role</th><th>Capabilities</th></tr></thead><tbody>
@@ -111,28 +128,28 @@ GET  /api/v1/events</pre>
 </tbody></table></div>
 <p class="overview">Do not invent a custom password system unless necessary. Use a managed identity provider or a proven authentication library and store only the minimum identity metadata SourceRoot needs.</p></section>
 
-<section id="migration" class="panel"><h2>Migration Phases</h2>
+<section id="migration" class="panel"><h2>Implementation Progress</h2>
 <div class="grid">
-<div class="card good"><strong>0. Freeze contract</strong><p>Tests, fixtures, schema reference, package version.</p></div>
-<div class="card"><strong>1. Read-only mirror</strong><p>Health, validation, bundle reads, node reads.</p></div>
-<div class="card"><strong>2. Bundle persistence</strong><p>Store bundles, graph objects, snapshots, and events.</p></div>
-<div class="card"><strong>3. Package persistence</strong><p>Export, verify, inspect, and restore through API.</p></div>
-<div class="card"><strong>4. Identity</strong><p>Users, roles, creators, reviewers, permissions.</p></div>
-<div class="card"><strong>5. Frontend cutover</strong><p>Repository adapter switches pages from localStorage to API.</p></div>
-<div class="card"><strong>6. Hardening</strong><p>Backups, signatures, revocation, rate limits, monitoring.</p></div>
+<div class="card good"><strong>0. Contract and fixtures</strong><p>Complete: tests, fixtures, schema reference, and import contract.</p></div>
+<div class="card good"><strong>1. Read APIs</strong><p>Complete: health, validation, registries, detail reads, and search.</p></div>
+<div class="card good"><strong>2. Bundle persistence</strong><p>Complete for imported bundles and normalized graph objects.</p></div>
+<div class="card warn"><strong>3. Review persistence</strong><p>Pending: server-side review decisions, revisions, and lifecycle events.</p></div>
+<div class="card warn"><strong>4. Identity</strong><p>Pending: users, roles, authenticated creators, reviewers, and permissions.</p></div>
+<div class="card good"><strong>5. Frontend cutover</strong><p>Core SourceRoot pages now use the API; domain applications remain to be migrated.</p></div>
+<div class="card warn"><strong>6. Deployment and hardening</strong><p>Pending: hosted database, backups, rate limits, monitoring, signatures, and revocation.</p></div>
 </div></section>
 
-<section id="first-sprint" class="panel"><h2>First Backend Sprint</h2>
-<p class="overview">A focused first sprint should take approximately 15–25 hours.</p>
+<section id="first-sprint" class="panel"><h2>Next Backend Sprint</h2>
+<p class="overview">The original backend sprint is complete. The next focused sprint should establish protected write access and review workflows.</p>
 <div class="table-wrap"><table><thead><tr><th>Task</th><th>Estimated effort</th><th>Exit condition</th></tr></thead><tbody>
-<tr><td>Create TypeScript API project</td><td>2–3 hours</td><td><code>GET /health</code> works locally.</td></tr>
-<tr><td>Connect PostgreSQL</td><td>2–4 hours</td><td>Migration runner creates the database schema.</td></tr>
-<tr><td>Port validator</td><td>4–6 hours</td><td>Server result matches browser fixtures.</td></tr>
-<tr><td>Add <code>POST /validate</code></td><td>2–3 hours</td><td>HistoryRoot bundle returns 0 errors and 0 warnings.</td></tr>
-<tr><td>Add fixture tests</td><td>3–5 hours</td><td>Valid, warning, broken-reference, and enum tests pass.</td></tr>
-<tr><td>Add structured logging</td><td>1–2 hours</td><td>Request ID, duration, outcome, and error logs exist.</td></tr>
+<tr><td>Add authentication foundation</td><td>4–8 hours</td><td>Protected routes identify an authenticated user.</td></tr>
+<tr><td>Add roles and permissions</td><td>4–8 hours</td><td>Reader, creator, reviewer, and admin capabilities are enforced.</td></tr>
+<tr><td>Add review records</td><td>4–7 hours</td><td>Assertions, edges, and sources can receive durable review decisions.</td></tr>
+<tr><td>Add revision write workflow</td><td>4–8 hours</td><td>Authorized users can create tracked revisions without destructive overwrite.</td></tr>
+<tr><td>Add audit events</td><td>3–5 hours</td><td>Protected writes append immutable event records.</td></tr>
+<tr><td>Prepare production configuration</td><td>3–6 hours</td><td>Environment validation, CORS, logging, and deployment settings are ready.</td></tr>
 </tbody></table></div>
-<div class="notice good"><strong>First backend milestone:</strong> the current HistoryRoot JSON is sent to the server, validated by the same rules, and receives the same result as Import Preview.</div></section>
+<div class="notice good"><strong>Completed milestone:</strong> bundles can now be validated, imported into PostgreSQL, searched, and inspected through live browser pages without PowerShell.</div></section>
 
 <section id="risks" class="panel"><h2>Key Risks</h2>
 <div class="grid">
@@ -143,5 +160,5 @@ GET  /api/v1/events</pre>
 <div class="card warn"><strong>Scope expansion</strong><p>Search, payments, tokens, and public publishing can wait until persistence works.</p></div>
 </div></section>
 </main></div>
-<footer>SourceRoot Backend Blueprint · Proposed alpha architecture before implementation.</footer>
+<footer>SourceRoot Backend Blueprint · Current implemented architecture and remaining production path.</footer>
 </body></html>
