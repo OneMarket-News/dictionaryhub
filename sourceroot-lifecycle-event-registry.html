@@ -249,6 +249,35 @@
       font-style: italic;
     }
 
+    .api-banner {
+      margin-top: 16px;
+      border: 1px solid #fde68a;
+      background: #fffbeb;
+      color: #92400e;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .api-banner.connected {
+      border-color: #86efac;
+      background: #f0fdf4;
+      color: #166534;
+    }
+
+    .api-banner.error {
+      border-color: #fca5a5;
+      background: #fef2f2;
+      color: #991b1b;
+    }
+
+    .database-pill {
+      border-color: #93c5fd;
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
     footer {
       padding: 0 24px 28px;
       color: #64748b;
@@ -270,8 +299,8 @@
       <h1>SourceRoot Lifecycle Event Registry</h1>
 
       <div class="subtitle">
-        Append-only browser history for validation, staging, package export,
-        verification, inspection, restoration, revalidation, and record removal.
+        Review append-only browser lifecycle history alongside the live SourceRoot
+        API and PostgreSQL imported-bundle registry.
       </div>
 
       <nav>
@@ -280,6 +309,8 @@
         <a href="sourceroot-staged-bundle-registry.html">Staged Bundles</a>
         <a href="sourceroot-package-inspector.html">Package Inspector</a>
         <a href="sourceroot-package-registry.html">Package Registry</a>
+        <a href="sourceroot-import-bundle-registry.html">Imported Bundles</a>
+        <a href="sourceroot-api-preview.html">API Explorer</a>
         <a href="sourceroot-schema-reference.html">Schema Reference</a>
       </nav>
     </div>
@@ -290,10 +321,16 @@
       <h2>Lifecycle History</h2>
 
       <p class="overview">
-        Events are stored separately from staged records and inspection records
+        Events remain stored separately from staged records and inspection records
         under <code>sourceroot-lifecycle-events-v1</code>. Existing events are
         never edited by the lifecycle engine; new actions append new records.
+        When the backend is available, this page also checks whether each event's
+        bundle exists in the PostgreSQL imported-bundle registry.
       </p>
+
+      <div id="lifecycleApiStatus" class="api-banner">
+        Checking SourceRoot API and imported bundles...
+      </div>
 
       <div class="controls">
         <label>
@@ -349,6 +386,16 @@
           <div id="blockedCount" class="summary-number">0</div>
           <div class="summary-label">Blocked or Failed</div>
         </div>
+
+        <div class="summary-card">
+          <div id="importedBundleCount" class="summary-number">0</div>
+          <div class="summary-label">PostgreSQL Bundles</div>
+        </div>
+
+        <div class="summary-card">
+          <div id="matchedEventCount" class="summary-number">0</div>
+          <div class="summary-label">Events Matched to DB</div>
+        </div>
       </div>
     </section>
 
@@ -359,13 +406,16 @@
   </main>
 
   <footer>
-    SourceRoot lifecycle event history · Browser-local append-only prototype.
+    SourceRoot Lifecycle Event Registry · Browser-local append-only history with live PostgreSQL bundle correlation.
   </footer>
 
   <script src="./engine/packageLifecycle.js"></script>
 
   <script>
     const lifecycle = window.SourceRootPackageLifecycle;
+    const LIFECYCLE_STORAGE_KEY = "sourceroot-lifecycle-events-v1";
+    const API_ORIGIN = "http://localhost:3000";
+    const API_BASE = `${API_ORIGIN}/api/v1`;
 
     const searchInput = document.getElementById("searchInput");
     const eventTypeFilter = document.getElementById("eventTypeFilter");
@@ -374,6 +424,8 @@
     const eventList = document.getElementById("eventList");
 
     let allEvents = [];
+    let importedBundles = [];
+    let importedBundleIds = new Set();
 
     searchInput.addEventListener("input", renderEvents);
     eventTypeFilter.addEventListener("change", renderEvents);
@@ -382,7 +434,7 @@
 
     document
       .getElementById("refreshButton")
-      .addEventListener("click", loadEvents);
+      .addEventListener("click", refreshRegistry);
 
     document
       .getElementById("exportButton")
@@ -392,12 +444,32 @@
       .getElementById("clearButton")
       .addEventListener("click", clearEvents);
 
+    function readLifecycleEvents() {
+      if (
+        lifecycle &&
+        typeof lifecycle.getLifecycleEvents === "function"
+      ) {
+        return lifecycle.getLifecycleEvents();
+      }
+
+      try {
+        const stored = JSON.parse(
+          localStorage.getItem(LIFECYCLE_STORAGE_KEY) || "[]"
+        );
+
+        return Array.isArray(stored) ? stored : [];
+      } catch (error) {
+        console.error("Could not read lifecycle history:", error);
+        return [];
+      }
+    }
+
     function loadEvents() {
-      allEvents = lifecycle.getLifecycleEvents()
+      allEvents = readLifecycleEvents()
         .slice()
         .sort((left, right) =>
-          String(right.occurredAt).localeCompare(
-            String(left.occurredAt)
+          String(right.occurredAt || "").localeCompare(
+            String(left.occurredAt || "")
           )
         );
 
@@ -498,6 +570,14 @@
           )
         ).length;
 
+      document.getElementById("importedBundleCount").textContent =
+        importedBundles.length;
+
+      document.getElementById("matchedEventCount").textContent =
+        events.filter(event =>
+          event.bundleId && importedBundleIds.has(event.bundleId)
+        ).length;
+
       if (!events.length) {
         eventList.innerHTML = `
           <p class="empty">
@@ -542,6 +622,9 @@
             ${event.integrityStatus
               ? `<span class="pill">${escapeHtml(event.integrityStatus)}</span>`
               : ""}
+            ${event.bundleId && importedBundleIds.has(event.bundleId)
+              ? `<span class="pill database-pill">PostgreSQL Imported</span>`
+              : ""}
             ${event.warningCount
               ? `<span class="pill">${event.warningCount} warning(s)</span>`
               : ""}
@@ -578,6 +661,119 @@
       `;
     }
 
+    async function fetchWithTimeout(url, options = {}, timeoutMs = 5000) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+      try {
+        return await fetch(url, {
+          ...options,
+          signal: controller.signal
+        });
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    async function apiRequest(path, options = {}) {
+      const response = await fetchWithTimeout(`${API_BASE}${path}`, {
+        ...options,
+        headers: {
+          Accept: "application/json",
+          ...(options.headers || {})
+        }
+      });
+
+      let body = {};
+
+      try {
+        body = await response.json();
+      } catch {}
+
+      if (!response.ok) {
+        throw new Error(
+          body.message ||
+          body.error ||
+          `Request failed with HTTP ${response.status}.`
+        );
+      }
+
+      return body;
+    }
+
+    function extractImportedBundles(payload) {
+      if (Array.isArray(payload)) {
+        return payload;
+      }
+
+      const candidates = [
+        payload?.bundles,
+        payload?.items,
+        payload?.data,
+        payload?.results,
+        payload?.imports
+      ];
+
+      return candidates.find(Array.isArray) || [];
+    }
+
+    async function loadImportedBundles() {
+      const banner = document.getElementById("lifecycleApiStatus");
+
+      try {
+        const healthResponse = await fetchWithTimeout(
+          `${API_ORIGIN}/health`,
+          { headers: { Accept: "application/json" } }
+        );
+
+        const health = await healthResponse.json();
+
+        if (!healthResponse.ok) {
+          throw new Error(
+            health.message || `Health check failed with HTTP ${healthResponse.status}.`
+          );
+        }
+
+        const payload = await apiRequest("/import");
+        importedBundles = extractImportedBundles(payload);
+
+        importedBundleIds = new Set(
+          importedBundles
+            .map(bundle =>
+              bundle?.bundleId ||
+              bundle?.id ||
+              bundle?.bundle_id ||
+              ""
+            )
+            .filter(Boolean)
+        );
+
+        banner.className = "api-banner connected";
+        banner.innerHTML = `
+          <strong>${escapeHtml(health.service || "SourceRoot backend")} connected.</strong>
+          Found ${importedBundles.length} imported bundle${importedBundles.length === 1 ? "" : "s"}
+          in PostgreSQL. Local lifecycle events are being correlated by bundle ID.
+        `;
+      } catch (error) {
+        importedBundles = [];
+        importedBundleIds = new Set();
+
+        banner.className = "api-banner error";
+        banner.innerHTML = `
+          <strong>SourceRoot API unavailable.</strong>
+          Browser-local lifecycle history still works. Start the backend with
+          <code>npm.cmd run dev</code> to correlate events with PostgreSQL bundles.
+          <br><span>${escapeHtml(error.message)}</span>
+        `;
+      }
+    }
+
+    async function refreshRegistry() {
+      loadEvents();
+      await loadImportedBundles();
+      renderEvents();
+    }
+
     function exportEvents() {
       const artifact = {
         exportType: "sourceroot-lifecycle-event-history",
@@ -587,10 +783,27 @@
         events: allEvents
       };
 
-      lifecycle.downloadJsonFile(
-        artifact,
-        "sourceroot-lifecycle-event-history.json"
+      if (
+        lifecycle &&
+        typeof lifecycle.downloadJsonFile === "function"
+      ) {
+        lifecycle.downloadJsonFile(
+          artifact,
+          "sourceroot-lifecycle-event-history.json"
+        );
+        return;
+      }
+
+      const blob = new Blob(
+        [JSON.stringify(artifact, null, 2)],
+        { type: "application/json" }
       );
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = "sourceroot-lifecycle-event-history.json";
+      anchor.click();
+      URL.revokeObjectURL(url);
     }
 
     function clearEvents() {
@@ -602,8 +815,16 @@
         return;
       }
 
-      lifecycle.clearLifecycleEvents();
-      loadEvents();
+      if (
+        lifecycle &&
+        typeof lifecycle.clearLifecycleEvents === "function"
+      ) {
+        lifecycle.clearLifecycleEvents();
+      } else {
+        localStorage.removeItem(LIFECYCLE_STORAGE_KEY);
+      }
+
+      refreshRegistry();
     }
 
     function formatEventType(value) {
@@ -636,7 +857,13 @@
       return escapeHtml(value);
     }
 
-    loadEvents();
+    window.addEventListener("storage", event => {
+      if (event.key === LIFECYCLE_STORAGE_KEY) {
+        loadEvents();
+      }
+    });
+
+    refreshRegistry();
   </script>
 </body>
 </html>
