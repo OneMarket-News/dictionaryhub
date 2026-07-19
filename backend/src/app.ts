@@ -7,6 +7,7 @@ import express, {
 
 import { requestIdMiddleware } from "./lib/request-id.js";
 import { assertionsRouter } from "./routes/assertions.js";
+import { bundlesRouter } from "./routes/bundles.js";
 import { edgesRouter } from "./routes/edges.js";
 import { healthRouter } from "./routes/health.js";
 import { importRouter } from "./routes/import.js";
@@ -39,6 +40,7 @@ export function createApp() {
   app.use("/api/v1", validateRouter);
   app.use("/api/v1/import", importRouter);
   app.use("/api/v1/search", searchRouter);
+  app.use("/api/v1/bundles", bundlesRouter);
   app.use("/api/v1/nodes", nodesRouter);
   app.use("/api/v1/assertions", assertionsRouter);
   app.use("/api/v1/edges", edgesRouter);

@@ -1501,6 +1501,232 @@ test("GET /api/v1/search rejects an invalid limit", async () => {
   );
 });
 
+test("GET /api/v1/bundles/:bundleId/nodes lists bundle-scoped nodes", async () => {
+  const bundle = await readJsonFixture(validFixtureUrl);
+
+  await request(app)
+    .post("/api/v1/import")
+    .send(bundle)
+    .expect(201);
+
+  const response = await request(app)
+    .get("/api/v1/bundles/historyroot-fire-events-v2/nodes")
+    .expect("Content-Type", /json/)
+    .expect(200);
+
+  assert.equal(response.body.bundleId, "historyroot-fire-events-v2");
+  assert.equal(response.body.page, 1);
+  assert.equal(response.body.limit, 25);
+  assert.equal(response.body.total, 11);
+  assert.equal(response.body.totalPages, 1);
+  assert.equal(response.body.nodes.length, 11);
+
+  for (const node of response.body.nodes) {
+    assert.equal(node.bundleId, "historyroot-fire-events-v2");
+  }
+});
+
+test("GET /api/v1/bundles/:bundleId/assertions lists bundle-scoped assertions", async () => {
+  const bundle = await readJsonFixture(validFixtureUrl);
+
+  await request(app)
+    .post("/api/v1/import")
+    .send(bundle)
+    .expect(201);
+
+  const response = await request(app)
+    .get("/api/v1/bundles/historyroot-fire-events-v2/assertions")
+    .expect("Content-Type", /json/)
+    .expect(200);
+
+  assert.equal(response.body.bundleId, "historyroot-fire-events-v2");
+  assert.equal(response.body.total, 13);
+  assert.equal(response.body.assertions.length, 13);
+
+  for (const assertion of response.body.assertions) {
+    assert.equal(
+      assertion.bundleId,
+      "historyroot-fire-events-v2",
+    );
+  }
+});
+
+test("GET /api/v1/bundles/:bundleId/edges lists bundle-scoped edges", async () => {
+  const bundle = await readJsonFixture(validFixtureUrl);
+
+  await request(app)
+    .post("/api/v1/import")
+    .send(bundle)
+    .expect(201);
+
+  const response = await request(app)
+    .get("/api/v1/bundles/historyroot-fire-events-v2/edges")
+    .expect("Content-Type", /json/)
+    .expect(200);
+
+  assert.equal(response.body.bundleId, "historyroot-fire-events-v2");
+  assert.equal(response.body.total, 11);
+  assert.equal(response.body.edges.length, 11);
+
+  for (const edge of response.body.edges) {
+    assert.equal(edge.bundleId, "historyroot-fire-events-v2");
+  }
+});
+
+test("GET /api/v1/bundles/:bundleId/sources lists bundle-scoped sources", async () => {
+  const bundle = await readJsonFixture(validFixtureUrl);
+
+  await request(app)
+    .post("/api/v1/import")
+    .send(bundle)
+    .expect(201);
+
+  const response = await request(app)
+    .get("/api/v1/bundles/historyroot-fire-events-v2/sources")
+    .expect("Content-Type", /json/)
+    .expect(200);
+
+  assert.equal(response.body.bundleId, "historyroot-fire-events-v2");
+  assert.equal(response.body.total, 11);
+  assert.equal(response.body.sources.length, 11);
+
+  for (const source of response.body.sources) {
+    assert.equal(source.bundleId, "historyroot-fire-events-v2");
+  }
+});
+
+test("GET /api/v1/bundles/:bundleId/revisions lists bundle-scoped revisions", async () => {
+  const bundle = await readJsonFixture(validFixtureUrl);
+
+  await request(app)
+    .post("/api/v1/import")
+    .send(bundle)
+    .expect(201);
+
+  const response = await request(app)
+    .get("/api/v1/bundles/historyroot-fire-events-v2/revisions")
+    .expect("Content-Type", /json/)
+    .expect(200);
+
+  assert.equal(response.body.bundleId, "historyroot-fire-events-v2");
+  assert.equal(response.body.total, 2);
+  assert.equal(response.body.revisions.length, 2);
+
+  for (const revision of response.body.revisions) {
+    assert.equal(
+      revision.bundleId,
+      "historyroot-fire-events-v2",
+    );
+  }
+});
+
+test("GET /api/v1/bundles/:bundleId/nodes supports filters", async () => {
+  const bundle = await readJsonFixture(validFixtureUrl);
+
+  await request(app)
+    .post("/api/v1/import")
+    .send(bundle)
+    .expect(201);
+
+  const response = await request(app)
+    .get(
+      "/api/v1/bundles/historyroot-fire-events-v2/nodes?domain=HistoryRoot&nodeType=event&status=historical",
+    )
+    .expect("Content-Type", /json/)
+    .expect(200);
+
+  assert.equal(response.body.bundleId, "historyroot-fire-events-v2");
+  assert.equal(response.body.total, 2);
+  assert.equal(response.body.nodes.length, 2);
+
+  assert.deepEqual(
+    response.body.nodes.map(
+      (node: { nodeId: string }) => node.nodeId,
+    ),
+    [
+      "event-great-chicago-fire",
+      "event-peshtigo-fire",
+    ],
+  );
+});
+
+test("GET /api/v1/bundles/:bundleId/nodes paginates results", async () => {
+  const bundle = await readJsonFixture(validFixtureUrl);
+
+  await request(app)
+    .post("/api/v1/import")
+    .send(bundle)
+    .expect(201);
+
+  const response = await request(app)
+    .get(
+      "/api/v1/bundles/historyroot-fire-events-v2/nodes?page=2&limit=5",
+    )
+    .expect("Content-Type", /json/)
+    .expect(200);
+
+  assert.equal(response.body.bundleId, "historyroot-fire-events-v2");
+  assert.equal(response.body.page, 2);
+  assert.equal(response.body.limit, 5);
+  assert.equal(response.body.total, 11);
+  assert.equal(response.body.totalPages, 3);
+  assert.equal(response.body.nodes.length, 5);
+});
+
+test("GET /api/v1/bundles/:bundleId/nodes rejects an invalid page", async () => {
+  const bundle = await readJsonFixture(validFixtureUrl);
+
+  await request(app)
+    .post("/api/v1/import")
+    .send(bundle)
+    .expect(201);
+
+  const response = await request(app)
+    .get(
+      "/api/v1/bundles/historyroot-fire-events-v2/nodes?page=0",
+    )
+    .expect("Content-Type", /json/)
+    .expect(400);
+
+  assert.equal(response.body.error, "INVALID_PAGE");
+  assert.equal(
+    response.body.message,
+    "page must be a positive integer.",
+  );
+});
+
+test("GET /api/v1/bundles/:bundleId/nodes rejects an invalid limit", async () => {
+  const bundle = await readJsonFixture(validFixtureUrl);
+
+  await request(app)
+    .post("/api/v1/import")
+    .send(bundle)
+    .expect(201);
+
+  const response = await request(app)
+    .get(
+      "/api/v1/bundles/historyroot-fire-events-v2/nodes?limit=101",
+    )
+    .expect("Content-Type", /json/)
+    .expect(400);
+
+  assert.equal(response.body.error, "INVALID_LIMIT");
+  assert.equal(
+    response.body.message,
+    "limit must be an integer between 1 and 100.",
+  );
+});
+
+test("GET /api/v1/bundles/:bundleId/nodes returns 404 for an unknown bundle", async () => {
+  const response = await request(app)
+    .get("/api/v1/bundles/does-not-exist/nodes")
+    .expect("Content-Type", /json/)
+    .expect(404);
+
+  assert.equal(response.body.error, "BUNDLE_NOT_FOUND");
+  assert.match(response.body.message, /does-not-exist/);
+});
+
 test("GET /api/v1/import/:bundleId retrieves an imported bundle", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
