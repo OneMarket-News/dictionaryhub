@@ -1,11 +1,17 @@
 import { Router } from "express";
 
 import {
+  getQueryString,
+  isQueryParameterError,
+  parsePagination,
+} from "../lib/query-params.js";
+import {
   deleteImportedTestBundle,
   getImportedBundle,
   getImportedBundleCount,
   listImportedBundles,
   saveImportedBundle,
+  type ListImportedBundlesOptions,
 } from "../services/import-store.js";
 import { validateBundle } from "../services/validator.js";
 import type { SourceRootBundle } from "../types.js";
@@ -13,6 +19,19 @@ import type { SourceRootBundle } from "../types.js";
 export const importRouter = Router();
 
 const INTEGRATION_TEST_PREFIX = "sourceroot-integration-test-";
+
+function getIsoDateQuery(
+  value: unknown,
+): string | undefined | null {
+  const text = getQueryString(value);
+
+  if (text === undefined) {
+    return undefined;
+  }
+
+  const parsed = Date.parse(text);
+  return Number.isNaN(parsed) ? null : new Date(parsed).toISOString();
+}
 
 importRouter.post("/", async (request, response, next) => {
   try {
@@ -43,27 +62,43 @@ importRouter.post("/", async (request, response, next) => {
 
 importRouter.get("/", async (request, response, next) => {
   try {
-    const page = Number.parseInt(String(request.query.page ?? "1"), 10);
-    const limit = Number.parseInt(String(request.query.limit ?? "25"), 10);
+    const pagination = parsePagination(
+      request.query.page,
+      request.query.limit,
+    );
 
-    if (!Number.isInteger(page) || page < 1) {
+    if (isQueryParameterError(pagination)) {
+      return response.status(400).json(pagination);
+    }
+
+    const createdFrom = getIsoDateQuery(request.query.createdFrom);
+    const createdTo = getIsoDateQuery(request.query.createdTo);
+
+    if (createdFrom === null || createdTo === null) {
       return response.status(400).json({
-        error: "INVALID_PAGE",
-        message: "page must be a positive integer.",
+        error: "INVALID_DATE_FILTER",
+        message:
+          "createdFrom and createdTo must be valid ISO-8601 date or date-time values.",
       });
     }
 
-    if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
-      return response.status(400).json({
-        error: "INVALID_LIMIT",
-        message: "limit must be an integer between 1 and 100.",
-      });
-    }
+    const bundleId = getQueryString(request.query.bundleId);
+    const domain = getQueryString(request.query.domain);
+    const bundleType = getQueryString(request.query.bundleType);
+    const version = getQueryString(request.query.version);
 
-    const result = await listImportedBundles({
-      page,
-      limit,
-    });
+    const options: ListImportedBundlesOptions = {
+      page: pagination.page,
+      limit: pagination.limit,
+      ...(bundleId !== undefined ? { bundleId } : {}),
+      ...(domain !== undefined ? { domain } : {}),
+      ...(bundleType !== undefined ? { bundleType } : {}),
+      ...(version !== undefined ? { version } : {}),
+      ...(createdFrom !== undefined ? { createdFrom } : {}),
+      ...(createdTo !== undefined ? { createdTo } : {}),
+    };
+
+    const result = await listImportedBundles(options);
 
     return response.status(200).json(result);
   } catch (error) {

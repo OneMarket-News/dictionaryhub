@@ -15,6 +15,12 @@ export interface ImportedBundleMetadata {
 export interface ListImportedBundlesOptions {
   page: number;
   limit: number;
+  bundleId?: string;
+  domain?: string;
+  bundleType?: string;
+  version?: string;
+  createdFrom?: string;
+  createdTo?: string;
 }
 
 export interface ListImportedBundlesResult {
@@ -22,6 +28,7 @@ export interface ListImportedBundlesResult {
   limit: number;
   total: number;
   totalPages: number;
+  items: ImportedBundleMetadata[];
   bundles: ImportedBundleMetadata[];
 }
 
@@ -614,17 +621,43 @@ export async function listImportedBundles(
   options: ListImportedBundlesOptions,
 ): Promise<ListImportedBundlesResult> {
   const database = requireDatabase();
+  const conditions: string[] = [];
+  const filterValues: string[] = [];
 
+  const addFilter = (column: string, value: string | undefined) => {
+    if (value === undefined) {
+      return;
+    }
+
+    filterValues.push(value);
+    conditions.push(`${column} = $${filterValues.length}`);
+  };
+
+  addFilter("bundle_id", options.bundleId);
+  addFilter("domain", options.domain);
+  addFilter("bundle_type", options.bundleType);
+  addFilter("version", options.version);
+
+  if (options.createdFrom !== undefined) {
+    filterValues.push(options.createdFrom);
+    conditions.push(`created_at >= $${filterValues.length}::timestamptz`);
+  }
+
+  if (options.createdTo !== undefined) {
+    filterValues.push(options.createdTo);
+    conditions.push(`created_at <= $${filterValues.length}::timestamptz`);
+  }
+
+  const whereClause =
+    conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
   const offset = (options.page - 1) * options.limit;
+  const limitParameter = filterValues.length + 1;
+  const offsetParameter = filterValues.length + 2;
 
   const [countResult, bundlesResult] = await Promise.all([
-    database.query<{
-      count: string;
-    }>(
-      `
-        SELECT COUNT(*) AS count
-        FROM imported_bundles;
-      `,
+    database.query<{ count: string }>(
+      `SELECT COUNT(*) AS count FROM imported_bundles ${whereClause};`,
+      filterValues,
     ),
     database.query<{
       bundle_id: string;
@@ -635,39 +668,34 @@ export async function listImportedBundles(
       updated_at: Date;
     }>(
       `
-        SELECT
-          bundle_id,
-          bundle_type,
-          version,
-          domain,
-          created_at,
-          updated_at
+        SELECT bundle_id, bundle_type, version, domain, created_at, updated_at
         FROM imported_bundles
-        ORDER BY created_at DESC
-        LIMIT $1
-        OFFSET $2;
+        ${whereClause}
+        ORDER BY created_at DESC, bundle_id ASC
+        LIMIT $${limitParameter}
+        OFFSET $${offsetParameter};
       `,
-      [options.limit, offset],
+      [...filterValues, options.limit, offset],
     ),
   ]);
 
   const total = Number(countResult.rows[0]?.count ?? 0);
-  const totalPages =
-    total === 0 ? 0 : Math.ceil(total / options.limit);
+  const items = bundlesResult.rows.map((row) => ({
+    bundleId: row.bundle_id,
+    bundleType: row.bundle_type,
+    version: row.version,
+    domain: row.domain,
+    createdAt: row.created_at.toISOString(),
+    updatedAt: row.updated_at.toISOString(),
+  }));
 
   return {
     page: options.page,
     limit: options.limit,
     total,
-    totalPages,
-    bundles: bundlesResult.rows.map((row) => ({
-      bundleId: row.bundle_id,
-      bundleType: row.bundle_type,
-      version: row.version,
-      domain: row.domain,
-      createdAt: row.created_at.toISOString(),
-      updatedAt: row.updated_at.toISOString(),
-    })),
+    totalPages: total === 0 ? 0 : Math.ceil(total / options.limit),
+    items,
+    bundles: items,
   };
 }
 

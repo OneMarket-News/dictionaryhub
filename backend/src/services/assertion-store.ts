@@ -38,6 +38,7 @@ export interface ListAssertionsResult {
   limit: number;
   total: number;
   totalPages: number;
+  items: NormalizedAssertion[];
   assertions: NormalizedAssertion[];
 }
 
@@ -286,8 +287,10 @@ export async function listAssertions(
         : Math.ceil(
             total / options.limit,
           ),
-    assertions:
-      assertionsResult.rows.map(
+    items: assertionsResult.rows.map(
+        mapAssertionRow,
+      ),
+    assertions: assertionsResult.rows.map(
         mapAssertionRow,
       ),
   };

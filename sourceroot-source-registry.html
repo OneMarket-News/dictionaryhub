@@ -393,6 +393,10 @@
         grid-template-columns: 1fr;
       }
     }
+
+    .pagination label { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
+    .pagination input, .pagination select { border: 1px solid #d1d5db; border-radius: 8px; padding: 7px 8px; background: white; }
+    .pagination input { width: 62px; }
   </style>
 </head>
 
@@ -480,11 +484,13 @@
     </section>
   </main>
 
+  <script src="./engine/sourceRootApi.js"></script>
   <script type="module">
-    const API_BASE = "http://localhost:3000/api/v1";
-    const PAGE_LIMIT = 9;
+    const API = window.SourceRootApi;
+    const API_BASE = API.base;
+    let PAGE_LIMIT = API.readPositiveInt("limit", 9);
 
-    let currentPage = 1;
+    let currentPage = API.readPositiveInt("page", 1);
     let totalPages = 1;
     let totalSources = 0;
     let currentSources = [];
@@ -583,7 +589,7 @@
 
     async function checkApi() {
       try {
-        const health = await fetchJson("http://localhost:3000/health");
+        const health = await fetchJson(API.healthUrl);
 
         apiStatus.innerHTML = `
           <strong>SourceRoot API: Connected</strong><br>
@@ -689,6 +695,9 @@
       pagination.innerHTML = "";
       sourceCount.textContent = "";
 
+      const urlParams = buildQuery ? buildQuery() : new URLSearchParams({ page: String(currentPage), limit: String(PAGE_LIMIT) });
+      API.replaceUrl(urlParams);
+
       try {
         const response = await fetchJson(
           `${API_BASE}/sources?${buildQuery().toString()}`,
@@ -696,7 +705,7 @@
 
         totalSources = response.total;
         totalPages = response.totalPages;
-        currentSources = response.sources || [];
+        currentSources = API.getItems(response, "sources");
 
         const records = await enrichSources(currentSources);
         const filteredRecords = applyClientFilters(records);
@@ -964,118 +973,14 @@
     }
 
     function renderPagination() {
-      if (totalPages <= 1) {
-        pagination.innerHTML = "";
-        return;
-      }
-
-      pagination.innerHTML = `
-        <button id="previousPageButton" type="button" ${currentPage <= 1 ? "disabled" : ""}>
-          Previous
-        </button>
-        <span>Page ${currentPage} of ${totalPages}</span>
-        <button id="nextPageButton" type="button" ${currentPage >= totalPages ? "disabled" : ""}>
-          Next
-        </button>
-      `;
-
-      document.getElementById("previousPageButton").addEventListener("click", () => {
-        if (currentPage > 1) {
-          currentPage -= 1;
-          loadSources();
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        }
+      const state = { page: currentPage, limit: PAGE_LIMIT, totalPages, total: totalSources };
+      pagination.innerHTML = API.paginationMarkup(currentPage, totalPages, PAGE_LIMIT, totalSources);
+      API.bindPagination(pagination, state, () => {
+        currentPage = state.page;
+        PAGE_LIMIT = state.limit;
+        loadSources();
+        window.scrollTo({ top: 0, behavior: "smooth" });
       });
-
-      document.getElementById("nextPageButton").addEventListener("click", () => {
-        if (currentPage < totalPages) {
-          currentPage += 1;
-          loadSources();
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        }
-      });
-    }
-
-    async function openSource(sourceId) {
-      detailPanel.classList.add("visible");
-      detailTitle.textContent = "Loading source...";
-      detailId.textContent = sourceId;
-      detailContent.innerHTML =
-        '<p class="empty">Loading source usage and provenance details...</p>';
-
-      try {
-        const source = await fetchJson(
-          `${API_BASE}/sources/${encodeURIComponent(sourceId)}`,
-        );
-
-        const usage = await getSourceUsage(source);
-
-        detailTitle.textContent = source.name || source.sourceId;
-        detailId.textContent = source.sourceId;
-
-        detailContent.innerHTML = `
-          ${renderDomainLabel(source.domain)}
-
-          <p>${displayValue(source.notes, "No source notes.")}</p>
-
-          <div class="detail-grid">
-            ${renderDetailItem("Bundle", source.bundleId)}
-            ${renderDetailItem("Type", source.sourceType)}
-            ${renderDetailItem("Publisher", source.publisher)}
-            ${renderDetailItem("Quality Tier", source.qualityTier)}
-            ${renderDetailItem("Credibility", source.credibilityTier)}
-            ${renderDetailItem("Verification", source.verificationStatus)}
-            ${renderDetailItem("Review", source.reviewStatus)}
-            ${renderDetailItem("Source Class", source.sourceClass)}
-            ${renderDetailItem("License", source.license)}
-            ${renderDetailItem("License Status", source.licenseStatus)}
-            ${renderDetailItem("Last Reviewed", source.lastReviewed)}
-          </div>
-
-          ${source.url
-            ? `<p><a class="open-source-link" href="${escapeHtml(source.url)}" target="_blank" rel="noopener">Open original source</a></p>`
-            : ""}
-
-          <h3>Referenced by Nodes</h3>
-          ${usage.nodes.length
-            ? usage.nodes.map(renderNodeUsage).join("")
-            : '<p class="empty">No nodes reference this source.</p>'}
-
-          <h3>Referenced by Assertions</h3>
-          ${usage.assertions.length
-            ? usage.assertions.map(renderAssertionUsage).join("")
-            : '<p class="empty">No assertions reference this source.</p>'}
-
-          <h3>Referenced by Edges</h3>
-          ${usage.edges.length
-            ? usage.edges.map(renderEdgeUsage).join("")
-            : '<p class="empty">No edges reference this source.</p>'}
-
-          <h3>Raw Normalized Source</h3>
-          <details>
-            <summary>View API response</summary>
-            <pre>${escapeHtml(JSON.stringify(source, null, 2))}</pre>
-          </details>
-        `;
-
-        detailContent
-          .querySelectorAll("[data-open-node]")
-          .forEach((button) => {
-            button.addEventListener("click", () => {
-              openNodeInInspector(button.dataset.openNode);
-            });
-          });
-
-        detailPanel.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-      } catch (error) {
-        detailTitle.textContent = "Could not load source";
-        detailContent.innerHTML = `
-          <p class="empty">${escapeHtml(error.message)}</p>
-        `;
-      }
     }
 
     function renderDetailItem(label, value) {

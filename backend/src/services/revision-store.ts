@@ -27,6 +27,7 @@ export interface ListRevisionsResult {
   limit: number;
   total: number;
   totalPages: number;
+  items: NormalizedRevision[];
   revisions: NormalizedRevision[];
 }
 
@@ -207,8 +208,10 @@ export async function listRevisions(
         : Math.ceil(
             total / options.limit,
           ),
-    revisions:
-      revisionsResult.rows.map(
+    items: revisionsResult.rows.map(
+        mapRevisionRow,
+      ),
+    revisions: revisionsResult.rows.map(
         mapRevisionRow,
       ),
   };

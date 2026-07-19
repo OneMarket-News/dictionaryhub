@@ -1,6 +1,12 @@
 import { Router } from "express";
 
 import {
+  getQueryString,
+  isQueryParameterError,
+  parsePagination,
+} from "../lib/query-params.js";
+
+import {
   getSourceById,
   listSources,
   type ListSourcesOptions,
@@ -8,76 +14,19 @@ import {
 
 export const sourcesRouter = Router();
 
-function getQueryString(
-  value: unknown,
-): string | undefined {
-  if (typeof value !== "string") {
-    return undefined;
-  }
-
-  const trimmedValue = value.trim();
-
-  return trimmedValue.length > 0
-    ? trimmedValue
-    : undefined;
-}
-
-function parsePositiveInteger(
-  value: unknown,
-  defaultValue: number,
-): number | undefined {
-  if (value === undefined) {
-    return defaultValue;
-  }
-
-  if (
-    typeof value !== "string" ||
-    !/^\d+$/.test(value)
-  ) {
-    return undefined;
-  }
-
-  const parsedValue = Number(value);
-
-  if (
-    !Number.isSafeInteger(parsedValue) ||
-    parsedValue < 1
-  ) {
-    return undefined;
-  }
-
-  return parsedValue;
-}
 
 sourcesRouter.get("/", async (request, response, next) => {
   try {
-    const page = parsePositiveInteger(
+    const pagination = parsePagination(
       request.query.page,
-      1,
-    );
-
-    if (page === undefined) {
-      return response.status(400).json({
-        error: "INVALID_PAGE",
-        message: "page must be a positive integer.",
-      });
-    }
-
-    const limit = parsePositiveInteger(
       request.query.limit,
-      25,
     );
 
-    if (
-      limit === undefined ||
-      limit > 100
-    ) {
-      return response.status(400).json({
-        error: "INVALID_LIMIT",
-        message:
-          "limit must be an integer between 1 and 100.",
-      });
+    if (isQueryParameterError(pagination)) {
+      return response.status(400).json(pagination);
     }
+
+    const { page, limit } = pagination;
 
     const bundleId = getQueryString(
       request.query.bundleId,

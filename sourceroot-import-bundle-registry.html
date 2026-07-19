@@ -418,6 +418,10 @@
         font-size: 29px;
       }
     }
+
+    .pagination label { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
+    .pagination input, .pagination select { border: 1px solid #d1d5db; border-radius: 8px; padding: 7px 8px; background: white; }
+    .pagination input { width: 62px; }
   </style>
 </head>
 
@@ -493,11 +497,13 @@
     SourceRoot Import Bundle Registry. Live bundle metadata supplied by the SourceRoot backend API.
   </footer>
 
+  <script src="./engine/sourceRootApi.js"></script>
   <script>
-    const API_BASE = "http://localhost:3000/api/v1";
-    const PAGE_LIMIT = 10;
+    const API = window.SourceRootApi;
+    const API_BASE = API.base;
+    let PAGE_LIMIT = API.readPositiveInt("limit", 10);
 
-    let currentPage = 1;
+    let currentPage = API.readPositiveInt("page", 1);
     let totalPages = 1;
     let totalBundles = 0;
     let currentBundles = [];
@@ -543,7 +549,7 @@
 
     async function checkApi() {
       try {
-        const health = await fetchJson("http://localhost:3000/health");
+        const health = await fetchJson(API.healthUrl);
 
         apiStatus.innerHTML = `
           <strong>SourceRoot API: Connected</strong><br>
@@ -566,12 +572,15 @@
       `;
       pagination.innerHTML = "";
 
+      const urlParams = new URLSearchParams({ page: String(currentPage), limit: String(PAGE_LIMIT) });
+      API.replaceUrl(urlParams);
+
       try {
         const response = await fetchJson(
-          `${API_BASE}/import?page=${currentPage}&limit=${PAGE_LIMIT}`,
+          `${API_BASE}/import?${urlParams.toString()}`,
         );
 
-        currentBundles = response.bundles || [];
+        currentBundles = API.getItems(response, "bundles");
         totalBundles = response.total;
         totalPages = response.totalPages;
 
@@ -960,38 +969,14 @@
     }
 
     function renderPagination() {
-      if (totalPages <= 1) {
-        pagination.innerHTML = "";
-        return;
-      }
-
-      pagination.innerHTML = `
-        <button id="previousPageButton" type="button" ${currentPage <= 1 ? "disabled" : ""}>
-          Previous
-        </button>
-        <span>Page ${currentPage} of ${totalPages}</span>
-        <button id="nextPageButton" type="button" ${currentPage >= totalPages ? "disabled" : ""}>
-          Next
-        </button>
-      `;
-
-      document
-        .getElementById("previousPageButton")
-        .addEventListener("click", () => {
-          if (currentPage > 1) {
-            currentPage -= 1;
-            loadRegistry();
-          }
-        });
-
-      document
-        .getElementById("nextPageButton")
-        .addEventListener("click", () => {
-          if (currentPage < totalPages) {
-            currentPage += 1;
-            loadRegistry();
-          }
-        });
+      const state = { page: currentPage, limit: PAGE_LIMIT, totalPages, total: totalBundles };
+      pagination.innerHTML = API.paginationMarkup(currentPage, totalPages, PAGE_LIMIT, totalBundles);
+      API.bindPagination(pagination, state, () => {
+        currentPage = state.page;
+        PAGE_LIMIT = state.limit;
+        loadRegistry();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
     }
 
     function closeDetail() {

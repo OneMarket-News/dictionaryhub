@@ -46,6 +46,7 @@ export interface ListEdgesResult {
   limit: number;
   total: number;
   totalPages: number;
+  items: NormalizedEdge[];
   edges: NormalizedEdge[];
 }
 
@@ -315,6 +316,7 @@ export async function listEdges(
         : Math.ceil(
             total / options.limit,
           ),
+    items: edgesResult.rows.map(mapEdgeRow),
     edges: edgesResult.rows.map(mapEdgeRow),
   };
 }

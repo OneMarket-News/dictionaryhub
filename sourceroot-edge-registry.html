@@ -416,6 +416,10 @@
         grid-template-columns: repeat(2, 1fr);
       }
     }
+
+    .pagination label { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
+    .pagination input, .pagination select { border: 1px solid #d1d5db; border-radius: 8px; padding: 7px 8px; background: white; }
+    .pagination input { width: 62px; }
   </style>
 </head>
 
@@ -504,11 +508,13 @@
     </section>
   </main>
 
+  <script src="./engine/sourceRootApi.js"></script>
   <script type="module">
-    const API_BASE = "http://localhost:3000/api/v1";
-    const PAGE_LIMIT = 10;
+    const API = window.SourceRootApi;
+    const API_BASE = API.base;
+    let PAGE_LIMIT = API.readPositiveInt("limit", 10);
 
-    let currentPage = 1;
+    let currentPage = API.readPositiveInt("page", 1);
     let totalPages = 1;
     let totalEdges = 0;
     let currentEdges = [];
@@ -608,7 +614,7 @@
 
     async function checkApi() {
       try {
-        const health = await fetchJson("http://localhost:3000/health");
+        const health = await fetchJson(API.healthUrl);
 
         apiStatus.innerHTML = `
           <strong>SourceRoot API: Connected</strong><br>
@@ -714,6 +720,9 @@
       pagination.innerHTML = "";
       edgeCount.textContent = "";
 
+      const urlParams = buildQuery ? buildQuery() : new URLSearchParams({ page: String(currentPage), limit: String(PAGE_LIMIT) });
+      API.replaceUrl(urlParams);
+
       try {
         const response = await fetchJson(
           `${API_BASE}/edges?${buildQuery().toString()}`,
@@ -721,7 +730,7 @@
 
         totalEdges = response.total;
         totalPages = response.totalPages;
-        currentEdges = response.edges || [];
+        currentEdges = API.getItems(response, "edges");
 
         const filteredEdges = await applyClientFilters(currentEdges);
 
@@ -1030,129 +1039,14 @@
     }
 
     function renderPagination() {
-      if (totalPages <= 1) {
-        pagination.innerHTML = "";
-        return;
-      }
-
-      pagination.innerHTML = `
-        <button id="previousPageButton" type="button" ${currentPage <= 1 ? "disabled" : ""}>
-          Previous
-        </button>
-        <span>Page ${currentPage} of ${totalPages}</span>
-        <button id="nextPageButton" type="button" ${currentPage >= totalPages ? "disabled" : ""}>
-          Next
-        </button>
-      `;
-
-      document.getElementById("previousPageButton").addEventListener("click", () => {
-        if (currentPage > 1) {
-          currentPage -= 1;
-          loadEdges();
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        }
+      const state = { page: currentPage, limit: PAGE_LIMIT, totalPages, total: totalEdges };
+      pagination.innerHTML = API.paginationMarkup(currentPage, totalPages, PAGE_LIMIT, totalEdges);
+      API.bindPagination(pagination, state, () => {
+        currentPage = state.page;
+        PAGE_LIMIT = state.limit;
+        loadEdges();
+        window.scrollTo({ top: 0, behavior: "smooth" });
       });
-
-      document.getElementById("nextPageButton").addEventListener("click", () => {
-        if (currentPage < totalPages) {
-          currentPage += 1;
-          loadEdges();
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        }
-      });
-    }
-
-    async function openEdge(edgeId) {
-      detailPanel.classList.add("visible");
-      detailTitle.textContent = "Loading edge...";
-      detailId.textContent = edgeId;
-      detailContent.innerHTML = '<p class="empty">Loading linked nodes and source provenance...</p>';
-
-      try {
-        const edge = await fetchJson(
-          `${API_BASE}/edges/${encodeURIComponent(edgeId)}`,
-        );
-
-        const [fromNode, toNode, sources] = await Promise.all([
-          fetchJson(`${API_BASE}/nodes/${encodeURIComponent(edge.fromNodeId)}`)
-            .catch(() => null),
-          fetchJson(`${API_BASE}/nodes/${encodeURIComponent(edge.toNodeId)}`)
-            .catch(() => null),
-          Promise.all(
-            (edge.sourceIds || []).map(async (sourceId) => {
-              try {
-                return await fetchJson(
-                  `${API_BASE}/sources/${encodeURIComponent(sourceId)}`,
-                );
-              } catch {
-                return {
-                  sourceId,
-                  name: sourceId,
-                  notes: "Referenced source could not be loaded.",
-                };
-              }
-            }),
-          ),
-        ]);
-
-        detailTitle.textContent = edge.label || edge.relationshipType;
-        detailId.textContent = edge.edgeId;
-
-        detailContent.innerHTML = `
-          <div class="linked-card">
-            <div class="relationship-line">
-              ${fromNode
-                ? `<button class="node-action" type="button" data-open-node="${escapeHtml(fromNode.nodeId)}">${escapeHtml(fromNode.title)}</button>`
-                : `<code>${escapeHtml(edge.fromNodeId)}</code>`}
-              <strong>${displayValue(edge.label, edge.relationshipType)}</strong>
-              ${toNode
-                ? `<button class="node-action" type="button" data-open-node="${escapeHtml(toNode.nodeId)}">${escapeHtml(toNode.title)}</button>`
-                : `<code>${escapeHtml(edge.toNodeId)}</code>`}
-            </div>
-            <p>${displayValue(edge.summary, "No edge summary.")}</p>
-          </div>
-
-          <div class="detail-grid">
-            ${renderDetailItem("Bundle", edge.bundleId)}
-            ${renderDetailItem("Domain", edge.domain)}
-            ${renderDetailItem("Relationship Type", edge.relationshipType)}
-            ${renderDetailItem("Credibility", edge.credibilityTier)}
-            ${renderDetailItem("Confidence", edge.confidence)}
-            ${renderDetailItem("Verification", edge.verificationStatus)}
-            ${renderDetailItem("Review", edge.reviewStatus)}
-            ${renderDetailItem("Support", edge.supportLevel)}
-            ${renderDetailItem("Strength", edge.relationshipStrength)}
-            ${renderDetailItem("Interpretation", edge.interpretationLevel)}
-          </div>
-
-          <h3>Source Provenance</h3>
-          ${sources.length
-            ? sources.map(renderSourceCard).join("")
-            : '<p class="empty">No sources are linked to this edge.</p>'}
-
-          <h3>Raw Normalized Edge</h3>
-          <details>
-            <summary>View API response</summary>
-            <pre>${escapeHtml(JSON.stringify(edge, null, 2))}</pre>
-          </details>
-        `;
-
-        detailContent.querySelectorAll("[data-open-node]").forEach((button) => {
-          button.addEventListener("click", () => {
-            openNodeInInspector(button.dataset.openNode);
-          });
-        });
-
-        detailPanel.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-      } catch (error) {
-        detailTitle.textContent = "Could not load edge";
-        detailContent.innerHTML = `
-          <p class="empty">${escapeHtml(error.message)}</p>
-        `;
-      }
     }
 
     function renderDetailItem(label, value) {

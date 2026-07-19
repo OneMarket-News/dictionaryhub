@@ -35,6 +35,7 @@ export interface SearchResponse {
   limit: number;
   total: number;
   totalPages: number;
+  items: SearchResult[];
   results: SearchResult[];
 }
 
@@ -379,7 +380,7 @@ export async function searchKnowledge(
         : Math.ceil(
             total / options.limit,
           ),
-    results:
-      searchResult.rows.map(mapSearchRow),
+    items: searchResult.rows.map(mapSearchRow),
+    results: searchResult.rows.map(mapSearchRow),
   };
 }

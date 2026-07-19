@@ -429,6 +429,10 @@
         font-size: 29px;
       }
     }
+
+    .pagination label { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
+    .pagination input, .pagination select { border: 1px solid #d1d5db; border-radius: 8px; padding: 7px 8px; background: white; }
+    .pagination input { width: 62px; }
   </style>
 </head>
 
@@ -525,13 +529,15 @@
     SourceRoot Assertion Registry. Live data supplied by the SourceRoot backend API.
   </footer>
 
+  <script src="./engine/sourceRootApi.js"></script>
   <script type="module">
-    const API_BASE = "http://localhost:3000/api/v1";
-    const PAGE_LIMIT = 12;
+    const API = window.SourceRootApi;
+    const API_BASE = API.base;
+    let PAGE_LIMIT = API.readPositiveInt("limit", 12);
 
     let allAssertions = [];
     let filteredAssertions = [];
-    let currentPage = 1;
+    let currentPage = API.readPositiveInt("page", 1);
     let totalPages = 1;
     let totalAssertions = 0;
     let searchTimer = null;
@@ -629,7 +635,7 @@
 
     async function checkApi() {
       try {
-        const health = await fetchJson("http://localhost:3000/health");
+        const health = await fetchJson(API.healthUrl);
 
         apiStatus.innerHTML = `
           <strong>SourceRoot API: Connected</strong><br>
@@ -678,6 +684,9 @@
       resultsMeta.textContent = "";
       pagination.innerHTML = "";
 
+      const urlParams = buildQuery ? buildQuery() : new URLSearchParams({ page: String(currentPage), limit: String(PAGE_LIMIT) });
+      API.replaceUrl(urlParams);
+
       try {
         const response = await fetchJson(
           `${API_BASE}/assertions?${buildQuery().toString()}`,
@@ -685,7 +694,7 @@
 
         totalAssertions = response.total;
         totalPages = response.totalPages;
-        allAssertions = response.assertions || [];
+        allAssertions = API.getItems(response, "assertions");
 
         const searchTerm = searchInput.value.trim().toLowerCase();
         const credibility = credibilityFilter.value;
@@ -970,145 +979,14 @@
     }
 
     function renderPagination() {
-      if (totalPages <= 1) {
-        pagination.innerHTML = "";
-        return;
-      }
-
-      pagination.innerHTML = `
-        <button id="previousPageBtn" type="button" ${currentPage <= 1 ? "disabled" : ""}>
-          Previous
-        </button>
-
-        <span>Page ${currentPage} of ${totalPages}</span>
-
-        <button id="nextPageBtn" type="button" ${currentPage >= totalPages ? "disabled" : ""}>
-          Next
-        </button>
-      `;
-
-      document
-        .getElementById("previousPageBtn")
-        .addEventListener("click", () => {
-          if (currentPage > 1) {
-            currentPage -= 1;
-            loadAssertions();
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          }
-        });
-
-      document
-        .getElementById("nextPageBtn")
-        .addEventListener("click", () => {
-          if (currentPage < totalPages) {
-            currentPage += 1;
-            loadAssertions();
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          }
-        });
-    }
-
-    async function openAssertion(assertionId) {
-      detailPanel.classList.add("visible");
-      detailTitle.textContent = "Loading assertion...";
-      detailId.textContent = assertionId;
-      detailContent.innerHTML =
-        '<div class="empty-state">Loading normalized assertion, linked node, and sources...</div>';
-
-      try {
-        const assertion = await fetchJson(
-          `${API_BASE}/assertions/${encodeURIComponent(assertionId)}`,
-        );
-
-        const [node, sources] = await Promise.all([
-          fetchJson(
-            `${API_BASE}/nodes/${encodeURIComponent(assertion.nodeId)}`,
-          ).catch(() => null),
-          Promise.all(
-            (assertion.sourceIds || []).map(async (sourceId) => {
-              try {
-                return await fetchJson(
-                  `${API_BASE}/sources/${encodeURIComponent(sourceId)}`,
-                );
-              } catch {
-                return {
-                  sourceId,
-                  name: sourceId,
-                  notes: "Referenced source could not be loaded.",
-                };
-              }
-            }),
-          ),
-        ]);
-
-        detailTitle.textContent =
-          assertion.label ||
-          assertion.assertionId;
-        detailId.textContent = assertion.assertionId;
-
-        detailContent.innerHTML = `
-          <div class="badge-row">
-            <span class="badge badge-domain">${displayValue(assertion.domain)}</span>
-            <span class="badge badge-type">${displayValue(assertion.assertionType)}</span>
-            <span class="badge badge-trust">${displayValue(assertion.credibilityTier)}</span>
-            <span class="badge badge-review">${displayValue(assertion.reviewStatus)}</span>
-          </div>
-
-          <div class="section-label">Full Assertion</div>
-          <div class="body-text">
-            ${formatBody(assertion.body || assertion.summary || "No assertion body provided.")}
-          </div>
-
-          <div class="detail-grid">
-            ${renderDetailItem("Bundle", assertion.bundleId)}
-            ${renderDetailItem("Node ID", assertion.nodeId)}
-            ${renderDetailItem("Confidence", assertion.confidence)}
-            ${renderDetailItem("Verification", assertion.verificationStatus)}
-            ${renderDetailItem("Review", assertion.reviewStatus)}
-            ${renderDetailItem("Support", assertion.supportLevel)}
-            ${renderDetailItem("Interpretation", assertion.interpretationLevel)}
-            ${renderDetailItem("Created", assertion.createdAt)}
-            ${renderDetailItem("Updated", assertion.updatedAt)}
-          </div>
-
-          <div class="section-label">Linked Node</div>
-          ${node
-            ? `
-              <div class="linked-card">
-                <h3>${escapeHtml(node.title)}</h3>
-                <div class="results-meta">
-                  ${displayValue(node.nodeType)} · ${displayValue(node.domain)}
-                </div>
-                <p>${displayValue(node.summary, "No node summary.")}</p>
-                <div class="node-link">${escapeHtml(node.nodeId)}</div>
-              </div>
-            `
-            : '<div class="empty-state">Linked node could not be loaded.</div>'}
-
-          <div class="section-label">Source Provenance</div>
-          ${sources.length
-            ? sources.map(renderSourceDetail).join("")
-            : '<div class="empty-state">No sources are linked to this assertion.</div>'}
-
-          <div class="section-label">Raw API Record</div>
-          <details>
-            <summary>View normalized assertion JSON</summary>
-            <pre>${escapeHtml(JSON.stringify(assertion, null, 2))}</pre>
-          </details>
-        `;
-
-        detailPanel.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-      } catch (error) {
-        detailTitle.textContent = "Could not load assertion";
-        detailContent.innerHTML = `
-          <div class="empty-state">
-            ${escapeHtml(error.message)}
-          </div>
-        `;
-      }
+      const state = { page: currentPage, limit: PAGE_LIMIT, totalPages, total: totalAssertions };
+      pagination.innerHTML = API.paginationMarkup(currentPage, totalPages, PAGE_LIMIT, totalAssertions);
+      API.bindPagination(pagination, state, () => {
+        currentPage = state.page;
+        PAGE_LIMIT = state.limit;
+        loadAssertions();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
     }
 
     function renderDetailItem(label, value) {

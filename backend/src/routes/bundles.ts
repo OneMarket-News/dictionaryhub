@@ -2,6 +2,11 @@ import { Router } from "express";
 
 import { getPool } from "../lib/database.js";
 import {
+  getQueryString,
+  isQueryParameterError,
+  parsePagination,
+} from "../lib/query-params.js";
+import {
   listAssertions,
   type ListAssertionsOptions,
 } from "../services/assertion-store.js";
@@ -55,93 +60,6 @@ async function bundleExists(
   return result.rows[0]?.exists ?? false;
 }
 
-function getQueryString(
-  value: unknown,
-): string | undefined {
-  if (typeof value !== "string") {
-    return undefined;
-  }
-
-  const trimmedValue = value.trim();
-
-  return trimmedValue.length > 0
-    ? trimmedValue
-    : undefined;
-}
-
-function parsePositiveInteger(
-  value: unknown,
-  defaultValue: number,
-): number | undefined {
-  if (value === undefined) {
-    return defaultValue;
-  }
-
-  if (
-    typeof value !== "string" ||
-    !/^\d+$/.test(value)
-  ) {
-    return undefined;
-  }
-
-  const parsedValue = Number(value);
-
-  if (
-    !Number.isSafeInteger(parsedValue) ||
-    parsedValue < 1
-  ) {
-    return undefined;
-  }
-
-  return parsedValue;
-}
-
-function getPagination(
-  pageValue: unknown,
-  limitValue: unknown,
-):
-  | {
-      page: number;
-      limit: number;
-    }
-  | {
-      error: "INVALID_PAGE" | "INVALID_LIMIT";
-      message: string;
-    } {
-  const page = parsePositiveInteger(
-    pageValue,
-    1,
-  );
-
-  if (page === undefined) {
-    return {
-      error: "INVALID_PAGE",
-      message:
-        "page must be a positive integer.",
-    };
-  }
-
-  const limit = parsePositiveInteger(
-    limitValue,
-    25,
-  );
-
-  if (
-    limit === undefined ||
-    limit > 100
-  ) {
-    return {
-      error: "INVALID_LIMIT",
-      message:
-        "limit must be an integer between 1 and 100.",
-    };
-  }
-
-  return {
-    page,
-    limit,
-  };
-}
 
 async function confirmBundle(
   bundleId: string,
@@ -187,12 +105,12 @@ bundlesRouter.get(
           .json(bundle.error);
       }
 
-      const pagination = getPagination(
+      const pagination = parsePagination(
         request.query.page,
         request.query.limit,
       );
 
-      if ("error" in pagination) {
+      if (isQueryParameterError(pagination)) {
         return response
           .status(400)
           .json(pagination);
@@ -250,12 +168,12 @@ bundlesRouter.get(
           .json(bundle.error);
       }
 
-      const pagination = getPagination(
+      const pagination = parsePagination(
         request.query.page,
         request.query.limit,
       );
 
-      if ("error" in pagination) {
+      if (isQueryParameterError(pagination)) {
         return response
           .status(400)
           .json(pagination);
@@ -344,12 +262,12 @@ bundlesRouter.get(
           .json(bundle.error);
       }
 
-      const pagination = getPagination(
+      const pagination = parsePagination(
         request.query.page,
         request.query.limit,
       );
 
-      if ("error" in pagination) {
+      if (isQueryParameterError(pagination)) {
         return response
           .status(400)
           .json(pagination);
@@ -453,12 +371,12 @@ bundlesRouter.get(
           .json(bundle.error);
       }
 
-      const pagination = getPagination(
+      const pagination = parsePagination(
         request.query.page,
         request.query.limit,
       );
 
-      if ("error" in pagination) {
+      if (isQueryParameterError(pagination)) {
         return response
           .status(400)
           .json(pagination);
@@ -532,12 +450,12 @@ bundlesRouter.get(
           .json(bundle.error);
       }
 
-      const pagination = getPagination(
+      const pagination = parsePagination(
         request.query.page,
         request.query.limit,
       );
 
-      if ("error" in pagination) {
+      if (isQueryParameterError(pagination)) {
         return response
           .status(400)
           .json(pagination);

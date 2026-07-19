@@ -37,6 +37,7 @@ export interface ListSourcesResult {
   limit: number;
   total: number;
   totalPages: number;
+  items: NormalizedSource[];
   sources: NormalizedSource[];
 }
 
@@ -254,6 +255,7 @@ export async function listSources(
       total === 0
         ? 0
         : Math.ceil(total / options.limit),
+    items: sourcesResult.rows.map(mapSourceRow),
     sources: sourcesResult.rows.map(mapSourceRow),
   };
 }

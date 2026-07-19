@@ -28,6 +28,7 @@ export interface ListNodesResult {
   limit: number;
   total: number;
   totalPages: number;
+  items: NormalizedNode[];
   nodes: NormalizedNode[];
 }
 
@@ -219,6 +220,7 @@ export async function listNodes(
       total === 0
         ? 0
         : Math.ceil(total / options.limit),
+    items: nodesResult.rows.map(mapNodeRow),
     nodes: nodesResult.rows.map(mapNodeRow),
   };
 }
