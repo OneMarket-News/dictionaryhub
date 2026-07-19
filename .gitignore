@@ -2,3 +2,5 @@ backend/.env
 backend/.env.test
 backend/.env.*
 !backend/.env.example
+data/dictionaryroot/dictionaryroot-oewn-2025-pilot-*.json
+!data/dictionaryroot/dictionaryroot-oewn-2025-pilot-500.json

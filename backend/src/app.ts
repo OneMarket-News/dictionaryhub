@@ -17,8 +17,38 @@ import { searchRouter } from "./routes/search.js";
 import { sourcesRouter } from "./routes/sources.js";
 import { validateRouter } from "./routes/validate.js";
 
-export function createApp() {
+export interface CreateAppOptions {
+  jsonLimit?: string;
+}
+
+interface HttpError extends Error {
+  status?: number;
+  statusCode?: number;
+  type?: string;
+  body?: unknown;
+}
+
+function isPayloadTooLargeError(error: HttpError): boolean {
+  return (
+    error.status === 413 ||
+    error.statusCode === 413 ||
+    error.type === "entity.too.large"
+  );
+}
+
+function isJsonSyntaxError(error: HttpError): boolean {
+  return (
+    error instanceof SyntaxError &&
+    ("body" in error || error.type === "entity.parse.failed")
+  );
+}
+
+export function createApp(options: CreateAppOptions = {}) {
   const app = express();
+  const jsonLimit =
+    options.jsonLimit ||
+    process.env.SOURCEROOT_JSON_LIMIT ||
+    "50mb";
 
   app.disable("x-powered-by");
 
@@ -34,7 +64,7 @@ export function createApp() {
     }),
   );
 
-  app.use(express.json({ limit: "5mb" }));
+  app.use(express.json({ limit: jsonLimit }));
 
   app.use(healthRouter);
   app.use("/api/v1", validateRouter);
@@ -59,31 +89,36 @@ export function createApp() {
 
   app.use(
     (
-      error: Error,
+      error: HttpError,
       _request: Request,
       response: Response,
       _next: NextFunction,
     ) => {
-      const isJsonSyntaxError =
-        error instanceof SyntaxError &&
-        "body" in error;
-
-      response
-        .status(
-          isJsonSyntaxError
-            ? 400
-            : 500,
-        )
-        .json({
-          error: isJsonSyntaxError
-            ? "INVALID_JSON"
-            : "INTERNAL_SERVER_ERROR",
-          message: isJsonSyntaxError
-            ? "Request body must contain valid JSON."
-            : "The SourceRoot backend encountered an unexpected error.",
-          requestId:
-            response.locals.requestId,
+      if (isPayloadTooLargeError(error)) {
+        response.status(413).json({
+          error: "PAYLOAD_TOO_LARGE",
+          message: `Request body exceeds the configured SourceRoot JSON limit (${jsonLimit}).`,
+          requestId: response.locals.requestId,
         });
+        return;
+      }
+
+      if (isJsonSyntaxError(error)) {
+        response.status(400).json({
+          error: "INVALID_JSON",
+          message: "Request body must contain valid JSON.",
+          requestId: response.locals.requestId,
+        });
+        return;
+      }
+
+      response.status(500).json({
+        error: "INTERNAL_SERVER_ERROR",
+        message:
+          "The SourceRoot backend encountered an unexpected error.",
+        requestId:
+          response.locals.requestId,
+      });
     },
   );
 

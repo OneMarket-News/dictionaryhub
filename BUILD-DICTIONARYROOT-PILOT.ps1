@@ -1,6 +1,8 @@
 param(
     [ValidateRange(1, 25000)]
-    [int]$Limit = 500
+    [int]$Limit = 500,
+
+    [string]$BundleId = "dictionaryroot-oewn-2025-pilot-500"
 )
 
 $ErrorActionPreference = "Stop"
@@ -17,6 +19,10 @@ $downloadUrl = "https://en-word.net/static/english-wordnet-2025.zip"
 
 if (-not (Test-Path $backend)) {
     throw "SourceRoot backend was not found at $backend"
+}
+
+if ([string]::IsNullOrWhiteSpace($BundleId)) {
+    throw "BundleId must not be empty."
 }
 
 New-Item -ItemType Directory -Path $cache -Force | Out-Null
@@ -45,12 +51,13 @@ else {
 
 Write-Host ""
 Write-Host "Building DictionaryRoot pilot bundle with $Limit nodes..."
+Write-Host "Stable bundle identity: $BundleId"
 
 & npm.cmd --prefix $backend run dictionaryroot:pilot -- `
     --source-dir $extract `
     --limit $Limit `
     --source-version 2025 `
-    --bundle-id "dictionaryroot-oewn-2025-pilot-$Limit" `
+    --bundle-id $BundleId `
     --output $output
 
 if ($LASTEXITCODE -ne 0) {
@@ -60,6 +67,8 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host ""
 Write-Host "DictionaryRoot pilot created and locally validated:"
 Write-Host $output
+Write-Host ""
+Write-Host "The filename records the scale, while bundleId remains the continuing dataset identity."
 Write-Host ""
 Write-Host "Start the backend in one PowerShell window:"
 Write-Host "npm.cmd --prefix `"$backend`" run dev"

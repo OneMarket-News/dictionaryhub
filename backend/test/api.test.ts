@@ -51,3 +51,15 @@ test("malformed JSON returns HTTP 400", async () => {
 
   assert.equal(response.body.error, "INVALID_JSON");
 });
+
+test("oversized JSON returns HTTP 413 with a clear SourceRoot error", async () => {
+  const limitedApp = createApp({ jsonLimit: "1kb" });
+  const response = await request(limitedApp)
+    .post("/api/v1/validate")
+    .send({ payload: "x".repeat(2048) })
+    .expect(413);
+
+  assert.equal(response.body.error, "PAYLOAD_TOO_LARGE");
+  assert.match(response.body.message, /1kb/);
+  assert.ok(response.body.requestId);
+});

@@ -7,11 +7,26 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$bundleId = "dictionaryroot-oewn-2025-pilot-$Limit"
-$encodedBundleId = [Uri]::EscapeDataString($bundleId)
+$repo = "C:\Users\Josh\Documents\GitHub\dictionaryhub"
+$bundlePath = Join-Path $repo "data\dictionaryroot\dictionaryroot-oewn-2025-pilot-$Limit.json"
 $apiBase = "$($ApiOrigin.TrimEnd('/'))/api/v1"
 
+if (-not (Test-Path $bundlePath)) {
+    throw "DictionaryRoot pilot bundle was not found at $bundlePath."
+}
+
+$bundleDocument = Get-Content -Path $bundlePath -Raw | ConvertFrom-Json
+$bundleId = [string]$bundleDocument.bundleId
+
+if ([string]::IsNullOrWhiteSpace($bundleId)) {
+    throw "The DictionaryRoot pilot bundle does not contain a bundleId."
+}
+
+$encodedBundleId = [Uri]::EscapeDataString($bundleId)
+
 Write-Host "Verifying $bundleId"
+Write-Host "Bundle file: $bundlePath"
+Write-Host "Expected node scale: $Limit"
 Write-Host ""
 
 $bundle = Invoke-RestMethod -Uri "$apiBase/import/$encodedBundleId" -Method Get
@@ -31,12 +46,20 @@ Write-Host "Revisions: $($revisions.total)"
 Write-Host "Search results for 'knowledge': $($search.total)"
 Write-Host ""
 
+if ($bundle.bundleId -ne $bundleId) {
+    throw "Expected bundle ID $bundleId but the API returned $($bundle.bundleId)."
+}
+
 if ($nodes.total -ne $Limit) {
     throw "Expected $Limit nodes but the API returned $($nodes.total)."
 }
 
 if ($assertions.total -lt $Limit) {
     throw "Expected at least $Limit assertions but the API returned $($assertions.total)."
+}
+
+if ($edges.total -lt 1) {
+    throw "Expected at least one edge record."
 }
 
 if ($sources.total -lt 1) {
