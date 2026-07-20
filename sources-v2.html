@@ -1,52 +1,120 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>DictionaryRoot &mdash; Sources</title>
-  <style>
-    :root{--navy:#08213f;--blue:#2563eb;--ink:#0f172a;--muted:#64748b;--line:#dbe4f0;--bg:#f5f8fc;--shadow:0 14px 36px rgba(15,23,42,.10);--soft:0 8px 22px rgba(15,23,42,.07)}
-    *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg)} a{color:inherit}.wrap{width:min(1180px,calc(100% - 30px));margin:0 auto}
-    header{background:#08213f;color:#fff;border-bottom:1px solid rgba(255,255,255,.12);position:sticky;top:0;z-index:10}.nav{min-height:52px;display:flex;align-items:center;justify-content:center;gap:18px;font-size:12px;font-weight:850}.nav a{color:#e7eef8;text-decoration:none;padding:7px 8px;border-radius:999px}.nav a:hover,.nav a.active{background:rgba(255,255,255,.12);color:#fff}
-    main{padding:26px 0 70px}.hero{background:linear-gradient(135deg,#0a3562,#08213f 76%);color:#fff;border-radius:14px;padding:34px;box-shadow:var(--shadow);display:grid;grid-template-columns:1fr auto;gap:20px;align-items:end;margin-bottom:20px;position:relative;overflow:hidden}.hero:after{content:"";position:absolute;right:-70px;top:-80px;width:220px;height:220px;border-radius:999px;background:rgba(96,165,250,.16)}
-    .eyebrow{display:inline-flex;border:1px solid rgba(255,255,255,.32);color:#dcecff;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:900;margin-bottom:14px;background:rgba(255,255,255,.08)} h1{margin:0;font-family:Georgia,serif;font-size:clamp(34px,6vw,64px);letter-spacing:-.07em;line-height:.95}.hero p{margin:12px 0 0;max-width:780px;color:#dcecff;font-size:15px;line-height:1.6;font-weight:650;position:relative;z-index:1}.hero-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;position:relative;z-index:1}
-    .button{border:1px solid #bfdbfe;background:#fff;color:var(--blue);border-radius:10px;padding:10px 13px;text-decoration:none;font-size:12px;font-weight:950;display:inline-flex;align-items:center;justify-content:center}.button.primary{background:#2563eb;border-color:#2563eb;color:#fff}.button.ghost{background:rgba(255,255,255,.10);color:#fff;border-color:rgba(255,255,255,.30)}
-    .toolbar{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--soft);padding:12px;display:grid;grid-template-columns:1fr 190px 190px;gap:12px;margin-bottom:14px} input,select{width:100%;border:1px solid #cbd5e1;background:#fff;color:var(--ink);border-radius:8px;padding:11px 12px;font-size:13px;font-weight:750;outline:none} input:focus,select:focus{border-color:#60a5fa;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
-    .chip-panel{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--soft);padding:13px;margin-bottom:18px}.chip-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;color:#475569;font-size:12px;font-weight:850}.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{border:1px solid #bfdbfe;background:#eff6ff;color:#1d4ed8;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:900;cursor:pointer}.chip.active{background:#2563eb;color:#fff;border-color:#2563eb}
-    .layout{display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start}.source-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.source-card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--soft);padding:16px;min-height:210px;display:flex;flex-direction:column;gap:9px;cursor:pointer;transition:.15s}.source-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:#93c5fd}.source-card.selected{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12),var(--soft)}
-    .source-card h3{margin:0;font-family:Georgia,serif;font-size:21px;letter-spacing:-.04em;line-height:1.05}.source-id{color:var(--muted);font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;word-break:break-word}.source-meta{color:#475569;font-size:12px;font-weight:800;line-height:1.45}.notes{color:#64748b;font-size:12px;line-height:1.5;margin:0;flex:1}.pill-row{display:flex;flex-wrap:wrap;gap:6px}.pill{border:1px solid #cbd5e1;background:#f8fafc;color:#334155;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:900;line-height:1.1}.pill.blue{border-color:#bfdbfe;background:#eff6ff;color:#2563eb}.pill.green{border-color:#bbf7d0;background:#ecfdf5;color:#047857}.pill.amber{border-color:#fde68a;background:#fffbeb;color:#92400e}
-    .card-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}.mini-button{border:1px solid #bfdbfe;background:#eff6ff;color:#2563eb;border-radius:8px;padding:8px 9px;text-decoration:none;text-align:center;font-size:11px;font-weight:950}.mini-button.primary{background:#2563eb;border-color:#2563eb;color:#fff}
-    .sidebar{display:flex;flex-direction:column;gap:14px;position:sticky;top:70px}.side-card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--soft);padding:16px}.side-card h2,.side-card h3{font-family:Georgia,serif;letter-spacing:-.035em;margin:0 0 10px;line-height:1.08}.side-card h2{font-size:24px}.side-card h3{font-size:19px}.side-card p{color:#475569;font-size:13px;line-height:1.6;margin:8px 0 0}.detail-row{display:grid;grid-template-columns:1fr auto;gap:8px;padding:9px 0;border-top:1px solid #eef2f7;color:#475569;font-size:12px;font-weight:850}.detail-row:first-of-type{border-top:0}.detail-row strong{color:#0f172a;text-align:right}.concept-list{display:flex;flex-direction:column;gap:8px;max-height:260px;overflow:auto;padding-right:4px}.concept-link{display:flex;justify-content:space-between;gap:10px;align-items:center;border:1px solid #dbeafe;background:#f8fbff;border-radius:8px;padding:9px 10px;text-decoration:none;color:#0f172a;font-size:12px;font-weight:850}.concept-link span{color:#2563eb;font-size:10px;font-weight:950}
-    .empty{grid-column:1/-1;background:#fff;border:1px dashed #cbd5e1;border-radius:14px;padding:26px;text-align:center;color:#64748b;font-weight:850}.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca;border-radius:12px;padding:16px;font-weight:850;margin-top:18px} footer{border-top:1px solid var(--line);color:#64748b;font-size:12px;line-height:1.6;padding:24px 0 34px;background:#fff}
-    @media(max-width:1100px){.source-grid{grid-template-columns:repeat(2,minmax(0,1fr))}} @media(max-width:900px){.hero{grid-template-columns:1fr}.hero-actions{justify-content:flex-start}.toolbar{grid-template-columns:1fr}.layout{grid-template-columns:1fr}.sidebar{position:static}} @media(max-width:620px){.wrap{width:min(100% - 22px,1180px)}.nav{justify-content:flex-start;overflow:auto;padding:0 2px}.hero{padding:24px 20px}.source-grid{grid-template-columns:1fr}}
-  </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Explore the live sources, assertions, relationships, and exact WordNet meanings behind DictionaryRoot through SourceRoot provenance records.">
+  <title>DictionaryRoot - Source Experience</title>
+  <link rel="icon" href="assets/brand/dictionaryroot-mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/css/dictionaryroot-brand.css">
+  <link rel="stylesheet" href="assets/css/dictionaryroot-live.css">
 </head>
-<body>
-  <header><div class="wrap nav"><a href="index.html">Home</a><a href="explore.html">Explore</a><a href="graph.html">Graph</a><a href="sources.html">Sources</a><a class="active" href="sources-v2.html">Sources V2</a><a href="revisions.html">Revisions</a><a href="about.html">About</a></div></header>
-  <main><div class="wrap">
-    <section class="hero"><div><div class="eyebrow">SourceRoot V2 Source Registry</div><h1>Trace knowledge back to sources.</h1><p>Browse the real V2 source registry behind SourceRoot concepts. This combines the stronger V1 source-page experience with the newer V2 source ID architecture.</p></div><div class="hero-actions"><a class="button ghost" href="concept-v2.html?id=truth">Open Truth Concept</a><a class="button primary" href="sources.html">Compare V1 Sources</a></div></section>
-    <section class="toolbar"><input id="search" type="search" placeholder="Search sources, publishers, concepts, fields, notes..."/><select id="type-filter"><option value="">All source types</option></select><select id="tier-filter"><option value="">All quality tiers</option></select></section>
-    <section class="chip-panel"><div class="chip-top"><span id="showing-count">Showing sources</span><span>Data source: data/sources-v2.json</span></div><div class="chips" id="concept-chips"></div></section>
-    <section class="layout"><div class="source-grid" id="sources-grid"><div class="empty">Loading V2 sources...</div></div><aside class="sidebar"><section class="side-card" id="selected-source"><h2>Selected Source</h2><p>Select a source card to inspect its publisher, source ID, supported fields, and connected V2 concepts.</p></section><section class="side-card"><h3>Supported Concepts</h3><div class="concept-list" id="supported-concepts"><p>No source selected yet.</p></div></section><section class="side-card"><h3>Source Summary</h3><div class="detail-row"><span>Total Sources</span><strong id="summary-total">0</strong></div><div class="detail-row"><span>Visible Sources</span><strong id="summary-visible">0</strong></div><div class="detail-row"><span>Linked Concepts</span><strong id="summary-concepts">0</strong></div><div class="detail-row"><span>Supported Fields</span><strong id="summary-fields">0</strong></div></section><section class="side-card"><h3>What this proves</h3><p>The V2 source layer is now visible as a product page. Source records can support concepts, fields, provenance trails, and future trust scoring without being trapped inside individual concept entries.</p></section></aside></section><div id="error-box"></div>
-  </div></main>
-  <footer><div class="wrap">SourceRoot V2 Sources. V1 remains safe. This page is a V2 registry interface powered by data/sources-v2.json.</div></footer>
-  <script>
-    let sources=[],visibleSources=[],selectedSourceId=null,activeConcept="";
-    const escapeHtml=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
-    const slugify=v=>String(v||"").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
-    const getArray=(s,k)=>Array.isArray(s[k])?s[k]:[]; const unique=v=>[...new Set(v.filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b))); const allConcepts=(i=sources)=>unique(i.flatMap(s=>getArray(s,"supportsConcepts"))); const allFields=(i=sources)=>unique(i.flatMap(s=>getArray(s,"supportsFields"))); const uniqueValues=(i,k)=>unique(i.map(x=>x[k]));
-    function sourceSearchText(s){return [s.id,s.name,s.publisher,s.type,s.domain,s.qualityTier,s.notes,...getArray(s,"supportsConcepts"),...getArray(s,"supportsFields")].join(" ").toLowerCase()}
-    function populateFilters(){const type=document.getElementById("type-filter"),tier=document.getElementById("tier-filter");uniqueValues(sources,"type").forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;type.appendChild(o)});uniqueValues(sources,"qualityTier").forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;tier.appendChild(o)})}
-    function renderConceptChips(){const box=document.getElementById("concept-chips"),concepts=allConcepts(sources);box.innerHTML=[`<button class="chip ${activeConcept===""?"active":""}" type="button" data-concept="">All</button>`,...concepts.map(c=>`<button class="chip ${activeConcept===c?"active":""}" type="button" data-concept="${escapeHtml(c)}">${escapeHtml(c)}</button>`)].join("");box.querySelectorAll(".chip").forEach(chip=>chip.addEventListener("click",()=>{activeConcept=chip.dataset.concept||"";renderConceptChips();refresh()}))}
-    function filteredSources(){const q=document.getElementById("search").value.toLowerCase().trim(),type=document.getElementById("type-filter").value,tier=document.getElementById("tier-filter").value;return sources.filter(s=>(!q||sourceSearchText(s).includes(q))&&(!type||s.type===type)&&(!tier||s.qualityTier===tier)&&(!activeConcept||getArray(s,"supportsConcepts").includes(activeConcept)))}
-    function renderSourceCards(items){const grid=document.getElementById("sources-grid"); if(!items.length){grid.innerHTML='<div class="empty">No V2 sources match the current filters.</div>';return} grid.innerHTML=items.map(s=>{const fields=getArray(s,"supportsFields"),concepts=getArray(s,"supportsConcepts"),sel=selectedSourceId===s.id;return `<article class="source-card ${sel?"selected":""}" data-source-id="${escapeHtml(s.id)}"><div class="source-id">${escapeHtml(s.id||"source-id")}</div><h3>${escapeHtml(s.name||"Untitled source")}</h3><div class="source-meta">${escapeHtml(s.publisher||"Unknown publisher")}${s.type?` · ${escapeHtml(s.type)}`:""}${s.domain?` · ${escapeHtml(s.domain)}`:""}</div><p class="notes">${escapeHtml(s.notes||"No notes yet.")}</p><div class="pill-row">${s.qualityTier?`<span class="pill green">${escapeHtml(s.qualityTier)}</span>`:""}${fields.slice(0,3).map(f=>`<span class="pill blue">${escapeHtml(f)}</span>`).join("")}${concepts.slice(0,3).map(c=>`<span class="pill amber">${escapeHtml(c)}</span>`).join("")}</div><div class="card-actions">${s.url?`<a class="mini-button primary" href="${escapeHtml(s.url)}" target="_blank" rel="noopener">Inspect</a>`:`<span class="mini-button primary">No URL</span>`}<a class="mini-button" href="concept-v2.html?id=${escapeHtml(slugify(concepts[0]||"truth"))}">Concept</a></div></article>`}).join("");grid.querySelectorAll(".source-card").forEach(card=>card.addEventListener("click",e=>{if(e.target.closest("a"))return;selectedSourceId=card.dataset.sourceId;renderSelectedSource();renderSourceCards(visibleSources)}))}
-    function renderSelectedSource(){const panel=document.getElementById("selected-source"),conceptPanel=document.getElementById("supported-concepts"),s=sources.find(x=>x.id===selectedSourceId)||visibleSources[0]||sources[0]; if(!s){panel.innerHTML="<h2>Selected Source</h2><p>No source selected yet.</p>";conceptPanel.innerHTML="<p>No source selected yet.</p>";return} selectedSourceId=s.id; const fields=getArray(s,"supportsFields"),concepts=getArray(s,"supportsConcepts");panel.innerHTML=`<h2>${escapeHtml(s.name||"Selected Source")}</h2><div class="source-id">${escapeHtml(s.id||"")}</div><p>${escapeHtml(s.notes||"No notes yet.")}</p><div class="detail-row"><span>Publisher</span><strong>${escapeHtml(s.publisher||"Unknown")}</strong></div><div class="detail-row"><span>Type</span><strong>${escapeHtml(s.type||"Unknown")}</strong></div><div class="detail-row"><span>Domain</span><strong>${escapeHtml(s.domain||"Unknown")}</strong></div><div class="detail-row"><span>Quality Tier</span><strong>${escapeHtml(s.qualityTier||"Unrated")}</strong></div><div class="pill-row">${fields.map(f=>`<span class="pill blue">${escapeHtml(f)}</span>`).join("")}</div><div style="margin-top:12px;">${s.url?`<a class="button primary" href="${escapeHtml(s.url)}" target="_blank" rel="noopener">Open source</a>`:""}</div>`;conceptPanel.innerHTML=concepts.length?concepts.map(c=>`<a class="concept-link" href="concept-v2.html?id=${escapeHtml(slugify(c))}">${escapeHtml(c)}<span>Open →</span></a>`).join(""):"<p>No supported concepts listed.</p>"}
-    function renderSummary(){document.getElementById("summary-total").textContent=sources.length;document.getElementById("summary-visible").textContent=visibleSources.length;document.getElementById("summary-concepts").textContent=allConcepts(sources).length;document.getElementById("summary-fields").textContent=allFields(sources).length;document.getElementById("showing-count").textContent=`Showing ${visibleSources.length} of ${sources.length} V2 matching sources`}
-    function refresh(){visibleSources=filteredSources();if(!visibleSources.some(s=>s.id===selectedSourceId))selectedSourceId=visibleSources[0]?.id||sources[0]?.id||null;renderSourceCards(visibleSources);renderSelectedSource();renderSummary()}
-    async function init(){try{const r=await fetch("data/sources-v2.json",{cache:"no-store"});if(!r.ok)throw new Error(`Could not load data/sources-v2.json. Status: ${r.status}`);sources=await r.json();if(!Array.isArray(sources))throw new Error("data/sources-v2.json must be a JSON array.");sources.sort((a,b)=>String(a.name||"").localeCompare(String(b.name||"")));populateFilters();renderConceptChips();selectedSourceId=sources[0]?.id||null;refresh();document.getElementById("search").addEventListener("input",refresh);document.getElementById("type-filter").addEventListener("change",refresh);document.getElementById("tier-filter").addEventListener("change",refresh)}catch(e){document.getElementById("sources-grid").innerHTML="";document.getElementById("error-box").innerHTML=`<div class="error">${escapeHtml(e.message)}</div>`}} init();
-  </script>
+<body class="dictionaryroot-live-page dictionaryroot-customer-page dictionaryroot-source-page">
+  <main id="main-content" class="dr-live-main dr-source-main">
+    <section class="dr-live-hero dr-source-hero" aria-labelledby="sourcePageTitle">
+      <div>
+        <p class="dr-live-eyebrow">DictionaryRoot Customer #001</p>
+        <h1 id="sourcePageTitle">Follow meaning back to its source.</h1>
+        <p>Search the live SourceRoot source registry, inspect attribution and licensing, and trace each source through supported assertions and relationships to exact DictionaryRoot meanings.</p>
+      </div>
+      <div class="dr-live-stat">
+        <strong id="dictionaryrootSourceHeroStatus">Live</strong>
+        <span>Source records, assertion support, linked concepts, and provenance paths</span>
+      </div>
+    </section>
+
+    <section class="dr-source-controls" aria-label="Source library controls">
+      <div class="dr-source-search-field">
+        <label for="dictionaryrootSourceSearch">Search sources</label>
+        <div class="dr-source-search-row">
+          <input id="dictionaryrootSourceSearch" type="search" name="source-search" autocomplete="off" placeholder="Search source title, publisher, ID, license, or notes">
+          <button id="dictionaryrootClearSourceSearch" class="dr-live-icon-button" type="button" aria-label="Clear source search" title="Clear source search">×</button>
+        </div>
+      </div>
+
+      <div class="dr-source-control-field">
+        <label for="dictionaryrootSourceTypeFilter">Source type</label>
+        <select id="dictionaryrootSourceTypeFilter">
+          <option value="all">All source types</option>
+        </select>
+      </div>
+
+      <div class="dr-source-control-field">
+        <label for="dictionaryrootSourceSort">Sort sources</label>
+        <select id="dictionaryrootSourceSort">
+          <option value="usage">Most used</option>
+          <option value="name">Name A–Z</option>
+          <option value="type">Source type</option>
+        </select>
+      </div>
+
+      <div class="dr-source-control-field">
+        <label for="dictionaryrootSourceDensity">Card density</label>
+        <select id="dictionaryrootSourceDensity">
+          <option value="comfortable">Comfortable</option>
+          <option value="compact">Compact</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="dr-source-overview" aria-label="Source library summary">
+      <div class="dr-source-overview-copy">
+        <span id="dictionaryrootSourceStatus" class="dr-live-status" data-state="loading" role="status" aria-live="polite">Connecting to SourceRoot…</span>
+        <span id="dictionaryrootSourceResultCount">Loading live source records.</span>
+      </div>
+      <div id="dictionaryrootSourceTypeChips" class="dr-source-type-chips" aria-label="Filter by source type"></div>
+    </section>
+
+    <section id="dictionaryrootSourceOffline" class="dr-source-offline" hidden aria-live="assertive">
+      <div>
+        <p class="dr-live-eyebrow">SourceRoot unavailable</p>
+        <h2>The live source library could not be reached.</h2>
+        <p id="dictionaryrootSourceOfflineMessage">Start the SourceRoot backend and try the connection again.</p>
+      </div>
+      <button id="dictionaryrootRetrySources" class="dr-live-button" type="button">Retry live connection</button>
+    </section>
+
+    <section class="dr-source-workspace" aria-label="DictionaryRoot source experience">
+      <div class="dr-source-library-column">
+        <div class="dr-source-stat-grid" aria-label="Source library metrics">
+          <article class="dr-source-stat-card"><strong id="dictionaryrootSourceCount">—</strong><span>Live sources</span></article>
+          <article class="dr-source-stat-card"><strong id="dictionaryrootVisibleSourceCount">—</strong><span>Visible sources</span></article>
+          <article class="dr-source-stat-card"><strong id="dictionaryrootLinkedAssertionCount">—</strong><span>Selected assertions</span></article>
+          <article class="dr-source-stat-card"><strong id="dictionaryrootLinkedConceptCount">—</strong><span>Selected concepts</span></article>
+        </div>
+
+        <div id="dictionaryrootSourceGrid" class="dr-source-grid" aria-live="polite" aria-busy="true">
+          <div class="dr-source-loading-card"><span></span><span></span><span></span></div>
+          <div class="dr-source-loading-card"><span></span><span></span><span></span></div>
+          <div class="dr-source-loading-card"><span></span><span></span><span></span></div>
+        </div>
+
+        <div id="dictionaryrootSourceEmpty" class="dr-live-empty dr-source-empty" hidden>
+          <strong>No live sources matched these controls.</strong>
+          <span>Clear the search or choose a different source type.</span>
+          <button id="dictionaryrootResetSourceFilters" class="dr-live-button-secondary" type="button">Reset source filters</button>
+        </div>
+      </div>
+
+      <aside class="dr-source-details-column" aria-label="Selected source details">
+        <div id="dictionaryrootSourceDetails" class="dr-source-details-card dr-source-sticky-card">
+          <div class="dr-source-details-placeholder">
+            <p class="dr-live-eyebrow">Selected source</p>
+            <h2>Choose a live source record.</h2>
+            <p>Select a source card to inspect its metadata, supporting assertions, linked concepts, and SourceRoot provenance path.</p>
+          </div>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="dr-live-footer">
+    <span>DictionaryRoot Source Experience v1</span>
+    <span>Live provenance through SourceRoot</span>
+  </footer>
+
   <script src="assets/js/dictionaryroot-api.js"></script>
   <script src="assets/js/dictionaryroot-brand.js"></script>
+  <script src="assets/js/dictionaryroot-sources.js"></script>
 </body>
 </html>
