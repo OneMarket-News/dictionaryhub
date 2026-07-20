@@ -3,79 +3,87 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Search live DictionaryRoot meanings, definitions, relationships, and sources powered by SourceRoot.">
-  <title>DictionaryRoot - Concept Explorer</title>
+  <meta name="description" content="Search live DictionaryRoot meanings, compare exact senses, and trace definitions, relationships, and sources through SourceRoot.">
+  <title>DictionaryRoot - Concept Experience</title>
   <link rel="icon" href="assets/brand/dictionaryroot-mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/css/dictionaryroot-brand.css">
   <link rel="stylesheet" href="assets/css/dictionaryroot-live.css">
 </head>
-<body class="dictionaryroot-live-page dictionaryroot-customer-page">
-  <main id="main-content" class="dr-live-main">
-    <section class="dr-live-hero" aria-labelledby="pageTitle">
+<body class="dictionaryroot-live-page dictionaryroot-customer-page dictionaryroot-concept-page">
+  <main id="main-content" class="dr-live-main dr-concept-main">
+    <section class="dr-live-hero dr-concept-hero" aria-labelledby="conceptPageTitle">
       <div>
-        <p class="dr-live-eyebrow">SourceRoot Customer #001</p>
-        <h1 id="pageTitle">Concept Explorer</h1>
-        <p>Search the live DictionaryRoot dataset, compare distinct word senses, and inspect definitions, examples, semantic relationships, and provenance.</p>
+        <p class="dr-live-eyebrow">DictionaryRoot Customer #001</p>
+        <h1 id="conceptPageTitle">Understand a word. Trace its meaning.</h1>
+        <p>Choose an exact word sense, read its source-backed definition, compare connected meanings, and follow every record back to its lexical source.</p>
       </div>
-      <div class="dr-live-stat" aria-label="Connected dataset scale">
-        <strong>10,000</strong>
-        <span>Imported concepts at the current milestone</span>
+      <div class="dr-live-stat">
+        <strong>Live</strong>
+        <span>Definitions, semantic relationships, sources, and SourceRoot records</span>
       </div>
     </section>
 
-    <section class="dr-live-search" aria-labelledby="searchHeading">
-      <h2 id="searchHeading" style="position:absolute;left:-9999px;">Search DictionaryRoot</h2>
+    <section class="dr-live-search dr-concept-search" aria-label="Search DictionaryRoot meanings">
       <form id="dictionaryrootSearchForm" class="dr-live-search-form">
-        <label for="dictionaryrootSearchInput" style="position:absolute;left:-9999px;">Search for a word</label>
+        <label for="dictionaryrootSearchInput" class="dr-sr-only">Search for a word</label>
         <input id="dictionaryrootSearchInput" type="search" name="q" autocomplete="off" placeholder="Search for knowledge, truth, language, light...">
-        <button id="dictionaryrootSearchButton" class="dr-live-button" type="submit">Explore</button>
+        <button id="dictionaryrootSearchButton" class="dr-live-button" type="submit">Find meanings</button>
       </form>
       <p id="dictionaryrootSearchStatus" class="dr-live-status" role="status" aria-live="polite"></p>
-      <div id="dictionaryrootSearchResults" class="dr-live-results" aria-live="polite"></div>
     </section>
 
-    <section class="dr-live-layout" aria-label="Selected DictionaryRoot concept">
-      <article class="dr-live-panel">
-        <div class="dr-live-panel-header">
-          <h2>Selected meaning</h2>
-          <span class="dr-live-chip" data-tone="good">Live SourceRoot API</span>
+    <section id="dictionaryrootSenseChooser" class="dr-concept-sense-panel" aria-labelledby="senseChooserHeading" hidden>
+      <header class="dr-concept-section-header">
+        <div>
+          <p class="dr-concept-kicker">Search results</p>
+          <h2 id="senseChooserHeading">Choose the intended meaning</h2>
         </div>
-        <div id="dictionaryrootConceptDetail" class="dr-live-panel-body">
+        <span id="dictionaryrootSenseCount" class="dr-live-chip" data-tone="accent">0 meanings</span>
+      </header>
+      <div id="dictionaryrootSearchResults" class="dr-concept-sense-grid" aria-live="polite"></div>
+    </section>
+
+    <section class="dr-concept-workspace" aria-label="Selected DictionaryRoot meaning">
+      <article class="dr-live-panel dr-concept-record-panel">
+        <div id="dictionaryrootConceptDetail" class="dr-concept-record-body">
           <div class="dr-live-empty">
-            <strong>Choose a meaning to begin.</strong>
-            DictionaryRoot will load its node, definitions, relationships, and sources from PostgreSQL through SourceRoot.
+            <strong>Connecting to DictionaryRoot...</strong>
+            Loading the default word search through the live SourceRoot customer API.
           </div>
         </div>
       </article>
 
-      <aside class="dr-live-panel" aria-labelledby="customerConnectionHeading">
-        <div class="dr-live-panel-header"><h2 id="customerConnectionHeading">Customer connection</h2></div>
-        <div class="dr-live-panel-body">
-          <section class="dr-live-section">
-            <h3>What is live now</h3>
-            <div class="dr-live-chip-row">
-              <span class="dr-live-chip" data-tone="good">Search</span>
-              <span class="dr-live-chip" data-tone="good">Definitions</span>
-              <span class="dr-live-chip" data-tone="good">Relationships</span>
-              <span class="dr-live-chip" data-tone="good">Sources</span>
+      <aside class="dr-concept-sidebar" aria-label="Meaning tools and provenance">
+        <section class="dr-live-panel dr-concept-sticky-card">
+          <div class="dr-live-panel-header">
+            <h2>Meaning at a glance</h2>
+            <span class="dr-live-chip" data-tone="good">Live API</span>
+          </div>
+          <div id="dictionaryrootConceptSummary" class="dr-live-panel-body">
+            <div class="dr-live-empty">
+              <strong>No meaning selected yet.</strong>
+              Choose a search result to see its identity, record counts, and navigation tools.
             </div>
-            <p>This page no longer depends on the old static concept records. Customer requests flow through the DictionaryRoot client into SourceRoot.</p>
-          </section>
-          <section class="dr-live-section">
-            <h3>Customer data flow</h3>
-            <p>DictionaryRoot page<br>→ customer API client<br>→ SourceRoot API<br>→ PostgreSQL<br>→ source-backed response</p>
-          </section>
-          <section class="dr-live-section">
-            <h3>Attribution</h3>
-            <p>Lexical data is derived from Open English WordNet 2025 and licensed under Creative Commons Attribution 4.0.</p>
-            <a href="sources-v2.html" style="color:var(--dr-live-cyan);font-weight:760;">View DictionaryRoot sources</a>
-          </section>
-        </div>
+          </div>
+        </section>
+
+        <section class="dr-live-panel dr-concept-provenance-card">
+          <div class="dr-live-panel-header"><h2>Why this is traceable</h2></div>
+          <div class="dr-live-panel-body">
+            <ol class="dr-concept-flow" aria-label="DictionaryRoot customer data flow">
+              <li><strong>DictionaryRoot</strong><span>Customer experience and exact-sense selection</span></li>
+              <li><strong>SourceRoot API</strong><span>Nodes, assertions, edges, and source retrieval</span></li>
+              <li><strong>PostgreSQL</strong><span>Imported and normalized knowledge records</span></li>
+              <li><strong>Open English WordNet 2025</strong><span>Lexical source licensed under CC BY 4.0</span></li>
+            </ol>
+            <a class="dr-concept-text-link" href="sources-v2.html">Review sources and attribution</a>
+          </div>
+        </section>
       </aside>
     </section>
   </main>
 
-  <footer class="dr-live-footer">DictionaryRoot connects meanings, relationships, and sources. Powered by SourceRoot.</footer>
+  <footer class="dr-live-footer">Lexical data derived from Open English WordNet 2025, CC BY 4.0. DictionaryRoot is powered by SourceRoot.</footer>
 
   <script defer src="assets/js/dictionaryroot-api.js"></script>
   <script defer src="assets/js/dictionaryroot-brand.js"></script>
