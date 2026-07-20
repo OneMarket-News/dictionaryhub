@@ -1,251 +1,1350 @@
-(function dictionaryRootGraphPage(global) {
+(function dictionaryRootKnowledgeSphere(global) {
   "use strict";
 
   const NS = "http://www.w3.org/2000/svg";
-  const GRAPH_WIDTH = 1200;
-  const GRAPH_HEIGHT = 780;
+  const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
   const relationshipLabels = (global.DictionaryRootBrand && global.DictionaryRootBrand.RELATIONSHIP_LABELS) || {};
+  const reducedMotion = global.matchMedia && global.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
   const state = {
-    manifest: null, client: null, nodes: new Map(), edges: new Map(), preferredLabels: new Map(),
-    rootId: null, selectedId: null, selectedConcept: null, expanded: new Set(), mode: "map",
-    scale: 1, panX: 0, panY: 0, dragging: false, dragStart: null, detailsCollapsed: false
+    manifest: null,
+    client: null,
+    nodes: new Map(),
+    edges: new Map(),
+    preferredLabels: new Map(),
+    conceptCache: new Map(),
+    centerId: null,
+    selectedId: null,
+    selectedEdgeKey: "",
+    view: "sphere",
+    depth: 2,
+    edgeMode: "center",
+    lens: "domain",
+    domainFilter: "all",
+    trail: [],
+    trailLabels: new Map(),
+    rotationX: -0.18,
+    rotationY: 0.45,
+    autoRotate: !reducedMotion,
+    dragging: false,
+    lastPointerX: 0,
+    lastPointerY: 0,
+    detailsCollapsed: false,
+    nextOrdinal: 0,
+    positions: new Map(),
+    nodeElements: new Map(),
+    edgeElements: new Map(),
+    animationFrame: 0,
+    lastAnimationTime: 0,
+    centerSourceCount: 0,
+    loadToken: 0
   };
+
   const elements = {};
 
-  function byId(id) { return document.getElementById(id); }
-  function svg(name) { return document.createElementNS(NS, name); }
-  function escapeHtml(value) { return String(value == null ? "" : value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;").replace(/'/g, "&#039;"); }
-  function posFrom(record) { const metadata = record && record.metadata && typeof record.metadata === "object" ? record.metadata : {}; return metadata.partOfSpeech || metadata.pos || record.objectType || record.nodeType || "concept"; }
-  function friendlyRelationship(type, fallback) { const normalized = String(type || "").toUpperCase().replace(/[\s-]+/g, "_"); return relationshipLabels[normalized] || fallback || String(type || "Related concept").replace(/_/g, " ").toLowerCase(); }
-  function relationshipKey(type) { return String(type || "related").toUpperCase().replace(/[\s-]+/g, "_"); }
-  function displayLabel(itemOrNode) { const node = itemOrNode && itemOrNode.node ? itemOrNode.node : itemOrNode; return state.preferredLabels.get(node && node.nodeId) || (node && node.title) || "Untitled concept"; }
-  function setStatus(message, status) { elements.status.textContent = message || ""; elements.status.dataset.state = status || ""; }
-  function updateTransform() { elements.viewport.setAttribute("transform", `translate(${state.panX} ${state.panY}) scale(${state.scale})`); }
+  function byId(id) {
+    return document.getElementById(id);
+  }
 
-  function nodeGeometry(item) {
-    const label = displayLabel(item);
-    const root = item.node.nodeId === state.rootId;
-    const selected = item.node.nodeId === state.selectedId;
-    if (state.mode === "readable") {
-      const minimumWidth = root ? 205 : 175;
-      const maximumWidth = root ? 280 : 245;
-      return { shape: "rect", width: Math.max(minimumWidth, Math.min(maximumWidth, 112 + label.length * 6.6)), height: root ? 98 : selected ? 92 : 84 };
+  function escapeHtml(value) {
+    return String(value == null ? "" : value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function normalizeRelationship(value) {
+    return String(value || "RELATED_TO").toUpperCase().replace(/[\s-]+/g, "_");
+  }
+
+  function friendlyRelationship(type, fallback) {
+    const normalized = normalizeRelationship(type);
+    return relationshipLabels[normalized]
+      || fallback
+      || normalized.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (character) => character.toUpperCase());
+  }
+
+  function edgeKey(edge) {
+    return edge.edgeId || `${edge.fromNodeId}|${normalizeRelationship(edge.relationshipType)}|${edge.toNodeId}`;
+  }
+
+  function relationDescriptor(edge, nodeId) {
+    const incoming = edge.toNodeId === nodeId;
+    return {
+      edge,
+      incoming,
+      neighborId: incoming ? edge.fromNodeId : edge.toNodeId,
+      label: friendlyRelationship(edge.relationshipType, edge.label)
+    };
+  }
+
+  function metadataFrom(record) {
+    return record && record.metadata && typeof record.metadata === "object" ? record.metadata : {};
+  }
+
+  function posFrom(record) {
+    const metadata = metadataFrom(record);
+    return metadata.partOfSpeech || metadata.pos || record.objectType || record.nodeType || "concept";
+  }
+
+  function lemmaList(record) {
+    const metadata = metadataFrom(record);
+    return Array.isArray(metadata.lemmas)
+      ? metadata.lemmas.map((value) => String(value || "").trim()).filter(Boolean)
+      : [];
+  }
+
+  function displayLabel(itemOrNode) {
+    const node = itemOrNode && itemOrNode.node ? itemOrNode.node : itemOrNode;
+    if (!node) return "Untitled concept";
+    const preferred = state.preferredLabels.get(node.nodeId);
+    if (preferred) return preferred;
+    const lemmas = lemmaList(node);
+    if (lemmas.length && lemmas[0].length <= 44) return lemmas[0];
+    return node.title || "Untitled concept";
+  }
+
+  function setStatus(message, status) {
+    elements.status.textContent = message || "";
+    elements.status.dataset.state = status || "";
+  }
+
+  function broadDomain(record) {
+    const metadata = metadataFrom(record);
+    const raw = String(
+      metadata.domain
+      || metadata.lexicographerFile
+      || metadata.lexname
+      || metadata.lexicalFile
+      || metadata.semanticDomain
+      || ""
+    ).toLowerCase();
+
+    if (/(cognition|knowledge|belief)/.test(raw)) return "Knowledge";
+    if (/(communication|language)/.test(raw)) return "Language";
+    if (/(quantity|number|measure|mathematics)/.test(raw)) return "Mathematics";
+    if (/(artifact|technology|device|tool)/.test(raw)) return "Technology";
+    if (/(animal|plant|body|substance|food|object|phenomenon|weather)/.test(raw)) return "Nature";
+    if (/(person|group|social|law|economy|commerce)/.test(raw)) return "Society";
+    if (/(feeling|emotion|motive|psychology)/.test(raw)) return "Experience";
+    if (/(time|location|place|world)/.test(raw)) return "World";
+    if (/(act|event|process)/.test(raw)) return "Action";
+    if (/(state|attribute)/.test(raw)) return "State";
+    if (/(relation)/.test(raw)) return "Relation";
+
+    const pos = String(posFrom(record)).toLowerCase();
+    if (pos.startsWith("v") || pos.includes("verb")) return "Action";
+    if (pos.startsWith("a") || pos.includes("adjective") || pos.includes("adverb")) return "Attribute";
+    return "Lexical";
+  }
+
+  function hashNumber(value) {
+    let hash = 0;
+    const text = String(value || "");
+    for (let index = 0; index < text.length; index += 1) {
+      hash = ((hash << 5) - hash + text.charCodeAt(index)) | 0;
     }
-    const rx = root ? 112 : selected ? 94 : Math.max(78, Math.min(102, 68 + label.length * 2.1));
-    return { shape: "ellipse", rx, ry: root ? 66 : selected ? 57 : 51, width: rx * 2, height: (root ? 66 : selected ? 57 : 51) * 2 };
+    return Math.abs(hash);
   }
 
-  function graphBounds() {
-    if (!state.nodes.size) return null;
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    for (const item of state.nodes.values()) {
-      const size = nodeGeometry(item);
-      minX = Math.min(minX, item.x - size.width / 2); maxX = Math.max(maxX, item.x + size.width / 2);
-      minY = Math.min(minY, item.y - size.height / 2); maxY = Math.max(maxY, item.y + size.height / 2);
+  function domainVisual(domain) {
+    const hue = hashNumber(domain) % 360;
+    return {
+      border: `hsl(${hue} 78% 68%)`,
+      background: `hsla(${hue} 64% 26% / 0.94)`,
+      soft: `hsla(${hue} 72% 64% / 0.18)`,
+      text: "#f8fbff"
+    };
+  }
+
+  function addNode(node, depth, parentId) {
+    if (!node || !node.nodeId) return null;
+    if (state.nodes.has(node.nodeId)) {
+      const existing = state.nodes.get(node.nodeId);
+      existing.depth = Math.min(existing.depth, Number(depth) || 0);
+      return existing;
     }
-    return { minX, minY, maxX, maxY };
+
+    const item = {
+      node,
+      depth: Number(depth) || 0,
+      parentId: parentId || null,
+      ordinal: state.nextOrdinal,
+      domain: broadDomain(node)
+    };
+    state.nextOrdinal += 1;
+    state.nodes.set(node.nodeId, item);
+    return item;
   }
 
-  function fitGraph(options) {
-    const bounds = graphBounds();
-    if (!bounds) { state.scale = 1; state.panX = 0; state.panY = 0; updateTransform(); return; }
-    const config = options || {};
-    const paddingX = Number(config.paddingX || 105), paddingY = Number(config.paddingY || 100);
-    const contentWidth = Math.max(1, bounds.maxX - bounds.minX), contentHeight = Math.max(1, bounds.maxY - bounds.minY);
-    const maximumScale = Number(config.maximumScale || (state.nodes.size <= 8 ? 1.42 : 1.12));
-    state.scale = Math.max(Number(config.minimumScale || 0.36), Math.min(maximumScale, (GRAPH_WIDTH - paddingX * 2) / contentWidth, (GRAPH_HEIGHT - paddingY * 2) / contentHeight));
-    state.panX = GRAPH_WIDTH / 2 - ((bounds.minX + bounds.maxX) / 2) * state.scale;
-    state.panY = GRAPH_HEIGHT / 2 - ((bounds.minY + bounds.maxY) / 2) * state.scale;
-    updateTransform();
+  function addEdge(edge) {
+    if (!edge || !edge.fromNodeId || !edge.toNodeId) return;
+    const key = edgeKey(edge);
+    if (!state.edges.has(key)) state.edges.set(key, edge);
   }
 
-  function relationDescriptor(edge, nodeId) { const incoming = edge.toNodeId === nodeId; return { edge, incoming, neighborId: incoming ? edge.fromNodeId : edge.toNodeId, label: friendlyRelationship(edge.relationshipType, edge.label) }; }
-  function edgeKey(edge) { return edge.edgeId || `${edge.fromNodeId}|${edge.relationshipType}|${edge.toNodeId}`; }
-  function addNode(node, depth, parentId) { if (state.nodes.has(node.nodeId)) return state.nodes.get(node.nodeId); const item = { node, x: 600, y: 390, depth: depth || 0, parentId: parentId || null }; state.nodes.set(node.nodeId, item); return item; }
-  function addEdge(edge) { const key = edgeKey(edge); if (!state.edges.has(key)) state.edges.set(key, edge); }
-
-  function wrapLabel(text, maximumCharacters, maximumLines) {
-    const words = String(text || "").trim().split(/\s+/).filter(Boolean), lines = [];
-    let current = "";
-    while (words.length && lines.length < maximumLines) {
-      const word = words.shift(), candidate = current ? `${current} ${word}` : word;
-      if (candidate.length <= maximumCharacters || !current) current = candidate; else { lines.push(current); current = word; }
-    }
-    if (current && lines.length < maximumLines) lines.push(current);
-    if (words.length && lines.length) { const i = lines.length - 1, combined = `${lines[i]} ${words.join(" ")}`; lines[i] = combined.length <= maximumCharacters ? combined : `${combined.slice(0, maximumCharacters - 1).trim()}…`; }
-    return lines.length ? lines : ["Untitled concept"];
-  }
-
-  function layoutGraph() {
-    const root = state.nodes.get(state.rootId);
-    if (!root) return;
-    root.x = 600; root.y = 390;
-    const levels = new Map();
-    for (const item of state.nodes.values()) { if (item.node.nodeId === state.rootId) continue; const depth = Math.max(1, item.depth || 1); if (!levels.has(depth)) levels.set(depth, []); levels.get(depth).push(item); }
-    for (const [depth, items] of levels.entries()) {
-      items.sort((a, b) => displayLabel(a).localeCompare(displayLabel(b)));
-      const radius = state.mode === "map" ? 270 + (depth - 1) * 205 : 255 + (depth - 1) * 235;
-      const offset = -Math.PI / 2 + (depth % 2 ? 0 : Math.PI / Math.max(4, items.length));
-      items.forEach((item, index) => { const angle = offset + (Math.PI * 2 * index) / Math.max(1, items.length); item.x = 600 + Math.cos(angle) * radius; item.y = 390 + Math.sin(angle) * radius; });
-    }
-  }
-
-  function ellipseEndpoint(from, to, geometry, padding) {
-    const dx = to.x - from.x, dy = to.y - from.y;
-    const rx = geometry.width / 2 + padding, ry = geometry.height / 2 + padding;
-    const divisor = Math.sqrt((dx * dx) / (rx * rx) + (dy * dy) / (ry * ry)) || 1;
-    return { x: from.x + dx / divisor, y: from.y + dy / divisor };
-  }
-  function edgeEndpoints(from, to) {
-    const fromPoint = ellipseEndpoint(from, to, nodeGeometry(from), 5);
-    const toPoint = ellipseEndpoint(to, from, nodeGeometry(to), 12);
-    return { x1: fromPoint.x, y1: fromPoint.y, x2: toPoint.x, y2: toPoint.y };
-  }
-  function edgePath(from, to, edge) {
-    const p = edgeEndpoints(from, to), dx = p.x2 - p.x1, dy = p.y2 - p.y1, distance = Math.max(1, Math.hypot(dx, dy));
-    const seed = Array.from(String(edgeKey(edge))).reduce((sum, char) => sum + char.charCodeAt(0), 0);
-    const bend = state.mode === "map" ? ((seed % 2 ? 1 : -1) * Math.min(34, distance * 0.085)) : 0;
-    const cx = (p.x1 + p.x2) / 2 - (dy / distance) * bend, cy = (p.y1 + p.y2) / 2 + (dx / distance) * bend;
-    return state.mode === "map" ? `M ${p.x1} ${p.y1} Q ${cx} ${cy} ${p.x2} ${p.y2}` : `M ${p.x1} ${p.y1} L ${p.x2} ${p.y2}`;
-  }
-
-  function renderNodeShape(group, item, geometry) {
-    if (state.mode === "map") {
-      const halo = svg("ellipse"); halo.classList.add("dr-node-halo"); halo.setAttribute("rx", geometry.rx + 13); halo.setAttribute("ry", geometry.ry + 13); group.appendChild(halo);
-      const ring = svg("ellipse"); ring.classList.add("dr-node-ring"); ring.setAttribute("rx", geometry.rx + 6); ring.setAttribute("ry", geometry.ry + 6); group.appendChild(ring);
-      const card = svg("ellipse"); card.classList.add("dr-node-card"); card.setAttribute("rx", geometry.rx); card.setAttribute("ry", geometry.ry); group.appendChild(card);
-    } else {
-      const card = svg("rect"); card.classList.add("dr-node-card"); card.setAttribute("x", -geometry.width / 2); card.setAttribute("y", -geometry.height / 2); card.setAttribute("width", geometry.width); card.setAttribute("height", geometry.height); card.setAttribute("rx", "20"); group.appendChild(card);
-    }
-  }
-
-  function renderGraph() {
-    elements.svg.dataset.mode = state.mode;
-    elements.edgeLayer.innerHTML = ""; elements.nodeLayer.innerHTML = "";
+  function degreeFor(nodeId) {
+    let count = 0;
     for (const edge of state.edges.values()) {
-      const from = state.nodes.get(edge.fromNodeId), to = state.nodes.get(edge.toNodeId); if (!from || !to) continue;
-      const path = svg("path"); path.setAttribute("d", edgePath(from, to, edge)); path.setAttribute("marker-end", "url(#drArrow)"); path.classList.add("dr-graph-edge");
-      const connected = edge.fromNodeId === state.selectedId || edge.toNodeId === state.selectedId;
-      path.dataset.selected = String(connected); path.dataset.muted = String(Boolean(state.selectedId) && !connected); path.dataset.relationship = relationshipKey(edge.relationshipType);
-      const title = svg("title"); title.textContent = friendlyRelationship(edge.relationshipType, edge.label); path.appendChild(title); elements.edgeLayer.appendChild(path);
+      if (edge.fromNodeId === nodeId || edge.toNodeId === nodeId) count += 1;
     }
-    for (const item of state.nodes.values()) {
-      const node = item.node, geometry = nodeGeometry(item), labelText = displayLabel(item);
-      const group = svg("g"); group.classList.add("dr-graph-node"); group.dataset.nodeId = node.nodeId; group.dataset.root = String(node.nodeId === state.rootId); group.dataset.selected = String(node.nodeId === state.selectedId); group.dataset.depth = String(item.depth || 0);
-      group.setAttribute("transform", `translate(${item.x} ${item.y})`); group.setAttribute("role", "button"); group.setAttribute("tabindex", "0"); group.setAttribute("aria-label", `${labelText}, ${posFrom(node)}. Select concept.`);
-      renderNodeShape(group, item, geometry);
-      const title = svg("title"); title.textContent = `${labelText}: ${node.summary || "Open to inspect this meaning."}`; group.appendChild(title);
-      const lines = wrapLabel(labelText, state.mode === "map" ? (node.nodeId === state.rootId ? 19 : 16) : (node.nodeId === state.rootId ? 24 : 20), 2);
-      const label = svg("text"); label.classList.add("dr-node-label"); const firstY = lines.length === 1 ? -6 : -16;
-      lines.forEach((lineText, index) => { const line = svg("tspan"); line.setAttribute("x", "0"); line.setAttribute("y", String(firstY + index * 19)); line.textContent = lineText; label.appendChild(line); }); group.appendChild(label);
-      const pos = svg("text"); pos.classList.add("dr-node-pos"); pos.setAttribute("y", String(geometry.height / 2 - 13)); pos.textContent = String(posFrom(node)).slice(0, 18); group.appendChild(pos);
-      elements.nodeLayer.appendChild(group);
-    }
-    elements.count.textContent = `${state.nodes.size} concepts · ${state.edges.size} relationships`;
+    return count;
   }
 
-  async function loadNeighborhood(nodeId, options) {
-    const item = state.nodes.get(nodeId); if (!item) return;
-    const config = options || {}, maxVisible = Number(state.manifest.graph.maximumNodeLimit || 150), available = Math.max(0, maxVisible - state.nodes.size);
-    if (!available) { setStatus("Graph limit reached. Reset the graph or begin a new exploration.", "error"); return; }
-    setStatus(`Finding connected meanings for “${displayLabel(item)}”...`, "loading");
-    const edgeResult = await state.client.nodeEdges(nodeId), relations = DictionaryRootApi.edgeItems(edgeResult.data).map((edge) => relationDescriptor(edge, nodeId));
-    const desired = Math.min(available, Number(config.limit || state.manifest.graph.neighborsPerExpansion || 18), relations.length), unique = [], seen = new Set();
-    for (const relation of relations) { if (state.nodes.has(relation.neighborId) || seen.has(relation.neighborId)) { addEdge(relation.edge); continue; } seen.add(relation.neighborId); unique.push(relation); if (unique.length >= desired) break; }
-    const neighbors = await state.client.nodesByIds(unique.map((entry) => entry.neighborId), { concurrency: 6 });
-    neighbors.forEach((node) => addNode(node, item.depth + 1, nodeId));
-    relations.forEach((relation) => { if (state.nodes.has(relation.edge.fromNodeId) && state.nodes.has(relation.edge.toNodeId)) addEdge(relation.edge); });
-    state.expanded.add(nodeId); layoutGraph(); renderGraph(); if (config.fit !== false) fitGraph();
-    setStatus(neighbors.length ? `Added ${neighbors.length} connected meaning${neighbors.length === 1 ? "" : "s"} for “${displayLabel(item)}”.` : `No additional connected meanings were available for “${displayLabel(item)}”.`, neighbors.length ? "success" : "");
+  function maximumDegree() {
+    let maximum = 1;
+    for (const nodeId of state.nodes.keys()) maximum = Math.max(maximum, degreeFor(nodeId));
+    return maximum;
+  }
+
+  function maximumNodesForDepth(depth) {
+    if (Number(depth) === 1) return 26;
+    if (Number(depth) === 2) return 44;
+    return 58;
+  }
+
+  function expansionLimit(currentDepth) {
+    if (currentDepth === 0) return state.depth === 1 ? 25 : 22;
+    if (currentDepth === 1) return state.depth === 2 ? 5 : 6;
+    return 3;
+  }
+
+  function visibleItems() {
+    return Array.from(state.nodes.values()).filter((item) => (
+      item.node.nodeId === state.centerId
+      || state.domainFilter === "all"
+      || item.domain === state.domainFilter
+    ));
+  }
+
+  function visibleNodeIds() {
+    return new Set(visibleItems().map((item) => item.node.nodeId));
+  }
+
+  function edgeStrength(edge) {
+    let score = 1;
+    if (edge.fromNodeId === state.centerId || edge.toNodeId === state.centerId) score += 2;
+
+    const from = state.nodes.get(edge.fromNodeId);
+    const to = state.nodes.get(edge.toNodeId);
+    if (from && to && from.domain === to.domain) score += 0.75;
+
+    const type = normalizeRelationship(edge.relationshipType);
+    if (/(SUPPORTED|VERIFIED|EVIDENCE|CAUSE|ENTAIL)/.test(type)) score += 1;
+    if (/(DOMAIN|PART_OF|MEMBER|SUBSTANCE)/.test(type)) score += 0.5;
+
+    score += Math.min(1, (degreeFor(edge.fromNodeId) + degreeFor(edge.toNodeId)) / 30);
+    return Math.round(Math.min(5, score) * 10) / 10;
+  }
+
+  function neighborhoodEdges() {
+    const visible = visibleNodeIds();
+    return Array.from(state.edges.values()).filter((edge) => (
+      visible.has(edge.fromNodeId) && visible.has(edge.toNodeId)
+    ));
+  }
+
+  function filteredEdges() {
+    return neighborhoodEdges().filter((edge) => {
+      if (state.edgeMode === "center") {
+        return edge.fromNodeId === state.centerId || edge.toNodeId === state.centerId;
+      }
+      if (state.edgeMode === "selected") {
+        return edge.fromNodeId === state.selectedId || edge.toNodeId === state.selectedId;
+      }
+      return true;
+    });
+  }
+
+  async function buildNeighborhood(centerId, token) {
+    const maximum = Math.min(
+      Number(state.manifest.graph.maximumNodeLimit || 150),
+      maximumNodesForDepth(state.depth)
+    );
+
+    let frontier = [{ nodeId: centerId, depth: 0 }];
+    const expanded = new Set();
+
+    while (frontier.length && state.nodes.size < maximum) {
+      const currentDepth = frontier[0].depth;
+      const batch = frontier.filter((entry) => entry.depth === currentDepth);
+      frontier = frontier.filter((entry) => entry.depth !== currentDepth);
+
+      if (currentDepth >= state.depth) continue;
+
+      const edgePayloads = await DictionaryRootApi.mapWithConcurrency(batch, 5, async (entry) => {
+        if (token !== state.loadToken || expanded.has(entry.nodeId)) return null;
+        expanded.add(entry.nodeId);
+        try {
+          const result = await state.client.nodeEdges(entry.nodeId);
+          return { entry, edges: DictionaryRootApi.edgeItems(result.data) };
+        } catch (_) {
+          return { entry, edges: [] };
+        }
+      });
+
+      if (token !== state.loadToken) return;
+
+      const candidates = [];
+      const seenCandidateIds = new Set();
+
+      edgePayloads.filter(Boolean).forEach(({ entry, edges }) => {
+        const relations = edges
+          .map((edge) => relationDescriptor(edge, entry.nodeId))
+          .filter((relation) => relation.neighborId)
+          .sort((left, right) => {
+            const leftDirect = left.edge.fromNodeId === state.centerId || left.edge.toNodeId === state.centerId ? 1 : 0;
+            const rightDirect = right.edge.fromNodeId === state.centerId || right.edge.toNodeId === state.centerId ? 1 : 0;
+            return rightDirect - leftDirect || left.label.localeCompare(right.label);
+          })
+          .slice(0, expansionLimit(entry.depth));
+
+        relations.forEach((relation) => {
+          addEdge(relation.edge);
+          if (state.nodes.has(relation.neighborId) || seenCandidateIds.has(relation.neighborId)) return;
+          if (state.nodes.size + candidates.length >= maximum) return;
+          seenCandidateIds.add(relation.neighborId);
+          candidates.push({
+            nodeId: relation.neighborId,
+            depth: entry.depth + 1,
+            parentId: entry.nodeId
+          });
+        });
+      });
+
+      const loaded = await state.client.nodesByIds(candidates.map((entry) => entry.nodeId), { concurrency: 6 });
+      if (token !== state.loadToken) return;
+
+      const candidateMap = new Map(candidates.map((entry) => [entry.nodeId, entry]));
+      loaded.forEach((node) => {
+        const candidate = candidateMap.get(node.nodeId);
+        if (!candidate) return;
+        addNode(node, candidate.depth, candidate.parentId);
+        frontier.push({ nodeId: node.nodeId, depth: candidate.depth });
+      });
+    }
+  }
+
+  function rotatePoint(x, y, z) {
+    const cosY = Math.cos(state.rotationY);
+    const sinY = Math.sin(state.rotationY);
+    const cosX = Math.cos(state.rotationX);
+    const sinX = Math.sin(state.rotationX);
+
+    const x1 = x * cosY + z * sinY;
+    const z1 = -x * sinY + z * cosY;
+    const y2 = y * cosX - z1 * sinX;
+    const z2 = y * sinX + z1 * cosX;
+
+    return { x: x1, y: y2, z: z2 };
+  }
+
+  function spherePositions(items) {
+    const positions = new Map();
+    const center = state.nodes.get(state.centerId);
+    if (!center) return positions;
+
+    positions.set(state.centerId, {
+      x: 50,
+      y: 50,
+      z: 1,
+      depth: 0,
+      scale: 1.2,
+      opacity: 1,
+      zIndex: 999
+    });
+
+    const others = items
+      .filter((item) => item.node.nodeId !== state.centerId)
+      .sort((left, right) => (
+        left.depth - right.depth
+        || degreeFor(right.node.nodeId) - degreeFor(left.node.nodeId)
+        || left.ordinal - right.ordinal
+      ));
+
+    const raw = [];
+    const count = Math.max(1, others.length);
+
+    others.forEach((item, index) => {
+      const t = (index + 0.5) / count;
+      let y = 1 - 2 * t;
+      const radius = Math.sqrt(Math.max(0, 1 - y * y));
+      const theta = index * GOLDEN_ANGLE;
+
+      let x = Math.cos(theta) * radius;
+      let z = Math.sin(theta) * radius;
+
+      if (item.depth === 1) z += 0.28;
+      if (item.depth === 2) z += 0.02;
+      if (item.depth >= 3) z -= 0.18;
+
+      const length = Math.sqrt(x * x + y * y + z * z) || 1;
+      x /= length;
+      y /= length;
+      z /= length;
+
+      const rotated = rotatePoint(x, y, z);
+      const perspective = 1.14 / (1.78 - rotated.z);
+
+      raw.push({
+        item,
+        rx: rotated.x * perspective,
+        ry: rotated.y * perspective,
+        rz: rotated.z,
+        scale: perspective,
+        opacity: 0.38 + ((rotated.z + 1) / 2) * 0.62
+      });
+    });
+
+    let maxX = 1;
+    let maxY = 1;
+    raw.forEach((point) => {
+      maxX = Math.max(maxX, Math.abs(point.rx));
+      maxY = Math.max(maxY, Math.abs(point.ry));
+    });
+
+    const fit = Math.min(46 / maxX, 46 / maxY, 46);
+    raw.forEach((point) => {
+      positions.set(point.item.node.nodeId, {
+        x: Math.max(4.5, Math.min(95.5, 50 + point.rx * fit)),
+        y: Math.max(5.5, Math.min(94.5, 50 + point.ry * fit)),
+        z: point.rz,
+        depth: point.item.depth,
+        scale: point.scale,
+        opacity: point.opacity,
+        zIndex: Math.round(300 + point.rz * 120)
+      });
+    });
+
+    return positions;
+  }
+
+  function flatPositions(items) {
+    const positions = new Map();
+    positions.set(state.centerId, {
+      x: 50,
+      y: 50,
+      z: 1,
+      depth: 0,
+      scale: 1,
+      opacity: 1,
+      zIndex: 999
+    });
+
+    const rings = new Map();
+    items.forEach((item) => {
+      if (item.node.nodeId === state.centerId) return;
+      const depth = Math.max(1, item.depth);
+      if (!rings.has(depth)) rings.set(depth, []);
+      rings.get(depth).push(item);
+    });
+
+    rings.forEach((ringItems, depth) => {
+      ringItems.sort((left, right) => (
+        left.domain.localeCompare(right.domain)
+        || degreeFor(right.node.nodeId) - degreeFor(left.node.nodeId)
+        || left.ordinal - right.ordinal
+      ));
+
+      let radiusX = 28;
+      let radiusY = 31;
+      if (state.depth === 2) {
+        radiusX = depth === 1 ? 27 : 43;
+        radiusY = depth === 1 ? 30 : 42;
+      }
+      if (state.depth === 3) {
+        radiusX = depth === 1 ? 23 : depth === 2 ? 36 : 46;
+        radiusY = depth === 1 ? 25 : depth === 2 ? 36 : 44;
+      }
+
+      ringItems.forEach((item, index) => {
+        const angle = (Math.PI * 2 * index) / Math.max(1, ringItems.length) - Math.PI / 2 + depth * 0.22;
+        positions.set(item.node.nodeId, {
+          x: 50 + Math.cos(angle) * radiusX,
+          y: 50 + Math.sin(angle) * radiusY,
+          z: 0.8 - depth * 0.1,
+          depth,
+          scale: 1,
+          opacity: 1,
+          zIndex: 300 - depth
+        });
+      });
+    });
+
+    return positions;
+  }
+
+  function calculatePositions() {
+    const items = visibleItems();
+    return state.view === "sphere" ? spherePositions(items) : flatPositions(items);
+  }
+
+  function nodeSize(item, position) {
+    if (item.node.nodeId === state.centerId) return { width: 176, height: 106 };
+
+    const maximum = maximumDegree();
+    const importance = degreeFor(item.node.nodeId) / maximum;
+    let width = item.depth === 1 ? 128 : item.depth === 2 ? 112 : 98;
+
+    if (state.lens === "importance") width += Math.round(importance * 38);
+    if (state.lens === "strength") width += Math.min(22, degreeFor(item.node.nodeId) * 2);
+
+    if (state.view === "sphere" && position) {
+      width *= 0.82 + position.scale * 0.28;
+    }
+
+    width = Math.max(92, Math.min(164, Math.round(width)));
+    return { width, height: Math.max(52, Math.round(width * 0.62)) };
+  }
+
+  function nodeVisual(item) {
+    const domain = domainVisual(item.domain);
+    const importance = degreeFor(item.node.nodeId) / maximumDegree();
+
+    if (item.node.nodeId === state.centerId) {
+      return {
+        border: "#a5f3fc",
+        background: "linear-gradient(145deg, #0f4f7e, #0b3157)",
+        soft: "rgba(103, 232, 249, 0.28)",
+        text: "#ffffff"
+      };
+    }
+
+    if (item.node.nodeId === state.selectedId) {
+      return {
+        border: "#ddd6fe",
+        background: "linear-gradient(145deg, #4c4b9b, #2f3271)",
+        soft: "rgba(196, 181, 253, 0.3)",
+        text: "#ffffff"
+      };
+    }
+
+    if (state.lens === "importance") {
+      if (importance > 0.65) {
+        return { border: "#a5f3fc", background: "#0f4f7e", soft: "rgba(103,232,249,.24)", text: "#fff" };
+      }
+      if (importance > 0.35) {
+        return { border: "#93c5fd", background: "#173e67", soft: "rgba(147,197,253,.18)", text: "#fff" };
+      }
+      return { border: "#64748b", background: "#152538", soft: "rgba(148,163,184,.12)", text: "#e8eef8" };
+    }
+
+    if (state.lens === "strength") {
+      const degree = degreeFor(item.node.nodeId);
+      return {
+        border: degree >= 4 ? "#67e8f9" : degree >= 2 ? "#60a5fa" : "#64748b",
+        background: degree >= 4 ? "#0f4f67" : "#162b42",
+        soft: degree >= 4 ? "rgba(103,232,249,.22)" : "rgba(96,165,250,.12)",
+        text: "#fff"
+      };
+    }
+
+    return domain;
+  }
+
+  function edgeVisual(edge) {
+    const strength = edgeStrength(edge);
+    const selected = edgeKey(edge) === state.selectedEdgeKey;
+    const connected = edge.fromNodeId === state.selectedId || edge.toNodeId === state.selectedId;
+
+    if (selected) return { color: "#fef08a", width: 1.25, opacity: 1 };
+    if (state.lens === "strength") {
+      return {
+        color: strength >= 4 ? "#67e8f9" : strength >= 3 ? "#60a5fa" : "#6b86a8",
+        width: 0.24 + strength * 0.18,
+        opacity: strength >= 4 ? 0.98 : strength >= 3 ? 0.82 : 0.48
+      };
+    }
+    if (state.lens === "importance") {
+      const direct = edge.fromNodeId === state.centerId || edge.toNodeId === state.centerId;
+      return {
+        color: direct ? "#67e8f9" : "#5e7898",
+        width: direct ? 0.9 : 0.42,
+        opacity: direct ? 0.92 : 0.42
+      };
+    }
+    return {
+      color: connected ? "#a5f3fc" : "#4c86b6",
+      width: connected ? 0.85 : 0.48,
+      opacity: connected ? 0.95 : 0.62
+    };
+  }
+
+  function createNodeElement(item) {
+    const node = item.node;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "dr-sphere-node";
+    button.dataset.nodeId = node.nodeId;
+    button.setAttribute("aria-label", `${displayLabel(item)}, ${posFrom(node)}. Click to inspect. Double-click to center.`);
+    button.innerHTML = `<span class="dr-sphere-node-label">${escapeHtml(displayLabel(item))}</span><span class="dr-sphere-node-pos">${escapeHtml(posFrom(node))}</span>`;
+    return button;
+  }
+
+  function createEdgeElements(edge) {
+    const line = document.createElementNS(NS, "line");
+    line.classList.add("dr-sphere-edge");
+    line.dataset.edgeKey = edgeKey(edge);
+
+    const hit = document.createElementNS(NS, "line");
+    hit.classList.add("dr-sphere-edge-hit");
+    hit.dataset.edgeKey = edgeKey(edge);
+
+    const title = document.createElementNS(NS, "title");
+    title.textContent = friendlyRelationship(edge.relationshipType, edge.label);
+    hit.appendChild(title);
+
+    elements.edgeLayer.appendChild(line);
+    elements.edgeLayer.appendChild(hit);
+    return { line, hit, edge };
+  }
+
+  function renderGraphStructure() {
+    elements.nodeLayer.innerHTML = "";
+    elements.edgeLayer.innerHTML = "";
+    state.nodeElements.clear();
+    state.edgeElements.clear();
+
+    const items = visibleItems();
+    items.forEach((item) => {
+      const element = createNodeElement(item);
+      elements.nodeLayer.appendChild(element);
+      state.nodeElements.set(item.node.nodeId, { element, item });
+    });
+
+    filteredEdges().forEach((edge) => {
+      state.edgeElements.set(edgeKey(edge), createEdgeElements(edge));
+    });
+
+    updateProjectedGeometry();
+    updateGraphMeta();
+  }
+
+  function updateProjectedGeometry() {
+    state.positions = calculatePositions();
+
+    state.nodeElements.forEach(({ element, item }, nodeId) => {
+      const position = state.positions.get(nodeId);
+      if (!position) {
+        element.hidden = true;
+        return;
+      }
+
+      element.hidden = false;
+      const size = nodeSize(item, position);
+      const visual = nodeVisual(item);
+
+      element.style.left = `${position.x}%`;
+      element.style.top = `${position.y}%`;
+      element.style.width = `${size.width}px`;
+      element.style.minHeight = `${size.height}px`;
+      element.style.zIndex = String(position.zIndex);
+      element.style.opacity = String(nodeId === state.centerId ? 1 : position.opacity);
+      element.style.setProperty("--sphere-node-border", visual.border);
+      element.style.setProperty("--sphere-node-bg", visual.background);
+      element.style.setProperty("--sphere-node-soft", visual.soft);
+      element.style.setProperty("--sphere-node-text", visual.text);
+      element.dataset.center = String(nodeId === state.centerId);
+      element.dataset.selected = String(nodeId === state.selectedId);
+      element.dataset.depth = String(item.depth);
+    });
+
+    state.edgeElements.forEach(({ line, hit, edge }) => {
+      const from = state.positions.get(edge.fromNodeId);
+      const to = state.positions.get(edge.toNodeId);
+      if (!from || !to) {
+        line.setAttribute("visibility", "hidden");
+        hit.setAttribute("visibility", "hidden");
+        return;
+      }
+
+      line.setAttribute("visibility", "visible");
+      hit.setAttribute("visibility", "visible");
+      [line, hit].forEach((element) => {
+        element.setAttribute("x1", String(from.x));
+        element.setAttribute("y1", String(from.y));
+        element.setAttribute("x2", String(to.x));
+        element.setAttribute("y2", String(to.y));
+      });
+
+      const visual = edgeVisual(edge);
+      const averageZ = (from.z + to.z) / 2;
+      const depthOpacity = state.view === "sphere" ? 0.46 + ((averageZ + 1) / 2) * 0.54 : 1;
+      line.style.stroke = visual.color;
+      line.style.strokeWidth = String(visual.width);
+      line.style.opacity = String(visual.opacity * depthOpacity);
+    });
+
+    elements.stage.classList.toggle("sphere-mode", state.view === "sphere");
+    elements.stage.classList.toggle("flat-mode", state.view === "flat");
+    elements.stageHint.textContent = state.view === "sphere"
+      ? "Drag empty space to rotate · Click to inspect · Double-click to center"
+      : "Click to inspect · Double-click to center · Use depth and edge controls to refine";
+  }
+
+  function updateGraphMeta() {
+    const center = state.nodes.get(state.centerId);
+    const visible = visibleItems();
+    const neighborhood = neighborhoodEdges();
+    const displayed = filteredEdges();
+    const centerConnections = neighborhood.filter((edge) => (
+      edge.fromNodeId === state.centerId || edge.toNodeId === state.centerId
+    )).length;
+    const domains = new Set(visible.map((item) => item.domain));
+
+    elements.title.textContent = center ? `${displayLabel(center)} Knowledge Sphere` : "Knowledge Sphere";
+    elements.meta.textContent = `${state.depth}-hop depth · ${state.edgeMode} edges · ${state.view} view · ${state.lens} lens`;
+    elements.count.textContent = `${visible.length} concepts · ${neighborhood.length} neighborhood · ${displayed.length} displayed`;
+    elements.statConcepts.textContent = String(visible.length);
+    elements.statNeighborhoodEdges.textContent = String(neighborhood.length);
+    elements.statEdges.textContent = String(displayed.length);
+    elements.statCenterEdges.textContent = String(centerConnections);
+    elements.statDomains.textContent = String(domains.size);
+    elements.statSources.textContent = String(state.centerSourceCount);
+    renderDomainLegend(visible);
+  }
+
+  function renderDomainLegend(items) {
+    const counts = new Map();
+    items.forEach((item) => counts.set(item.domain, (counts.get(item.domain) || 0) + 1));
+
+    elements.domainLegend.innerHTML = "";
+    if (!counts.size) {
+      elements.domainLegend.innerHTML = '<span class="dr-live-canonical">No visible domains.</span>';
+      return;
+    }
+
+    Array.from(counts.entries())
+      .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))
+      .forEach(([domain, count]) => {
+        const visual = domainVisual(domain);
+        const item = document.createElement("span");
+        item.innerHTML = `<i style="--domain-dot:${escapeHtml(visual.border)}"></i>${escapeHtml(domain)} <strong>${count}</strong>`;
+        elements.domainLegend.appendChild(item);
+      });
+  }
+
+  function updateDomainFilter() {
+    const current = state.domainFilter;
+    const domains = Array.from(new Set(Array.from(state.nodes.values()).map((item) => item.domain))).sort();
+    elements.domainFilter.innerHTML = '<option value="all">All domains</option>';
+    domains.forEach((domain) => {
+      const option = document.createElement("option");
+      option.value = domain;
+      option.textContent = domain;
+      elements.domainFilter.appendChild(option);
+    });
+    state.domainFilter = domains.includes(current) ? current : "all";
+    elements.domainFilter.value = state.domainFilter;
+  }
+
+  function renderBreadcrumb() {
+    elements.breadcrumbTrail.innerHTML = "";
+    state.trail.forEach((nodeId, index) => {
+      const item = state.nodes.get(nodeId);
+      const label = item ? displayLabel(item) : state.trailLabels.get(nodeId) || state.preferredLabels.get(nodeId) || "Concept";
+
+      if (index > 0) {
+        const arrow = document.createElement("span");
+        arrow.className = "dr-sphere-breadcrumb-arrow";
+        arrow.textContent = ">";
+        elements.breadcrumbTrail.appendChild(arrow);
+      }
+
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "dr-sphere-breadcrumb-node";
+      button.dataset.trailIndex = String(index);
+      button.dataset.nodeId = nodeId;
+      button.textContent = label;
+      button.classList.toggle("active", nodeId === state.centerId);
+      elements.breadcrumbTrail.appendChild(button);
+    });
+  }
+
+  function addToTrail(nodeId, reset) {
+    if (reset) state.trail = [];
+    const item = state.nodes.get(nodeId);
+    state.trailLabels.set(nodeId, item ? displayLabel(item) : state.preferredLabels.get(nodeId) || "Concept");
+
+    const existingIndex = state.trail.indexOf(nodeId);
+    if (existingIndex >= 0) {
+      state.trail = state.trail.slice(0, existingIndex + 1);
+    } else {
+      state.trail.push(nodeId);
+    }
+    renderBreadcrumb();
+  }
+
+  function relationshipNameForEdge(edge) {
+    return friendlyRelationship(edge.relationshipType, edge.label);
+  }
+
+  function groupedRelations(edges, nodeId) {
+    const groups = new Map();
+
+    (edges || []).map((edge) => relationDescriptor(edge, nodeId)).forEach((relation) => {
+      if (!relation.neighborId) return;
+      if (!groups.has(relation.neighborId)) {
+        groups.set(relation.neighborId, {
+          neighborId: relation.neighborId,
+          labels: [],
+          edges: []
+        });
+      }
+
+      const group = groups.get(relation.neighborId);
+      if (!group.labels.includes(relation.label)) group.labels.push(relation.label);
+      group.edges.push(relation.edge);
+    });
+
+    return Array.from(groups.values()).sort((left, right) => {
+      const leftNode = state.nodes.get(left.neighborId);
+      const rightNode = state.nodes.get(right.neighborId);
+      return displayLabel(leftNode || { nodeId: left.neighborId, title: left.neighborId })
+        .localeCompare(displayLabel(rightNode || { nodeId: right.neighborId, title: right.neighborId }));
+    });
+  }
+
+  async function conceptFor(nodeId) {
+    if (state.conceptCache.has(nodeId)) return state.conceptCache.get(nodeId);
+    const concept = await state.client.concept(nodeId);
+    state.conceptCache.set(nodeId, concept);
+    return concept;
+  }
+
+  function edgeDetailHtml() {
+    if (!state.selectedEdgeKey || !state.edges.has(state.selectedEdgeKey)) return "";
+    const edge = state.edges.get(state.selectedEdgeKey);
+    const from = state.nodes.get(edge.fromNodeId);
+    const to = state.nodes.get(edge.toNodeId);
+    return `<section class="dr-live-section">
+      <h3>Selected relationship</h3>
+      <div class="dr-sphere-edge-detail">
+        <strong>${escapeHtml(from ? displayLabel(from) : edge.fromNodeId)} → ${escapeHtml(to ? displayLabel(to) : edge.toNodeId)}</strong>
+        <span>${escapeHtml(relationshipNameForEdge(edge))} · strength ${edgeStrength(edge)}</span>
+        <p>${escapeHtml(edge.summary || edge.description || "This semantic relationship is stored as a SourceRoot edge.")}</p>
+      </div>
+    </section>`;
   }
 
   async function showDetails(nodeId) {
-    const item = state.nodes.get(nodeId); if (!item) return;
-    state.selectedId = nodeId; renderGraph(); elements.details.innerHTML = '<div class="dr-live-empty"><strong>Loading concept details...</strong>Retrieving definitions, examples, sources, and relationships.</div>';
+    const item = state.nodes.get(nodeId);
+    if (!item) return;
+
+    state.selectedId = nodeId;
+    state.selectedEdgeKey = "";
+    renderGraphStructure();
+    elements.details.innerHTML = '<div class="dr-live-empty"><strong>Loading concept details...</strong>Retrieving definitions, examples, sources, and relationships.</div>';
+
     try {
-      const concept = await state.client.concept(nodeId); state.selectedConcept = concept;
-      const definition = (concept.assertions || []).find((entry) => entry.assertionType === "definition"), usage = (concept.assertions || []).find((entry) => entry.assertionType === "usage-example");
-      const examples = usage && (usage.body || usage.summary) ? String(usage.body || usage.summary).split(/\r?\n|\s*\|\s*/).filter(Boolean) : [];
-      const relations = concept.edges.map((edge) => relationDescriptor(edge, nodeId));
-      const relationshipSummary = relations.slice(0, 12).map((entry) => `<li class="dr-live-related-item"><strong>${escapeHtml(entry.label)}</strong><span>${escapeHtml(entry.edge.summary || entry.neighborId)}</span></li>`).join("");
-      const preferred = displayLabel(item), canonical = preferred.toLocaleLowerCase() !== String(concept.node.title || "").toLocaleLowerCase() ? concept.node.title : "";
-      elements.details.innerHTML = `<section class="dr-live-section"><div class="dr-live-chip-row"><span class="dr-live-chip" data-tone="accent">${escapeHtml(posFrom(concept.node))}</span><span class="dr-live-chip" data-tone="good">Source-backed</span></div><h2 class="dr-live-concept-title" style="font-size:2.3rem;">${escapeHtml(preferred)}</h2>${canonical ? `<p class="dr-live-canonical">Open English WordNet groups this sense under <strong>${escapeHtml(canonical)}</strong>.</p>` : ""}<p class="dr-live-definition" style="font-size:1rem;">${escapeHtml((definition && (definition.body || definition.summary)) || concept.node.summary || "No definition is available.")}</p><div class="dr-live-actions"><button class="dr-live-button" type="button" data-expand-selected ${state.expanded.has(nodeId) ? "disabled" : ""}>${state.expanded.has(nodeId) ? "Already expanded" : "Expand connections"}</button><button class="dr-live-button-secondary" type="button" data-make-center>Make center</button><a class="dr-live-button-secondary" href="concept-v2.html?nodeId=${encodeURIComponent(nodeId)}&q=${encodeURIComponent(preferred)}" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;">Full concept page</a></div></section><section class="dr-live-section"><h3>Usage examples</h3>${examples.length ? `<ul class="dr-live-example-list">${examples.map((example) => `<li>${escapeHtml(example)}</li>`).join("")}</ul>` : "<p>No usage examples are available for this meaning.</p>"}</section><section class="dr-live-section"><h3>Relationships</h3>${relationshipSummary ? `<ul class="dr-live-related-list">${relationshipSummary}</ul>` : "<p>No connected concepts were found.</p>"}</section><section class="dr-live-section"><h3>Provenance</h3>${concept.sources.length ? concept.sources.map((source) => `<div class="dr-live-source-card"><strong>${escapeHtml(source.name)}</strong><span>${escapeHtml(source.license || "License unavailable")}</span></div>`).join("") : "<p>Source identifiers remain attached to this concept.</p>"}</section><details class="dr-live-advanced"><summary>Advanced SourceRoot details</summary><pre>${escapeHtml(JSON.stringify(concept, null, 2))}</pre></details>`;
-    } catch (error) { elements.details.innerHTML = `<div class="dr-live-empty"><strong>Concept details could not be loaded.</strong>${escapeHtml(error.message || "Check the SourceRoot connection.")}</div>`; }
+      const concept = await conceptFor(nodeId);
+      const definition = (concept.assertions || []).find((entry) => entry.assertionType === "definition");
+      const usage = (concept.assertions || []).find((entry) => entry.assertionType === "usage-example");
+      const examples = usage && (usage.body || usage.summary)
+        ? String(usage.body || usage.summary).split(/\r?\n|\s*\|\s*/).filter(Boolean)
+        : [];
+
+      const preferred = displayLabel(item);
+      const canonical = preferred.toLocaleLowerCase() !== String(concept.node.title || "").toLocaleLowerCase()
+        ? concept.node.title
+        : "";
+
+      const relations = groupedRelations(concept.edges || [], nodeId).slice(0, 16);
+
+      const relationshipHtml = relations.length
+        ? relations.map((relation) => {
+          const neighbor = state.nodes.get(relation.neighborId);
+          const label = neighbor ? displayLabel(neighbor) : relation.neighborId;
+          const shownLabels = relation.labels.slice(0, 3);
+          const remaining = Math.max(0, relation.labels.length - shownLabels.length);
+          const relationshipSummary = `${shownLabels.join(" · ")}${remaining ? ` · +${remaining} more` : ""}`;
+          return `<button type="button" class="dr-sphere-related-button" data-related-node="${escapeHtml(relation.neighborId)}">
+            <span><strong>${escapeHtml(label)}</strong><small>${escapeHtml(relationshipSummary)}</small></span>
+            <em>Center</em>
+          </button>`;
+        }).join("")
+        : "<p>No connected concepts were found.</p>";
+
+      const sourceHtml = concept.sources && concept.sources.length
+        ? concept.sources.map((source) => `<div class="dr-live-source-card"><strong>${escapeHtml(source.name)}</strong><span>${escapeHtml(source.license || "License unavailable")}</span></div>`).join("")
+        : "<p>Source identifiers remain attached to this concept.</p>";
+
+      elements.details.innerHTML = `<section class="dr-live-section">
+        <div class="dr-live-chip-row">
+          <span class="dr-live-chip" data-tone="accent">${escapeHtml(posFrom(concept.node))}</span>
+          <span class="dr-live-chip" data-tone="good">Source-backed</span>
+          <span class="dr-live-chip">${escapeHtml(item.domain)}</span>
+        </div>
+        <h2 class="dr-live-concept-title dr-sphere-selected-title">${escapeHtml(preferred)}</h2>
+        ${canonical ? `<p class="dr-live-canonical">Open English WordNet groups this sense under <strong>${escapeHtml(canonical)}</strong>.</p>` : ""}
+        <p class="dr-live-definition dr-sphere-definition">${escapeHtml((definition && (definition.body || definition.summary)) || concept.node.summary || "No definition is available.")}</p>
+        <div class="dr-live-actions">
+          <button class="dr-live-button" type="button" data-center-selected>Make center</button>
+          <a class="dr-live-button-secondary dr-sphere-link-button" href="concept-v2.html?nodeId=${encodeURIComponent(nodeId)}&q=${encodeURIComponent(preferred)}">Full concept page</a>
+        </div>
+      </section>
+      ${edgeDetailHtml()}
+      <section class="dr-live-section">
+        <h3>Usage examples</h3>
+        ${examples.length ? `<ul class="dr-live-example-list">${examples.map((example) => `<li>${escapeHtml(example)}</li>`).join("")}</ul>` : "<p>No usage examples are available for this meaning.</p>"}
+      </section>
+      <section class="dr-live-section">
+        <h3>Connected concepts</h3>
+        <div class="dr-sphere-related-list">${relationshipHtml}</div>
+      </section>
+      <section class="dr-live-section">
+        <h3>Provenance</h3>
+        ${sourceHtml}
+      </section>
+      <details class="dr-live-advanced">
+        <summary>Advanced SourceRoot details</summary>
+        <pre>${escapeHtml(JSON.stringify(concept, null, 2))}</pre>
+      </details>`;
+    } catch (error) {
+      elements.details.innerHTML = `<div class="dr-live-empty"><strong>Concept details could not be loaded.</strong>${escapeHtml(error.message || "Check the SourceRoot connection.")}</div>`;
+    }
   }
 
-  async function openCenter(nodeId, preferredLabel) {
-    setStatus("Building the DictionaryRoot knowledge map...", "loading"); elements.details.innerHTML = '<div class="dr-live-empty"><strong>Loading center concept...</strong>Preparing the source-backed graph.</div>';
+  function showEdgeDetails(key) {
+    if (!state.edges.has(key)) return;
+    state.selectedEdgeKey = key;
+    const edge = state.edges.get(key);
+    state.selectedId = edge.toNodeId === state.centerId ? edge.fromNodeId : edge.toNodeId;
+    renderGraphStructure();
+
+    const from = state.nodes.get(edge.fromNodeId);
+    const to = state.nodes.get(edge.toNodeId);
+    elements.details.innerHTML = `<section class="dr-live-section">
+      <div class="dr-live-chip-row"><span class="dr-live-chip" data-tone="accent">SourceRoot edge</span><span class="dr-live-chip">Strength ${edgeStrength(edge)}</span></div>
+      <h2 class="dr-live-concept-title dr-sphere-selected-title">${escapeHtml(relationshipNameForEdge(edge))}</h2>
+      <p class="dr-live-definition dr-sphere-definition">${escapeHtml(edge.summary || edge.description || "This relationship connects two source-backed concepts.")}</p>
+      <div class="dr-sphere-edge-detail">
+        <strong>${escapeHtml(from ? displayLabel(from) : edge.fromNodeId)} → ${escapeHtml(to ? displayLabel(to) : edge.toNodeId)}</strong>
+        <span>${escapeHtml(normalizeRelationship(edge.relationshipType))}</span>
+      </div>
+      <div class="dr-live-actions">
+        <button class="dr-live-button-secondary" type="button" data-inspect-node="${escapeHtml(edge.fromNodeId)}">Inspect first concept</button>
+        <button class="dr-live-button-secondary" type="button" data-inspect-node="${escapeHtml(edge.toNodeId)}">Inspect second concept</button>
+      </div>
+    </section>`;
+  }
+
+  async function openCenter(nodeId, preferredLabel, options) {
+    const config = options || {};
+    const token = state.loadToken + 1;
+    state.loadToken = token;
+
+    setStatus("Building the live DictionaryRoot knowledge sphere...", "loading");
+    elements.details.innerHTML = '<div class="dr-live-empty"><strong>Loading center concept...</strong>Preparing the source-backed sphere.</div>';
+
     try {
-      const nodeResult = await state.client.node(nodeId); state.nodes.clear(); state.edges.clear(); state.expanded.clear(); state.preferredLabels.clear(); state.rootId = nodeId; state.selectedId = nodeId;
+      const nodeResult = await state.client.node(nodeId);
+      if (token !== state.loadToken) return;
+
+      state.nodes.clear();
+      state.edges.clear();
+      state.preferredLabels.clear();
+      state.positions.clear();
+      state.nextOrdinal = 0;
+      state.selectedEdgeKey = "";
+      state.centerSourceCount = 0;
+
+      state.centerId = nodeId;
+      state.selectedId = nodeId;
       if (preferredLabel) state.preferredLabels.set(nodeId, preferredLabel);
-      addNode(nodeResult.data, 0, null); layoutGraph(); renderGraph(); fitGraph();
-      await loadNeighborhood(nodeId, { limit: Number(state.manifest.graph.initialNodeLimit || 28) - 1 }); await showDetails(nodeId);
-      const url = new URL(global.location.href); url.searchParams.set("nodeId", nodeId); if (preferredLabel) url.searchParams.set("q", preferredLabel); else url.searchParams.delete("q"); global.history.replaceState({}, "", url);
-    } catch (error) { setStatus(error.message || "The graph could not be built.", "error"); elements.details.innerHTML = '<div class="dr-live-empty"><strong>DictionaryRoot could not build this graph.</strong>Start the SourceRoot backend and try again.</div>'; }
+      addNode(nodeResult.data, 0, null);
+
+      const activeCenterLabel = displayLabel(state.nodes.get(nodeId));
+      elements.input.value = activeCenterLabel;
+      elements.results.innerHTML = "";
+
+      renderGraphStructure();
+      await buildNeighborhood(nodeId, token);
+      if (token !== state.loadToken) return;
+
+      updateDomainFilter();
+      renderGraphStructure();
+      addToTrail(nodeId, Boolean(config.resetTrail));
+
+      const centerConcept = await conceptFor(nodeId);
+      if (token !== state.loadToken) return;
+      state.centerSourceCount = (centerConcept.sources || []).length;
+      updateGraphMeta();
+      await showDetails(nodeId);
+
+      const centerLabel = displayLabel(state.nodes.get(nodeId));
+      elements.input.value = centerLabel;
+
+      const url = new URL(global.location.href);
+      url.searchParams.set("nodeId", nodeId);
+      url.searchParams.set("q", centerLabel);
+      global.history.replaceState({}, "", url);
+
+      setStatus(`Loaded ${state.nodes.size} source-backed meanings around “${centerLabel}”.`, "success");
+    } catch (error) {
+      if (token !== state.loadToken) return;
+      setStatus(error.message || "The sphere could not be built.", "error");
+      elements.details.innerHTML = '<div class="dr-live-empty"><strong>DictionaryRoot could not build this sphere.</strong>Start the SourceRoot backend and try again.</div>';
+    }
   }
 
   function renderSearchResults(query, payload) {
-    const raw = DictionaryRootApi.extractItems(payload).filter((item) => item.resultType === "node" || !item.resultType), results = DictionaryRootApi.rankMeaningResults(raw, query), exact = DictionaryRootApi.exactMeaningResults(results, query);
-    const shown = (exact.length ? exact.concat(results.filter((item) => !exact.includes(item))) : results).slice(0, 18); elements.results.innerHTML = "";
-    if (!shown.length) { elements.results.innerHTML = '<div class="dr-live-empty"><strong>No matching meaning was found.</strong>Try another word.</div>'; setStatus(`No connected concept matched “${query}”.`, "error"); return; }
-    shown.forEach((result) => { const preferred = DictionaryRootApi.preferredMeaningLabel(result, query), rank = DictionaryRootApi.meaningMatchRank(result, query), card = document.createElement("article"); card.className = "dr-live-result-card"; card.innerHTML = `<div><h3>${escapeHtml(preferred)}</h3>${preferred.toLocaleLowerCase() !== String(result.title || "").toLocaleLowerCase() ? `<span class="dr-live-canonical">WordNet sense also indexed as <strong>${escapeHtml(result.title)}</strong></span>` : ""}<p>${escapeHtml(result.summary || "Open this meaning in the knowledge graph.")}</p><div class="dr-live-result-meta"><span class="dr-live-chip" data-tone="accent">${escapeHtml(posFrom(result))}</span><span class="dr-live-chip" data-tone="good">Source-backed</span><span class="dr-live-chip">${rank <= 1 ? "Exact meaning" : "Related match"}</span></div></div><button class="dr-live-button-secondary" type="button" data-graph-node="${escapeHtml(result.id)}" data-preferred-label="${escapeHtml(preferred)}">Build graph</button>`; elements.results.appendChild(card); });
-    setStatus(exact.length ? `${exact.length} exact sense${exact.length === 1 ? "" : "s"} of “${query}” found. Choose the intended meaning.` : `No exact lemma was found. Showing related meanings.`, exact.length ? "success" : "");
+    const raw = DictionaryRootApi.extractItems(payload).filter((item) => item.resultType === "node" || !item.resultType);
+    const ranked = DictionaryRootApi.rankMeaningResults(raw, query);
+    const exact = DictionaryRootApi.exactMeaningResults(ranked, query);
+    const shown = (exact.length ? exact.concat(ranked.filter((item) => !exact.includes(item))) : ranked).slice(0, 18);
+
+    elements.results.innerHTML = "";
+    if (!shown.length) {
+      elements.results.innerHTML = '<div class="dr-live-empty"><strong>No matching meaning was found.</strong>Try another word.</div>';
+      setStatus(`No connected concept matched “${query}”.`, "error");
+      return;
+    }
+
+    shown.forEach((result) => {
+      const preferred = DictionaryRootApi.preferredMeaningLabel(result, query);
+      const rank = DictionaryRootApi.meaningMatchRank(result, query);
+      const card = document.createElement("article");
+      card.className = "dr-live-result-card";
+      card.innerHTML = `<div>
+        <h3>${escapeHtml(preferred)}</h3>
+        ${preferred.toLocaleLowerCase() !== String(result.title || "").toLocaleLowerCase() ? `<span class="dr-live-canonical">WordNet sense also indexed as <strong>${escapeHtml(result.title)}</strong></span>` : ""}
+        <p>${escapeHtml(result.summary || "Open this meaning in the live knowledge sphere.")}</p>
+        <div class="dr-live-result-meta">
+          <span class="dr-live-chip" data-tone="accent">${escapeHtml(posFrom(result))}</span>
+          <span class="dr-live-chip" data-tone="good">Source-backed</span>
+          <span class="dr-live-chip">${rank <= 1 ? "Exact meaning" : "Related match"}</span>
+        </div>
+      </div>
+      <button class="dr-live-button-secondary" type="button" data-sphere-node="${escapeHtml(result.id)}" data-preferred-label="${escapeHtml(preferred)}">Build sphere</button>`;
+      elements.results.appendChild(card);
+    });
+
+    setStatus(
+      exact.length
+        ? `${exact.length} exact sense${exact.length === 1 ? "" : "s"} of “${query}” found. Choose the intended meaning.`
+        : "No exact lemma was found. Showing related meanings.",
+      exact.length ? "success" : ""
+    );
   }
 
   async function search(query, autoOpen) {
-    const clean = String(query || "").trim(); if (!clean) return;
-    elements.searchButton.disabled = true; elements.searchButton.textContent = "Searching..."; setStatus(`Searching for “${clean}”...`, "loading"); elements.results.innerHTML = "";
+    const clean = String(query || "").trim();
+    if (!clean) return;
+
+    elements.searchButton.disabled = true;
+    elements.searchButton.textContent = "Searching...";
+    setStatus(`Searching for “${clean}”...`, "loading");
+    elements.results.innerHTML = "";
+
     try {
       const response = await state.client.searchNodes(clean, { limit: 100 });
-      const raw = DictionaryRootApi.extractItems(response.data).filter((item) => item.resultType === "node" || !item.resultType), exact = DictionaryRootApi.exactMeaningResults(raw, clean);
-      if (autoOpen && exact.length === 1) await openCenter(exact[0].id, DictionaryRootApi.preferredMeaningLabel(exact[0], clean)); else renderSearchResults(clean, response.data);
-    } catch (error) { setStatus(error.message || "Search failed.", "error"); elements.results.innerHTML = '<div class="dr-live-empty"><strong>DictionaryRoot could not reach its knowledge service.</strong>Your data has not been changed.</div>'; }
-    finally { elements.searchButton.disabled = false; elements.searchButton.textContent = "Explore graph"; }
+      const raw = DictionaryRootApi.extractItems(response.data).filter((item) => item.resultType === "node" || !item.resultType);
+      const exact = DictionaryRootApi.exactMeaningResults(raw, clean);
+
+      if (autoOpen && exact.length === 1) {
+        await openCenter(exact[0].id, DictionaryRootApi.preferredMeaningLabel(exact[0], clean), { resetTrail: true });
+      } else {
+        renderSearchResults(clean, response.data);
+      }
+    } catch (error) {
+      setStatus(error.message || "Search failed.", "error");
+      elements.results.innerHTML = '<div class="dr-live-empty"><strong>DictionaryRoot could not reach its knowledge service.</strong>Your data has not been changed.</div>';
+    } finally {
+      elements.searchButton.disabled = false;
+      elements.searchButton.textContent = "Explore sphere";
+    }
   }
 
-  function setMode(mode) {
-    state.mode = mode === "readable" ? "readable" : "map";
-    elements.modeMap.setAttribute("aria-pressed", String(state.mode === "map")); elements.modeReadable.setAttribute("aria-pressed", String(state.mode === "readable"));
-    elements.layout.dataset.mode = state.mode; layoutGraph(); renderGraph(); fitGraph();
-  }
   function toggleDetails() {
-    state.detailsCollapsed = !state.detailsCollapsed; elements.layout.dataset.detailsCollapsed = String(state.detailsCollapsed); elements.toggleDetails.textContent = state.detailsCollapsed ? "Show details" : "Hide details"; setTimeout(() => fitGraph(), 60);
+    state.detailsCollapsed = !state.detailsCollapsed;
+    elements.layout.dataset.detailsCollapsed = String(state.detailsCollapsed);
+    elements.toggleDetails.textContent = state.detailsCollapsed ? "Show details" : "Hide details";
   }
+
+  function updateRotationControl() {
+    elements.rotationToggle.setAttribute("aria-pressed", String(state.autoRotate));
+    elements.rotationToggle.textContent = state.autoRotate ? "Pause rotation" : "Resume rotation";
+  }
+
   function showTooltip(nodeElement, event) {
-    const item = state.nodes.get(nodeElement.dataset.nodeId); if (!item) return;
+    const item = state.nodes.get(nodeElement.dataset.nodeId);
+    if (!item) return;
+
     elements.tooltip.innerHTML = `<strong>${escapeHtml(displayLabel(item))}</strong><span>${escapeHtml(item.node.summary || "Select this concept to inspect its definition and sources.")}</span>`;
-    elements.tooltip.hidden = false; moveTooltip(event);
+    elements.tooltip.hidden = false;
+    moveTooltip(event);
   }
+
   function moveTooltip(event) {
-    if (elements.tooltip.hidden) return; const rect = elements.stage.getBoundingClientRect();
-    elements.tooltip.style.left = `${Math.min(rect.width - 290, Math.max(12, event.clientX - rect.left + 16))}px`; elements.tooltip.style.top = `${Math.min(rect.height - 120, Math.max(64, event.clientY - rect.top + 16))}px`;
+    if (elements.tooltip.hidden) return;
+    const rectangle = elements.stage.getBoundingClientRect();
+    elements.tooltip.style.left = `${Math.min(rectangle.width - 290, Math.max(12, event.clientX - rectangle.left + 16))}px`;
+    elements.tooltip.style.top = `${Math.min(rectangle.height - 120, Math.max(64, event.clientY - rectangle.top + 16))}px`;
   }
-  function hideTooltip() { elements.tooltip.hidden = true; }
+
+  function hideTooltip() {
+    elements.tooltip.hidden = true;
+  }
+
+  function handleStagePointerDown(event) {
+    if (state.view !== "sphere") return;
+    if (event.target.closest(".dr-sphere-node") || event.target.closest(".dr-sphere-edge-hit")) return;
+
+    state.dragging = true;
+    state.lastPointerX = event.clientX;
+    state.lastPointerY = event.clientY;
+    elements.stage.classList.add("is-rotating");
+    elements.stage.setPointerCapture(event.pointerId);
+  }
+
+  function handleStagePointerMove(event) {
+    if (!state.dragging || state.view !== "sphere") return;
+
+    const deltaX = event.clientX - state.lastPointerX;
+    const deltaY = event.clientY - state.lastPointerY;
+    state.lastPointerX = event.clientX;
+    state.lastPointerY = event.clientY;
+    state.rotationY += deltaX * 0.008;
+    state.rotationX = Math.max(-1.2, Math.min(1.2, state.rotationX + deltaY * 0.006));
+    updateProjectedGeometry();
+  }
+
+  function endStageDrag() {
+    state.dragging = false;
+    elements.stage.classList.remove("is-rotating");
+  }
+
+  function animate(timestamp) {
+    if (
+      state.view === "sphere"
+      && state.autoRotate
+      && !state.dragging
+      && state.nodeElements.size
+      && timestamp - state.lastAnimationTime >= 34
+    ) {
+      const delta = state.lastAnimationTime ? Math.min(60, timestamp - state.lastAnimationTime) : 16;
+      state.rotationY += delta * 0.000045;
+      updateProjectedGeometry();
+      state.lastAnimationTime = timestamp;
+    } else if (!state.lastAnimationTime) {
+      state.lastAnimationTime = timestamp;
+    }
+
+    state.animationFrame = global.requestAnimationFrame(animate);
+  }
 
   function bindEvents() {
-    elements.form.addEventListener("submit", (event) => { event.preventDefault(); search(elements.input.value, false); });
-    document.addEventListener("click", async (event) => {
-      const graphNode = event.target.closest("[data-graph-node]"); if (graphNode) { elements.results.innerHTML = ""; await openCenter(graphNode.dataset.graphNode, graphNode.dataset.preferredLabel || ""); return; }
-      const svgNode = event.target.closest(".dr-graph-node"); if (svgNode) { await showDetails(svgNode.dataset.nodeId); return; }
-      if (event.target.closest("[data-expand-selected]") && state.selectedId) { await loadNeighborhood(state.selectedId); await showDetails(state.selectedId); return; }
-      if (event.target.closest("[data-make-center]") && state.selectedId) { await openCenter(state.selectedId, displayLabel(state.nodes.get(state.selectedId))); }
+    elements.form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      search(elements.input.value, false);
     });
-    elements.svg.addEventListener("keydown", async (event) => { const node = event.target.closest(".dr-graph-node"); if (!node) return; if (event.key === "Enter" || event.key === " ") { event.preventDefault(); if (event.shiftKey) await loadNeighborhood(node.dataset.nodeId); else await showDetails(node.dataset.nodeId); } });
-    elements.nodeLayer.addEventListener("pointerover", (event) => { const node = event.target.closest(".dr-graph-node"); if (node) showTooltip(node, event); }); elements.nodeLayer.addEventListener("pointermove", moveTooltip); elements.nodeLayer.addEventListener("pointerout", (event) => { if (!event.relatedTarget || !event.relatedTarget.closest || !event.relatedTarget.closest(".dr-graph-node")) hideTooltip(); });
-    byId("graphZoomIn").addEventListener("click", () => { state.scale = Math.min(3, state.scale + 0.16); updateTransform(); }); byId("graphZoomOut").addEventListener("click", () => { state.scale = Math.max(0.35, state.scale - 0.16); updateTransform(); }); byId("graphResetView").addEventListener("click", () => fitGraph()); byId("graphResetData").addEventListener("click", () => { if (state.rootId) openCenter(state.rootId, displayLabel(state.nodes.get(state.rootId))); });
-    elements.modeMap.addEventListener("click", () => setMode("map")); elements.modeReadable.addEventListener("click", () => setMode("readable")); elements.toggleDetails.addEventListener("click", toggleDetails);
-    elements.svg.addEventListener("wheel", (event) => { event.preventDefault(); state.scale = Math.max(0.35, Math.min(3, state.scale + (event.deltaY < 0 ? 0.09 : -0.09))); updateTransform(); }, { passive: false });
-    elements.svg.addEventListener("pointerdown", (event) => { if (event.target.closest(".dr-graph-node")) return; const rectangle = elements.svg.getBoundingClientRect(); state.dragging = true; state.dragStart = { clientX: event.clientX, clientY: event.clientY, panX: state.panX, panY: state.panY, unitX: GRAPH_WIDTH / Math.max(1, rectangle.width), unitY: GRAPH_HEIGHT / Math.max(1, rectangle.height) }; elements.svg.classList.add("is-panning"); elements.svg.setPointerCapture(event.pointerId); });
-    elements.svg.addEventListener("pointermove", (event) => { if (!state.dragging) return; state.panX = state.dragStart.panX + (event.clientX - state.dragStart.clientX) * state.dragStart.unitX; state.panY = state.dragStart.panY + (event.clientY - state.dragStart.clientY) * state.dragStart.unitY; updateTransform(); });
-    const endPan = () => { state.dragging = false; elements.svg.classList.remove("is-panning"); }; elements.svg.addEventListener("pointerup", endPan); elements.svg.addEventListener("pointercancel", endPan);
+
+    elements.results.addEventListener("click", async (event) => {
+      const target = event.target.closest("[data-sphere-node]");
+      if (!target) return;
+      elements.results.innerHTML = "";
+      await openCenter(target.dataset.sphereNode, target.dataset.preferredLabel || "", { resetTrail: true });
+    });
+
+    elements.nodeLayer.addEventListener("click", async (event) => {
+      const node = event.target.closest(".dr-sphere-node");
+      if (!node) return;
+      await showDetails(node.dataset.nodeId);
+    });
+
+    elements.nodeLayer.addEventListener("dblclick", async (event) => {
+      const node = event.target.closest(".dr-sphere-node");
+      if (!node) return;
+      event.preventDefault();
+      const item = state.nodes.get(node.dataset.nodeId);
+      await openCenter(node.dataset.nodeId, item ? displayLabel(item) : "", { resetTrail: false });
+    });
+
+    elements.nodeLayer.addEventListener("keydown", async (event) => {
+      const node = event.target.closest(".dr-sphere-node");
+      if (!node) return;
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        if (event.shiftKey) {
+          const item = state.nodes.get(node.dataset.nodeId);
+          await openCenter(node.dataset.nodeId, item ? displayLabel(item) : "", { resetTrail: false });
+        } else {
+          await showDetails(node.dataset.nodeId);
+        }
+      }
+    });
+
+    elements.nodeLayer.addEventListener("pointerover", (event) => {
+      const node = event.target.closest(".dr-sphere-node");
+      if (node) showTooltip(node, event);
+    });
+    elements.nodeLayer.addEventListener("pointermove", moveTooltip);
+    elements.nodeLayer.addEventListener("pointerout", (event) => {
+      if (!event.relatedTarget || !event.relatedTarget.closest || !event.relatedTarget.closest(".dr-sphere-node")) hideTooltip();
+    });
+
+    elements.edgeLayer.addEventListener("pointerdown", (event) => {
+      const hit = event.target.closest(".dr-sphere-edge-hit");
+      if (!hit) return;
+      event.preventDefault();
+      event.stopPropagation();
+      showEdgeDetails(hit.dataset.edgeKey);
+    });
+
+    elements.details.addEventListener("click", async (event) => {
+      const centerSelected = event.target.closest("[data-center-selected]");
+      if (centerSelected && state.selectedId) {
+        const item = state.nodes.get(state.selectedId);
+        await openCenter(state.selectedId, item ? displayLabel(item) : "", { resetTrail: false });
+        return;
+      }
+
+      const related = event.target.closest("[data-related-node]");
+      if (related) {
+        const item = state.nodes.get(related.dataset.relatedNode);
+        await openCenter(related.dataset.relatedNode, item ? displayLabel(item) : "", { resetTrail: false });
+        return;
+      }
+
+      const inspect = event.target.closest("[data-inspect-node]");
+      if (inspect) await showDetails(inspect.dataset.inspectNode);
+    });
+
+    elements.viewSelect.addEventListener("change", () => {
+      state.view = elements.viewSelect.value === "flat" ? "flat" : "sphere";
+      renderGraphStructure();
+    });
+
+    elements.depthSelect.addEventListener("change", async () => {
+      state.depth = [1, 2, 3].includes(Number(elements.depthSelect.value)) ? Number(elements.depthSelect.value) : 2;
+      if (state.centerId) {
+        const item = state.nodes.get(state.centerId);
+        await openCenter(state.centerId, item ? displayLabel(item) : "", { resetTrail: false });
+      }
+    });
+
+    elements.edgeSelect.addEventListener("change", () => {
+      state.edgeMode = ["center", "selected", "all"].includes(elements.edgeSelect.value) ? elements.edgeSelect.value : "center";
+      state.selectedEdgeKey = "";
+      renderGraphStructure();
+    });
+
+    elements.lensSelect.addEventListener("change", () => {
+      state.lens = ["domain", "importance", "strength"].includes(elements.lensSelect.value) ? elements.lensSelect.value : "domain";
+      renderGraphStructure();
+    });
+
+    elements.domainFilter.addEventListener("change", () => {
+      state.domainFilter = elements.domainFilter.value || "all";
+      state.selectedEdgeKey = "";
+      renderGraphStructure();
+    });
+
+    elements.rotationToggle.addEventListener("click", () => {
+      state.autoRotate = !state.autoRotate;
+      updateRotationControl();
+    });
+
+    elements.resetRotation.addEventListener("click", () => {
+      state.rotationX = -0.18;
+      state.rotationY = 0.45;
+      updateProjectedGeometry();
+    });
+
+    elements.toggleDetails.addEventListener("click", toggleDetails);
+
+    elements.resetPath.addEventListener("click", async () => {
+      const firstId = state.trail[0];
+      if (!firstId) return;
+      const item = state.nodes.get(firstId);
+      state.trail = [];
+      await openCenter(firstId, item ? displayLabel(item) : state.trailLabels.get(firstId) || state.preferredLabels.get(firstId) || "", { resetTrail: true });
+    });
+
+    elements.breadcrumbTrail.addEventListener("click", async (event) => {
+      const button = event.target.closest(".dr-sphere-breadcrumb-node");
+      if (!button) return;
+      const index = Number(button.dataset.trailIndex);
+      state.trail = state.trail.slice(0, index + 1);
+      const item = state.nodes.get(button.dataset.nodeId);
+      await openCenter(button.dataset.nodeId, item ? displayLabel(item) : state.trailLabels.get(button.dataset.nodeId) || state.preferredLabels.get(button.dataset.nodeId) || "", { resetTrail: false });
+    });
+
+    elements.stage.addEventListener("pointerdown", handleStagePointerDown);
+    elements.stage.addEventListener("pointermove", handleStagePointerMove);
+    elements.stage.addEventListener("pointerup", endStageDrag);
+    elements.stage.addEventListener("pointercancel", endStageDrag);
+    elements.stage.addEventListener("pointerleave", () => {
+      if (!state.dragging) hideTooltip();
+    });
   }
 
   async function init() {
-    Object.assign(elements, { form: byId("dictionaryrootGraphSearchForm"), input: byId("dictionaryrootGraphSearchInput"), searchButton: byId("dictionaryrootGraphSearchButton"), status: byId("dictionaryrootGraphStatus"), results: byId("dictionaryrootGraphResults"), svg: byId("dictionaryrootGraph"), viewport: byId("dictionaryrootGraphViewport"), edgeLayer: byId("dictionaryrootGraphEdges"), nodeLayer: byId("dictionaryrootGraphNodes"), details: byId("dictionaryrootGraphDetails"), count: byId("dictionaryrootGraphCount"), layout: byId("dictionaryrootGraphLayout"), stage: byId("dictionaryrootGraphStage"), tooltip: byId("dictionaryrootGraphTooltip"), modeMap: byId("graphModeMap"), modeReadable: byId("graphModeReadable"), toggleDetails: byId("graphToggleDetails") });
-    state.manifest = await DictionaryRootApi.loadManifest(); state.client = new DictionaryRootApi.DictionaryRootApiClient(state.manifest); bindEvents(); setMode("map");
-    const params = new URLSearchParams(global.location.search), nodeId = params.get("nodeId"), query = params.get("q") || state.manifest.defaults.searchTerm || "knowledge"; elements.input.value = query;
-    if (nodeId) await openCenter(nodeId, params.get("q") || ""); else await search(query, true);
+    Object.assign(elements, {
+      form: byId("dictionaryrootGraphSearchForm"),
+      input: byId("dictionaryrootGraphSearchInput"),
+      searchButton: byId("dictionaryrootGraphSearchButton"),
+      status: byId("dictionaryrootGraphStatus"),
+      results: byId("dictionaryrootGraphResults"),
+      layout: byId("dictionaryrootGraphLayout"),
+      stage: byId("dictionaryrootGraphStage"),
+      edgeLayer: byId("dictionaryrootGraphEdges"),
+      nodeLayer: byId("dictionaryrootGraphNodes"),
+      tooltip: byId("dictionaryrootGraphTooltip"),
+      details: byId("dictionaryrootGraphDetails"),
+      title: byId("sphereGraphTitle"),
+      meta: byId("sphereGraphMeta"),
+      count: byId("dictionaryrootGraphCount"),
+      viewSelect: byId("sphereViewSelect"),
+      depthSelect: byId("sphereDepthSelect"),
+      edgeSelect: byId("sphereEdgeSelect"),
+      lensSelect: byId("sphereLensSelect"),
+      domainFilter: byId("sphereDomainFilter"),
+      rotationToggle: byId("sphereRotationToggle"),
+      resetRotation: byId("sphereResetRotation"),
+      toggleDetails: byId("sphereToggleDetails"),
+      breadcrumbTrail: byId("sphereBreadcrumbTrail"),
+      resetPath: byId("sphereResetPath"),
+      stageHint: byId("sphereStageHint"),
+      statConcepts: byId("sphereStatConcepts"),
+      statNeighborhoodEdges: byId("sphereStatNeighborhoodEdges"),
+      statEdges: byId("sphereStatEdges"),
+      statCenterEdges: byId("sphereStatCenterEdges"),
+      statDomains: byId("sphereStatDomains"),
+      statSources: byId("sphereStatSources"),
+      domainLegend: byId("sphereDomainLegend")
+    });
+
+    state.manifest = await DictionaryRootApi.loadManifest();
+    state.client = new DictionaryRootApi.DictionaryRootApiClient(state.manifest);
+    state.depth = [1, 2, 3].includes(Number(state.manifest.graph.initialDepth))
+      ? Number(state.manifest.graph.initialDepth)
+      : 2;
+    elements.depthSelect.value = String(state.depth);
+
+    bindEvents();
+    updateRotationControl();
+    state.animationFrame = global.requestAnimationFrame(animate);
+
+    const params = new URLSearchParams(global.location.search);
+    const nodeId = params.get("nodeId");
+    const query = params.get("q") || state.manifest.defaults.searchTerm || "knowledge";
+    elements.input.value = query;
+
+    if (nodeId) {
+      await openCenter(nodeId, params.get("q") || "", { resetTrail: true });
+    } else {
+      await search(query, true);
+    }
   }
 
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true }); else init();
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init, { once: true });
+  } else {
+    init();
+  }
 })(window);
