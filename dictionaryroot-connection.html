@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="DictionaryRoot customer connection diagnostics for the SourceRoot knowledge service.">
+  <title>DictionaryRoot — Data Status</title>
+  <link rel="stylesheet" href="assets/css/dictionaryroot-brand.css">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 18% 0%, rgba(103, 232, 249, 0.09), transparent 34rem),
+        radial-gradient(circle at 92% 12%, rgba(129, 140, 248, 0.09), transparent 30rem),
+        #07101d;
+      color: #e8eef8;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+  </style>
+  <script src="assets/js/dictionaryroot-api.js" defer></script>
+  <script src="assets/js/dictionaryroot-brand.js" defer></script>
+</head>
+<body>
+  <main id="main-content" class="dr-shell">
+    <section class="dr-hero">
+      <p class="dr-eyebrow">Customer #001 connection</p>
+      <h1>Dictionary Data Status</h1>
+      <p class="dr-lead">This page verifies the live customer connection from DictionaryRoot through the SourceRoot API to the imported Open English WordNet dataset.</p>
+      <div class="dr-meta-row" id="connectionMeta" aria-live="polite"></div>
+      <div class="dr-action-row">
+        <button class="dr-button" type="button" id="runChecks">Run connection checks</button>
+        <a class="dr-button dr-button-secondary" href="graph-v2.html">Open Knowledge Graph</a>
+        <a class="dr-button dr-button-secondary" href="concept-v2.html">Explore a Concept</a>
+      </div>
+    </section>
+
+    <section class="dr-grid" aria-label="DictionaryRoot connection summary">
+      <article class="dr-card">
+        <p class="dr-eyebrow">Connection</p>
+        <h2 id="overallTitle">Checking SourceRoot…</h2>
+        <p id="overallDetail">DictionaryRoot is testing its customer manifest, API service, dataset, search, and registry access.</p>
+        <div class="dr-check-list" id="checks" aria-live="polite"></div>
+      </article>
+
+      <aside class="dr-card">
+        <p class="dr-eyebrow">Imported customer data</p>
+        <h2>Live dataset summary</h2>
+        <div class="dr-grid" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
+          <div>
+            <div class="dr-muted">Nodes</div>
+            <div class="dr-summary-number" id="nodeCount">—</div>
+          </div>
+          <div>
+            <div class="dr-muted">Assertions</div>
+            <div class="dr-summary-number" id="assertionCount">—</div>
+          </div>
+          <div>
+            <div class="dr-muted">Edges</div>
+            <div class="dr-summary-number" id="edgeCount">—</div>
+          </div>
+          <div>
+            <div class="dr-muted">Search results</div>
+            <div class="dr-summary-number" id="searchCount">—</div>
+          </div>
+        </div>
+        <p id="datasetNote">Counts appear after a successful API check.</p>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="dr-shell" style="margin-top:0; color:#9fb0c7; font-size:.82rem;">
+    <p>Lexical data derived from Open English WordNet 2025 and licensed under Creative Commons Attribution 4.0.</p>
+  </footer>
+
+  <script>
+    (function () {
+      "use strict";
+
+      const checksElement = document.getElementById("checks");
+      const metaElement = document.getElementById("connectionMeta");
+      const overallTitle = document.getElementById("overallTitle");
+      const overallDetail = document.getElementById("overallDetail");
+      const runButton = document.getElementById("runChecks");
+      const countElements = {
+        nodes: document.getElementById("nodeCount"),
+        assertions: document.getElementById("assertionCount"),
+        edges: document.getElementById("edgeCount"),
+        search: document.getElementById("searchCount")
+      };
+
+      function formatCount(value) {
+        return Number.isFinite(Number(value)) ? Number(value).toLocaleString() : "—";
+      }
+
+      function checkRow(id, title) {
+        const row = document.createElement("div");
+        row.className = "dr-check";
+        row.id = `check-${id}`;
+        row.dataset.state = "pending";
+        row.innerHTML = `
+          <span class="dr-check-icon" aria-hidden="true"></span>
+          <span>
+            <span class="dr-check-title">${title}</span>
+            <span class="dr-check-detail">Waiting to run…</span>
+          </span>
+          <span class="dr-check-state">Pending</span>`;
+        checksElement.appendChild(row);
+        return row;
+      }
+
+      function updateCheck(row, state, detail) {
+        row.dataset.state = state;
+        row.querySelector(".dr-check-detail").textContent = detail;
+        row.querySelector(".dr-check-state").textContent = state === "passed" ? "Passed" : state === "failed" ? "Failed" : "Checking";
+      }
+
+      async function run() {
+        runButton.disabled = true;
+        runButton.textContent = "Checking DictionaryRoot…";
+        checksElement.innerHTML = "";
+        Object.values(countElements).forEach((element) => { element.textContent = "—"; });
+
+        const rows = {
+          manifest: checkRow("manifest", "Customer manifest"),
+          health: checkRow("health", "SourceRoot API"),
+          bundle: checkRow("bundle", "DictionaryRoot bundle"),
+          nodes: checkRow("nodes", "Concept registry"),
+          assertions: checkRow("assertions", "Definition registry"),
+          edges: checkRow("edges", "Relationship registry"),
+          search: checkRow("search", "Customer search")
+        };
+
+        let failures = 0;
+        let manifest;
+        let client;
+
+        try {
+          updateCheck(rows.manifest, "checking", "Loading DictionaryRoot customer configuration…");
+          manifest = await DictionaryRootApi.loadManifest();
+          client = new DictionaryRootApi.DictionaryRootApiClient(manifest);
+          updateCheck(rows.manifest, "passed", `${manifest.customerName} · ${manifest.environment} · ${manifest.bundleId}`);
+          metaElement.innerHTML = `
+            <span class="dr-meta-chip">Customer: ${manifest.customerId}</span>
+            <span class="dr-meta-chip">Environment: ${manifest.environment}</span>
+            <span class="dr-meta-chip">API: ${manifest.apiBaseUrl}</span>`;
+        } catch (error) {
+          failures += 1;
+          updateCheck(rows.manifest, "failed", error.message || "Customer manifest unavailable.");
+        }
+
+        if (client) {
+          const operations = [
+            ["health", async () => {
+              const result = await client.health();
+              return `Connected in ${result.durationMs} ms.`;
+            }],
+            ["bundle", async () => {
+              const result = await client.importedBundle();
+              return `Bundle found in ${result.durationMs} ms.`;
+            }],
+            ["nodes", async () => {
+              const result = await client.list("nodes", { page: 1, pageSize: 1 });
+              const total = DictionaryRootApi.extractTotal(result.data);
+              countElements.nodes.textContent = formatCount(total);
+              return `${formatCount(total)} concepts available · ${result.durationMs} ms.`;
+            }],
+            ["assertions", async () => {
+              const result = await client.list("assertions", { page: 1, pageSize: 1 });
+              const total = DictionaryRootApi.extractTotal(result.data);
+              countElements.assertions.textContent = formatCount(total);
+              return `${formatCount(total)} definitions and claims available · ${result.durationMs} ms.`;
+            }],
+            ["edges", async () => {
+              const result = await client.list("edges", { page: 1, pageSize: 1 });
+              const total = DictionaryRootApi.extractTotal(result.data);
+              countElements.edges.textContent = formatCount(total);
+              return `${formatCount(total)} semantic relationships available · ${result.durationMs} ms.`;
+            }],
+            ["search", async () => {
+              const term = (manifest.defaults && manifest.defaults.searchTerm) || "knowledge";
+              const result = await client.search(term, { pageSize: 5 });
+              const total = DictionaryRootApi.extractTotal(result.data);
+              countElements.search.textContent = formatCount(total);
+              return `Search for “${term}” returned ${formatCount(total)} matching records · ${result.durationMs} ms.`;
+            }]
+          ];
+
+          for (const [key, operation] of operations) {
+            try {
+              updateCheck(rows[key], "checking", "Testing…");
+              updateCheck(rows[key], "passed", await operation());
+            } catch (error) {
+              failures += 1;
+              const technical = error && error.details && error.details.status ? ` HTTP ${error.details.status}.` : "";
+              updateCheck(rows[key], "failed", `${error.message || "Check failed."}${technical}`);
+            }
+          }
+        } else {
+          ["health", "bundle", "nodes", "assertions", "edges", "search"].forEach((key) => {
+            failures += 1;
+            updateCheck(rows[key], "failed", "Could not run because the customer manifest did not load.");
+          });
+        }
+
+        if (failures === 0) {
+          overallTitle.textContent = "DictionaryRoot is connected";
+          overallDetail.textContent = "The customer manifest, SourceRoot API, imported bundle, registries, and search are all responding.";
+          document.getElementById("datasetNote").textContent = "These counts are being read live through the customer API connection.";
+        } else {
+          overallTitle.textContent = "DictionaryRoot needs attention";
+          overallDetail.textContent = `${failures} connection check${failures === 1 ? "" : "s"} failed. Your data has not been changed.`;
+          document.getElementById("datasetNote").textContent = "Start the local SourceRoot backend and run the checks again. Failed checks include technical detail without exposing it to ordinary visitors.";
+        }
+
+        runButton.disabled = false;
+        runButton.textContent = "Run connection checks";
+      }
+
+      runButton.addEventListener("click", run);
+      window.addEventListener("load", run, { once: true });
+    })();
+  </script>
+</body>
+</html>

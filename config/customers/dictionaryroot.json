@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.1",
+  "customerId": "dictionaryroot",
+  "customerName": "DictionaryRoot",
+  "applicationType": "dictionary-knowledge-platform",
+  "domain": "DictionaryRoot",
+  "environment": "development",
+  "status": "active",
+  "apiBaseUrl": "http://localhost:3000/api/v1",
+  "bundleId": "dictionaryroot-oewn-2025-pilot-500",
+  "dataset": {
+    "name": "Open English WordNet",
+    "release": "2025",
+    "license": "CC BY 4.0"
+  },
+  "defaults": {
+    "searchTerm": "knowledge",
+    "pageSize": 25
+  },
+  "graph": {
+    "initialDepth": 1,
+    "initialNodeLimit": 28,
+    "maximumNodeLimit": 150,
+    "neighborsPerExpansion": 18
+  },
+  "features": {
+    "search": true,
+    "conceptExplorer": true,
+    "knowledgeGraph": true,
+    "sources": true,
+    "advancedDetails": true
+  }
+}

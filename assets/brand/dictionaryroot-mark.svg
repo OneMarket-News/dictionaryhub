@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">DictionaryRoot</title>
+  <desc id="desc">A branching root and connected knowledge nodes.</desc>
+  <defs>
+    <linearGradient id="g" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#67e8f9"/>
+      <stop offset="1" stop-color="#818cf8"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="#08111f" stroke="url(#g)" stroke-width="2"/>
+  <path d="M32 14v19m0 0-12 9m12-9 12 9m-12-9v15" fill="none" stroke="url(#g)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="32" cy="13" r="5" fill="#08111f" stroke="#67e8f9" stroke-width="3"/>
+  <circle cx="18" cy="44" r="5" fill="#08111f" stroke="#818cf8" stroke-width="3"/>
+  <circle cx="46" cy="44" r="5" fill="#08111f" stroke="#818cf8" stroke-width="3"/>
+  <circle cx="32" cy="51" r="5" fill="#08111f" stroke="#67e8f9" stroke-width="3"/>
+</svg>

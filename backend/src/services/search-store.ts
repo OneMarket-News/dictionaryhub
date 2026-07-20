@@ -35,7 +35,6 @@ export interface SearchResponse {
   limit: number;
   total: number;
   totalPages: number;
-  items: SearchResult[];
   results: SearchResult[];
 }
 
@@ -89,10 +88,11 @@ const searchRecordsCte = `
       n.summary,
       COALESCE(n.domain, ib.domain) AS domain,
       n.node_type AS object_type,
-      JSONB_BUILD_OBJECT(
-        'nodeType', n.node_type,
-        'status', n.status
-      ) AS metadata,
+      COALESCE(n.metadata, '{}'::JSONB)
+        || JSONB_BUILD_OBJECT(
+          'nodeType', n.node_type,
+          'status', n.status
+        ) AS metadata,
       n.created_at,
       n.updated_at,
       CONCAT_WS(
@@ -102,7 +102,12 @@ const searchRecordsCte = `
         n.summary,
         n.node_type,
         n.domain,
-        n.status
+        n.status,
+        CASE
+          WHEN JSONB_TYPEOF(n.metadata -> 'lemmas') = 'array'
+            THEN n.metadata ->> 'lemmas'
+          ELSE NULL
+        END
       ) AS searchable_text
     FROM nodes n
     LEFT JOIN imported_bundles ib
@@ -342,12 +347,37 @@ export async function searchKnowledge(
             )
           ORDER BY
             CASE
-              WHEN LOWER(title) =
-                LOWER($5)
+              WHEN LOWER(title) = LOWER($5)
                 THEN 0
-              WHEN title ILIKE $6
+              WHEN result_type = 'node'
+                AND EXISTS (
+                  SELECT 1
+                  FROM JSONB_ARRAY_ELEMENTS_TEXT(
+                    CASE
+                      WHEN JSONB_TYPEOF(metadata -> 'lemmas') = 'array'
+                        THEN metadata -> 'lemmas'
+                      ELSE '[]'::JSONB
+                    END
+                  ) AS lemma(value)
+                  WHERE LOWER(lemma.value) = LOWER($5)
+                )
                 THEN 1
-              ELSE 2
+              WHEN title ILIKE $6
+                THEN 2
+              WHEN result_type = 'node'
+                AND EXISTS (
+                  SELECT 1
+                  FROM JSONB_ARRAY_ELEMENTS_TEXT(
+                    CASE
+                      WHEN JSONB_TYPEOF(metadata -> 'lemmas') = 'array'
+                        THEN metadata -> 'lemmas'
+                      ELSE '[]'::JSONB
+                    END
+                  ) AS lemma(value)
+                  WHERE lemma.value ILIKE $6
+                )
+                THEN 3
+              ELSE 4
             END,
             title ASC,
             result_type ASC,
@@ -380,7 +410,7 @@ export async function searchKnowledge(
         : Math.ceil(
             total / options.limit,
           ),
-    items: searchResult.rows.map(mapSearchRow),
-    results: searchResult.rows.map(mapSearchRow),
+    results:
+      searchResult.rows.map(mapSearchRow),
   };
 }
