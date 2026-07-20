@@ -34,6 +34,25 @@
     }
   }
 
+  function sourceRecordId(source) {
+    return String(source && (source.sourceId || source.id) || "").trim();
+  }
+
+  function experienceHref(page, nodeId, label, sourceId) {
+    if (global.DictionaryRootNavigation) {
+      return global.DictionaryRootNavigation.buildHref(page, {
+        nodeId: nodeId || "",
+        meaning: label || "",
+        sourceId: sourceId || ""
+      });
+    }
+    const params = new URLSearchParams();
+    if (nodeId) params.set("nodeId", nodeId);
+    if (label) params.set(page === "sources-v2.html" ? "meaning" : "q", label);
+    if (sourceId) params.set("source", sourceId);
+    return `${page}${params.toString() ? `?${params.toString()}` : ""}`;
+  }
+
   function normalizeType(value) {
     return String(value || "")
       .trim()
@@ -361,7 +380,7 @@
                     </div>
                     <div class="dr-live-actions">
                       <button class="dr-live-button-secondary" type="button" data-open-node="${escapeHtml(item.neighborId)}" data-preferred-label="${escapeHtml(name)}">Open meaning</button>
-                      <a class="dr-live-button-secondary" href="graph-v2.html?nodeId=${encodeURIComponent(item.neighborId)}&q=${encodeURIComponent(name)}">Open sphere</a>
+                      <a class="dr-live-button-secondary" href="${escapeHtml(experienceHref("graph-v2.html", item.neighborId, name))}">Open sphere</a>
                     </div>
                   </article>`;
               }).join("")}
@@ -387,11 +406,14 @@
     const cards = sources.length
       ? sources.map((source) => {
         const href = safeExternalUrl(source.url);
+        const id = sourceRecordId(source);
+        const registryHref = experienceHref("sources-v2.html", concept.node && concept.node.nodeId, state.currentLabel || concept.node.title, id);
         return `
           <article class="dr-concept-source-item">
             <strong>${escapeHtml(source.name || source.title || "Recorded lexical source")}</strong>
             <span>${escapeHtml(source.publisher || "Lexical data publisher")}</span>
             <span>${escapeHtml(source.license || "License information is recorded in SourceRoot")}</span>
+            <a class="dr-concept-text-link" href="${escapeHtml(registryHref)}">Inspect source record</a>
             ${href ? `<a class="dr-concept-text-link" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">Visit source website</a>` : ""}
           </article>`;
       }).join("")
@@ -429,7 +451,7 @@
         <div><strong>${Math.max(sourceIds.length, (concept.sources || []).length)}</strong><span>Sources</span></div>
       </div>
       <div class="dr-concept-sidebar-actions">
-        <a class="dr-live-button" href="graph-v2.html?nodeId=${encodeURIComponent(node.nodeId)}&q=${encodeURIComponent(displayTitle)}">Explore in knowledge sphere</a>
+        <a class="dr-live-button" href="${escapeHtml(experienceHref("graph-v2.html", node.nodeId, displayTitle, sourceIds[0]))}">Explore in knowledge sphere</a>
         <button class="dr-live-button-secondary" type="button" data-copy-link>Copy concept link</button>
         <button class="dr-live-button-secondary" type="button" data-return-search>Return to meaning choices</button>
       </div>
@@ -463,7 +485,7 @@
             <span class="dr-live-chip" data-tone="good">Source-backed meaning</span>
             <span class="dr-live-chip">${relations.length} connected meanings</span>
           </div>
-          <a class="dr-live-button-secondary" href="graph-v2.html?nodeId=${encodeURIComponent(node.nodeId)}&q=${encodeURIComponent(displayTitle)}">Open sphere</a>
+          <a class="dr-live-button-secondary" href="${escapeHtml(experienceHref("graph-v2.html", node.nodeId, displayTitle, sourceIds[0]))}">Open sphere</a>
         </div>
         <h2 class="dr-concept-record-title">${escapeHtml(displayTitle)}</h2>
         ${canonical ? `<p class="dr-concept-canonical">Open English WordNet groups this exact sense under <strong>${escapeHtml(canonical)}</strong>.</p>` : ""}

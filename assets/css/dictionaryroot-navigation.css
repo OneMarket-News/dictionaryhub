@@ -1,0 +1,430 @@
+:root {
+  --dr-nav-height: 76px;
+  --dr-nav-search-width: 430px;
+}
+
+.dictionaryroot-product-bar.dictionaryroot-unified-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 1px solid var(--dr-border, rgba(148, 163, 184, 0.22));
+  background: rgba(7, 16, 29, 0.94);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.22);
+}
+
+.dictionaryroot-unified-header .dictionaryroot-product-bar-inner {
+  width: min(1540px, calc(100% - 2rem));
+  min-height: var(--dr-nav-height);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: auto minmax(320px, var(--dr-nav-search-width)) auto;
+  gap: 1rem;
+  align-items: center;
+}
+
+.dictionaryroot-unified-brand-area {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  min-width: 0;
+}
+
+.dictionaryroot-unified-header .dictionaryroot-brand-lockup {
+  min-width: 0;
+}
+
+.dictionaryroot-unified-header .dictionaryroot-brand-copy {
+  min-width: 0;
+}
+
+.dictionaryroot-unified-header .dictionaryroot-brand-name,
+.dictionaryroot-unified-header .dictionaryroot-brand-tagline {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dictionaryroot-unified-nav-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.dictionaryroot-unified-header .dictionaryroot-product-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  overflow: visible;
+}
+
+.dictionaryroot-unified-header .dictionaryroot-product-nav a {
+  position: relative;
+  min-height: 42px;
+  padding: 0.58rem 0.82rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: var(--dr-muted, #9fb0c7);
+  text-decoration: none;
+  white-space: nowrap;
+  font-size: 0.86rem;
+  font-weight: 760;
+}
+
+.dictionaryroot-unified-header .dictionaryroot-product-nav a:hover,
+.dictionaryroot-unified-header .dictionaryroot-product-nav a[aria-current="page"] {
+  border-color: rgba(103, 232, 249, 0.34);
+  color: var(--dr-text, #e8eef8);
+  background: rgba(103, 232, 249, 0.1);
+}
+
+.dictionaryroot-unified-header .dictionaryroot-product-nav a[aria-current="page"]::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0.3rem;
+  width: 0.34rem;
+  height: 0.34rem;
+  border-radius: 50%;
+  background: var(--dr-accent, #67e8f9);
+  transform: translateX(-50%);
+  box-shadow: 0 0 0 4px rgba(103, 232, 249, 0.08);
+}
+
+.dictionaryroot-global-search {
+  position: relative;
+  min-width: 0;
+}
+
+.dictionaryroot-global-search-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.dictionaryroot-global-search-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.dictionaryroot-global-search-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 0.9rem;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 13px;
+  background: rgba(5, 14, 26, 0.9);
+  color: var(--dr-text, #e8eef8);
+  font: inherit;
+}
+
+.dictionaryroot-global-search-input::placeholder {
+  color: #7f91aa;
+}
+
+.dictionaryroot-global-search-button,
+.dictionaryroot-mobile-menu-button,
+.dictionaryroot-global-search-close {
+  min-height: 42px;
+  border: 1px solid rgba(103, 232, 249, 0.28);
+  border-radius: 12px;
+  background: rgba(103, 232, 249, 0.1);
+  color: var(--dr-text, #e8eef8);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.dictionaryroot-global-search-button {
+  padding: 0 0.82rem;
+}
+
+.dictionaryroot-global-search-button:hover,
+.dictionaryroot-mobile-menu-button:hover,
+.dictionaryroot-global-search-close:hover {
+  background: rgba(103, 232, 249, 0.17);
+}
+
+.dictionaryroot-global-search-button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.dictionaryroot-global-search-panel {
+  position: absolute;
+  top: calc(100% + 0.6rem);
+  left: 0;
+  right: 0;
+  max-height: min(70vh, 650px);
+  overflow: auto;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 18px;
+  background: rgba(8, 18, 32, 0.985);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.48);
+}
+
+.dictionaryroot-global-search-panel[hidden] {
+  display: none;
+}
+
+.dictionaryroot-global-search-panel-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(8, 18, 32, 0.98);
+}
+
+.dictionaryroot-global-search-panel-header strong {
+  display: block;
+  color: var(--dr-text, #e8eef8);
+}
+
+.dictionaryroot-global-search-status {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--dr-muted, #9fb0c7);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.dictionaryroot-global-search-status[data-state="success"] {
+  color: var(--dr-good, #86efac);
+}
+
+.dictionaryroot-global-search-status[data-state="error"] {
+  color: var(--dr-bad, #fca5a5);
+}
+
+.dictionaryroot-global-search-status[data-state="loading"] {
+  color: var(--dr-warn, #fde68a);
+}
+
+.dictionaryroot-global-search-close {
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
+  flex: 0 0 auto;
+}
+
+.dictionaryroot-global-search-results {
+  display: grid;
+  gap: 0.65rem;
+  padding: 0.75rem;
+}
+
+.dictionaryroot-global-result {
+  padding: 0.9rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 14px;
+  background: rgba(20, 38, 62, 0.56);
+}
+
+.dictionaryroot-global-result[data-exact="true"] {
+  border-color: rgba(103, 232, 249, 0.34);
+  background: linear-gradient(135deg, rgba(103, 232, 249, 0.09), rgba(129, 140, 248, 0.07));
+}
+
+.dictionaryroot-global-result h2 {
+  margin: 0;
+  font-size: 1rem;
+  letter-spacing: -0.02em;
+}
+
+.dictionaryroot-global-result p {
+  margin: 0.38rem 0 0;
+  color: var(--dr-muted, #9fb0c7);
+  font-size: 0.84rem;
+  line-height: 1.48;
+}
+
+.dictionaryroot-global-result-meta,
+.dictionaryroot-global-result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.65rem;
+}
+
+.dictionaryroot-global-result-meta span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 25px;
+  padding: 0.18rem 0.5rem;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 999px;
+  color: var(--dr-muted, #9fb0c7);
+  font-size: 0.7rem;
+  font-weight: 760;
+}
+
+.dictionaryroot-global-result-meta span[data-tone="exact"] {
+  border-color: rgba(103, 232, 249, 0.3);
+  color: var(--dr-accent, #67e8f9);
+}
+
+.dictionaryroot-global-result-actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0.35rem 0.62rem;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 10px;
+  color: var(--dr-text, #e8eef8);
+  background: rgba(148, 163, 184, 0.07);
+  text-decoration: none;
+  font-size: 0.76rem;
+  font-weight: 780;
+}
+
+.dictionaryroot-global-result-actions a[data-primary="true"] {
+  border-color: rgba(103, 232, 249, 0.34);
+  background: rgba(103, 232, 249, 0.1);
+}
+
+.dictionaryroot-global-search-empty {
+  padding: 1rem;
+  color: var(--dr-muted, #9fb0c7);
+  line-height: 1.55;
+}
+
+.dictionaryroot-mobile-menu-button {
+  display: none;
+  min-width: 44px;
+  padding: 0 0.75rem;
+}
+
+.dictionaryroot-unified-context {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  max-width: 220px;
+  color: var(--dr-muted, #9fb0c7);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.dictionaryroot-unified-context strong {
+  max-width: 130px;
+  overflow: hidden;
+  color: var(--dr-text, #e8eef8);
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 1180px) {
+  .dictionaryroot-unified-header .dictionaryroot-product-bar-inner {
+    grid-template-columns: auto minmax(260px, 1fr) auto;
+  }
+
+  .dictionaryroot-unified-context,
+  .dictionaryroot-unified-header .dictionaryroot-powered-by {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .dictionaryroot-unified-header .dictionaryroot-product-bar-inner {
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: 0.65rem 0;
+  }
+
+  .dictionaryroot-global-search {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .dictionaryroot-unified-nav-wrap {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .dictionaryroot-mobile-menu-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .dictionaryroot-unified-header .dictionaryroot-product-nav {
+    position: absolute;
+    top: calc(100% - 0.3rem);
+    right: 1rem;
+    left: 1rem;
+    display: none;
+    padding: 0.7rem;
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    border-radius: 16px;
+    background: rgba(8, 18, 32, 0.99);
+    box-shadow: 0 20px 55px rgba(0, 0, 0, 0.42);
+  }
+
+  .dictionaryroot-unified-header[data-menu-open="true"] .dictionaryroot-product-nav {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .dictionaryroot-unified-header .dictionaryroot-product-nav a {
+    width: 100%;
+    justify-content: flex-start;
+    border-radius: 12px;
+  }
+
+  .dictionaryroot-unified-header .dictionaryroot-product-nav a[aria-current="page"]::after {
+    left: auto;
+    right: 0.8rem;
+    bottom: 50%;
+    transform: translateY(50%);
+  }
+}
+
+@media (max-width: 560px) {
+  .dictionaryroot-unified-header .dictionaryroot-product-bar-inner {
+    width: min(100% - 1rem, 1540px);
+  }
+
+  .dictionaryroot-unified-header .dictionaryroot-brand-tagline {
+    display: none;
+  }
+
+  .dictionaryroot-unified-header .dictionaryroot-brand-lockup img {
+    width: 36px;
+    height: 36px;
+  }
+
+  .dictionaryroot-global-search-button {
+    padding: 0 0.65rem;
+  }
+
+  .dictionaryroot-global-search-panel {
+    position: fixed;
+    top: 126px;
+    right: 0.5rem;
+    bottom: 0.5rem;
+    left: 0.5rem;
+    max-height: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dictionaryroot-unified-header *,
+  .dictionaryroot-unified-header *::before,
+  .dictionaryroot-unified-header *::after {
+    scroll-behavior: auto !important;
+    transition: none !important;
+  }
+}

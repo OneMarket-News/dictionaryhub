@@ -1,0 +1,81 @@
+/* DictionaryRoot Hybrid Map + Unified Navigation recovery layer. */
+
+.dr-graph-mode-control {
+  display: grid;
+  gap: 0.38rem;
+  align-content: end;
+  color: var(--dr-live-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.dr-graph-mode-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.dr-graph-mode-buttons .dr-live-icon-button {
+  min-height: 52px;
+  padding-inline: 0.7rem;
+  white-space: nowrap;
+}
+
+.dr-graph-mode-buttons .dr-live-icon-button[aria-pressed="true"],
+.dr-graph-mode-buttons .dr-live-icon-button.is-active {
+  border-color: rgba(103, 232, 249, 0.72);
+  background: linear-gradient(145deg, rgba(14, 116, 144, 0.34), rgba(37, 99, 235, 0.24));
+  color: #effdff;
+  box-shadow: inset 0 0 0 1px rgba(103, 232, 249, 0.12);
+}
+
+.dr-sphere-stage.map-mode {
+  cursor: grab;
+}
+
+.dr-sphere-stage.map-mode.is-rotating {
+  cursor: grabbing;
+}
+
+.dr-sphere-stage.readable-mode {
+  cursor: default;
+  background:
+    linear-gradient(rgba(148, 163, 184, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.045) 1px, transparent 1px),
+    radial-gradient(circle at 50% 50%, rgba(37, 99, 235, 0.12), transparent 30rem),
+    #030b16;
+  background-size: 34px 34px, 34px 34px, auto, auto;
+}
+
+.dr-sphere-stage.readable-mode .dr-sphere-shell {
+  display: none;
+}
+
+.dr-sphere-stage.readable-mode .dr-sphere-node {
+  place-items: start;
+  align-content: center;
+  border-radius: 16px;
+  text-align: left;
+}
+
+.dr-sphere-stage.readable-mode .dr-sphere-node[data-center="true"] {
+  place-items: center;
+  border-radius: 22px;
+  text-align: center;
+}
+
+.dr-sphere-stage.readable-mode .dr-sphere-node-label {
+  width: 100%;
+}
+
+@media (max-width: 760px) {
+  .dr-graph-mode-buttons {
+    grid-template-columns: 1fr;
+  }
+
+  .dr-graph-mode-buttons .dr-live-icon-button {
+    min-height: 46px;
+  }
+}

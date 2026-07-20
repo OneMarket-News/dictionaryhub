@@ -8,6 +8,8 @@
     filteredSources: [],
     selectedSourceId: "",
     selectedExperience: null,
+    meaning: "",
+    nodeId: "",
     search: "",
     sourceType: "all",
     sort: "usage",
@@ -130,14 +132,28 @@
     return Number(usage.assertions || 0) + Number(usage.edges || 0) + Number(usage.concepts || 0);
   }
 
-  function conceptHref(nodeId) {
-    const encoded = encodeURIComponent(nodeId);
-    return `concept-v2.html?id=${encoded}&nodeId=${encoded}`;
+  function experienceHref(page, nodeId, label) {
+    const meaning = normalizeText(label) || state.meaning;
+    if (global.DictionaryRootNavigation) {
+      return global.DictionaryRootNavigation.buildHref(page, {
+        nodeId: nodeId || state.nodeId,
+        meaning,
+        sourceId: state.selectedSourceId
+      });
+    }
+    const params = new URLSearchParams();
+    if (nodeId || state.nodeId) params.set("nodeId", nodeId || state.nodeId);
+    if (meaning) params.set("q", meaning);
+    if (state.selectedSourceId) params.set("source", state.selectedSourceId);
+    return `${page}${params.toString() ? `?${params.toString()}` : ""}`;
   }
 
-  function sphereHref(nodeId) {
-    const encoded = encodeURIComponent(nodeId);
-    return `graph-v2.html?center=${encoded}&nodeId=${encoded}`;
+  function conceptHref(nodeId, label) {
+    return experienceHref("concept-v2.html", nodeId, label);
+  }
+
+  function sphereHref(nodeId, label) {
+    return experienceHref("graph-v2.html", nodeId, label);
   }
 
   function setStatus(message, tone) {
@@ -162,6 +178,8 @@
     const params = new URLSearchParams(global.location.search);
     return {
       source: normalizeText(params.get("source")),
+      meaning: normalizeText(params.get("meaning")),
+      nodeId: normalizeText(params.get("nodeId") || params.get("id") || params.get("center")),
       search: normalizeText(params.get("q")),
       sourceType: normalizeText(params.get("type")) || "all",
       sort: normalizeText(params.get("sort")) || "usage",
@@ -172,6 +190,8 @@
   function writeUrlState(mode) {
     const params = new URLSearchParams();
     if (state.selectedSourceId) params.set("source", state.selectedSourceId);
+    if (state.meaning) params.set("meaning", state.meaning);
+    if (state.nodeId) params.set("nodeId", state.nodeId);
     if (state.search) params.set("q", state.search);
     if (state.sourceType && state.sourceType !== "all") params.set("type", state.sourceType);
     if (state.sort !== "usage") params.set("sort", state.sort);
@@ -309,7 +329,7 @@
         </div>
         <div class="dr-source-card-actions">
           <button class="dr-source-action" type="button" data-inspect-source="${escapeHtml(id)}">Inspect source</button>
-          ${firstNode ? `<a class="dr-source-text-action" href="${escapeHtml(sphereHref(firstNode.nodeId))}" data-source-nav>Open in Sphere</a>` : ""}
+          ${firstNode ? `<a class="dr-source-text-action" href="${escapeHtml(sphereHref(firstNode.nodeId, nodeTitle(firstNode, firstNode.nodeId)))}" data-source-nav>Open in Sphere</a>` : ""}
         </div>
       </article>`;
   }
@@ -365,8 +385,8 @@
           </div>
           <p>${escapeHtml(clip(assertionText(assertion), 260))}</p>
           <div class="dr-source-record-links">
-            <a href="${escapeHtml(conceptHref(assertion.nodeId))}">Open Concept</a>
-            <a href="${escapeHtml(sphereHref(assertion.nodeId))}">Open in Sphere</a>
+            <a href="${escapeHtml(conceptHref(assertion.nodeId, title))}">Open Concept</a>
+            <a href="${escapeHtml(sphereHref(assertion.nodeId, title))}">Open in Sphere</a>
           </div>
         </article>`;
     }).join("")}</div>`;
@@ -384,8 +404,8 @@
         </div>
         <p>${escapeHtml(clip(node.summary || node.nodeId, 190))}</p>
         <div class="dr-source-concept-links">
-          <a href="${escapeHtml(conceptHref(node.nodeId))}">Open Concept</a>
-          <a href="${escapeHtml(sphereHref(node.nodeId))}">Open in Sphere</a>
+          <a href="${escapeHtml(conceptHref(node.nodeId, nodeTitle(node, node.nodeId)))}">Open Concept</a>
+          <a href="${escapeHtml(sphereHref(node.nodeId, nodeTitle(node, node.nodeId)))}">Open in Sphere</a>
         </div>
       </article>`).join("")}</div>`;
   }
@@ -405,8 +425,8 @@
           </div>
           <p>${escapeHtml(clip(edge.summary || edge.label || "Source-supported semantic relationship.", 220))}</p>
           <div class="dr-source-record-links">
-            <a href="${escapeHtml(conceptHref(edge.fromNodeId))}">Open first concept</a>
-            <a href="${escapeHtml(sphereHref(edge.fromNodeId))}">Open relationship area</a>
+            <a href="${escapeHtml(conceptHref(edge.fromNodeId, fromTitle))}">Open first concept</a>
+            <a href="${escapeHtml(sphereHref(edge.fromNodeId, fromTitle))}">Open relationship area</a>
           </div>
         </article>`;
     }).join("")}</div>`;
@@ -437,7 +457,7 @@
         <p class="dr-source-detail-description">${escapeHtml(sourceDescription(source) || "This source record is registered in SourceRoot. Additional descriptive notes have not been recorded.")}</p>
         <div class="dr-source-detail-actions">
           ${url ? `<a class="dr-source-action" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">Open Source URL</a>` : ""}
-          ${provenanceNode ? `<a class="dr-source-action" href="${escapeHtml(conceptHref(provenanceNode.nodeId))}">Open Concept</a><a class="dr-source-action" href="${escapeHtml(sphereHref(provenanceNode.nodeId))}">Open in Sphere</a>` : ""}
+          ${provenanceNode ? `<a class="dr-source-action" href="${escapeHtml(conceptHref(provenanceNode.nodeId, nodeTitle(provenanceNode, provenanceNode.nodeId)))}">Open Concept</a><a class="dr-source-action" href="${escapeHtml(sphereHref(provenanceNode.nodeId, nodeTitle(provenanceNode, provenanceNode.nodeId)))}">Open in Sphere</a>` : ""}
         </div>
       </header>
 
@@ -516,7 +536,7 @@
   }
 
   async function selectSource(id, options) {
-    const settings = Object.assign({ history: "push", scroll: false, force: false }, options || {});
+    const settings = Object.assign({ history: "push", scroll: false, force: false, resetContext: false }, options || {});
     const source = state.sources.find((item) => sourceId(item) === id);
     if (!source) return;
     state.selectedSourceId = id;
@@ -526,7 +546,11 @@
     if (settings.history) writeUrlState(settings.history);
 
     if (source.__dictionaryRootExperience && !settings.force) {
-      renderDetails(source.__dictionaryRootExperience);
+      const cached = source.__dictionaryRootExperience;
+      if ((settings.resetContext || !state.nodeId) && cached.nodes[0]) state.nodeId = cached.nodes[0].nodeId || "";
+      if ((settings.resetContext || !state.meaning) && cached.nodes[0]) state.meaning = nodeTitle(cached.nodes[0], cached.nodes[0].nodeId);
+      renderDetails(cached);
+      if (settings.resetContext) writeUrlState("replace");
       if (settings.scroll && global.matchMedia("(max-width: 1020px)").matches) elements.details.scrollIntoView({ behavior: "smooth", block: "start" });
       return;
     }
@@ -545,7 +569,10 @@
       if (token !== state.requestToken) return;
       source.__dictionaryRootExperience = experience;
       state.selectedExperience = experience;
+      if ((settings.resetContext || !state.nodeId) && experience.nodes[0]) state.nodeId = experience.nodes[0].nodeId || "";
+      if ((settings.resetContext || !state.meaning) && experience.nodes[0]) state.meaning = nodeTitle(experience.nodes[0], experience.nodes[0].nodeId);
       renderDetails(experience);
+      writeUrlState("replace");
       applyFilters({ history: null });
       setStatus(`Live provenance loaded for ${sourceName(source)}.`, "success");
       if (settings.scroll && global.matchMedia("(max-width: 1020px)").matches) elements.details.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -612,7 +639,7 @@
     const inspect = event.target.closest("[data-inspect-source]");
     const card = event.target.closest("[data-source-id]");
     const id = inspect ? inspect.dataset.inspectSource : card && card.dataset.sourceId;
-    if (id) selectSource(id, { history: "push", scroll: true });
+    if (id) selectSource(id, { history: "push", scroll: true, resetContext: true });
   }
 
   function handleGridKeydown(event) {
@@ -620,7 +647,7 @@
     const card = event.target.closest("[data-source-id]");
     if (!card || event.target.closest("a,button")) return;
     event.preventDefault();
-    selectSource(card.dataset.sourceId, { history: "push", scroll: true });
+    selectSource(card.dataset.sourceId, { history: "push", scroll: true, resetContext: true });
   }
 
   function bindEvents() {
@@ -663,6 +690,8 @@
     elements.retrySources.addEventListener("click", () => loadSources({ history: "replace" }));
     global.addEventListener("popstate", async () => {
       const urlState = readUrlState();
+      state.meaning = urlState.meaning;
+      state.nodeId = urlState.nodeId;
       state.search = urlState.search;
       state.sourceType = urlState.sourceType;
       state.sort = urlState.sort;
@@ -698,6 +727,8 @@
 
     const initial = readUrlState();
     state.selectedSourceId = initial.source;
+    state.meaning = initial.meaning;
+    state.nodeId = initial.nodeId;
     state.search = initial.search;
     state.sourceType = initial.sourceType;
     state.sort = initial.sort;

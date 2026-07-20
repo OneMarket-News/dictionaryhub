@@ -16,7 +16,7 @@
     centerId: null,
     selectedId: null,
     selectedEdgeKey: "",
-    view: "sphere",
+    mode: "map",
     depth: 2,
     edgeMode: "center",
     lens: "domain",
@@ -37,7 +37,8 @@
     animationFrame: 0,
     lastAnimationTime: 0,
     centerSourceCount: 0,
-    loadToken: 0
+    loadToken: 0,
+    navigatingHistory: false
   };
 
   const elements = {};
@@ -53,6 +54,37 @@
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
+  }
+
+  function sourceRecordId(source) {
+    return String(source && (source.sourceId || source.id) || "").trim();
+  }
+
+  function experienceHref(page, nodeId, label, sourceId) {
+    if (global.DictionaryRootNavigation) {
+      return global.DictionaryRootNavigation.buildHref(page, {
+        nodeId: nodeId || "",
+        meaning: label || "",
+        sourceId: sourceId || ""
+      });
+    }
+    const params = new URLSearchParams();
+    if (nodeId) params.set("nodeId", nodeId);
+    if (label) params.set(page === "sources-v2.html" ? "meaning" : "q", label);
+    if (sourceId) params.set("source", sourceId);
+    return `${page}${params.toString() ? `?${params.toString()}` : ""}`;
+  }
+
+  function updateHistory(nodeId, label, mode) {
+    if (!mode || state.navigatingHistory) return;
+    const url = new URL(global.location.href);
+    if (nodeId) url.searchParams.set("nodeId", nodeId);
+    else url.searchParams.delete("nodeId");
+    if (label) url.searchParams.set("q", label);
+    else url.searchParams.delete("q");
+    url.searchParams.set("mode", state.mode);
+    if (mode === "replace") global.history.replaceState({}, "", url);
+    else global.history.pushState({}, "", url);
   }
 
   function normalizeRelationship(value) {
@@ -421,7 +453,7 @@
     return positions;
   }
 
-  function flatPositions(items) {
+  function readablePositions(items) {
     const positions = new Map();
     positions.set(state.centerId, {
       x: 50,
@@ -478,7 +510,7 @@
 
   function calculatePositions() {
     const items = visibleItems();
-    return state.view === "sphere" ? spherePositions(items) : flatPositions(items);
+    return state.mode === "map" ? spherePositions(items) : readablePositions(items);
   }
 
   function nodeSize(item, position) {
@@ -491,7 +523,7 @@
     if (state.lens === "importance") width += Math.round(importance * 38);
     if (state.lens === "strength") width += Math.min(22, degreeFor(item.node.nodeId) * 2);
 
-    if (state.view === "sphere" && position) {
+    if (state.mode === "map" && position) {
       width *= 0.82 + position.scale * 0.28;
     }
 
@@ -671,17 +703,21 @@
 
       const visual = edgeVisual(edge);
       const averageZ = (from.z + to.z) / 2;
-      const depthOpacity = state.view === "sphere" ? 0.46 + ((averageZ + 1) / 2) * 0.54 : 1;
+      const depthOpacity = state.mode === "map" ? 0.46 + ((averageZ + 1) / 2) * 0.54 : 1;
       line.style.stroke = visual.color;
       line.style.strokeWidth = String(visual.width);
       line.style.opacity = String(visual.opacity * depthOpacity);
     });
 
-    elements.stage.classList.toggle("sphere-mode", state.view === "sphere");
-    elements.stage.classList.toggle("flat-mode", state.view === "flat");
-    elements.stageHint.textContent = state.view === "sphere"
+    elements.stage.classList.toggle("map-mode", state.mode === "map");
+    elements.stage.classList.toggle("readable-mode", state.mode === "readable");
+    // Preserve the original sphere/flat classes so the committed visual system remains compatible.
+    elements.stage.classList.toggle("sphere-mode", state.mode === "map");
+    elements.stage.classList.toggle("flat-mode", state.mode === "readable");
+    elements.stageHint.textContent = state.mode === "map"
       ? "Drag empty space to rotate · Click to inspect · Double-click to center"
-      : "Click to inspect · Double-click to center · Use depth and edge controls to refine";
+      : "Readable cards · Click to inspect · Double-click to center";
+    updateModeControls();
   }
 
   function updateGraphMeta() {
@@ -695,7 +731,7 @@
     const domains = new Set(visible.map((item) => item.domain));
 
     elements.title.textContent = center ? `${displayLabel(center)} Knowledge Sphere` : "Knowledge Sphere";
-    elements.meta.textContent = `${state.depth}-hop depth · ${state.edgeMode} edges · ${state.view} view · ${state.lens} lens`;
+    elements.meta.textContent = `${state.depth}-hop depth · ${state.edgeMode} edges · ${state.mode} mode · ${state.lens} lens`;
     elements.count.textContent = `${visible.length} concepts · ${neighborhood.length} neighborhood · ${displayed.length} displayed`;
     elements.statConcepts.textContent = String(visible.length);
     elements.statNeighborhoodEdges.textContent = String(neighborhood.length);
@@ -869,7 +905,11 @@
         : "<p>No connected concepts were found.</p>";
 
       const sourceHtml = concept.sources && concept.sources.length
-        ? concept.sources.map((source) => `<div class="dr-live-source-card"><strong>${escapeHtml(source.name)}</strong><span>${escapeHtml(source.license || "License unavailable")}</span></div>`).join("")
+        ? concept.sources.map((source) => {
+          const id = sourceRecordId(source);
+          const sourceHref = experienceHref("sources-v2.html", nodeId, preferred, id);
+          return `<div class="dr-live-source-card"><strong>${escapeHtml(source.name || source.title || id || "Recorded source")}</strong><span>${escapeHtml(source.license || "License unavailable")}</span><a class="dr-concept-text-link" href="${escapeHtml(sourceHref)}">Inspect source record</a></div>`;
+        }).join("")
         : "<p>Source identifiers remain attached to this concept.</p>";
 
       elements.details.innerHTML = `<section class="dr-live-section">
@@ -883,7 +923,7 @@
         <p class="dr-live-definition dr-sphere-definition">${escapeHtml((definition && (definition.body || definition.summary)) || concept.node.summary || "No definition is available.")}</p>
         <div class="dr-live-actions">
           <button class="dr-live-button" type="button" data-center-selected>Make center</button>
-          <a class="dr-live-button-secondary dr-sphere-link-button" href="concept-v2.html?nodeId=${encodeURIComponent(nodeId)}&q=${encodeURIComponent(preferred)}">Full concept page</a>
+          <a class="dr-live-button-secondary dr-sphere-link-button" href="${escapeHtml(experienceHref("concept-v2.html", nodeId, preferred, sourceRecordId((concept.sources || [])[0])))}">Full concept page</a>
         </div>
       </section>
       ${edgeDetailHtml()}
@@ -933,7 +973,7 @@
   }
 
   async function openCenter(nodeId, preferredLabel, options) {
-    const config = options || {};
+    const config = Object.assign({ history: "push", resetTrail: false }, options || {});
     const token = state.loadToken + 1;
     state.loadToken = token;
 
@@ -978,10 +1018,7 @@
       const centerLabel = displayLabel(state.nodes.get(nodeId));
       elements.input.value = centerLabel;
 
-      const url = new URL(global.location.href);
-      url.searchParams.set("nodeId", nodeId);
-      url.searchParams.set("q", centerLabel);
-      global.history.replaceState({}, "", url);
+      updateHistory(nodeId, centerLabel, config.history);
 
       setStatus(`Loaded ${state.nodes.size} source-backed meanings around “${centerLabel}”.`, "success");
     } catch (error) {
@@ -1031,7 +1068,8 @@
     );
   }
 
-  async function search(query, autoOpen) {
+  async function search(query, autoOpen, options) {
+    const settings = Object.assign({ history: "push" }, options || {});
     const clean = String(query || "").trim();
     if (!clean) return;
 
@@ -1046,9 +1084,10 @@
       const exact = DictionaryRootApi.exactMeaningResults(raw, clean);
 
       if (autoOpen && exact.length === 1) {
-        await openCenter(exact[0].id, DictionaryRootApi.preferredMeaningLabel(exact[0], clean), { resetTrail: true });
+        await openCenter(exact[0].id, DictionaryRootApi.preferredMeaningLabel(exact[0], clean), { resetTrail: true, history: settings.history });
       } else {
         renderSearchResults(clean, response.data);
+        updateHistory(null, clean, settings.history);
       }
     } catch (error) {
       setStatus(error.message || "Search failed.", "error");
@@ -1056,6 +1095,31 @@
     } finally {
       elements.searchButton.disabled = false;
       elements.searchButton.textContent = "Explore sphere";
+    }
+  }
+
+  function updateModeControls() {
+    if (!elements.modeMap || !elements.modeReadable) return;
+    const mapActive = state.mode === "map";
+    elements.modeMap.setAttribute("aria-pressed", String(mapActive));
+    elements.modeReadable.setAttribute("aria-pressed", String(!mapActive));
+    elements.modeMap.classList.toggle("is-active", mapActive);
+    elements.modeReadable.classList.toggle("is-active", !mapActive);
+    if (elements.rotationToggle) elements.rotationToggle.disabled = !mapActive;
+    if (elements.resetRotation) elements.resetRotation.disabled = !mapActive;
+  }
+
+  function setGraphMode(mode, historyMode) {
+    const nextMode = mode === "readable" ? "readable" : "map";
+    if (state.mode === nextMode) {
+      updateModeControls();
+      return;
+    }
+    state.mode = nextMode;
+    renderGraphStructure();
+    updateModeControls();
+    if (historyMode && !state.navigatingHistory) {
+      updateHistory(state.centerId, elements.input.value || "", historyMode);
     }
   }
 
@@ -1091,7 +1155,7 @@
   }
 
   function handleStagePointerDown(event) {
-    if (state.view !== "sphere") return;
+    if (state.mode !== "map") return;
     if (event.target.closest(".dr-sphere-node") || event.target.closest(".dr-sphere-edge-hit")) return;
 
     state.dragging = true;
@@ -1102,7 +1166,7 @@
   }
 
   function handleStagePointerMove(event) {
-    if (!state.dragging || state.view !== "sphere") return;
+    if (!state.dragging || state.mode !== "map") return;
 
     const deltaX = event.clientX - state.lastPointerX;
     const deltaY = event.clientY - state.lastPointerY;
@@ -1120,7 +1184,7 @@
 
   function animate(timestamp) {
     if (
-      state.view === "sphere"
+      state.mode === "map"
       && state.autoRotate
       && !state.dragging
       && state.nodeElements.size
@@ -1140,14 +1204,14 @@
   function bindEvents() {
     elements.form.addEventListener("submit", (event) => {
       event.preventDefault();
-      search(elements.input.value, false);
+      search(elements.input.value, false, { history: "push" });
     });
 
     elements.results.addEventListener("click", async (event) => {
       const target = event.target.closest("[data-sphere-node]");
       if (!target) return;
       elements.results.innerHTML = "";
-      await openCenter(target.dataset.sphereNode, target.dataset.preferredLabel || "", { resetTrail: true });
+      await openCenter(target.dataset.sphereNode, target.dataset.preferredLabel || "", { resetTrail: true, history: "push" });
     });
 
     elements.nodeLayer.addEventListener("click", async (event) => {
@@ -1161,7 +1225,7 @@
       if (!node) return;
       event.preventDefault();
       const item = state.nodes.get(node.dataset.nodeId);
-      await openCenter(node.dataset.nodeId, item ? displayLabel(item) : "", { resetTrail: false });
+      await openCenter(node.dataset.nodeId, item ? displayLabel(item) : "", { resetTrail: false, history: "push" });
     });
 
     elements.nodeLayer.addEventListener("keydown", async (event) => {
@@ -1171,7 +1235,7 @@
         event.preventDefault();
         if (event.shiftKey) {
           const item = state.nodes.get(node.dataset.nodeId);
-          await openCenter(node.dataset.nodeId, item ? displayLabel(item) : "", { resetTrail: false });
+          await openCenter(node.dataset.nodeId, item ? displayLabel(item) : "", { resetTrail: false, history: "push" });
         } else {
           await showDetails(node.dataset.nodeId);
         }
@@ -1199,14 +1263,14 @@
       const centerSelected = event.target.closest("[data-center-selected]");
       if (centerSelected && state.selectedId) {
         const item = state.nodes.get(state.selectedId);
-        await openCenter(state.selectedId, item ? displayLabel(item) : "", { resetTrail: false });
+        await openCenter(state.selectedId, item ? displayLabel(item) : "", { resetTrail: false, history: "push" });
         return;
       }
 
       const related = event.target.closest("[data-related-node]");
       if (related) {
         const item = state.nodes.get(related.dataset.relatedNode);
-        await openCenter(related.dataset.relatedNode, item ? displayLabel(item) : "", { resetTrail: false });
+        await openCenter(related.dataset.relatedNode, item ? displayLabel(item) : "", { resetTrail: false, history: "push" });
         return;
       }
 
@@ -1214,16 +1278,14 @@
       if (inspect) await showDetails(inspect.dataset.inspectNode);
     });
 
-    elements.viewSelect.addEventListener("change", () => {
-      state.view = elements.viewSelect.value === "flat" ? "flat" : "sphere";
-      renderGraphStructure();
-    });
+    elements.modeMap.addEventListener("click", () => setGraphMode("map", "push"));
+    elements.modeReadable.addEventListener("click", () => setGraphMode("readable", "push"));
 
     elements.depthSelect.addEventListener("change", async () => {
       state.depth = [1, 2, 3].includes(Number(elements.depthSelect.value)) ? Number(elements.depthSelect.value) : 2;
       if (state.centerId) {
         const item = state.nodes.get(state.centerId);
-        await openCenter(state.centerId, item ? displayLabel(item) : "", { resetTrail: false });
+        await openCenter(state.centerId, item ? displayLabel(item) : "", { resetTrail: false, history: null });
       }
     });
 
@@ -1262,7 +1324,7 @@
       if (!firstId) return;
       const item = state.nodes.get(firstId);
       state.trail = [];
-      await openCenter(firstId, item ? displayLabel(item) : state.trailLabels.get(firstId) || state.preferredLabels.get(firstId) || "", { resetTrail: true });
+      await openCenter(firstId, item ? displayLabel(item) : state.trailLabels.get(firstId) || state.preferredLabels.get(firstId) || "", { resetTrail: true, history: "push" });
     });
 
     elements.breadcrumbTrail.addEventListener("click", async (event) => {
@@ -1271,7 +1333,7 @@
       const index = Number(button.dataset.trailIndex);
       state.trail = state.trail.slice(0, index + 1);
       const item = state.nodes.get(button.dataset.nodeId);
-      await openCenter(button.dataset.nodeId, item ? displayLabel(item) : state.trailLabels.get(button.dataset.nodeId) || state.preferredLabels.get(button.dataset.nodeId) || "", { resetTrail: false });
+      await openCenter(button.dataset.nodeId, item ? displayLabel(item) : state.trailLabels.get(button.dataset.nodeId) || state.preferredLabels.get(button.dataset.nodeId) || "", { resetTrail: false, history: "push" });
     });
 
     elements.stage.addEventListener("pointerdown", handleStagePointerDown);
@@ -1280,6 +1342,25 @@
     elements.stage.addEventListener("pointercancel", endStageDrag);
     elements.stage.addEventListener("pointerleave", () => {
       if (!state.dragging) hideTooltip();
+    });
+
+    global.addEventListener("popstate", async () => {
+      state.navigatingHistory = true;
+      try {
+        const params = new URLSearchParams(global.location.search);
+        const nodeId = params.get("nodeId");
+        const query = params.get("q") || state.manifest.defaults.searchTerm || "knowledge";
+        state.mode = params.get("mode") === "readable" ? "readable" : "map";
+        updateModeControls();
+        elements.input.value = query;
+        if (nodeId) {
+          await openCenter(nodeId, query, { resetTrail: true, history: null });
+        } else {
+          await search(query, false, { history: null });
+        }
+      } finally {
+        state.navigatingHistory = false;
+      }
     });
   }
 
@@ -1299,7 +1380,8 @@
       title: byId("sphereGraphTitle"),
       meta: byId("sphereGraphMeta"),
       count: byId("dictionaryrootGraphCount"),
-      viewSelect: byId("sphereViewSelect"),
+      modeMap: byId("graphModeMap"),
+      modeReadable: byId("graphModeReadable"),
       depthSelect: byId("sphereDepthSelect"),
       edgeSelect: byId("sphereEdgeSelect"),
       lensSelect: byId("sphereLensSelect"),
@@ -1333,12 +1415,14 @@
     const params = new URLSearchParams(global.location.search);
     const nodeId = params.get("nodeId");
     const query = params.get("q") || state.manifest.defaults.searchTerm || "knowledge";
+    state.mode = params.get("mode") === "readable" ? "readable" : "map";
+    updateModeControls();
     elements.input.value = query;
 
     if (nodeId) {
-      await openCenter(nodeId, params.get("q") || "", { resetTrail: true });
+      await openCenter(nodeId, params.get("q") || "", { resetTrail: true, history: "replace" });
     } else {
-      await search(query, true);
+      await search(query, true, { history: "replace" });
     }
   }
 

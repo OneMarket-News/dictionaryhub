@@ -7,7 +7,9 @@
   <title>DictionaryRoot - Knowledge Sphere</title>
   <link rel="icon" href="assets/brand/dictionaryroot-mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/css/dictionaryroot-brand.css">
+  <link rel="stylesheet" href="assets/css/dictionaryroot-navigation.css">
   <link rel="stylesheet" href="assets/css/dictionaryroot-live.css">
+  <link rel="stylesheet" href="assets/css/dictionaryroot-hybrid-map.css">
 </head>
 <body class="dictionaryroot-live-page dictionaryroot-customer-page dictionaryroot-graph-page">
   <main id="main-content" class="dr-live-main dr-sphere-main">
@@ -15,7 +17,7 @@
       <div>
         <p class="dr-live-eyebrow">DictionaryRoot Customer #001</p>
         <h1 id="spherePageTitle">Explore the knowledge sphere.</h1>
-        <p>Choose an exact word sense, rotate its live semantic neighborhood, inspect the evidence behind each meaning, and recenter the sphere as your path develops.</p>
+        <p>Choose an exact word sense, explore its rotating semantic map or switch to a readable card layout, inspect the evidence behind each meaning, and recenter the graph as your path develops.</p>
       </div>
       <div class="dr-live-stat">
         <strong>Live</strong>
@@ -36,13 +38,13 @@
     <section class="dr-sphere-controls" aria-label="Knowledge sphere controls">
       <div class="dr-sphere-control-set dr-sphere-control-set-primary" role="group" aria-label="Primary graph controls">
         <strong class="dr-sphere-control-title">Explore</strong>
-        <label>
-          <span>View</span>
-          <select id="sphereViewSelect">
-            <option value="sphere" selected>Sphere view</option>
-            <option value="flat">Flat view</option>
-          </select>
-        </label>
+        <div class="dr-graph-mode-control" role="group" aria-label="Graph mode">
+          <span>Mode</span>
+          <div class="dr-graph-mode-buttons">
+            <button id="graphModeMap" class="dr-live-icon-button is-active" type="button" aria-pressed="true">Map Mode</button>
+            <button id="graphModeReadable" class="dr-live-icon-button" type="button" aria-pressed="false">Readable Mode</button>
+          </div>
+        </div>
         <label>
           <span>Depth</span>
           <select id="sphereDepthSelect">
@@ -106,7 +108,7 @@
             <span id="dictionaryrootGraphCount" class="dr-sphere-count">0 concepts · 0 relationships</span>
           </header>
 
-          <div id="dictionaryrootGraphStage" class="dr-sphere-stage sphere-mode">
+          <div id="dictionaryrootGraphStage" class="dr-sphere-stage map-mode sphere-mode">
             <div class="dr-sphere-shell" aria-hidden="true"></div>
             <svg id="dictionaryrootGraph" class="dr-sphere-svg" viewBox="0 0 100 100" preserveAspectRatio="none" role="group" aria-label="DictionaryRoot semantic knowledge sphere">
               <g id="dictionaryrootGraphEdges"></g>
@@ -156,6 +158,7 @@
 
   <script defer src="assets/js/dictionaryroot-api.js"></script>
   <script defer src="assets/js/dictionaryroot-brand.js"></script>
+  <script defer src="assets/js/dictionaryroot-navigation.js"></script>
   <script defer src="assets/js/dictionaryroot-graph.js"></script>
 </body>
 </html>
