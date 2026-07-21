@@ -14,7 +14,8 @@
     { key: "graph", label: "Knowledge Sphere", href: "graph-v2.html" },
     { key: "sources", label: "Sources", href: "sources-v2.html" },
     { key: "history", label: "History", href: "history-v2.html" },
-    { key: "coverage", label: "Coverage", href: "coverage-v2.html" }
+    { key: "coverage", label: "Coverage", href: "coverage-v2.html" },
+    { key: "editorial", label: "Editorial", href: "editorial-v2.html" }
   ];
 
   const PAGE_KEYS = {
@@ -23,7 +24,8 @@
     "graph-v2.html": "graph",
     "sources-v2.html": "sources",
     "history-v2.html": "history",
-    "coverage-v2.html": "coverage"
+    "coverage-v2.html": "coverage",
+    "editorial-v2.html": "editorial"
   };
 
   const state = {
@@ -73,7 +75,8 @@
     const page = currentPageKey(url);
     const sourceSearch = page === "sources" ? clean(params.get("q")) : "";
     const coverageSearch = page === "coverage" ? clean(params.get("q")) : "";
-    const meaning = clean(params.get("meaning")) || (page !== "sources" && page !== "coverage" ? clean(params.get("q")) : "");
+    const editorialSearch = page === "editorial" ? clean(params.get("q")) : "";
+    const meaning = clean(params.get("meaning")) || (page !== "sources" && page !== "coverage" && page !== "editorial" ? clean(params.get("q")) : "");
     return {
       page,
       meaning,
@@ -81,6 +84,11 @@
       sourceId: clean(params.get("source")),
       sourceSearch,
       coverageSearch,
+      editorialSearch,
+      editorialStatus: clean(params.get("reviewStatus")),
+      editorialCategory: clean(params.get("category")),
+      editorialPartOfSpeech: clean(params.get("pos")),
+      editorialSort: clean(params.get("editorialSort")),
       coverageFilter: clean(params.get("coverage")),
       coverageSource: clean(params.get("sourceCoverage")),
       coverageHistory: clean(params.get("historyCoverage")),
@@ -106,7 +114,7 @@
     const targetPage = PAGE_KEYS[file.toLowerCase()] || "";
     const context = Object.assign({}, readContext(), overrides || {});
     const params = new URLSearchParams();
-    const activeMeaning = context.meaning || context.coverageSearch;
+    const activeMeaning = context.meaning || context.coverageSearch || context.editorialSearch;
 
     if (targetPage === "home") {
       setOrDelete(params, "q", activeMeaning);
@@ -131,7 +139,7 @@
         setOrDelete(params, "density", context.density && context.density !== "comfortable" ? context.density : "");
       }
     } else if (targetPage === "coverage") {
-      setOrDelete(params, "q", context.coverageSearch || context.meaning);
+      setOrDelete(params, "q", context.coverageSearch || context.editorialSearch || context.meaning);
       setOrDelete(params, "nodeId", context.nodeId);
       if (context.preserveCoverageFilters) {
         setOrDelete(params, "coverage", context.coverageFilter && context.coverageFilter !== "all" ? context.coverageFilter : "");
@@ -140,6 +148,15 @@
         setOrDelete(params, "review", context.coverageReview && context.coverageReview !== "all" ? context.coverageReview : "");
         setOrDelete(params, "pos", context.coveragePartOfSpeech && context.coveragePartOfSpeech !== "all" ? context.coveragePartOfSpeech : "");
         setOrDelete(params, "coverageSort", context.coverageSort && context.coverageSort !== "gaps" ? context.coverageSort : "");
+      }
+    } else if (targetPage === "editorial") {
+      setOrDelete(params, "q", context.editorialSearch || context.coverageSearch || context.meaning);
+      setOrDelete(params, "nodeId", context.nodeId);
+      if (context.preserveEditorialFilters) {
+        setOrDelete(params, "reviewStatus", context.editorialStatus && context.editorialStatus !== "all" ? context.editorialStatus : "");
+        setOrDelete(params, "category", context.editorialCategory && context.editorialCategory !== "needs-review" ? context.editorialCategory : "");
+        setOrDelete(params, "pos", context.editorialPartOfSpeech && context.editorialPartOfSpeech !== "all" ? context.editorialPartOfSpeech : "");
+        setOrDelete(params, "editorialSort", context.editorialSort && context.editorialSort !== "priority" ? context.editorialSort : "");
       }
     }
 
@@ -155,7 +172,8 @@
     }
     return buildHref(item.href, {
       preserveSourceFilters: item.key === "sources",
-      preserveCoverageFilters: item.key === "coverage"
+      preserveCoverageFilters: item.key === "coverage",
+      preserveEditorialFilters: item.key === "editorial"
     });
   }
 
@@ -179,7 +197,7 @@
 
   function contextMarkup() {
     const context = readContext();
-    const label = context.meaning || context.coverageSearch || context.sourceId;
+    const label = context.meaning || context.coverageSearch || context.editorialSearch || context.sourceId;
     return `<span class="dictionaryroot-unified-context" data-dr-context${label ? "" : " hidden"}><span>Context</span><strong title="${escapeHtml(label)}">${escapeHtml(label)}</strong></span>`;
   }
 
@@ -277,6 +295,7 @@
     const graphHref = buildHref("graph-v2.html", { meaning: label || query, nodeId, sourceId });
     const sourceHref = buildHref("sources-v2.html", { meaning: label || query, nodeId, sourceId });
     const historyHref = buildHref("history-v2.html", { meaning: label || query, nodeId, sourceId, revisionId: "" });
+    const editorialHref = buildHref("editorial-v2.html", { meaning: label || query, nodeId, sourceId });
     const primary = context.page === "graph" ? "graph" : context.page === "history" ? "history" : "concept";
 
     return `<div class="dictionaryroot-global-result-actions">
@@ -284,6 +303,7 @@
       <a href="${escapeHtml(graphHref)}"${primary === "graph" ? ' data-primary="true"' : ""}>Open sphere</a>
       <a href="${escapeHtml(sourceHref)}">Trace sources</a>
       <a href="${escapeHtml(historyHref)}"${primary === "history" ? ' data-primary="true"' : ""}>View history</a>
+      <a href="${escapeHtml(editorialHref)}">Review meaning</a>
     </div>`;
   }
 
@@ -521,7 +541,7 @@
     const header = createHeader(state.brand);
     cacheElements(header);
     const context = readContext();
-    if (context.meaning) elements.input.value = context.meaning;
+    if (context.meaning || context.editorialSearch || context.coverageSearch) elements.input.value = context.meaning || context.editorialSearch || context.coverageSearch;
     installHistoryEvents();
     bindEvents();
     refreshContextLinks(document);

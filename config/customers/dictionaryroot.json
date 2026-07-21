@@ -28,12 +28,19 @@
     "conceptExplorer": true,
     "knowledgeGraph": true,
     "sources": true,
-    "advancedDetails": true
+    "advancedDetails": true,
+    "editorialReview": true
   },
   "dynamicExpansion": {
     "defaultDepth": 1,
     "maximumDepth": 2,
     "maximumVisibleNodes": 72,
     "maximumBranches": 8
+  },
+  "editorial": {
+    "defaultCategory": "needs-review",
+    "defaultStatus": "all",
+    "pageSize": 20,
+    "reviewerLabel": "Local reviewer"
   }
 }

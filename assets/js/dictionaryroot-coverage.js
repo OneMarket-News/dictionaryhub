@@ -303,6 +303,7 @@
         <a href="${escapeHtml(navHref("graph-v2.html", item.lemma, nodeId))}">Sphere</a>
         <a href="${escapeHtml(navHref("sources-v2.html", item.lemma, nodeId))}">Sources</a>
         <a href="${escapeHtml(navHref("history-v2.html", item.lemma, nodeId))}">History</a>
+        <a href="${escapeHtml(navHref("editorial-v2.html", item.lemma, nodeId))}">Review</a>
       </div>
     </article>`;
   }

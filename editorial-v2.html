@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Review DictionaryRoot meanings, record editorial decisions, and promote approved concepts into the curated knowledge graph.">
+  <title>DictionaryRoot — Editorial Review</title>
+  <link rel="icon" href="assets/brand/dictionaryroot-mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/dictionaryroot-brand.css">
+  <link rel="stylesheet" href="assets/css/dictionaryroot-navigation.css">
+  <link rel="stylesheet" href="assets/css/dictionaryroot-live.css">
+  <link rel="stylesheet" href="assets/css/dictionaryroot-editorial.css">
+</head>
+<body class="dictionaryroot-live-page dictionaryroot-customer-page dictionaryroot-editorial-page">
+  <main id="main-content" class="dr-editorial-main">
+    <section class="dr-editorial-hero" aria-labelledby="dictionaryrootEditorialTitle">
+      <div>
+        <p class="dr-live-eyebrow">Editorial and Review Workflow v1</p>
+        <h1 id="dictionaryrootEditorialTitle">Turn visible knowledge gaps into reviewable decisions.</h1>
+        <p>Inspect one exact meaning at a time, record a status, leave reviewer notes and annotations, preserve an audit trail, and promote approved lexical-only meanings into the curated Knowledge Sphere.</p>
+      </div>
+      <aside class="dr-editorial-service-card">
+        <span id="dictionaryrootEditorialServiceState" data-state="loading">Checking SourceRoot</span>
+        <strong>No authentication in v1</strong>
+        <small>This local workflow establishes the review model before users and permissions are added.</small>
+      </aside>
+    </section>
+
+    <section class="dr-editorial-summary" aria-labelledby="dictionaryrootEditorialSummaryTitle">
+      <header class="dr-editorial-section-header">
+        <div><p class="dr-editorial-kicker">Live editorial snapshot</p><h2 id="dictionaryrootEditorialSummaryTitle">Review work at a glance</h2></div>
+        <button id="dictionaryrootEditorialRefresh" class="dr-live-button-secondary" type="button">Refresh</button>
+      </header>
+      <div id="dictionaryrootEditorialMetrics" class="dr-editorial-metrics" aria-live="polite">
+        <div class="dr-live-empty"><strong>Loading the live editorial registry...</strong>No fallback review records are displayed.</div>
+      </div>
+    </section>
+
+    <section class="dr-editorial-workspace" aria-label="Editorial queue and selected meaning">
+      <article class="dr-editorial-queue-panel">
+        <header class="dr-editorial-section-header">
+          <div><p class="dr-editorial-kicker">Meaning-level queue</p><h2>Choose work the system can explain</h2></div>
+          <span id="dictionaryrootEditorialResultCount" class="dr-live-chip" data-tone="accent">Loading...</span>
+        </header>
+        <form id="dictionaryrootEditorialFilters" class="dr-editorial-filters" aria-label="Filter editorial queue">
+          <label class="dr-editorial-search"><span>Search meanings</span><input id="dictionaryrootEditorialSearch" type="search" autocomplete="off" spellcheck="false" placeholder="Search value, bank, light..."></label>
+          <label><span>Queue</span><select id="dictionaryrootEditorialCategory"><option value="needs-review">Needs review</option><option value="lexical-only">Lexical-only</option><option value="promotion-candidates">Promotion candidates</option><option value="missing-history">Missing history</option><option value="source-issues">Source issues</option><option value="all">All meanings</option></select></label>
+          <label><span>Status</span><select id="dictionaryrootEditorialStatusFilter"><option value="all">All statuses</option><option value="unreviewed">Unreviewed</option><option value="in_review">In review</option><option value="approved">Approved</option><option value="flagged">Flagged</option><option value="rejected">Rejected</option></select></label>
+          <label><span>Part of speech</span><select id="dictionaryrootEditorialPos"><option value="all">All</option><option value="noun">Noun</option><option value="verb">Verb</option><option value="adjective">Adjective</option><option value="adverb">Adverb</option></select></label>
+          <label><span>Sort</span><select id="dictionaryrootEditorialSort"><option value="priority">Highest priority</option><option value="updated">Recently updated</option><option value="lemma">Meaning A-Z</option></select></label>
+          <button class="dr-live-button" type="submit">Apply</button>
+        </form>
+        <p id="dictionaryrootEditorialQueueStatus" class="dr-live-status" role="status" aria-live="polite">Loading live review work.</p>
+        <div id="dictionaryrootEditorialQueue" class="dr-editorial-queue" aria-live="polite"></div>
+        <nav class="dr-editorial-pagination" aria-label="Editorial queue pages"><button id="dictionaryrootEditorialPrevious" class="dr-live-button-secondary" type="button">Previous</button><span id="dictionaryrootEditorialPage">Page 1</span><button id="dictionaryrootEditorialNext" class="dr-live-button-secondary" type="button">Next</button></nav>
+      </article>
+
+      <aside class="dr-editorial-detail-panel" aria-labelledby="dictionaryrootEditorialDetailTitle">
+        <div id="dictionaryrootEditorialEmpty" class="dr-editorial-empty"><strong>Select a meaning to review.</strong><p>The detail panel will show the exact definition, coverage state, review form, audit history, and promotion controls.</p></div>
+        <div id="dictionaryrootEditorialDetail" hidden>
+          <header class="dr-editorial-detail-header"><div><p class="dr-editorial-kicker">Selected exact meaning</p><h2 id="dictionaryrootEditorialDetailTitle">Meaning</h2></div><span id="dictionaryrootEditorialDetailStatus" class="dr-live-chip">Unreviewed</span></header>
+          <p id="dictionaryrootEditorialDefinition" class="dr-editorial-definition"></p>
+          <div id="dictionaryrootEditorialBadges" class="dr-editorial-badges"></div>
+          <nav id="dictionaryrootEditorialContextLinks" class="dr-editorial-context-links" aria-label="Open selected meaning in other experiences"></nav>
+
+          <form id="dictionaryrootEditorialReviewForm" class="dr-editorial-review-form">
+            <label><span>Review status</span><select id="dictionaryrootEditorialReviewStatus"><option value="unreviewed">Unreviewed</option><option value="in_review">In review</option><option value="approved">Approved</option><option value="flagged">Flagged</option><option value="rejected">Rejected</option></select></label>
+            <label><span>Reviewer</span><input id="dictionaryrootEditorialReviewer" type="text" maxlength="120" placeholder="Local reviewer"></label>
+            <label class="dr-editorial-checkbox"><input id="dictionaryrootEditorialRecommend" type="checkbox"><span>Recommend this lexical-only meaning for graph promotion</span></label>
+            <label><span>Reviewer notes</span><textarea id="dictionaryrootEditorialNotes" rows="4" maxlength="5000" placeholder="Decision rationale, questions, or follow-up work..."></textarea></label>
+            <label><span>Editorial annotation</span><textarea id="dictionaryrootEditorialAnnotation" rows="4" maxlength="5000" placeholder="Clarify ambiguity, terminology, source concerns, or relationship context..."></textarea></label>
+            <div class="dr-editorial-form-actions"><button id="dictionaryrootEditorialSave" class="dr-live-button" type="submit">Save review</button><button id="dictionaryrootEditorialPromote" class="dr-live-button-secondary" type="button">Promote approved meaning</button></div>
+            <p id="dictionaryrootEditorialFormStatus" class="dr-live-status" role="status" aria-live="polite"></p>
+          </form>
+
+          <section class="dr-editorial-history" aria-labelledby="dictionaryrootEditorialHistoryTitle"><header><p class="dr-editorial-kicker">Audit trail</p><h3 id="dictionaryrootEditorialHistoryTitle">Review history</h3></header><div id="dictionaryrootEditorialEvents"></div></section>
+        </div>
+      </aside>
+    </section>
+  </main>
+  <footer class="dr-live-footer">Editorial records come from the live SourceRoot database. Promotions require an approved review and create a concept revision; no fallback decisions are displayed.</footer>
+  <script defer src="assets/js/dictionaryroot-api.js"></script>
+  <script defer src="assets/js/dictionaryroot-brand.js"></script>
+  <script defer src="assets/js/dictionaryroot-navigation.js"></script>
+  <script defer src="assets/js/dictionaryroot-editorial.js"></script>
+</body>
+</html>

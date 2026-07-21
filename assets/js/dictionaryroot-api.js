@@ -353,6 +353,40 @@
       }, normalizeParams(params)))}`);
     }
 
+    editorialSummary(params) {
+      return this.request(`/dictionaryroot/editorial/summary${buildQuery(Object.assign({
+        bundleId: this.manifest.bundleId
+      }, normalizeParams(params)))}`);
+    }
+
+    editorialQueue(params) {
+      return this.request(`/dictionaryroot/editorial/queue${buildQuery(Object.assign({
+        bundleId: this.manifest.bundleId,
+        page: 1,
+        limit: 20
+      }, normalizeParams(params)))}`);
+    }
+
+    editorialReview(nodeId) {
+      return this.request(`/dictionaryroot/editorial/reviews/${encodeURIComponent(nodeId)}`);
+    }
+
+    saveEditorialReview(nodeId, review, params) {
+      return this.request(`/dictionaryroot/editorial/reviews/${encodeURIComponent(nodeId)}${buildQuery(normalizeParams(params))}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(review || {})
+      });
+    }
+
+    promoteEditorialMeaning(nodeId, promotion, params) {
+      return this.request(`/dictionaryroot/editorial/reviews/${encodeURIComponent(nodeId)}/promote${buildQuery(normalizeParams(params))}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(promotion || {})
+      });
+    }
+
     source(sourceId) {
       return this.request(`/sources/${encodeURIComponent(sourceId)}`);
     }

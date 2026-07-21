@@ -9,6 +9,7 @@ import { requestIdMiddleware } from "./lib/request-id.js";
 import { assertionsRouter } from "./routes/assertions.js";
 import { bundlesRouter } from "./routes/bundles.js";
 import { edgesRouter } from "./routes/edges.js";
+import { editorialRouter } from "./routes/editorial.js";
 import { healthRouter } from "./routes/health.js";
 import { importRouter } from "./routes/import.js";
 import { lexiconRouter } from "./routes/lexicon.js";
@@ -71,6 +72,7 @@ export function createApp(options: CreateAppOptions = {}) {
   app.use("/api/v1", validateRouter);
   app.use("/api/v1/import", importRouter);
   app.use("/api/v1/dictionaryroot/lexicon", lexiconRouter);
+  app.use("/api/v1/dictionaryroot/editorial", editorialRouter);
   app.use("/api/v1/search", searchRouter);
   app.use("/api/v1/bundles", bundlesRouter);
   app.use("/api/v1/nodes", nodesRouter);

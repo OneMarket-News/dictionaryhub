@@ -116,10 +116,10 @@ if ($MissingFiles.Count -gt 0) {
 }
 
 $ExpectedCommittedHashes = [ordered]@{
-    "assets\css\dictionaryroot-brand.css" = "263c669ec5861cfb1bbd8317e4e7ed66b23094b6896d9f1e8024e592c7c7295a"
-    "assets\css\dictionaryroot-live.css" = "7b2fb78ba619f5a5b436a29532f74e5b08d7e1e0ec092a9b63c354f346ee68d2"
-    "assets\js\dictionaryroot-api.js" = "2798c219026db3cb1af59ee0e2c6625ab8f601318615ce0517db5574cc51dc7b"
-    "config\customers\dictionaryroot.json" = "510017d5141a71ab87695cafd14cf15e5bad433595334f2298c245dadc0627d2"
+    "assets\css\dictionaryroot-brand.css" = "85879488addebc2fb69541fdb644988c0672918cc83a3c38bfe92a2c025f4fc3"
+    "assets\css\dictionaryroot-live.css" = "50ad8ea2e668a82df94df03c244d734240c6f2a530d91d773a2d75c9f6c7f4c0"
+    "assets\js\dictionaryroot-api.js" = "998917da024348bdc1abb888f87adc96cb73d2312f9bfb02e12feabf4b03cddc"
+    "config\customers\dictionaryroot.json" = "a99cb45dccb2d38762e750974974e43a7531e24c15d88546220747f62f2c06bc"
     "explore.html" = "16f8abaa616145121619862314fe8002d25cfa9b10f6c384249d0a15f5430c80"
 }
 

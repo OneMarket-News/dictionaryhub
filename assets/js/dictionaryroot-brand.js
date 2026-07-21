@@ -13,7 +13,8 @@
       { label: "Knowledge Sphere", href: "graph-v2.html" },
       { label: "Sources", href: "sources-v2.html" },
       { label: "History", href: "history-v2.html" },
-      { label: "Coverage", href: "coverage-v2.html" }
+      { label: "Coverage", href: "coverage-v2.html" },
+      { label: "Editorial", href: "editorial-v2.html" }
     ]
   };
 
@@ -42,6 +43,11 @@
       title: "DictionaryRoot — Coverage and Data Quality",
       heading: "Coverage and Data Quality",
       intro: "See which meanings are graph-connected, source-backed, reviewed, revision-tracked, or still waiting for deeper integration."
+    },
+    "editorial-v2.html": {
+      title: "DictionaryRoot — Editorial Review",
+      heading: "Editorial Review",
+      intro: "Review exact meanings, record decisions, annotate issues, and promote approved concepts into the curated graph."
     },
     "dictionaryroot-connection.html": {
       title: "DictionaryRoot — Data Status",

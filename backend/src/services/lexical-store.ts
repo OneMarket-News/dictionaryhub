@@ -756,11 +756,19 @@ export async function getDictionaryRootCoverageDashboard(
         EXISTS(
           SELECT 1 FROM assertions a WHERE a.node_id = l.node_id
         ) AS assertion_backed,
-        EXISTS(
-          SELECT 1
-          FROM assertions a
-          WHERE a.node_id = l.node_id
-            AND LOWER(COALESCE(a.review_status, '')) = 'reviewed'
+        (
+          EXISTS(
+            SELECT 1
+            FROM assertions a
+            WHERE a.node_id = l.node_id
+              AND LOWER(COALESCE(a.review_status, '')) = 'reviewed'
+          )
+          OR EXISTS(
+            SELECT 1
+            FROM dictionaryroot_editorial_reviews er
+            WHERE er.node_id = l.node_id
+              AND er.review_status = 'approved'
+          )
         ) AS reviewed,
         EXISTS(
           SELECT 1
@@ -950,6 +958,11 @@ export async function listDictionaryRootLemmaCoverage(
         FROM assertions
         WHERE ($1::TEXT IS NULL OR bundle_id = $1)
           AND LOWER(COALESCE(review_status, '')) = 'reviewed'
+        UNION
+        SELECT DISTINCT node_id
+        FROM dictionaryroot_editorial_reviews
+        WHERE ($1::TEXT IS NULL OR bundle_id = $1)
+          AND review_status = 'approved'
       ),
       revised_nodes AS (
         SELECT DISTINCT object_id AS node_id
