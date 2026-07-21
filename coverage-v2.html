@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Inspect DictionaryRoot lexical, graph, source, review, and revision coverage from the live SourceRoot registry.">
+  <title>DictionaryRoot — Coverage and Data Quality</title>
+  <link rel="icon" href="assets/brand/dictionaryroot-mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/dictionaryroot-brand.css">
+  <link rel="stylesheet" href="assets/css/dictionaryroot-navigation.css">
+  <link rel="stylesheet" href="assets/css/dictionaryroot-live.css">
+  <link rel="stylesheet" href="assets/css/dictionaryroot-coverage.css">
+</head>
+<body class="dictionaryroot-live-page dictionaryroot-customer-page dictionaryroot-coverage-page">
+  <main id="main-content" class="dr-coverage-main">
+    <section class="dr-coverage-hero" aria-labelledby="dictionaryrootCoverageTitle">
+      <div>
+        <p class="dr-live-eyebrow">Coverage and Data Quality</p>
+        <h1 id="dictionaryrootCoverageTitle">See what DictionaryRoot knows—and what still needs integration.</h1>
+        <p>Measure complete lexical coverage against the bounded knowledge graph, source registry, reviewed assertions, and concept-specific revision history. Every number comes from the live SourceRoot database.</p>
+      </div>
+      <div class="dr-coverage-service-card">
+        <span id="dictionaryrootCoverageServiceState" class="dr-coverage-service-state" data-state="loading">Checking SourceRoot</span>
+        <strong id="dictionaryrootCoverageDataset">Live dataset</strong>
+        <small id="dictionaryrootCoverageUpdated">Waiting for coverage diagnostics…</small>
+      </div>
+    </section>
+
+    <section class="dr-coverage-summary" aria-labelledby="dictionaryrootCoverageSummaryTitle">
+      <header class="dr-coverage-section-header">
+        <div>
+          <p class="dr-coverage-kicker">System-wide snapshot</p>
+          <h2 id="dictionaryrootCoverageSummaryTitle">Coverage at a glance</h2>
+        </div>
+        <button id="dictionaryrootCoverageRefresh" class="dr-live-button-secondary" type="button">Refresh live data</button>
+      </header>
+      <div id="dictionaryrootCoverageMetrics" class="dr-coverage-metric-grid" aria-live="polite">
+        <div class="dr-coverage-loading"><strong>Loading live coverage…</strong><span>No fallback counts are displayed.</span></div>
+      </div>
+    </section>
+
+    <section class="dr-coverage-two-column" aria-label="Coverage composition and quality queue">
+      <article class="dr-coverage-panel">
+        <header class="dr-coverage-panel-header">
+          <div>
+            <p class="dr-coverage-kicker">Coverage layers</p>
+            <h2>From complete lexicon to integrated knowledge</h2>
+          </div>
+        </header>
+        <div id="dictionaryrootCoverageBars" class="dr-coverage-bars" aria-live="polite">
+          <div class="dr-live-empty"><strong>Loading coverage layers…</strong>The dashboard is querying the live SourceRoot registry.</div>
+        </div>
+      </article>
+
+      <article class="dr-coverage-panel">
+        <header class="dr-coverage-panel-header">
+          <div>
+            <p class="dr-coverage-kicker">Quality queue</p>
+            <h2>Work still visible to the system</h2>
+          </div>
+        </header>
+        <div id="dictionaryrootCoverageQueue" class="dr-coverage-queue" aria-live="polite">
+          <div class="dr-live-empty"><strong>Building the quality queue…</strong>No missing-data state will be invented.</div>
+        </div>
+      </article>
+    </section>
+
+    <section class="dr-coverage-panel dr-coverage-pos-panel" aria-labelledby="dictionaryrootCoveragePosTitle">
+      <header class="dr-coverage-panel-header">
+        <div>
+          <p class="dr-coverage-kicker">Part-of-speech coverage</p>
+          <h2 id="dictionaryrootCoveragePosTitle">Where integration is strongest</h2>
+        </div>
+      </header>
+      <div id="dictionaryrootCoveragePos" class="dr-coverage-pos" aria-live="polite">
+        <div class="dr-live-empty"><strong>Loading part-of-speech coverage…</strong></div>
+      </div>
+    </section>
+
+    <section class="dr-coverage-panel dr-coverage-explorer" aria-labelledby="dictionaryrootCoverageExplorerTitle">
+      <header class="dr-coverage-panel-header dr-coverage-explorer-heading">
+        <div>
+          <p class="dr-coverage-kicker">Lemma explorer</p>
+          <h2 id="dictionaryrootCoverageExplorerTitle">Find words with gaps, partial integration, or complete coverage</h2>
+        </div>
+        <span id="dictionaryrootCoverageResultCount" class="dr-live-chip" data-tone="accent">Loading…</span>
+      </header>
+
+      <form id="dictionaryrootCoverageFilterForm" class="dr-coverage-filter-form" aria-label="Filter DictionaryRoot coverage">
+        <label class="dr-coverage-search-field">
+          <span>Search lemmas</span>
+          <input id="dictionaryrootCoverageSearch" type="search" name="q" autocomplete="off" spellcheck="false" placeholder="Search value, bank, light…">
+        </label>
+        <label>
+          <span>Part of speech</span>
+          <select id="dictionaryrootCoveragePosFilter" name="pos">
+            <option value="all">All parts of speech</option>
+            <option value="noun">Noun</option>
+            <option value="verb">Verb</option>
+            <option value="adjective">Adjective</option>
+            <option value="adverb">Adverb</option>
+          </select>
+        </label>
+        <label>
+          <span>Graph coverage</span>
+          <select id="dictionaryrootCoverageGraphFilter" name="coverage">
+            <option value="all">All coverage states</option>
+            <option value="incomplete">Any graph gap</option>
+            <option value="partial">Partially graph-covered</option>
+            <option value="lexical-only">Lexical-only words</option>
+            <option value="complete">Fully graph-covered</option>
+          </select>
+        </label>
+        <label>
+          <span>Source coverage</span>
+          <select id="dictionaryrootCoverageSourceFilter" name="sourceCoverage">
+            <option value="all">All source states</option>
+            <option value="source-backed">Fully source-backed</option>
+            <option value="unsupported">Contains source gaps</option>
+          </select>
+        </label>
+        <label>
+          <span>Review status</span>
+          <select id="dictionaryrootCoverageReviewFilter" name="review">
+            <option value="all">All review states</option>
+            <option value="reviewed">Graph senses reviewed</option>
+            <option value="needs-review">Needs graph review</option>
+          </select>
+        </label>
+        <label>
+          <span>Concept history</span>
+          <select id="dictionaryrootCoverageHistoryFilter" name="historyCoverage">
+            <option value="all">All history states</option>
+            <option value="with-history">Has concept revision</option>
+            <option value="no-history">No concept revision</option>
+          </select>
+        </label>
+        <label>
+          <span>Sort</span>
+          <select id="dictionaryrootCoverageSort" name="coverageSort">
+            <option value="gaps">Largest graph gaps</option>
+            <option value="coverage">Highest graph coverage</option>
+            <option value="senses">Most exact senses</option>
+            <option value="lemma">Lemma A–Z</option>
+          </select>
+        </label>
+        <button class="dr-live-button" type="submit">Apply filters</button>
+      </form>
+
+      <p id="dictionaryrootCoverageStatus" class="dr-live-status" role="status" aria-live="polite">Loading the live lemma coverage registry.</p>
+      <div id="dictionaryrootCoverageResults" class="dr-coverage-results" aria-live="polite"></div>
+      <nav class="dr-coverage-pagination" aria-label="Coverage results pages">
+        <button id="dictionaryrootCoveragePrevious" class="dr-live-button-secondary" type="button">Previous</button>
+        <span id="dictionaryrootCoveragePageLabel">Page 1</span>
+        <button id="dictionaryrootCoverageNext" class="dr-live-button-secondary" type="button">Next</button>
+      </nav>
+    </section>
+  </main>
+
+  <footer class="dr-live-footer">Coverage diagnostics are calculated from the live Open English WordNet 2025 lexical index and SourceRoot registries. No fallback counts or quality records are displayed.</footer>
+
+  <script defer src="assets/js/dictionaryroot-api.js"></script>
+  <script defer src="assets/js/dictionaryroot-brand.js"></script>
+  <script defer src="assets/js/dictionaryroot-navigation.js"></script>
+  <script defer src="assets/js/dictionaryroot-coverage.js"></script>
+</body>
+</html>

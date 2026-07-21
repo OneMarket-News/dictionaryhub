@@ -12,7 +12,8 @@
       { label: "Concept", href: "concept-v2.html" },
       { label: "Knowledge Sphere", href: "graph-v2.html" },
       { label: "Sources", href: "sources-v2.html" },
-      { label: "History", href: "history-v2.html" }
+      { label: "History", href: "history-v2.html" },
+      { label: "Coverage", href: "coverage-v2.html" }
     ]
   };
 
@@ -36,6 +37,11 @@
       title: "DictionaryRoot — Sources",
       heading: "Sources & Attribution",
       intro: "See where DictionaryRoot’s lexical information comes from and how each source supports the knowledge graph."
+    },
+    "coverage-v2.html": {
+      title: "DictionaryRoot — Coverage and Data Quality",
+      heading: "Coverage and Data Quality",
+      intro: "See which meanings are graph-connected, source-backed, reviewed, revision-tracked, or still waiting for deeper integration."
     },
     "dictionaryroot-connection.html": {
       title: "DictionaryRoot — Data Status",

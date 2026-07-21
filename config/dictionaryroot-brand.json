@@ -26,6 +26,10 @@
     {
       "label": "History",
       "href": "history-v2.html"
+    },
+    {
+      "label": "Coverage",
+      "href": "coverage-v2.html"
     }
   ]
 }

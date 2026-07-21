@@ -13,7 +13,8 @@
     { key: "concept", label: "Concept", href: "concept-v2.html" },
     { key: "graph", label: "Knowledge Sphere", href: "graph-v2.html" },
     { key: "sources", label: "Sources", href: "sources-v2.html" },
-    { key: "history", label: "History", href: "history-v2.html" }
+    { key: "history", label: "History", href: "history-v2.html" },
+    { key: "coverage", label: "Coverage", href: "coverage-v2.html" }
   ];
 
   const PAGE_KEYS = {
@@ -21,7 +22,8 @@
     "concept-v2.html": "concept",
     "graph-v2.html": "graph",
     "sources-v2.html": "sources",
-    "history-v2.html": "history"
+    "history-v2.html": "history",
+    "coverage-v2.html": "coverage"
   };
 
   const state = {
@@ -70,13 +72,21 @@
     const params = url.searchParams;
     const page = currentPageKey(url);
     const sourceSearch = page === "sources" ? clean(params.get("q")) : "";
-    const meaning = clean(params.get("meaning")) || (page !== "sources" ? clean(params.get("q")) : "");
+    const coverageSearch = page === "coverage" ? clean(params.get("q")) : "";
+    const meaning = clean(params.get("meaning")) || (page !== "sources" && page !== "coverage" ? clean(params.get("q")) : "");
     return {
       page,
       meaning,
       nodeId: clean(params.get("nodeId")) || clean(params.get("id")) || clean(params.get("center")),
       sourceId: clean(params.get("source")),
       sourceSearch,
+      coverageSearch,
+      coverageFilter: clean(params.get("coverage")),
+      coverageSource: clean(params.get("sourceCoverage")),
+      coverageHistory: clean(params.get("historyCoverage")),
+      coverageReview: clean(params.get("review")),
+      coveragePartOfSpeech: clean(params.get("pos")),
+      coverageSort: clean(params.get("coverageSort")),
       sourceType: clean(params.get("type")),
       sort: clean(params.get("sort")),
       density: clean(params.get("density")),
@@ -96,28 +106,40 @@
     const targetPage = PAGE_KEYS[file.toLowerCase()] || "";
     const context = Object.assign({}, readContext(), overrides || {});
     const params = new URLSearchParams();
+    const activeMeaning = context.meaning || context.coverageSearch;
 
     if (targetPage === "home") {
-      setOrDelete(params, "q", context.meaning);
+      setOrDelete(params, "q", activeMeaning);
     } else if (targetPage === "concept" || targetPage === "graph") {
-      setOrDelete(params, "q", context.meaning);
+      setOrDelete(params, "q", activeMeaning);
       setOrDelete(params, "nodeId", context.nodeId);
       setOrDelete(params, "source", context.sourceId);
     } else if (targetPage === "history") {
-      setOrDelete(params, "q", context.meaning);
+      setOrDelete(params, "q", activeMeaning);
       setOrDelete(params, "nodeId", context.nodeId);
       setOrDelete(params, "source", context.sourceId);
       setOrDelete(params, "revision", context.revisionId);
       setOrDelete(params, "status", context.historyStatus && context.historyStatus !== "all" ? context.historyStatus : "");
     } else if (targetPage === "sources") {
       setOrDelete(params, "source", context.sourceId);
-      setOrDelete(params, "meaning", context.meaning);
+      setOrDelete(params, "meaning", activeMeaning);
       setOrDelete(params, "nodeId", context.nodeId);
       if (context.preserveSourceFilters) {
         setOrDelete(params, "q", context.sourceSearch);
         setOrDelete(params, "type", context.sourceType && context.sourceType !== "all" ? context.sourceType : "");
         setOrDelete(params, "sort", context.sort && context.sort !== "usage" ? context.sort : "");
         setOrDelete(params, "density", context.density && context.density !== "comfortable" ? context.density : "");
+      }
+    } else if (targetPage === "coverage") {
+      setOrDelete(params, "q", context.coverageSearch || context.meaning);
+      setOrDelete(params, "nodeId", context.nodeId);
+      if (context.preserveCoverageFilters) {
+        setOrDelete(params, "coverage", context.coverageFilter && context.coverageFilter !== "all" ? context.coverageFilter : "");
+        setOrDelete(params, "sourceCoverage", context.coverageSource && context.coverageSource !== "all" ? context.coverageSource : "");
+        setOrDelete(params, "historyCoverage", context.coverageHistory && context.coverageHistory !== "all" ? context.coverageHistory : "");
+        setOrDelete(params, "review", context.coverageReview && context.coverageReview !== "all" ? context.coverageReview : "");
+        setOrDelete(params, "pos", context.coveragePartOfSpeech && context.coveragePartOfSpeech !== "all" ? context.coveragePartOfSpeech : "");
+        setOrDelete(params, "coverageSort", context.coverageSort && context.coverageSort !== "gaps" ? context.coverageSort : "");
       }
     }
 
@@ -131,7 +153,10 @@
       const file = currentFile();
       return `${file}${global.location.search || ""}${global.location.hash || ""}`;
     }
-    return buildHref(item.href, { preserveSourceFilters: item.key === "sources" });
+    return buildHref(item.href, {
+      preserveSourceFilters: item.key === "sources",
+      preserveCoverageFilters: item.key === "coverage"
+    });
   }
 
   function brandMarkup(brand) {
@@ -154,7 +179,7 @@
 
   function contextMarkup() {
     const context = readContext();
-    const label = context.meaning || context.sourceId;
+    const label = context.meaning || context.coverageSearch || context.sourceId;
     return `<span class="dictionaryroot-unified-context" data-dr-context${label ? "" : " hidden"}><span>Context</span><strong title="${escapeHtml(label)}">${escapeHtml(label)}</strong></span>`;
   }
 

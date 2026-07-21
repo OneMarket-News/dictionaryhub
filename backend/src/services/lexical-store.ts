@@ -545,3 +545,541 @@ export async function getDictionaryRootLexicalEdgesByNodeId(
     throw error;
   }
 }
+
+export interface DictionaryRootCoveragePartOfSpeech {
+  partOfSpeech: string;
+  senseCount: number;
+  graphCoveredSenseCount: number;
+  lexicalOnlySenseCount: number;
+  sourceBackedSenseCount: number;
+  unsupportedSenseCount: number;
+  assertionBackedSenseCount: number;
+  reviewedSenseCount: number;
+  reviewRequiredSenseCount: number;
+  conceptRevisionCoveredSenseCount: number;
+  conceptRevisionGapSenseCount: number;
+}
+
+export interface DictionaryRootCoverageDashboard {
+  available: boolean;
+  datasetId: string | null;
+  bundleId: string | null;
+  sourceId: string | null;
+  sourceName: string | null;
+  sourceVersion: string | null;
+  sourceLicense: string | null;
+  importedAt: string | null;
+  updatedAt: string | null;
+  synsetCount: number;
+  lemmaCount: number;
+  relationCount: number;
+  graphCoveredSenseCount: number;
+  lexicalOnlySenseCount: number;
+  graphCoveragePercent: number;
+  sourceBackedSenseCount: number;
+  unsupportedSenseCount: number;
+  sourceCoveragePercent: number;
+  assertionBackedSenseCount: number;
+  assertionGapSenseCount: number;
+  reviewedSenseCount: number;
+  reviewRequiredSenseCount: number;
+  conceptRevisionCoveredSenseCount: number;
+  conceptRevisionGapSenseCount: number;
+  conceptRevisionCoveragePercent: number;
+  datasetRevisionCount: number;
+  partOfSpeech: DictionaryRootCoveragePartOfSpeech[];
+}
+
+export type DictionaryRootLemmaCoverageFilter =
+  | "all"
+  | "complete"
+  | "incomplete"
+  | "partial"
+  | "lexical-only";
+
+export type DictionaryRootSourceCoverageFilter = "all" | "source-backed" | "unsupported";
+export type DictionaryRootHistoryCoverageFilter = "all" | "with-history" | "no-history";
+export type DictionaryRootReviewCoverageFilter = "all" | "reviewed" | "needs-review";
+export type DictionaryRootLemmaCoverageSort = "gaps" | "coverage" | "senses" | "lemma";
+
+export interface ListDictionaryRootLemmaCoverageOptions {
+  page: number;
+  limit: number;
+  bundleId?: string | undefined;
+  query?: string | undefined;
+  partOfSpeech?: string | undefined;
+  coverage: DictionaryRootLemmaCoverageFilter;
+  source: DictionaryRootSourceCoverageFilter;
+  history: DictionaryRootHistoryCoverageFilter;
+  review: DictionaryRootReviewCoverageFilter;
+  sort: DictionaryRootLemmaCoverageSort;
+}
+
+export interface DictionaryRootLemmaCoverageItem {
+  lemma: string;
+  exactSenseCount: number;
+  graphSenseCount: number;
+  lexicalOnlySenseCount: number;
+  graphCoveragePercent: number;
+  sourceBackedSenseCount: number;
+  unsupportedSenseCount: number;
+  assertionBackedSenseCount: number;
+  reviewedSenseCount: number;
+  reviewRequiredSenseCount: number;
+  conceptRevisionSenseCount: number;
+  conceptRevisionGapSenseCount: number;
+  partOfSpeechCounts: Record<string, number>;
+  representativeNodeId: string;
+  lexicalOnlyNodeId: string | null;
+  graphNodeId: string | null;
+}
+
+export interface ListDictionaryRootLemmaCoverageResult {
+  available: boolean;
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  items: DictionaryRootLemmaCoverageItem[];
+  filters: {
+    query: string;
+    partOfSpeech: string;
+    coverage: DictionaryRootLemmaCoverageFilter;
+    source: DictionaryRootSourceCoverageFilter;
+    history: DictionaryRootHistoryCoverageFilter;
+    review: DictionaryRootReviewCoverageFilter;
+    sort: DictionaryRootLemmaCoverageSort;
+  };
+}
+
+interface DashboardAggregateRow {
+  sense_count: string;
+  graph_covered_sense_count: string;
+  source_backed_sense_count: string;
+  assertion_backed_sense_count: string;
+  reviewed_sense_count: string;
+  concept_revision_covered_sense_count: string;
+}
+
+interface DashboardPartOfSpeechRow extends DashboardAggregateRow {
+  part_of_speech: string;
+}
+
+interface LemmaCoverageRow {
+  lemma: string;
+  exact_sense_count: string;
+  graph_sense_count: string;
+  source_backed_sense_count: string;
+  assertion_backed_sense_count: string;
+  reviewed_sense_count: string;
+  concept_revision_sense_count: string;
+  part_of_speech_counts: Record<string, number> | null;
+  representative_node_id: string;
+  lexical_only_node_id: string | null;
+  graph_node_id: string | null;
+  total_count: string;
+}
+
+function percentage(numerator: number, denominator: number): number {
+  if (denominator <= 0) return 0;
+  return Math.round((numerator / denominator) * 1000) / 10;
+}
+
+function emptyDashboard(status: DictionaryRootLexiconStatus): DictionaryRootCoverageDashboard {
+  return {
+    available: status.available,
+    datasetId: status.datasetId,
+    bundleId: status.bundleId,
+    sourceId: status.sourceId,
+    sourceName: status.sourceName,
+    sourceVersion: status.sourceVersion,
+    sourceLicense: status.sourceLicense,
+    importedAt: status.importedAt,
+    updatedAt: status.updatedAt,
+    synsetCount: status.synsetCount,
+    lemmaCount: status.lemmaCount,
+    relationCount: status.relationCount,
+    graphCoveredSenseCount: 0,
+    lexicalOnlySenseCount: status.synsetCount,
+    graphCoveragePercent: 0,
+    sourceBackedSenseCount: 0,
+    unsupportedSenseCount: status.synsetCount,
+    sourceCoveragePercent: 0,
+    assertionBackedSenseCount: 0,
+    assertionGapSenseCount: 0,
+    reviewedSenseCount: 0,
+    reviewRequiredSenseCount: 0,
+    conceptRevisionCoveredSenseCount: 0,
+    conceptRevisionGapSenseCount: status.synsetCount,
+    conceptRevisionCoveragePercent: 0,
+    datasetRevisionCount: 0,
+    partOfSpeech: [],
+  };
+}
+
+function mapDashboardPartOfSpeech(row: DashboardPartOfSpeechRow): DictionaryRootCoveragePartOfSpeech {
+  const senseCount = Number(row.sense_count);
+  const graphCoveredSenseCount = Number(row.graph_covered_sense_count);
+  const sourceBackedSenseCount = Number(row.source_backed_sense_count);
+  const assertionBackedSenseCount = Number(row.assertion_backed_sense_count);
+  const reviewedSenseCount = Number(row.reviewed_sense_count);
+  const conceptRevisionCoveredSenseCount = Number(row.concept_revision_covered_sense_count);
+  return {
+    partOfSpeech: row.part_of_speech,
+    senseCount,
+    graphCoveredSenseCount,
+    lexicalOnlySenseCount: Math.max(0, senseCount - graphCoveredSenseCount),
+    sourceBackedSenseCount,
+    unsupportedSenseCount: Math.max(0, senseCount - sourceBackedSenseCount),
+    assertionBackedSenseCount,
+    reviewedSenseCount,
+    reviewRequiredSenseCount: Math.max(0, graphCoveredSenseCount - reviewedSenseCount),
+    conceptRevisionCoveredSenseCount,
+    conceptRevisionGapSenseCount: Math.max(0, senseCount - conceptRevisionCoveredSenseCount),
+  };
+}
+
+export async function getDictionaryRootCoverageDashboard(
+  bundleId?: string,
+): Promise<DictionaryRootCoverageDashboard> {
+  const status = await getDictionaryRootLexiconStatus(bundleId);
+  if (!status.available) return emptyDashboard(status);
+
+  const database = requireDatabase();
+  const commonCte = `
+    WITH sense_quality AS (
+      SELECT
+        l.node_id,
+        l.part_of_speech,
+        (n.node_id IS NOT NULL) AS graph_covered,
+        (s.source_id IS NOT NULL) AS source_backed,
+        EXISTS(
+          SELECT 1 FROM assertions a WHERE a.node_id = l.node_id
+        ) AS assertion_backed,
+        EXISTS(
+          SELECT 1
+          FROM assertions a
+          WHERE a.node_id = l.node_id
+            AND LOWER(COALESCE(a.review_status, '')) = 'reviewed'
+        ) AS reviewed,
+        EXISTS(
+          SELECT 1
+          FROM revisions r
+          WHERE r.object_type = 'node'
+            AND r.object_id = l.node_id
+        ) AS concept_revision_covered
+      FROM dictionaryroot_lexicon_synsets l
+      LEFT JOIN nodes n ON n.node_id = l.node_id
+      LEFT JOIN sources s ON s.source_id = l.source_id
+      WHERE ($1::TEXT IS NULL OR l.bundle_id = $1)
+    )
+  `;
+
+  const [aggregateResult, partOfSpeechResult, datasetRevisionResult] = await Promise.all([
+    database.query<DashboardAggregateRow>(
+      `${commonCte}
+       SELECT
+         COUNT(*)::TEXT AS sense_count,
+         COUNT(*) FILTER (WHERE graph_covered)::TEXT AS graph_covered_sense_count,
+         COUNT(*) FILTER (WHERE source_backed)::TEXT AS source_backed_sense_count,
+         COUNT(*) FILTER (WHERE assertion_backed)::TEXT AS assertion_backed_sense_count,
+         COUNT(*) FILTER (WHERE reviewed)::TEXT AS reviewed_sense_count,
+         COUNT(*) FILTER (WHERE concept_revision_covered)::TEXT AS concept_revision_covered_sense_count
+       FROM sense_quality;`,
+      [bundleId ?? null],
+    ),
+    database.query<DashboardPartOfSpeechRow>(
+      `${commonCte}
+       SELECT
+         part_of_speech,
+         COUNT(*)::TEXT AS sense_count,
+         COUNT(*) FILTER (WHERE graph_covered)::TEXT AS graph_covered_sense_count,
+         COUNT(*) FILTER (WHERE source_backed)::TEXT AS source_backed_sense_count,
+         COUNT(*) FILTER (WHERE assertion_backed)::TEXT AS assertion_backed_sense_count,
+         COUNT(*) FILTER (WHERE reviewed)::TEXT AS reviewed_sense_count,
+         COUNT(*) FILTER (WHERE concept_revision_covered)::TEXT AS concept_revision_covered_sense_count
+       FROM sense_quality
+       GROUP BY part_of_speech
+       ORDER BY CASE part_of_speech
+         WHEN 'noun' THEN 0
+         WHEN 'verb' THEN 1
+         WHEN 'adjective' THEN 2
+         WHEN 'adverb' THEN 3
+         ELSE 4
+       END, part_of_speech;`,
+      [bundleId ?? null],
+    ),
+    database.query<{ count: string }>(
+      `
+        SELECT COUNT(*)::TEXT AS count
+        FROM revisions
+        WHERE object_type = 'import-bundle'
+          AND ($1::TEXT IS NULL OR object_id = $1 OR bundle_id = $1);
+      `,
+      [bundleId ?? null],
+    ),
+  ]);
+
+  const row = aggregateResult.rows[0];
+  if (!row) return emptyDashboard(status);
+
+  const senseCount = Number(row.sense_count);
+  const graphCoveredSenseCount = Number(row.graph_covered_sense_count);
+  const sourceBackedSenseCount = Number(row.source_backed_sense_count);
+  const assertionBackedSenseCount = Number(row.assertion_backed_sense_count);
+  const reviewedSenseCount = Number(row.reviewed_sense_count);
+  const conceptRevisionCoveredSenseCount = Number(row.concept_revision_covered_sense_count);
+
+  return {
+    available: true,
+    datasetId: status.datasetId,
+    bundleId: status.bundleId,
+    sourceId: status.sourceId,
+    sourceName: status.sourceName,
+    sourceVersion: status.sourceVersion,
+    sourceLicense: status.sourceLicense,
+    importedAt: status.importedAt,
+    updatedAt: status.updatedAt,
+    synsetCount: senseCount,
+    lemmaCount: status.lemmaCount,
+    relationCount: status.relationCount,
+    graphCoveredSenseCount,
+    lexicalOnlySenseCount: Math.max(0, senseCount - graphCoveredSenseCount),
+    graphCoveragePercent: percentage(graphCoveredSenseCount, senseCount),
+    sourceBackedSenseCount,
+    unsupportedSenseCount: Math.max(0, senseCount - sourceBackedSenseCount),
+    sourceCoveragePercent: percentage(sourceBackedSenseCount, senseCount),
+    assertionBackedSenseCount,
+    assertionGapSenseCount: Math.max(0, graphCoveredSenseCount - assertionBackedSenseCount),
+    reviewedSenseCount,
+    reviewRequiredSenseCount: Math.max(0, graphCoveredSenseCount - reviewedSenseCount),
+    conceptRevisionCoveredSenseCount,
+    conceptRevisionGapSenseCount: Math.max(0, senseCount - conceptRevisionCoveredSenseCount),
+    conceptRevisionCoveragePercent: percentage(conceptRevisionCoveredSenseCount, senseCount),
+    datasetRevisionCount: Number(datasetRevisionResult.rows[0]?.count ?? 0),
+    partOfSpeech: partOfSpeechResult.rows.map(mapDashboardPartOfSpeech),
+  };
+}
+
+function lemmaFilterClause(options: ListDictionaryRootLemmaCoverageOptions): string {
+  const filters: string[] = [];
+  if (options.coverage === "complete") filters.push("graph_sense_count = exact_sense_count");
+  if (options.coverage === "incomplete") filters.push("graph_sense_count < exact_sense_count");
+  if (options.coverage === "partial") filters.push("graph_sense_count > 0 AND graph_sense_count < exact_sense_count");
+  if (options.coverage === "lexical-only") filters.push("graph_sense_count = 0");
+  if (options.source === "source-backed") filters.push("source_backed_sense_count = exact_sense_count");
+  if (options.source === "unsupported") filters.push("source_backed_sense_count < exact_sense_count");
+  if (options.history === "with-history") filters.push("concept_revision_sense_count > 0");
+  if (options.history === "no-history") filters.push("concept_revision_sense_count = 0");
+  if (options.review === "reviewed") filters.push("graph_sense_count > 0 AND reviewed_sense_count = graph_sense_count");
+  if (options.review === "needs-review") filters.push("graph_sense_count > reviewed_sense_count");
+  return filters.length ? `WHERE ${filters.join(" AND ")}` : "";
+}
+
+function lemmaSortClause(sort: DictionaryRootLemmaCoverageSort): string {
+  if (sort === "coverage") {
+    return "graph_coverage_percent DESC, exact_sense_count DESC, lemma ASC";
+  }
+  if (sort === "senses") {
+    return "exact_sense_count DESC, lexical_only_sense_count DESC, lemma ASC";
+  }
+  if (sort === "lemma") {
+    return "lemma ASC";
+  }
+  return "lexical_only_sense_count DESC, exact_sense_count DESC, lemma ASC";
+}
+
+export async function listDictionaryRootLemmaCoverage(
+  options: ListDictionaryRootLemmaCoverageOptions,
+): Promise<ListDictionaryRootLemmaCoverageResult> {
+  const status = await getDictionaryRootLexiconStatus(options.bundleId);
+  const normalizedQuery = options.query ? normalizeDictionaryRootLemma(options.query) : "";
+  if (!status.available) {
+    return {
+      available: false,
+      page: options.page,
+      limit: options.limit,
+      total: 0,
+      totalPages: 0,
+      items: [],
+      filters: {
+        query: normalizedQuery,
+        partOfSpeech: options.partOfSpeech || "all",
+        coverage: options.coverage,
+        source: options.source,
+        history: options.history,
+        review: options.review,
+        sort: options.sort,
+      },
+    };
+  }
+
+  const database = requireDatabase();
+  const values: Array<string | number | null> = [options.bundleId ?? null];
+  const senseConditions = ["($1::TEXT IS NULL OR l.bundle_id = $1)"];
+
+  if (normalizedQuery) {
+    values.push(`%${normalizedQuery}%`);
+    senseConditions.push(`lemma ILIKE $${values.length}`);
+  }
+  if (options.partOfSpeech && options.partOfSpeech !== "all") {
+    values.push(options.partOfSpeech);
+    senseConditions.push(`l.part_of_speech = $${values.length}`);
+  }
+
+  values.push(options.limit);
+  const limitParameter = values.length;
+  values.push((options.page - 1) * options.limit);
+  const offsetParameter = values.length;
+  const rollupFilter = lemmaFilterClause(options);
+  const sortClause = lemmaSortClause(options.sort);
+
+  const result = await database.query<LemmaCoverageRow>(
+    `
+      WITH graph_nodes AS (
+        SELECT node_id FROM nodes WHERE ($1::TEXT IS NULL OR bundle_id = $1)
+      ),
+      registry_sources AS (
+        SELECT source_id FROM sources WHERE ($1::TEXT IS NULL OR bundle_id = $1)
+      ),
+      assertion_nodes AS (
+        SELECT DISTINCT node_id FROM assertions WHERE ($1::TEXT IS NULL OR bundle_id = $1)
+      ),
+      reviewed_nodes AS (
+        SELECT DISTINCT node_id
+        FROM assertions
+        WHERE ($1::TEXT IS NULL OR bundle_id = $1)
+          AND LOWER(COALESCE(review_status, '')) = 'reviewed'
+      ),
+      revised_nodes AS (
+        SELECT DISTINCT object_id AS node_id
+        FROM revisions
+        WHERE object_type = 'node'
+          AND ($1::TEXT IS NULL OR bundle_id = $1)
+      ),
+      filtered_senses AS (
+        SELECT
+          lemma,
+          l.node_id,
+          l.part_of_speech,
+          (g.node_id IS NOT NULL) AS graph_covered,
+          (s.source_id IS NOT NULL) AS source_backed,
+          (a.node_id IS NOT NULL) AS assertion_backed,
+          (rv.node_id IS NOT NULL) AS reviewed,
+          (r.node_id IS NOT NULL) AS concept_revision_covered
+        FROM dictionaryroot_lexicon_synsets l
+        CROSS JOIN LATERAL UNNEST(l.normalized_lemmas) AS lemma
+        LEFT JOIN graph_nodes g ON g.node_id = l.node_id
+        LEFT JOIN registry_sources s ON s.source_id = l.source_id
+        LEFT JOIN assertion_nodes a ON a.node_id = l.node_id
+        LEFT JOIN reviewed_nodes rv ON rv.node_id = l.node_id
+        LEFT JOIN revised_nodes r ON r.node_id = l.node_id
+        WHERE ${senseConditions.join(" AND ")}
+      ),
+      base_rollup AS (
+        SELECT
+          lemma,
+          COUNT(DISTINCT node_id)::INTEGER AS exact_sense_count,
+          COUNT(DISTINCT node_id) FILTER (WHERE graph_covered)::INTEGER AS graph_sense_count,
+          COUNT(DISTINCT node_id) FILTER (WHERE source_backed)::INTEGER AS source_backed_sense_count,
+          COUNT(DISTINCT node_id) FILTER (WHERE assertion_backed)::INTEGER AS assertion_backed_sense_count,
+          COUNT(DISTINCT node_id) FILTER (WHERE reviewed)::INTEGER AS reviewed_sense_count,
+          COUNT(DISTINCT node_id) FILTER (WHERE concept_revision_covered)::INTEGER AS concept_revision_sense_count,
+          MIN(node_id) AS representative_node_id,
+          MIN(node_id) FILTER (WHERE NOT graph_covered) AS lexical_only_node_id,
+          MIN(node_id) FILTER (WHERE graph_covered) AS graph_node_id
+        FROM filtered_senses
+        GROUP BY lemma
+      ),
+      pos_counts AS (
+        SELECT
+          lemma,
+          JSONB_OBJECT_AGG(part_of_speech, sense_count ORDER BY part_of_speech) AS part_of_speech_counts
+        FROM (
+          SELECT lemma, part_of_speech, COUNT(DISTINCT node_id)::INTEGER AS sense_count
+          FROM filtered_senses
+          GROUP BY lemma, part_of_speech
+        ) counts
+        GROUP BY lemma
+      ),
+      rollup AS (
+        SELECT
+          b.*,
+          (b.exact_sense_count - b.graph_sense_count)::INTEGER AS lexical_only_sense_count,
+          CASE WHEN b.exact_sense_count = 0 THEN 0
+            ELSE ROUND((b.graph_sense_count::NUMERIC / b.exact_sense_count::NUMERIC) * 1000) / 10
+          END AS graph_coverage_percent,
+          p.part_of_speech_counts
+        FROM base_rollup b
+        INNER JOIN pos_counts p USING (lemma)
+      ),
+      filtered_rollup AS (
+        SELECT * FROM rollup
+        ${rollupFilter}
+      )
+      SELECT
+        lemma,
+        exact_sense_count::TEXT,
+        graph_sense_count::TEXT,
+        source_backed_sense_count::TEXT,
+        assertion_backed_sense_count::TEXT,
+        reviewed_sense_count::TEXT,
+        concept_revision_sense_count::TEXT,
+        part_of_speech_counts,
+        representative_node_id,
+        lexical_only_node_id,
+        graph_node_id,
+        COUNT(*) OVER()::TEXT AS total_count
+      FROM filtered_rollup
+      ORDER BY ${sortClause}
+      LIMIT $${limitParameter}
+      OFFSET $${offsetParameter};
+    `,
+    values,
+  );
+
+  const total = Number(result.rows[0]?.total_count ?? 0);
+  const items = result.rows.map((row) => {
+    const exactSenseCount = Number(row.exact_sense_count);
+    const graphSenseCount = Number(row.graph_sense_count);
+    const sourceBackedSenseCount = Number(row.source_backed_sense_count);
+    const reviewedSenseCount = Number(row.reviewed_sense_count);
+    const conceptRevisionSenseCount = Number(row.concept_revision_sense_count);
+    return {
+      lemma: row.lemma,
+      exactSenseCount,
+      graphSenseCount,
+      lexicalOnlySenseCount: Math.max(0, exactSenseCount - graphSenseCount),
+      graphCoveragePercent: percentage(graphSenseCount, exactSenseCount),
+      sourceBackedSenseCount,
+      unsupportedSenseCount: Math.max(0, exactSenseCount - sourceBackedSenseCount),
+      assertionBackedSenseCount: Number(row.assertion_backed_sense_count),
+      reviewedSenseCount,
+      reviewRequiredSenseCount: Math.max(0, graphSenseCount - reviewedSenseCount),
+      conceptRevisionSenseCount,
+      conceptRevisionGapSenseCount: Math.max(0, exactSenseCount - conceptRevisionSenseCount),
+      partOfSpeechCounts: row.part_of_speech_counts || {},
+      representativeNodeId: row.representative_node_id,
+      lexicalOnlyNodeId: row.lexical_only_node_id,
+      graphNodeId: row.graph_node_id,
+    };
+  });
+
+  return {
+    available: true,
+    page: options.page,
+    limit: options.limit,
+    total,
+    totalPages: total === 0 ? 0 : Math.ceil(total / options.limit),
+    items,
+    filters: {
+      query: normalizedQuery,
+      partOfSpeech: options.partOfSpeech || "all",
+      coverage: options.coverage,
+      source: options.source,
+      history: options.history,
+      review: options.review,
+      sort: options.sort,
+    },
+  };
+}
