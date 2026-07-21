@@ -452,6 +452,7 @@
       </div>
       <div class="dr-concept-sidebar-actions">
         <a class="dr-live-button" href="${escapeHtml(experienceHref("graph-v2.html", node.nodeId, displayTitle, sourceIds[0]))}">Explore in knowledge sphere</a>
+        <a class="dr-live-button-secondary" href="${escapeHtml(experienceHref("history-v2.html", node.nodeId, displayTitle, sourceIds[0]))}">Review knowledge history</a>
         <button class="dr-live-button-secondary" type="button" data-copy-link>Copy concept link</button>
         <button class="dr-live-button-secondary" type="button" data-return-search>Return to meaning choices</button>
       </div>
@@ -485,7 +486,10 @@
             <span class="dr-live-chip" data-tone="good">Source-backed meaning</span>
             <span class="dr-live-chip">${relations.length} connected meanings</span>
           </div>
-          <a class="dr-live-button-secondary" href="${escapeHtml(experienceHref("graph-v2.html", node.nodeId, displayTitle, sourceIds[0]))}">Open sphere</a>
+          <div class="dr-live-actions">
+            <a class="dr-live-button-secondary" href="${escapeHtml(experienceHref("graph-v2.html", node.nodeId, displayTitle, sourceIds[0]))}">Open sphere</a>
+            <a class="dr-live-button-secondary" href="${escapeHtml(experienceHref("history-v2.html", node.nodeId, displayTitle, sourceIds[0]))}">View history</a>
+          </div>
         </div>
         <h2 class="dr-concept-record-title">${escapeHtml(displayTitle)}</h2>
         ${canonical ? `<p class="dr-concept-canonical">Open English WordNet groups this exact sense under <strong>${escapeHtml(canonical)}</strong>.</p>` : ""}

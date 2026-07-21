@@ -30,6 +30,8 @@ The number in the stable bundle ID is historical identity and does not represent
 | Read definitions | `GET /nodes/:nodeId/assertions` |
 | Read relationships | `GET /nodes/:nodeId/edges` |
 | Read source | `GET /sources/:sourceId` |
+| List revision history | `GET /revisions?bundleId=...&objectType=...&objectId=...` |
+| Read a revision | `GET /revisions/:revisionId` |
 
 ## Customer filtering
 
@@ -46,3 +48,8 @@ Technical errors remain available for diagnostics, but customer pages translate 
 - Source details are temporarily unavailable.
 
 No customer-facing error should imply that data was changed unless a write operation actually occurred.
+
+
+## Revision history contract
+
+Revision list and detail responses include normalized revision identity fields plus `rawData`, the original imported revision object. DictionaryRoot uses `rawData` only when it contains an explicit historical snapshot or before/after change record. It never invents a previous state. When a concept has no concept-specific revisions, the customer experience shows the current live snapshot and the bundle import lineage with an honest empty state.

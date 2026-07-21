@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Trace DictionaryRoot concept revisions, source attribution, current state, and recorded knowledge changes through the live SourceRoot revision registry.">
+  <title>DictionaryRoot - Revision and Knowledge History</title>
+  <link rel="icon" href="assets/brand/dictionaryroot-mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/dictionaryroot-brand.css">
+  <link rel="stylesheet" href="assets/css/dictionaryroot-navigation.css">
+  <link rel="stylesheet" href="assets/css/dictionaryroot-live.css">
+  <link rel="stylesheet" href="assets/css/dictionaryroot-history.css">
+</head>
+<body class="dictionaryroot-live-page dictionaryroot-customer-page dictionaryroot-history-page">
+  <main id="main-content" class="dr-live-main dr-history-main">
+    <section class="dr-live-hero dr-history-hero" aria-labelledby="historyPageTitle">
+      <div>
+        <p class="dr-live-eyebrow">DictionaryRoot Customer #001</p>
+        <h1 id="historyPageTitle">See how knowledge changes.</h1>
+        <p>Select an exact meaning, inspect its current live state, follow its revision timeline, and compare any historical snapshots that SourceRoot has actually recorded.</p>
+      </div>
+      <div class="dr-live-stat">
+        <strong>Traceable</strong>
+        <span>Revision identity, status, source lineage, stable URLs, and recorded change detail</span>
+      </div>
+    </section>
+
+    <section class="dr-live-search dr-history-search" aria-label="Search DictionaryRoot history">
+      <form id="dictionaryrootHistorySearchForm" class="dr-live-search-form">
+        <label for="dictionaryrootHistorySearchInput" class="dr-sr-only">Search for a word</label>
+        <input id="dictionaryrootHistorySearchInput" type="search" name="q" autocomplete="off" spellcheck="false" placeholder="Search for knowledge, truth, language, light...">
+        <button id="dictionaryrootHistorySearchButton" class="dr-live-button" type="submit">Find history</button>
+      </form>
+      <p id="dictionaryrootHistoryStatus" class="dr-live-status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section id="dictionaryrootHistorySenseChooser" class="dr-history-sense-panel" aria-labelledby="historySenseHeading" hidden>
+      <header class="dr-history-section-header">
+        <div>
+          <p class="dr-history-kicker">Exact-meaning results</p>
+          <h2 id="historySenseHeading">Choose the meaning whose history you want</h2>
+        </div>
+        <span id="dictionaryrootHistorySenseCount" class="dr-live-chip" data-tone="accent">0 meanings</span>
+      </header>
+      <div id="dictionaryrootHistorySearchResults" class="dr-history-sense-grid" aria-live="polite"></div>
+    </section>
+
+    <section id="dictionaryrootHistoryWorkspace" class="dr-history-workspace" aria-label="Revision and knowledge history">
+      <div class="dr-history-primary-column">
+        <section class="dr-live-panel dr-history-current-panel">
+          <div class="dr-live-panel-header">
+            <div>
+              <p class="dr-history-kicker">Current live state</p>
+              <h2 id="dictionaryrootHistoryConceptTitle">No meaning selected</h2>
+            </div>
+            <div id="dictionaryrootHistoryCurrentStatus" class="dr-live-chip-row"></div>
+          </div>
+          <div id="dictionaryrootHistoryCurrentSnapshot" class="dr-live-panel-body">
+            <div class="dr-live-empty"><strong>Connecting to DictionaryRoot...</strong>Choose a meaning to load its current SourceRoot state and recorded history.</div>
+          </div>
+        </section>
+
+        <section class="dr-live-panel dr-history-timeline-panel">
+          <div class="dr-live-panel-header dr-history-timeline-header">
+            <div>
+              <p class="dr-history-kicker">Recorded timeline</p>
+              <h2>Concept revisions and dataset lineage</h2>
+            </div>
+            <label class="dr-history-filter-label" for="dictionaryrootHistoryStatusFilter">Status
+              <select id="dictionaryrootHistoryStatusFilter">
+                <option value="all">All statuses</option>
+                <option value="current">Current</option>
+                <option value="corrected">Corrected</option>
+                <option value="disputed">Disputed</option>
+                <option value="superseded">Superseded</option>
+              </select>
+            </label>
+          </div>
+          <div id="dictionaryrootHistoryTimeline" class="dr-live-panel-body dr-history-timeline" aria-live="polite">
+            <div class="dr-live-empty"><strong>No timeline loaded yet.</strong>The live revision registry will appear here.</div>
+          </div>
+        </section>
+
+        <section class="dr-live-panel dr-history-comparison-panel">
+          <div class="dr-live-panel-header">
+            <div>
+              <p class="dr-history-kicker">Current versus recorded state</p>
+              <h2>Change comparison</h2>
+            </div>
+          </div>
+          <div id="dictionaryrootHistoryComparison" class="dr-live-panel-body">
+            <div class="dr-live-empty"><strong>No revision selected.</strong>Select a timeline entry to inspect its recorded changes.</div>
+          </div>
+        </section>
+      </div>
+
+      <aside class="dr-history-sidebar" aria-label="Selected revision and provenance">
+        <section class="dr-live-panel dr-history-sticky-panel">
+          <div class="dr-live-panel-header">
+            <div>
+              <p class="dr-history-kicker">Selected record</p>
+              <h2>Revision detail</h2>
+            </div>
+          </div>
+          <div id="dictionaryrootHistoryRevisionDetail" class="dr-live-panel-body">
+            <div class="dr-live-empty"><strong>No revision selected.</strong>Select a timeline entry to inspect its status and provenance.</div>
+          </div>
+        </section>
+
+        <section class="dr-live-panel">
+          <div class="dr-live-panel-header"><h2>Source and attribution history</h2></div>
+          <div id="dictionaryrootHistorySources" class="dr-live-panel-body">
+            <div class="dr-live-empty"><strong>No meaning selected.</strong>Current supporting sources and revision-linked source references will appear here.</div>
+          </div>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="dr-live-footer">DictionaryRoot displays only revision and source records returned by the live SourceRoot API. No historical fallback data is generated.</footer>
+
+  <script defer src="assets/js/dictionaryroot-api.js"></script>
+  <script defer src="assets/js/dictionaryroot-brand.js"></script>
+  <script defer src="assets/js/dictionaryroot-navigation.js"></script>
+  <script defer src="assets/js/dictionaryroot-history.js"></script>
+</body>
+</html>

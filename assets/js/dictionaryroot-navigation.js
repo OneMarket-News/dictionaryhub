@@ -11,13 +11,15 @@
   const NAV_ITEMS = [
     { key: "concept", label: "Concept", href: "concept-v2.html" },
     { key: "graph", label: "Knowledge Sphere", href: "graph-v2.html" },
-    { key: "sources", label: "Sources", href: "sources-v2.html" }
+    { key: "sources", label: "Sources", href: "sources-v2.html" },
+    { key: "history", label: "History", href: "history-v2.html" }
   ];
 
   const PAGE_KEYS = {
     "concept-v2.html": "concept",
     "graph-v2.html": "graph",
-    "sources-v2.html": "sources"
+    "sources-v2.html": "sources",
+    "history-v2.html": "history"
   };
 
   const state = {
@@ -75,7 +77,9 @@
       sourceSearch,
       sourceType: clean(params.get("type")),
       sort: clean(params.get("sort")),
-      density: clean(params.get("density"))
+      density: clean(params.get("density")),
+      revisionId: clean(params.get("revision")),
+      historyStatus: clean(params.get("status"))
     };
   }
 
@@ -95,6 +99,12 @@
       setOrDelete(params, "q", context.meaning);
       setOrDelete(params, "nodeId", context.nodeId);
       setOrDelete(params, "source", context.sourceId);
+    } else if (targetPage === "history") {
+      setOrDelete(params, "q", context.meaning);
+      setOrDelete(params, "nodeId", context.nodeId);
+      setOrDelete(params, "source", context.sourceId);
+      setOrDelete(params, "revision", context.revisionId);
+      setOrDelete(params, "status", context.historyStatus && context.historyStatus !== "all" ? context.historyStatus : "");
     } else if (targetPage === "sources") {
       setOrDelete(params, "source", context.sourceId);
       setOrDelete(params, "meaning", context.meaning);
@@ -237,12 +247,14 @@
     const conceptHref = buildHref("concept-v2.html", { meaning: label || query, nodeId, sourceId });
     const graphHref = buildHref("graph-v2.html", { meaning: label || query, nodeId, sourceId });
     const sourceHref = buildHref("sources-v2.html", { meaning: label || query, nodeId, sourceId });
-    const primary = context.page === "graph" ? "graph" : "concept";
+    const historyHref = buildHref("history-v2.html", { meaning: label || query, nodeId, sourceId, revisionId: "" });
+    const primary = context.page === "graph" ? "graph" : context.page === "history" ? "history" : "concept";
 
     return `<div class="dictionaryroot-global-result-actions">
       <a href="${escapeHtml(conceptHref)}"${primary === "concept" ? ' data-primary="true"' : ""}>Open concept</a>
       <a href="${escapeHtml(graphHref)}"${primary === "graph" ? ' data-primary="true"' : ""}>Open sphere</a>
       <a href="${escapeHtml(sourceHref)}">Trace sources</a>
+      <a href="${escapeHtml(historyHref)}"${primary === "history" ? ' data-primary="true"' : ""}>View history</a>
     </div>`;
   }
 
@@ -344,6 +356,8 @@
       sourceType: existingContext.sourceType,
       sort: existingContext.sort,
       density: existingContext.density,
+      revisionId: existingContext.revisionId || currentContext.revisionId,
+      historyStatus: existingContext.historyStatus || currentContext.historyStatus,
       preserveSourceFilters: file === "sources-v2.html" && currentContext.page === "sources"
     };
 

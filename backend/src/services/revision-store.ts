@@ -8,6 +8,7 @@ export interface NormalizedRevision {
   revisionType: string | null;
   summary: string | null;
   status: string | null;
+  rawData: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
 }
@@ -39,6 +40,7 @@ interface RevisionRow {
   revision_type: string | null;
   summary: string | null;
   status: string | null;
+  raw_data: Record<string, unknown> | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -64,6 +66,7 @@ function mapRevisionRow(
     revisionType: row.revision_type,
     summary: row.summary,
     status: row.status,
+    rawData: row.raw_data || {},
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString(),
   };
@@ -84,6 +87,7 @@ export async function getRevisionById(
         revision_type,
         summary,
         status,
+        raw_data,
         created_at,
         updated_at
       FROM revisions
@@ -176,6 +180,7 @@ export async function listRevisions(
             revision_type,
             summary,
             status,
+            raw_data,
             created_at,
             updated_at
           FROM revisions
