@@ -188,7 +188,10 @@
       .filter((item) => item && (item.resultType === "node" || !item.resultType));
     const ranked = DictionaryRootApi.rankMeaningResults(raw, query);
     const exact = DictionaryRootApi.exactMeaningResults(ranked, query);
-    const shown = (exact.length ? exact.concat(ranked.filter((item) => !exact.includes(item))) : ranked).slice(0, 20);
+    const related = ranked.filter((item) => !exact.includes(item));
+    const shown = exact.length
+      ? exact.concat(related.slice(0, Math.max(0, 20 - exact.length)))
+      : related.slice(0, 20);
 
     elements.results.innerHTML = "";
     elements.sensePanel.hidden = false;

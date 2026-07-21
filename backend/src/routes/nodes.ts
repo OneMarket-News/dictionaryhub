@@ -9,6 +9,10 @@ import {
 import { getAssertionsByNodeId } from "../services/assertion-store.js";
 import { getEdgesByNodeId } from "../services/edge-store.js";
 import {
+  getDictionaryRootLexicalAssertionsByNodeId,
+  getDictionaryRootLexicalEdgesByNodeId,
+} from "../services/lexical-store.js";
+import {
   getNodeById,
   listNodes,
   type ListNodesOptions,
@@ -86,8 +90,12 @@ nodesRouter.get(
         });
       }
 
-      const assertions =
+      let assertions =
         await getAssertionsByNodeId(nodeId);
+
+      if (assertions.length === 0) {
+        assertions = await getDictionaryRootLexicalAssertionsByNodeId(nodeId);
+      }
 
       return response.status(200).json({
         nodeId,
@@ -115,7 +123,11 @@ nodesRouter.get(
         });
       }
 
-      const edges = await getEdgesByNodeId(nodeId);
+      let edges = await getEdgesByNodeId(nodeId);
+
+      if (edges.incoming.length === 0 && edges.outgoing.length === 0) {
+        edges = await getDictionaryRootLexicalEdgesByNodeId(nodeId);
+      }
 
       return response.status(200).json({
         nodeId,

@@ -62,3 +62,20 @@ test("DictionaryRoot pilot selection is deterministic", async () => {
 
   assert.deepEqual(first, second);
 });
+
+test("DictionaryRoot complete lexicon records preserve every exact lemma sense", async () => {
+  const { buildDictionaryRootLexiconRecords } = await import("../src/dictionaryroot/oewn-wndb.js");
+  const synsets = await loadWordNetSynsets(fixtureDirectory);
+  const records = buildDictionaryRootLexiconRecords(synsets, {
+    sourceVersion: "test",
+    datasetId: "dictionaryroot-oewn-test-complete",
+    bundleId: "dictionaryroot-oewn-test-pilot",
+  });
+
+  assert.equal(records.synsets.length, synsets.length);
+  assert.ok(records.lemmaCount >= 8);
+  assert.ok(records.relations.length >= 4);
+  assert.ok(records.synsets.every((record) => record.normalizedLemmas.length > 0));
+  assert.ok(records.synsets.some((record) => record.partOfSpeech === "noun"));
+  assert.ok(records.synsets.some((record) => record.partOfSpeech === "verb"));
+});

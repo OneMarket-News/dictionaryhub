@@ -278,6 +278,13 @@
   color: var(--dr-accent, #67e8f9);
 }
 
+.dictionaryroot-global-result-meta span[data-tone="coverage"] {
+  color: #174f3d;
+  border-color: rgba(29, 112, 82, 0.24);
+  background: rgba(226, 246, 237, 0.82);
+}
+
+
 .dictionaryroot-global-result-actions a {
   display: inline-flex;
   align-items: center;

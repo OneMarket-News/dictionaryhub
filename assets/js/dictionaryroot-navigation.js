@@ -263,8 +263,10 @@
       .filter((item) => item && (item.resultType === "node" || !item.resultType));
     const ranked = global.DictionaryRootApi.rankMeaningResults(raw, query);
     const exact = global.DictionaryRootApi.exactMeaningResults(ranked, query);
-    const ordered = exact.length ? exact.concat(ranked.filter((item) => !exact.includes(item))) : ranked;
-    const shown = ordered.slice(0, 10);
+    const related = ranked.filter((item) => !exact.includes(item));
+    const relatedLimit = Math.max(0, 12 - exact.length);
+    const shown = exact.length ? exact.concat(related.slice(0, relatedLimit)) : related.slice(0, 12);
+    const coverage = payload && payload.coverage && typeof payload.coverage === "object" ? payload.coverage : null;
 
     elements.results.innerHTML = "";
     if (!shown.length) {
@@ -279,19 +281,29 @@
       const isExact = rank <= 1;
       const summary = clean(record.summary || record.description || record.body) || "Open this source-backed meaning to inspect its definition and semantic context.";
       const nodeId = clean(record.id || record.nodeId);
+      const metadata = record && record.metadata && typeof record.metadata === "object" ? record.metadata : {};
+      const completeLexicon = metadata.lexicalCoverage === "complete-lemma";
+      const graphCoverage = metadata.graphCoverage === true;
       return `<article class="dictionaryroot-global-result" data-exact="${isExact ? "true" : "false"}">
         <h2>${escapeHtml(label)}</h2>
         <p>${escapeHtml(summary)}</p>
         <div class="dictionaryroot-global-result-meta">
           <span data-tone="exact">${isExact ? "Exact meaning" : "Related match"}</span>
           <span>${escapeHtml(partOfSpeech(record))}</span>
+          ${completeLexicon ? `<span data-tone="coverage">${graphCoverage ? "Complete lexicon · pilot graph" : "Complete lexicon · on-demand graph"}</span>` : ""}
           ${nodeId ? `<span>${escapeHtml(nodeId)}</span>` : ""}
         </div>
         ${resultActions(record, query, label)}
       </article>`;
     }).join("");
 
-    if (exact.length > 1) {
+    if (coverage && coverage.available && Number(coverage.exactSenseCount) > 1) {
+      const posSummary = Object.entries(coverage.partOfSpeechCounts || {})
+        .filter((entry) => Number(entry[1]) > 0)
+        .map((entry) => `${entry[1]} ${entry[0]}`)
+        .join(", ");
+      setStatus(`${coverage.exactSenseCount} complete exact senses of “${query}” found${posSummary ? `: ${posSummary}` : ""}.`, "success");
+    } else if (exact.length > 1) {
       setStatus(`${exact.length} exact senses of “${query}” found. Choose the intended meaning.`, "success");
     } else if (exact.length === 1) {
       setStatus(`One exact meaning of “${query}” found. Related matches follow.`, "success");

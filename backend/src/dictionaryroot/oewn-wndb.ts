@@ -38,14 +38,17 @@ interface SourceRootRecord {
   [key: string]: unknown;
 }
 
-interface RelationDescriptor {
+export interface RelationDescriptor {
   relationshipType: string;
   label: string;
   strength: "core" | "strong" | "medium" | "weak" | "contextual" | "experimental";
 }
 
-const SOURCE_ID = "source-oewn-2025";
-const DOMAIN = "DictionaryRoot";
+export const DICTIONARYROOT_OEWN_SOURCE_ID = "source-oewn-2025";
+export const DICTIONARYROOT_DOMAIN = "DictionaryRoot";
+
+const SOURCE_ID = DICTIONARYROOT_OEWN_SOURCE_ID;
+const DOMAIN = DICTIONARYROOT_DOMAIN;
 
 const FILE_NAMES: Record<WordNetFilePos, string> = {
   n: "data.noun",
@@ -408,7 +411,7 @@ function shortHash(value: string): string {
   return createHash("sha1").update(value).digest("hex").slice(0, 12);
 }
 
-function posLabel(pos: WordNetFilePos): string {
+export function dictionaryRootPosLabel(pos: WordNetFilePos): string {
   switch (pos) {
     case "n": return "noun";
     case "v": return "verb";
@@ -417,15 +420,158 @@ function posLabel(pos: WordNetFilePos): string {
   }
 }
 
-function nodeId(synset: WordNetSynset): string {
-  return `dictionaryroot-oewn-2025-${posLabel(synset.filePos)}-${synset.offset}`;
+export function dictionaryRootNodeId(synset: WordNetSynset): string {
+  return `dictionaryroot-oewn-2025-${dictionaryRootPosLabel(synset.filePos)}-${synset.offset}`;
 }
 
-function relationFor(symbol: string): RelationDescriptor {
+export function describeWordNetRelation(symbol: string): RelationDescriptor {
   return RELATIONS[symbol] ?? {
     relationshipType: `WORDNET_${shortHash(symbol).toUpperCase()}`,
     label: `WordNet relation ${symbol}`,
     strength: "contextual",
+  };
+}
+
+
+export interface DictionaryRootLexicalSynsetRecord {
+  nodeId: string;
+  datasetId: string;
+  bundleId: string;
+  sourceId: string;
+  sourceVersion: string;
+  sourceSynsetKey: string;
+  sourceOffset: string;
+  partOfSpeech: string;
+  title: string;
+  definition: string;
+  synsetType: string;
+  lexicographerFileNumber: number;
+  lemmas: string[];
+  normalizedLemmas: string[];
+  examples: string[];
+  originalGloss: string;
+}
+
+export interface DictionaryRootLexicalRelationRecord {
+  relationId: string;
+  datasetId: string;
+  bundleId: string;
+  sourceId: string;
+  fromNodeId: string;
+  toNodeId: string;
+  pointerSymbol: string;
+  sourceTarget: string;
+  relationshipType: string;
+  label: string;
+  relationshipStrength: RelationDescriptor["strength"];
+  summary: string;
+}
+
+export interface DictionaryRootLexiconRecords {
+  synsets: DictionaryRootLexicalSynsetRecord[];
+  relations: DictionaryRootLexicalRelationRecord[];
+  lemmaCount: number;
+  partOfSpeechCounts: Record<string, number>;
+}
+
+function normalizeLexiconLemma(value: string): string {
+  return value.trim().replace(/\s+/gu, " ").toLowerCase();
+}
+
+export function dictionaryRootLexicalRelationId(
+  fromSynset: WordNetSynset,
+  pointer: WordNetPointer,
+): string {
+  const targetKey = `${pointer.targetPos}:${pointer.targetOffset}`;
+  return `dictionaryroot-lexical-edge-${shortHash(`${fromSynset.key}|${pointer.symbol}|${targetKey}|${pointer.sourceTarget}`)}`;
+}
+
+export function buildDictionaryRootLexiconRecords(
+  synsets: WordNetSynset[],
+  options: {
+    datasetId?: string;
+    bundleId?: string;
+    sourceVersion?: string;
+  } = {},
+): DictionaryRootLexiconRecords {
+  const sourceVersion = options.sourceVersion ?? "2025";
+  const datasetId = options.datasetId ?? `dictionaryroot-oewn-${sourceVersion}-complete`;
+  const bundleId = options.bundleId ?? "dictionaryroot-oewn-2025-pilot-500";
+  const byKey = new Map(synsets.map((synset) => [synset.key, synset]));
+  const uniqueLemmas = new Set<string>();
+  const partOfSpeechCounts: Record<string, number> = {
+    noun: 0,
+    verb: 0,
+    adjective: 0,
+    adverb: 0,
+  };
+
+  const lexicalSynsets = synsets.map((synset) => {
+    const partOfSpeech = dictionaryRootPosLabel(synset.filePos);
+    partOfSpeechCounts[partOfSpeech] = (partOfSpeechCounts[partOfSpeech] ?? 0) + 1;
+    const normalizedLemmas = Array.from(new Set(
+      synset.lemmas.map(normalizeLexiconLemma).filter(Boolean),
+    ));
+    normalizedLemmas.forEach((lemma) => uniqueLemmas.add(lemma));
+
+    return {
+      nodeId: dictionaryRootNodeId(synset),
+      datasetId,
+      bundleId,
+      sourceId: SOURCE_ID,
+      sourceVersion,
+      sourceSynsetKey: synset.key,
+      sourceOffset: synset.offset,
+      partOfSpeech,
+      title: synset.lemmas[0] ?? `${partOfSpeech} ${synset.offset}`,
+      definition: synset.definition,
+      synsetType: synset.synsetType,
+      lexicographerFileNumber: synset.lexFileNumber,
+      lemmas: synset.lemmas,
+      normalizedLemmas,
+      examples: synset.examples,
+      originalGloss: synset.originalGloss,
+    } satisfies DictionaryRootLexicalSynsetRecord;
+  });
+
+  const relationKeys = new Set<string>();
+  const relations: DictionaryRootLexicalRelationRecord[] = [];
+
+  for (const sourceSynset of synsets) {
+    for (const pointer of sourceSynset.pointers) {
+      const targetKey = `${pointer.targetPos}:${pointer.targetOffset}`;
+      const targetSynset = byKey.get(targetKey);
+      if (!targetSynset) continue;
+
+      const uniqueKey = `${sourceSynset.key}|${pointer.symbol}|${targetKey}|${pointer.sourceTarget}`;
+      if (relationKeys.has(uniqueKey)) continue;
+      relationKeys.add(uniqueKey);
+
+      const descriptor = describeWordNetRelation(pointer.symbol);
+      const sourceTitle = sourceSynset.lemmas[0] ?? sourceSynset.key;
+      const targetTitle = targetSynset.lemmas[0] ?? targetSynset.key;
+      relations.push({
+        relationId: dictionaryRootLexicalRelationId(sourceSynset, pointer),
+        datasetId,
+        bundleId,
+        sourceId: SOURCE_ID,
+        fromNodeId: dictionaryRootNodeId(sourceSynset),
+        toNodeId: dictionaryRootNodeId(targetSynset),
+        pointerSymbol: pointer.symbol,
+        sourceTarget: pointer.sourceTarget,
+        relationshipType: descriptor.relationshipType,
+        label: descriptor.label,
+        relationshipStrength: descriptor.strength,
+        summary: `${sourceTitle} has the Open English WordNet relationship ${descriptor.label.toLowerCase()} with ${targetTitle}.`,
+      });
+    }
+  }
+
+  return {
+    synsets: lexicalSynsets,
+    relations,
+    lemmaCount: uniqueLemmas.size,
+    partOfSpeechCounts,
   };
 }
 
@@ -468,8 +614,8 @@ export function buildDictionaryRootPilotBundle(
   const selectedByKey = new Map(selected.map((synset) => [synset.key, synset]));
 
   const nodes: SourceRootRecord[] = selected.map((synset) => ({
-    id: nodeId(synset),
-    title: synset.lemmas[0] ?? `${posLabel(synset.filePos)} ${synset.offset}`,
+    id: dictionaryRootNodeId(synset),
+    title: synset.lemmas[0] ?? `${dictionaryRootPosLabel(synset.filePos)} ${synset.offset}`,
     type: "lexical-concept",
     domain: DOMAIN,
     summary: synset.definition,
@@ -480,7 +626,7 @@ export function buildDictionaryRootPilotBundle(
       sourceVersion,
       sourceSynsetKey: synset.key,
       sourceOffset: synset.offset,
-      partOfSpeech: posLabel(synset.filePos),
+      partOfSpeech: dictionaryRootPosLabel(synset.filePos),
       synsetType: synset.synsetType,
       lexicographerFileNumber: synset.lexFileNumber,
       lemmas: synset.lemmas,
@@ -492,7 +638,7 @@ export function buildDictionaryRootPilotBundle(
   const assertions: SourceRootRecord[] = [];
 
   for (const synset of selected) {
-    const conceptNodeId = nodeId(synset);
+    const conceptNodeId = dictionaryRootNodeId(synset);
     const identity = `${synset.filePos}-${synset.offset}`;
 
     assertions.push({
@@ -513,7 +659,7 @@ export function buildDictionaryRootPilotBundle(
       metadata: {
         sourceSynsetKey: synset.key,
         lemmas: synset.lemmas,
-        partOfSpeech: posLabel(synset.filePos),
+        partOfSpeech: dictionaryRootPosLabel(synset.filePos),
       },
     });
 
@@ -558,14 +704,14 @@ export function buildDictionaryRootPilotBundle(
       }
       edgeKeys.add(uniqueKey);
 
-      const relation = relationFor(pointer.symbol);
+      const relation = describeWordNetRelation(pointer.symbol);
       const sourceTitle = sourceSynset.lemmas[0] ?? sourceSynset.key;
       const targetTitle = targetSynset.lemmas[0] ?? targetSynset.key;
 
       edges.push({
         id: `dictionaryroot-edge-${shortHash(uniqueKey)}`,
-        fromNodeId: nodeId(sourceSynset),
-        toNodeId: nodeId(targetSynset),
+        fromNodeId: dictionaryRootNodeId(sourceSynset),
+        toNodeId: dictionaryRootNodeId(targetSynset),
         relationshipType: relation.relationshipType,
         label: relation.label,
         summary: `${sourceTitle} has the Open English WordNet relationship ${relation.label.toLowerCase()} with ${targetTitle}.`,

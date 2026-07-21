@@ -16,7 +16,8 @@
     "db:migrate": "tsx src/scripts/migrate.ts",
     "db:migrate:test": "node --env-file=.env.test --import tsx src/scripts/migrate.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "dictionaryroot:pilot": "tsx src/scripts/build-dictionaryroot-pilot.ts"
+    "dictionaryroot:pilot": "tsx src/scripts/build-dictionaryroot-pilot.ts",
+    "dictionaryroot:lexicon": "tsx src/scripts/import-dictionaryroot-lexicon.ts"
   },
   "dependencies": {
     "cors": "^2.8.6",

@@ -53,3 +53,23 @@ No customer-facing error should imply that data was changed unless a write opera
 ## Revision history contract
 
 Revision list and detail responses include normalized revision identity fields plus `rawData`, the original imported revision object. DictionaryRoot uses `rawData` only when it contains an explicit historical snapshot or before/after change record. It never invents a previous state. When a concept has no concept-specific revisions, the customer experience shows the current live snapshot and the bundle import lineage with an honest empty state.
+
+## Complete lexical coverage
+
+DictionaryRoot exact-lemma search is backed by a separate complete Open English WordNet index. The bounded customer bundle continues to define the initially materialized graph sample, but it no longer limits exact-sense discovery.
+
+| Customer need | SourceRoot operation |
+|---|---|
+| Complete lexicon status | `GET /dictionaryroot/lexicon/status?bundleId=...` |
+| Lemma coverage diagnostics | `GET /dictionaryroot/lexicon/coverage?q=...&bundleId=...` |
+| Search all exact senses | `GET /search?q=...&type=node&bundleId=...&domain=DictionaryRoot` |
+
+For a DictionaryRoot node search, the response may include:
+
+- `exactSensePolicy: "complete-lemma"`
+- `coverage.exactSenseCount`
+- `coverage.graphSenseCount`
+- `coverage.lexicalOnlySenseCount`
+- `coverage.partOfSpeechCounts`
+
+All exact lexical senses are returned on the first page before related registry matches. A selected lexical-only node remains resolvable through the existing node, assertion, and edge routes, so customer URLs do not require a second concept contract.

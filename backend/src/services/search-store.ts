@@ -1,4 +1,8 @@
 import { getPool } from "../lib/database.js";
+import {
+  searchDictionaryRootExactSenses,
+  type DictionaryRootLemmaCoverage,
+} from "./lexical-store.js";
 
 export type SearchResultType =
   | "node"
@@ -27,6 +31,8 @@ export interface SearchResult {
   metadata: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
+  nodeId?: string;
+  sourceIds?: string[];
 }
 
 export interface SearchResponse {
@@ -36,6 +42,8 @@ export interface SearchResponse {
   total: number;
   totalPages: number;
   results: SearchResult[];
+  coverage?: DictionaryRootLemmaCoverage;
+  exactSensePolicy?: "complete-lemma" | "registry-only";
 }
 
 interface SearchRow {
@@ -276,7 +284,7 @@ const searchRecordsCte = `
   )
 `;
 
-export async function searchKnowledge(
+async function searchRegistryKnowledge(
   options: SearchOptions,
 ): Promise<SearchResponse> {
   const database = requireDatabase();
@@ -414,3 +422,57 @@ export async function searchKnowledge(
       searchResult.rows.map(mapSearchRow),
   };
 }
+
+function isDictionaryRootNodeSearch(options: SearchOptions): boolean {
+  const nodeCompatible = options.type === undefined || options.type === "node";
+  const dictionaryRootDomain = options.domain === undefined
+    || options.domain.toLowerCase() === "dictionaryroot";
+  return nodeCompatible && dictionaryRootDomain;
+}
+
+export async function searchKnowledge(
+  options: SearchOptions,
+): Promise<SearchResponse> {
+  if (!isDictionaryRootNodeSearch(options)) {
+    return searchRegistryKnowledge(options);
+  }
+
+  const [lexical, registry] = await Promise.all([
+    searchDictionaryRootExactSenses(options.query, options.bundleId),
+    searchRegistryKnowledge({
+      ...options,
+      page: options.page === 1 ? 1 : options.page,
+      limit: options.page === 1 ? Math.max(options.limit, 100) : options.limit,
+    }),
+  ]);
+
+  if (!lexical.coverage.available || options.page !== 1) {
+    return {
+      ...registry,
+      coverage: lexical.coverage,
+      exactSensePolicy: lexical.coverage.available ? "complete-lemma" : "registry-only",
+    };
+  }
+
+  const exactIds = new Set(lexical.items.map((item) => item.id));
+  const related = registry.results.filter((item) => !exactIds.has(item.id));
+  const relatedSlots = Math.max(0, options.limit - lexical.items.length);
+  const results: SearchResult[] = [
+    ...lexical.items,
+    ...related.slice(0, relatedSlots),
+  ];
+  const effectiveLimit = Math.max(options.limit, lexical.items.length);
+  const total = registry.total + lexical.coverage.lexicalOnlySenseCount;
+
+  return {
+    query: options.query,
+    page: 1,
+    limit: effectiveLimit,
+    total,
+    totalPages: total === 0 ? 0 : Math.ceil(total / effectiveLimit),
+    results,
+    coverage: lexical.coverage,
+    exactSensePolicy: "complete-lemma",
+  };
+}
+

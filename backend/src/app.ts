@@ -11,6 +11,7 @@ import { bundlesRouter } from "./routes/bundles.js";
 import { edgesRouter } from "./routes/edges.js";
 import { healthRouter } from "./routes/health.js";
 import { importRouter } from "./routes/import.js";
+import { lexiconRouter } from "./routes/lexicon.js";
 import { nodesRouter } from "./routes/nodes.js";
 import { revisionsRouter } from "./routes/revisions.js";
 import { searchRouter } from "./routes/search.js";
@@ -69,6 +70,7 @@ export function createApp(options: CreateAppOptions = {}) {
   app.use(healthRouter);
   app.use("/api/v1", validateRouter);
   app.use("/api/v1/import", importRouter);
+  app.use("/api/v1/dictionaryroot/lexicon", lexiconRouter);
   app.use("/api/v1/search", searchRouter);
   app.use("/api/v1/bundles", bundlesRouter);
   app.use("/api/v1/nodes", nodesRouter);

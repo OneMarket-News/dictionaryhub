@@ -1,4 +1,5 @@
 import { getPool } from "../lib/database.js";
+import { getDictionaryRootLexicalNodeById } from "./lexical-store.js";
 
 export interface NormalizedNode {
   nodeId: string;
@@ -117,7 +118,7 @@ export async function getNodeById(
   const row = result.rows[0];
 
   if (!row) {
-    return undefined;
+    return getDictionaryRootLexicalNodeById(nodeId);
   }
 
   return mapNodeRow(row);
