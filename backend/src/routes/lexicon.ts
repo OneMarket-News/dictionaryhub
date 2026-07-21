@@ -6,6 +6,9 @@ import {
   parsePagination,
 } from "../lib/query-params.js";
 import {
+  getDictionaryRootDynamicNeighborhood,
+} from "../services/dynamic-neighborhood.js";
+import {
   getDictionaryRootCoverageDashboard,
   getDictionaryRootLemmaCoverage,
   getDictionaryRootLexiconStatus,
@@ -56,6 +59,34 @@ function validatedFilter<T extends string>(
   const value = getQueryString(rawValue) || fallback;
   return allowed.has(value as T) ? (value as T) : undefined;
 }
+
+
+lexiconRouter.get("/neighborhood/:nodeId", async (request, response, next) => {
+  try {
+    const depthValue = Number(getQueryString(request.query.depth) || "1");
+    const limitValue = Number(getQueryString(request.query.limit) || "40");
+    if (![1, 2].includes(depthValue) || !Number.isInteger(limitValue) || limitValue < 2 || limitValue > 100) {
+      return response.status(400).json({
+        error: "INVALID_EXPANSION",
+        message: "depth must be 1 or 2 and limit must be an integer from 2 through 100.",
+      });
+    }
+
+    const neighborhood = await getDictionaryRootDynamicNeighborhood(
+      request.params.nodeId,
+      { depth: depthValue as 1 | 2, limit: limitValue },
+    );
+    if (!neighborhood) {
+      return response.status(404).json({
+        error: "NODE_NOT_FOUND",
+        message: `No node found with ID ${request.params.nodeId}.`,
+      });
+    }
+    return response.status(200).json(neighborhood);
+  } catch (error) {
+    return next(error);
+  }
+});
 
 lexiconRouter.get("/status", async (request, response, next) => {
   try {

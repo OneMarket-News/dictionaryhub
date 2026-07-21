@@ -29,5 +29,11 @@
     "knowledgeGraph": true,
     "sources": true,
     "advancedDetails": true
+  },
+  "dynamicExpansion": {
+    "defaultDepth": 1,
+    "maximumDepth": 2,
+    "maximumVisibleNodes": 72,
+    "maximumBranches": 8
   }
 }

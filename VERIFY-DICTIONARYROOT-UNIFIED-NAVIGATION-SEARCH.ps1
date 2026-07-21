@@ -118,8 +118,8 @@ if ($MissingFiles.Count -gt 0) {
 $ExpectedCommittedHashes = [ordered]@{
     "assets\css\dictionaryroot-brand.css" = "263c669ec5861cfb1bbd8317e4e7ed66b23094b6896d9f1e8024e592c7c7295a"
     "assets\css\dictionaryroot-live.css" = "7b2fb78ba619f5a5b436a29532f74e5b08d7e1e0ec092a9b63c354f346ee68d2"
-    "assets\js\dictionaryroot-api.js" = "7bc299d069f8f5eba15c83a6f507fd614711d606af6dfe781d96c4c5c9d29f6d"
-    "config\customers\dictionaryroot.json" = "65b31454db62d1553020efd8039358bb1aa7d8087def1a48014e9e85459f2033"
+    "assets\js\dictionaryroot-api.js" = "2798c219026db3cb1af59ee0e2c6625ab8f601318615ce0517db5574cc51dc7b"
+    "config\customers\dictionaryroot.json" = "510017d5141a71ab87695cafd14cf15e5bad433595334f2298c245dadc0627d2"
     "explore.html" = "16f8abaa616145121619862314fe8002d25cfa9b10f6c384249d0a15f5430c80"
 }
 

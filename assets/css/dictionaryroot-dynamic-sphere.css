@@ -1,0 +1,201 @@
+/* DictionaryRoot Dynamic Sphere Expansion v1 */
+
+.dr-sphere-expansion-panel {
+  display: grid;
+  grid-template-columns: minmax(280px, 1.7fr) minmax(150px, 0.65fr) minmax(160px, 0.7fr) minmax(430px, 1.5fr);
+  gap: 0.85rem;
+  align-items: end;
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid rgba(103, 232, 249, 0.22);
+  border-radius: 20px;
+  background: linear-gradient(145deg, rgba(8, 24, 42, 0.96), rgba(5, 14, 26, 0.96));
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.22);
+}
+
+.dr-sphere-expansion-intro {
+  display: grid;
+  gap: 0.3rem;
+  align-self: center;
+}
+
+.dr-sphere-expansion-intro strong {
+  color: #eefaff;
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+}
+
+.dr-sphere-expansion-intro span {
+  max-width: 720px;
+  color: var(--dr-live-muted);
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
+
+.dr-sphere-expansion-panel label {
+  display: grid;
+  gap: 0.38rem;
+  color: var(--dr-live-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.dr-sphere-expansion-panel select {
+  width: 100%;
+  min-height: 50px;
+  padding: 0 0.8rem;
+  border: 1px solid var(--dr-live-line);
+  border-radius: 13px;
+  background: rgba(5, 14, 26, 0.9);
+  color: var(--dr-live-copy);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 760;
+  text-transform: none;
+}
+
+.dr-sphere-expansion-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(125px, 1fr));
+  gap: 0.65rem;
+}
+
+.dr-sphere-expansion-actions button {
+  min-height: 50px;
+}
+
+.dr-sphere-expansion-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.dr-sphere-membership-legend {
+  grid-column: 1 / -2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.dr-sphere-membership-legend span {
+  display: inline-flex;
+  gap: 0.42rem;
+  align-items: center;
+  min-height: 31px;
+  padding: 0.3rem 0.62rem;
+  border: 1px solid var(--dr-live-line);
+  border-radius: 999px;
+  color: #c4d3e6;
+  font-size: 0.72rem;
+  font-weight: 760;
+}
+
+.dr-sphere-membership-legend i {
+  width: 0.7rem;
+  height: 0.7rem;
+  border: 2px solid #67e8f9;
+  border-radius: 50%;
+  background: rgba(103, 232, 249, 0.18);
+}
+
+.dr-sphere-membership-legend [data-membership="dynamic"] i {
+  border-style: dashed;
+  border-color: #fcd34d;
+  background: rgba(252, 211, 77, 0.14);
+}
+
+#sphereExpansionStatus {
+  align-self: center;
+  margin: 0;
+  text-align: right;
+}
+
+.dr-sphere-node-membership {
+  display: inline-flex;
+  align-items: center;
+  min-height: 18px;
+  padding: 0.08rem 0.34rem;
+  border: 1px solid rgba(103, 232, 249, 0.35);
+  border-radius: 999px;
+  color: #b9f5fb;
+  font-size: 0.5rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.dr-sphere-node[data-membership="dynamic"] {
+  border-style: dashed;
+  --sphere-node-border: #fcd34d;
+  --sphere-node-soft: rgba(252, 211, 77, 0.16);
+}
+
+.dr-sphere-node[data-membership="dynamic"] .dr-sphere-node-membership {
+  border-color: rgba(252, 211, 77, 0.48);
+  color: #fde68a;
+}
+
+.dr-live-chip[data-membership="core"] {
+  border-color: rgba(103, 232, 249, 0.35);
+  color: #b9f5fb;
+}
+
+.dr-live-chip[data-membership="dynamic"] {
+  border-style: dashed;
+  border-color: rgba(252, 211, 77, 0.48);
+  color: #fde68a;
+}
+
+@media (max-width: 1380px) {
+  .dr-sphere-expansion-panel {
+    grid-template-columns: minmax(280px, 1.4fr) repeat(2, minmax(150px, 0.7fr));
+  }
+
+  .dr-sphere-expansion-actions {
+    grid-column: 1 / -1;
+  }
+
+  .dr-sphere-membership-legend {
+    grid-column: 1 / -1;
+  }
+
+  #sphereExpansionStatus {
+    grid-column: 1 / -1;
+    text-align: left;
+  }
+}
+
+@media (max-width: 760px) {
+  .dr-sphere-expansion-panel {
+    grid-template-columns: 1fr;
+    padding: 0.85rem;
+  }
+
+  .dr-sphere-expansion-actions,
+  .dr-sphere-membership-legend,
+  #sphereExpansionStatus {
+    grid-column: 1;
+  }
+
+  .dr-sphere-expansion-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .dr-sphere-expansion-actions button,
+  .dr-sphere-expansion-panel select {
+    min-height: 46px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dr-sphere-membership-legend {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .dr-sphere-node-membership {
+    font-size: 0.46rem;
+  }
+}

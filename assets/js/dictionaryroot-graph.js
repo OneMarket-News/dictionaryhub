@@ -38,7 +38,14 @@
     lastAnimationTime: 0,
     centerSourceCount: 0,
     loadToken: 0,
-    navigatingHistory: false
+    navigatingHistory: false,
+    baseNodeIds: new Set(),
+    baseEdgeKeys: new Set(),
+    expansionBranches: new Map(),
+    expandedNodeIds: new Set(),
+    expansionDepth: 1,
+    expansionLimit: 72,
+    expansionBusy: false
   };
 
   const elements = {};
@@ -83,6 +90,11 @@
     if (label) url.searchParams.set("q", label);
     else url.searchParams.delete("q");
     url.searchParams.set("mode", state.mode);
+    url.searchParams.set("depth", String(state.depth));
+    url.searchParams.set("expandDepth", String(state.expansionDepth));
+    url.searchParams.set("maxNodes", String(state.expansionLimit));
+    if (state.expandedNodeIds.size) url.searchParams.set("expand", Array.from(state.expandedNodeIds).join(","));
+    else url.searchParams.delete("expand");
     if (mode === "replace") global.history.replaceState({}, "", url);
     else global.history.pushState({}, "", url);
   }
@@ -172,6 +184,28 @@
     return "Lexical";
   }
 
+  function graphMembership(record) {
+    const metadata = metadataFrom(record);
+    return metadata.graphCoverage === false || record.status === "lexicon-only" ? "dynamic" : "core";
+  }
+
+  function expansionConfig() {
+    return Object.assign({
+      defaultDepth: 1,
+      maximumDepth: 2,
+      maximumVisibleNodes: 72,
+      maximumBranches: 8
+    }, state.manifest && state.manifest.dynamicExpansion || {});
+  }
+
+  function expansionIdsFromUrl(params) {
+    return String(params.get("expand") || "")
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean)
+      .slice(0, Number(expansionConfig().maximumBranches || 8));
+  }
+
   function hashNumber(value) {
     let hash = 0;
     const text = String(value || "");
@@ -191,11 +225,14 @@
     };
   }
 
-  function addNode(node, depth, parentId) {
+  function addNode(node, depth, parentId, options) {
     if (!node || !node.nodeId) return null;
+    const config = Object.assign({ loadOrigin: "base", expansionRoot: "", membership: "" }, options || {});
     if (state.nodes.has(node.nodeId)) {
       const existing = state.nodes.get(node.nodeId);
       existing.depth = Math.min(existing.depth, Number(depth) || 0);
+      if (existing.loadOrigin !== "base" && config.loadOrigin === "base") existing.loadOrigin = "base";
+      if (!existing.expansionRoot && config.expansionRoot) existing.expansionRoot = config.expansionRoot;
       return existing;
     }
 
@@ -204,7 +241,10 @@
       depth: Number(depth) || 0,
       parentId: parentId || null,
       ordinal: state.nextOrdinal,
-      domain: broadDomain(node)
+      domain: broadDomain(node),
+      membership: config.membership || graphMembership(node),
+      loadOrigin: config.loadOrigin,
+      expansionRoot: config.expansionRoot || ""
     };
     state.nextOrdinal += 1;
     state.nodes.set(node.nodeId, item);
@@ -610,8 +650,9 @@
     button.type = "button";
     button.className = "dr-sphere-node";
     button.dataset.nodeId = node.nodeId;
-    button.setAttribute("aria-label", `${displayLabel(item)}, ${posFrom(node)}. Click to inspect. Double-click to center.`);
-    button.innerHTML = `<span class="dr-sphere-node-label">${escapeHtml(displayLabel(item))}</span><span class="dr-sphere-node-pos">${escapeHtml(posFrom(node))}</span>`;
+    button.setAttribute("aria-label", `${displayLabel(item)}, ${posFrom(node)}, ${item.membership === "core" ? "curated core" : "loaded on demand"}. Click to inspect. Double-click to center.`);
+    button.dataset.membership = item.membership;
+    button.innerHTML = `<span class="dr-sphere-node-label">${escapeHtml(displayLabel(item))}</span><span class="dr-sphere-node-pos">${escapeHtml(posFrom(node))}</span><span class="dr-sphere-node-membership">${item.membership === "core" ? "Core" : "Dynamic"}</span>`;
     return button;
   }
 
@@ -715,8 +756,8 @@
     elements.stage.classList.toggle("sphere-mode", state.mode === "map");
     elements.stage.classList.toggle("flat-mode", state.mode === "readable");
     elements.stageHint.textContent = state.mode === "map"
-      ? "Drag empty space to rotate · Click to inspect · Double-click to center"
-      : "Readable cards · Click to inspect · Double-click to center";
+      ? "Drag to rotate · Click to inspect · Expand selected to reveal more"
+      : "Readable cards · Click to inspect · Expand selected to reveal more";
     updateModeControls();
   }
 
@@ -729,9 +770,11 @@
       edge.fromNodeId === state.centerId || edge.toNodeId === state.centerId
     )).length;
     const domains = new Set(visible.map((item) => item.domain));
+    const coreCount = visible.filter((item) => item.membership === "core").length;
+    const dynamicCount = visible.length - coreCount;
 
     elements.title.textContent = center ? `${displayLabel(center)} Knowledge Sphere` : "Knowledge Sphere";
-    elements.meta.textContent = `${state.depth}-hop depth · ${state.edgeMode} edges · ${state.mode} mode · ${state.lens} lens`;
+    elements.meta.textContent = `${state.depth}-hop base · ${state.expansionBranches.size} expanded branch${state.expansionBranches.size === 1 ? "" : "es"} · ${state.mode} mode · ${state.lens} lens`;
     elements.count.textContent = `${visible.length} concepts · ${neighborhood.length} neighborhood · ${displayed.length} displayed`;
     elements.statConcepts.textContent = String(visible.length);
     elements.statNeighborhoodEdges.textContent = String(neighborhood.length);
@@ -739,7 +782,11 @@
     elements.statCenterEdges.textContent = String(centerConnections);
     elements.statDomains.textContent = String(domains.size);
     elements.statSources.textContent = String(state.centerSourceCount);
+    elements.statCoreNodes.textContent = String(coreCount);
+    elements.statDynamicNodes.textContent = String(dynamicCount);
+    elements.statBranches.textContent = String(state.expansionBranches.size);
     renderDomainLegend(visible);
+    updateExpansionControls();
   }
 
   function renderDomainLegend(items) {
@@ -812,6 +859,168 @@
       state.trail.push(nodeId);
     }
     renderBreadcrumb();
+  }
+
+  function setExpansionStatus(message, status) {
+    if (!elements.expansionStatus) return;
+    elements.expansionStatus.textContent = message || "";
+    elements.expansionStatus.dataset.state = status || "";
+  }
+
+  function captureBaseNeighborhood() {
+    state.baseNodeIds = new Set(state.nodes.keys());
+    state.baseEdgeKeys = new Set(state.edges.keys());
+    state.expansionBranches.clear();
+    state.expandedNodeIds.clear();
+  }
+
+  function updateExpansionControls() {
+    if (!elements.expandSelected) return;
+    const selected = state.selectedId && state.nodes.has(state.selectedId);
+    const expanded = selected && state.expandedNodeIds.has(state.selectedId);
+    const atLimit = state.nodes.size >= state.expansionLimit;
+    elements.expandSelected.disabled = state.expansionBusy || !selected || expanded || atLimit;
+    elements.collapseSelected.disabled = state.expansionBusy || !expanded;
+    elements.resetExpansions.disabled = state.expansionBusy || state.expansionBranches.size === 0;
+    elements.expansionDepth.value = String(state.expansionDepth);
+    elements.expansionLimit.value = String(state.expansionLimit);
+  }
+
+  function keepSetsForExpansions() {
+    const nodeIds = new Set(state.baseNodeIds);
+    const edgeKeys = new Set(state.baseEdgeKeys);
+    state.expansionBranches.forEach((branch) => {
+      branch.nodeIds.forEach((nodeId) => nodeIds.add(nodeId));
+      branch.edgeKeys.forEach((key) => edgeKeys.add(key));
+    });
+    return { nodeIds, edgeKeys };
+  }
+
+  function pruneCollapsedExpansionData() {
+    const keep = keepSetsForExpansions();
+    Array.from(state.nodes.keys()).forEach((nodeId) => {
+      if (!keep.nodeIds.has(nodeId)) {
+        state.nodes.delete(nodeId);
+        state.positions.delete(nodeId);
+        state.conceptCache.delete(nodeId);
+      }
+    });
+    Array.from(state.edges.keys()).forEach((key) => {
+      const edge = state.edges.get(key);
+      if (!keep.edgeKeys.has(key) || !edge || !state.nodes.has(edge.fromNodeId) || !state.nodes.has(edge.toNodeId)) {
+        state.edges.delete(key);
+      }
+    });
+    if (!state.nodes.has(state.selectedId)) state.selectedId = state.centerId;
+    updateDomainFilter();
+    renderGraphStructure();
+  }
+
+  async function expandBranch(nodeId, options) {
+    const config = Object.assign({ history: "push", quiet: false }, options || {});
+    if (!nodeId || state.expansionBusy || state.expandedNodeIds.has(nodeId)) return;
+    const maximumBranches = Number(expansionConfig().maximumBranches || 8);
+    if (state.expansionBranches.size >= maximumBranches) {
+      setExpansionStatus(`The expansion limit of ${maximumBranches} branches has been reached. Collapse a branch before adding another.`, "error");
+      return;
+    }
+
+    const available = Math.max(0, state.expansionLimit - state.nodes.size);
+    if (available < 1) {
+      setExpansionStatus(`The visible node budget of ${state.expansionLimit} has been reached. Collapse a branch or raise the budget.`, "error");
+      return;
+    }
+
+    const centerAtStart = state.centerId;
+    const loadTokenAtStart = state.loadToken;
+    state.expansionBusy = true;
+    updateExpansionControls();
+    if (!config.quiet) setExpansionStatus(`Expanding ${state.expansionDepth} hop${state.expansionDepth === 1 ? "" : "s"} from the selected meaning...`, "loading");
+
+    try {
+      const requestLimit = Math.max(2, Math.min(100, available + 1));
+      const response = await state.client.dynamicNeighborhood(nodeId, {
+        depth: state.expansionDepth,
+        limit: requestLimit
+      });
+      if (centerAtStart !== state.centerId || loadTokenAtStart !== state.loadToken) return;
+      const payload = response.data || {};
+      const items = Array.isArray(payload.items) ? payload.items : Array.isArray(payload.nodes) ? payload.nodes : [];
+      const branchNodeIds = new Set();
+      const branchEdgeKeys = new Set();
+      const rootItem = state.nodes.get(nodeId);
+      const rootDepth = rootItem ? rootItem.depth : 0;
+
+      items.forEach((record) => {
+        const node = record && record.node ? record.node : record;
+        if (!node || !node.nodeId) return;
+        const distance = Number(record.distance || 0);
+        addNode(node, Math.min(state.depth + state.expansionDepth + 1, rootDepth + distance), nodeId, {
+          loadOrigin: "dynamic",
+          expansionRoot: nodeId,
+          membership: record.graphMembership || graphMembership(node)
+        });
+        branchNodeIds.add(node.nodeId);
+      });
+
+      (Array.isArray(payload.edges) ? payload.edges : []).forEach((edge) => {
+        if (!edge || !state.nodes.has(edge.fromNodeId) || !state.nodes.has(edge.toNodeId)) return;
+        addEdge(edge);
+        branchEdgeKeys.add(edgeKey(edge));
+      });
+
+      if (!branchNodeIds.size) {
+        setExpansionStatus("No additional relationships were available for this meaning.", "");
+        return;
+      }
+
+      state.expansionBranches.set(nodeId, {
+        nodeIds: branchNodeIds,
+        edgeKeys: branchEdgeKeys,
+        truncated: Boolean(payload.truncated)
+      });
+      state.expandedNodeIds.add(nodeId);
+      updateDomainFilter();
+      renderGraphStructure();
+      if (config.history) updateHistory(state.centerId, displayLabel(state.nodes.get(state.centerId)), config.history);
+
+      const addedCount = Array.from(branchNodeIds).filter((id) => !state.baseNodeIds.has(id)).length;
+      const rootLabel = state.nodes.has(nodeId) ? displayLabel(state.nodes.get(nodeId)) : "selected meaning";
+      setExpansionStatus(
+        `Expanded “${rootLabel}” with ${addedCount} on-demand node${addedCount === 1 ? "" : "s"}${payload.truncated ? " within the current budget" : ""}.`,
+        "success"
+      );
+    } catch (error) {
+      setExpansionStatus(error.message || "The selected branch could not be expanded.", "error");
+    } finally {
+      state.expansionBusy = false;
+      updateExpansionControls();
+    }
+  }
+
+  function collapseBranch(nodeId, historyMode) {
+    if (!nodeId || !state.expansionBranches.has(nodeId)) return;
+    state.expansionBranches.delete(nodeId);
+    state.expandedNodeIds.delete(nodeId);
+    pruneCollapsedExpansionData();
+    if (historyMode) updateHistory(state.centerId, displayLabel(state.nodes.get(state.centerId)), historyMode);
+    setExpansionStatus("The selected dynamic branch was collapsed.", "success");
+  }
+
+  function clearExpansions(historyMode) {
+    state.expansionBranches.clear();
+    state.expandedNodeIds.clear();
+    pruneCollapsedExpansionData();
+    if (historyMode) updateHistory(state.centerId, displayLabel(state.nodes.get(state.centerId)), historyMode);
+    setExpansionStatus("All on-demand branches were cleared. The base sphere remains unchanged.", "success");
+  }
+
+  async function restoreExpansions(nodeIds) {
+    for (const nodeId of nodeIds || []) {
+      if (state.expansionBranches.size >= Number(expansionConfig().maximumBranches || 8)) break;
+      await expandBranch(nodeId, { history: null, quiet: true });
+    }
+    if ((nodeIds || []).length) setExpansionStatus("Restored the shared dynamic expansion state from the URL.", "success");
   }
 
   function relationshipNameForEdge(edge) {
@@ -916,13 +1125,16 @@
         <div class="dr-live-chip-row">
           <span class="dr-live-chip" data-tone="accent">${escapeHtml(posFrom(concept.node))}</span>
           <span class="dr-live-chip" data-tone="good">Source-backed</span>
+          <span class="dr-live-chip" data-membership="${escapeHtml(item.membership)}">${item.membership === "core" ? "Curated core" : "Loaded on demand"}</span>
           <span class="dr-live-chip">${escapeHtml(item.domain)}</span>
         </div>
         <h2 class="dr-live-concept-title dr-sphere-selected-title">${escapeHtml(preferred)}</h2>
         ${canonical ? `<p class="dr-live-canonical">Open English WordNet groups this sense under <strong>${escapeHtml(canonical)}</strong>.</p>` : ""}
         <p class="dr-live-definition dr-sphere-definition">${escapeHtml((definition && (definition.body || definition.summary)) || concept.node.summary || "No definition is available.")}</p>
         <div class="dr-live-actions">
-          <button class="dr-live-button" type="button" data-center-selected>Make center</button>
+          <button class="dr-live-button" type="button" data-expand-selected>${state.expandedNodeIds.has(nodeId) ? "Branch expanded" : `Expand ${state.expansionDepth} hop${state.expansionDepth === 1 ? "" : "s"}`}</button>
+          ${state.expandedNodeIds.has(nodeId) ? '<button class="dr-live-button-secondary" type="button" data-collapse-selected>Collapse branch</button>' : ""}
+          <button class="dr-live-button-secondary" type="button" data-center-selected>Make center</button>
           <a class="dr-live-button-secondary dr-sphere-link-button" href="${escapeHtml(experienceHref("concept-v2.html", nodeId, preferred, sourceRecordId((concept.sources || [])[0])))}">Full concept page</a>
         </div>
       </section>
@@ -973,7 +1185,7 @@
   }
 
   async function openCenter(nodeId, preferredLabel, options) {
-    const config = Object.assign({ history: "push", resetTrail: false }, options || {});
+    const config = Object.assign({ history: "push", resetTrail: false, expandedIds: [] }, options || {});
     const token = state.loadToken + 1;
     state.loadToken = token;
 
@@ -991,6 +1203,11 @@
       state.nextOrdinal = 0;
       state.selectedEdgeKey = "";
       state.centerSourceCount = 0;
+      state.baseNodeIds.clear();
+      state.baseEdgeKeys.clear();
+      state.expansionBranches.clear();
+      state.expandedNodeIds.clear();
+      setExpansionStatus("", "");
 
       state.centerId = nodeId;
       state.selectedId = nodeId;
@@ -1007,7 +1224,13 @@
 
       updateDomainFilter();
       renderGraphStructure();
+      captureBaseNeighborhood();
       addToTrail(nodeId, Boolean(config.resetTrail));
+
+      if (Array.isArray(config.expandedIds) && config.expandedIds.length) {
+        await restoreExpansions(config.expandedIds);
+        if (token !== state.loadToken) return;
+      }
 
       const centerConcept = await conceptFor(nodeId);
       if (token !== state.loadToken) return;
@@ -1020,7 +1243,7 @@
 
       updateHistory(nodeId, centerLabel, config.history);
 
-      setStatus(`Loaded ${state.nodes.size} source-backed meanings around “${centerLabel}”.`, "success");
+      setStatus(`Loaded ${state.nodes.size} source-backed meanings around “${centerLabel}”. Expand any selected node to continue on demand.`, "success");
     } catch (error) {
       if (token !== state.loadToken) return;
       setStatus(error.message || "The sphere could not be built.", "error");
@@ -1263,6 +1486,21 @@
     });
 
     elements.details.addEventListener("click", async (event) => {
+      const expandSelected = event.target.closest("[data-expand-selected]");
+      if (expandSelected && state.selectedId && !state.expandedNodeIds.has(state.selectedId)) {
+        await expandBranch(state.selectedId, { history: "push" });
+        await showDetails(state.selectedId);
+        return;
+      }
+
+      const collapseSelected = event.target.closest("[data-collapse-selected]");
+      if (collapseSelected && state.selectedId) {
+        const selectedId = state.selectedId;
+        collapseBranch(selectedId, "push");
+        if (state.nodes.has(selectedId)) await showDetails(selectedId);
+        return;
+      }
+
       const centerSelected = event.target.closest("[data-center-selected]");
       if (centerSelected && state.selectedId) {
         const item = state.nodes.get(state.selectedId);
@@ -1281,6 +1519,39 @@
       if (inspect) await showDetails(inspect.dataset.inspectNode);
     });
 
+    elements.expandSelected.addEventListener("click", async () => {
+      if (!state.selectedId) return;
+      await expandBranch(state.selectedId, { history: "push" });
+      if (state.nodes.has(state.selectedId)) await showDetails(state.selectedId);
+    });
+
+    elements.collapseSelected.addEventListener("click", async () => {
+      if (!state.selectedId) return;
+      const selectedId = state.selectedId;
+      collapseBranch(selectedId, "push");
+      if (state.nodes.has(selectedId)) await showDetails(selectedId);
+    });
+
+    elements.resetExpansions.addEventListener("click", async () => {
+      clearExpansions("push");
+      if (state.centerId) await showDetails(state.centerId);
+    });
+
+    elements.expansionDepth.addEventListener("change", () => {
+      state.expansionDepth = elements.expansionDepth.value === "2" ? 2 : 1;
+      updateExpansionControls();
+      if (state.centerId) updateHistory(state.centerId, displayLabel(state.nodes.get(state.centerId)), "replace");
+      setExpansionStatus(`Future branches will expand ${state.expansionDepth} hop${state.expansionDepth === 1 ? "" : "s"} at a time.`, "success");
+    });
+
+    elements.expansionLimit.addEventListener("change", () => {
+      const requested = Number(elements.expansionLimit.value);
+      state.expansionLimit = [50, 72, 100].includes(requested) ? requested : 72;
+      updateExpansionControls();
+      if (state.centerId) updateHistory(state.centerId, displayLabel(state.nodes.get(state.centerId)), "replace");
+      setExpansionStatus(`The visible node budget is now ${state.expansionLimit}.`, "success");
+    });
+
     elements.modeMap.addEventListener("click", () => setGraphMode("map", "push"));
     elements.modeReadable.addEventListener("click", () => setGraphMode("readable", "push"));
 
@@ -1288,7 +1559,7 @@
       state.depth = [1, 2, 3].includes(Number(elements.depthSelect.value)) ? Number(elements.depthSelect.value) : 2;
       if (state.centerId) {
         const item = state.nodes.get(state.centerId);
-        await openCenter(state.centerId, item ? displayLabel(item) : "", { resetTrail: false, history: null });
+        await openCenter(state.centerId, item ? displayLabel(item) : "", { resetTrail: false, history: "push", expandedIds: [] });
       }
     });
 
@@ -1354,10 +1625,16 @@
         const nodeId = params.get("nodeId");
         const query = params.get("q") || state.manifest.defaults.searchTerm || "knowledge";
         state.mode = params.get("mode") === "readable" ? "readable" : "map";
+        state.depth = [1, 2, 3].includes(Number(params.get("depth"))) ? Number(params.get("depth")) : state.depth;
+        state.expansionDepth = params.get("expandDepth") === "2" ? 2 : 1;
+        state.expansionLimit = [50, 72, 100].includes(Number(params.get("maxNodes"))) ? Number(params.get("maxNodes")) : state.expansionLimit;
+        const expandedIds = expansionIdsFromUrl(params);
+        elements.depthSelect.value = String(state.depth);
         updateModeControls();
+        updateExpansionControls();
         elements.input.value = query;
         if (nodeId) {
-          await openCenter(nodeId, query, { resetTrail: true, history: null });
+          await openCenter(nodeId, query, { resetTrail: true, history: null, expandedIds });
         } else {
           await search(query, false, { history: null });
         }
@@ -1401,7 +1678,16 @@
       statCenterEdges: byId("sphereStatCenterEdges"),
       statDomains: byId("sphereStatDomains"),
       statSources: byId("sphereStatSources"),
-      domainLegend: byId("sphereDomainLegend")
+      domainLegend: byId("sphereDomainLegend"),
+      expansionDepth: byId("sphereExpansionDepth"),
+      expansionLimit: byId("sphereExpansionLimit"),
+      expandSelected: byId("sphereExpandSelected"),
+      collapseSelected: byId("sphereCollapseSelected"),
+      resetExpansions: byId("sphereResetExpansions"),
+      expansionStatus: byId("sphereExpansionStatus"),
+      statCoreNodes: byId("sphereStatCoreNodes"),
+      statDynamicNodes: byId("sphereStatDynamicNodes"),
+      statBranches: byId("sphereStatBranches")
     });
 
     state.manifest = await DictionaryRootApi.loadManifest();
@@ -1409,7 +1695,14 @@
     state.depth = [1, 2, 3].includes(Number(state.manifest.graph.initialDepth))
       ? Number(state.manifest.graph.initialDepth)
       : 2;
+    const dynamicDefaults = expansionConfig();
+    state.expansionDepth = Number(dynamicDefaults.defaultDepth) === 2 ? 2 : 1;
+    state.expansionLimit = [50, 72, 100].includes(Number(dynamicDefaults.maximumVisibleNodes))
+      ? Number(dynamicDefaults.maximumVisibleNodes)
+      : 72;
     elements.depthSelect.value = String(state.depth);
+    elements.expansionDepth.value = String(state.expansionDepth);
+    elements.expansionLimit.value = String(state.expansionLimit);
 
     bindEvents();
     updateRotationControl();
@@ -1419,11 +1712,17 @@
     const nodeId = params.get("nodeId");
     const query = params.get("q") || state.manifest.defaults.searchTerm || "knowledge";
     state.mode = params.get("mode") === "readable" ? "readable" : "map";
+    state.depth = [1, 2, 3].includes(Number(params.get("depth"))) ? Number(params.get("depth")) : state.depth;
+    state.expansionDepth = params.get("expandDepth") === "2" ? 2 : state.expansionDepth;
+    state.expansionLimit = [50, 72, 100].includes(Number(params.get("maxNodes"))) ? Number(params.get("maxNodes")) : state.expansionLimit;
+    const expandedIds = expansionIdsFromUrl(params);
+    elements.depthSelect.value = String(state.depth);
     updateModeControls();
+    updateExpansionControls();
     elements.input.value = query;
 
     if (nodeId) {
-      await openCenter(nodeId, params.get("q") || "", { resetTrail: true, history: "replace" });
+      await openCenter(nodeId, params.get("q") || "", { resetTrail: true, history: "replace", expandedIds });
     } else {
       await search(query, true, { history: "replace" });
     }

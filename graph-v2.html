@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="assets/css/dictionaryroot-navigation.css">
   <link rel="stylesheet" href="assets/css/dictionaryroot-live.css">
   <link rel="stylesheet" href="assets/css/dictionaryroot-hybrid-map.css">
+  <link rel="stylesheet" href="assets/css/dictionaryroot-dynamic-sphere.css">
 </head>
 <body class="dictionaryroot-live-page dictionaryroot-customer-page dictionaryroot-graph-page">
   <main id="main-content" class="dr-live-main dr-sphere-main">
@@ -17,7 +18,7 @@
       <div>
         <p class="dr-live-eyebrow">DictionaryRoot Customer #001</p>
         <h1 id="spherePageTitle">Explore the knowledge sphere.</h1>
-        <p>Choose an exact word sense, explore its rotating semantic map or switch to a readable card layout, inspect the evidence behind each meaning, and recenter the graph as your path develops.</p>
+        <p>Choose any exact word sense, including a lexical-only meaning, then expand its local relationships one or two hops at a time without loading the entire dictionary graph.</p>
       </div>
       <div class="dr-live-stat">
         <strong>Live</strong>
@@ -88,6 +89,39 @@
       </div>
     </section>
 
+
+    <section class="dr-sphere-expansion-panel" aria-label="Dynamic sphere expansion controls">
+      <div class="dr-sphere-expansion-intro">
+        <strong>Dynamic expansion</strong>
+        <span>Core nodes are in the curated 10,000-meaning graph. Dynamic nodes are loaded from complete lexical coverage only when you need them.</span>
+      </div>
+      <label>
+        <span>Expand</span>
+        <select id="sphereExpansionDepth">
+          <option value="1" selected>1 hop at a time</option>
+          <option value="2">2 hops at a time</option>
+        </select>
+      </label>
+      <label>
+        <span>Visible node budget</span>
+        <select id="sphereExpansionLimit">
+          <option value="50">50 nodes</option>
+          <option value="72" selected>72 nodes</option>
+          <option value="100">100 nodes</option>
+        </select>
+      </label>
+      <div class="dr-sphere-expansion-actions" role="group" aria-label="Expansion actions">
+        <button id="sphereExpandSelected" class="dr-live-button" type="button">Expand selected</button>
+        <button id="sphereCollapseSelected" class="dr-live-icon-button" type="button">Collapse branch</button>
+        <button id="sphereResetExpansions" class="dr-live-icon-button" type="button">Clear dynamic nodes</button>
+      </div>
+      <div class="dr-sphere-membership-legend" aria-label="Graph membership legend">
+        <span data-membership="core"><i></i>Curated core</span>
+        <span data-membership="dynamic"><i></i>Loaded on demand</span>
+      </div>
+      <p id="sphereExpansionStatus" class="dr-live-status" role="status" aria-live="polite"></p>
+    </section>
+
     <section class="dr-sphere-breadcrumb" aria-label="Concept path">
       <div>
         <strong>Concept path</strong>
@@ -115,7 +149,7 @@
             </svg>
             <div id="dictionaryrootGraphNodes" class="dr-sphere-node-layer"></div>
             <div id="dictionaryrootGraphTooltip" class="dr-graph-tooltip" hidden></div>
-            <div id="sphereStageHint" class="dr-sphere-hint">Drag empty space to rotate · Click to inspect · Double-click to center</div>
+            <div id="sphereStageHint" class="dr-sphere-hint">Drag empty space to rotate · Click to inspect · Expand selected to reveal more</div>
           </div>
         </section>
 
@@ -130,6 +164,9 @@
                 <div><strong id="sphereStatCenterEdges">0</strong><span>Center connections</span></div>
                 <div><strong id="sphereStatDomains">0</strong><span>Visible domains</span></div>
                 <div><strong id="sphereStatSources">0</strong><span>Center sources</span></div>
+                <div><strong id="sphereStatCoreNodes">0</strong><span>Curated core nodes</span></div>
+                <div><strong id="sphereStatDynamicNodes">0</strong><span>On-demand nodes</span></div>
+                <div><strong id="sphereStatBranches">0</strong><span>Expanded branches</span></div>
               </div>
             </div>
           </article>

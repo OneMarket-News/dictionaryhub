@@ -9,7 +9,8 @@
     apiBaseUrl: "http://localhost:3000/api/v1",
     bundleId: "dictionaryroot-oewn-2025-pilot-500",
     defaults: { searchTerm: "knowledge", pageSize: 25 },
-    graph: { initialDepth: 1, initialNodeLimit: 40, maximumNodeLimit: 150 }
+    graph: { initialDepth: 1, initialNodeLimit: 40, maximumNodeLimit: 150, neighborsPerExpansion: 18 },
+    dynamicExpansion: { defaultDepth: 1, maximumDepth: 2, maximumVisibleNodes: 72, maximumBranches: 8 }
   };
 
   class DictionaryRootApiError extends Error {
@@ -55,7 +56,8 @@
       const loaded = await response.json();
       return Object.assign({}, DEFAULT_MANIFEST, loaded, {
         defaults: Object.assign({}, DEFAULT_MANIFEST.defaults, loaded.defaults || {}),
-        graph: Object.assign({}, DEFAULT_MANIFEST.graph, loaded.graph || {})
+        graph: Object.assign({}, DEFAULT_MANIFEST.graph, loaded.graph || {}),
+        dynamicExpansion: Object.assign({}, DEFAULT_MANIFEST.dynamicExpansion, loaded.dynamicExpansion || {})
       });
     } catch (error) {
       console.warn("DictionaryRoot manifest fallback active:", error);
@@ -341,6 +343,14 @@
 
     nodeEdges(nodeId) {
       return this.request(`/nodes/${encodeURIComponent(nodeId)}/edges`);
+    }
+
+    dynamicNeighborhood(nodeId, params) {
+      return this.request(`/dictionaryroot/lexicon/neighborhood/${encodeURIComponent(nodeId)}${buildQuery(Object.assign({
+        depth: 1,
+        limit: 40,
+        bundleId: this.manifest.bundleId
+      }, normalizeParams(params)))}`);
     }
 
     source(sourceId) {
