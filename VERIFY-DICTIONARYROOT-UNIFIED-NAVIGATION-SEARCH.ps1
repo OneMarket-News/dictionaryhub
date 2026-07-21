@@ -119,9 +119,7 @@ $ExpectedCommittedHashes = [ordered]@{
     "assets\css\dictionaryroot-brand.css" = "263c669ec5861cfb1bbd8317e4e7ed66b23094b6896d9f1e8024e592c7c7295a"
     "assets\css\dictionaryroot-live.css" = "7b2fb78ba619f5a5b436a29532f74e5b08d7e1e0ec092a9b63c354f346ee68d2"
     "assets\js\dictionaryroot-api.js" = "7bc299d069f8f5eba15c83a6f507fd614711d606af6dfe781d96c4c5c9d29f6d"
-    "assets\js\dictionaryroot-brand.js" = "195d713db355fc2a302d4fbc43acdd27ed51a7986dc38045b9fbd99a848be31d"
     "config\customers\dictionaryroot.json" = "65b31454db62d1553020efd8039358bb1aa7d8087def1a48014e9e85459f2033"
-    "index.html" = "7e5e739066544ac0242a2ecec6a1aa0fd995a778258aac6e2d606288107d0371"
     "explore.html" = "16f8abaa616145121619862314fe8002d25cfa9b10f6c384249d0a15f5430c80"
 }
 
@@ -130,7 +128,7 @@ foreach ($Entry in $ExpectedCommittedHashes.GetEnumerator()) {
     Write-VerificationResult -Name "Committed baseline preserved: $($Entry.Key)" -Passed ($Actual -eq $Entry.Value) -Detail $(if ($Actual -ne $Entry.Value) { "Expected $($Entry.Value); found $Actual" } else { "" })
 }
 
-foreach ($Page in @("concept-v2.html", "graph-v2.html", "sources-v2.html")) {
+foreach ($Page in @("index.html", "concept-v2.html", "graph-v2.html", "sources-v2.html")) {
     $Content = Get-Text -RelativePath $Page
     $HasCss = $Content.Contains('assets/css/dictionaryroot-navigation.css')
     $HasJs = $Content.Contains('assets/js/dictionaryroot-navigation.js')
@@ -140,6 +138,19 @@ foreach ($Page in @("concept-v2.html", "graph-v2.html", "sources-v2.html")) {
     $OrderOkay = ($ApiIndex -ge 0 -and $BrandIndex -gt $ApiIndex -and $NavigationIndex -gt $BrandIndex)
     Write-VerificationResult -Name "$Page loads shared navigation assets" -Passed ($HasCss -and $HasJs -and $OrderOkay) -Detail $(if (-not $OrderOkay) { "Expected script order: API, branding, navigation, page experience." } else { "" })
 }
+
+Test-TextContains -RelativePath "index.html" -Name "DictionaryRoot Home loads shared navigation and discovery assets" -Needles @(
+    "assets/css/dictionaryroot-navigation.css",
+    "assets/css/dictionaryroot-home.css",
+    "assets/js/dictionaryroot-navigation.js",
+    "assets/js/dictionaryroot-home.js"
+)
+
+Test-TextContains -RelativePath "assets\js\dictionaryroot-navigation.js" -Name "Shared navigation includes DictionaryRoot Home" -Needles @(
+    '{ key: "home", label: "Home", href: "index.html" }',
+    '"index.html": "home"',
+    'buildHref("index.html")'
+)
 
 Test-TextContains -RelativePath "assets\js\dictionaryroot-navigation.js" -Name "Global search uses live exact-meaning ranking" -Needles @(
     "client.searchNodes(term, { limit: 100 })",

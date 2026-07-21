@@ -8,14 +8,20 @@
     poweredBy: "SourceRoot",
     logoPath: "assets/brand/dictionaryroot-mark.svg",
     navigation: [
-      { label: "Explore", href: "concept-v2.html" },
-      { label: "Knowledge Graph", href: "graph-v2.html" },
+      { label: "Home", href: "index.html" },
+      { label: "Concept", href: "concept-v2.html" },
+      { label: "Knowledge Sphere", href: "graph-v2.html" },
       { label: "Sources", href: "sources-v2.html" },
-      { label: "Data Status", href: "dictionaryroot-connection.html" }
+      { label: "History", href: "history-v2.html" }
     ]
   };
 
   const PAGE_META = {
+    "index.html": {
+      title: "DictionaryRoot — Meaning, Connected",
+      heading: "DictionaryRoot",
+      intro: "Search an exact meaning, explore its relationships, verify its sources, and follow its history."
+    },
     "concept-v2.html": {
       title: "DictionaryRoot — Concept Explorer",
       heading: "Concept Explorer",
@@ -78,7 +84,7 @@
   function createBrandLockup(brand) {
     const anchor = document.createElement("a");
     anchor.className = "dictionaryroot-brand-lockup";
-    anchor.href = "concept-v2.html";
+    anchor.href = "index.html";
     anchor.setAttribute("aria-label", `${brand.productName} home`);
     anchor.innerHTML = `
       <img src="${brand.logoPath}" alt="" width="42" height="42">
@@ -132,7 +138,7 @@
     }
 
     const main = document.querySelector("main");
-    if (main && !main.querySelector(".dr-hero") && !main.querySelector(".dictionaryroot-page-intro")) {
+    if (main && !main.querySelector(".dr-hero") && !main.querySelector(".dr-home-hero") && !main.querySelector(".dictionaryroot-page-intro")) {
       const intro = document.createElement("section");
       intro.className = "dictionaryroot-page-intro";
       intro.setAttribute("aria-label", "Page introduction");

@@ -9,6 +9,7 @@
   };
 
   const NAV_ITEMS = [
+    { key: "home", label: "Home", href: "index.html" },
     { key: "concept", label: "Concept", href: "concept-v2.html" },
     { key: "graph", label: "Knowledge Sphere", href: "graph-v2.html" },
     { key: "sources", label: "Sources", href: "sources-v2.html" },
@@ -16,6 +17,7 @@
   ];
 
   const PAGE_KEYS = {
+    "index.html": "home",
     "concept-v2.html": "concept",
     "graph-v2.html": "graph",
     "sources-v2.html": "sources",
@@ -95,7 +97,9 @@
     const context = Object.assign({}, readContext(), overrides || {});
     const params = new URLSearchParams();
 
-    if (targetPage === "concept" || targetPage === "graph") {
+    if (targetPage === "home") {
+      setOrDelete(params, "q", context.meaning);
+    } else if (targetPage === "concept" || targetPage === "graph") {
       setOrDelete(params, "q", context.meaning);
       setOrDelete(params, "nodeId", context.nodeId);
       setOrDelete(params, "source", context.sourceId);
@@ -131,7 +135,7 @@
   }
 
   function brandMarkup(brand) {
-    return `<a class="dictionaryroot-brand-lockup" href="${escapeHtml(buildHref("concept-v2.html"))}" aria-label="${escapeHtml(brand.productName)} home">
+    return `<a class="dictionaryroot-brand-lockup" href="${escapeHtml(buildHref("index.html"))}" aria-label="${escapeHtml(brand.productName)} home">
       <img src="${escapeHtml(brand.logoPath)}" alt="" width="42" height="42">
       <span class="dictionaryroot-brand-copy">
         <span class="dictionaryroot-brand-name">${escapeHtml(brand.productName)}</span>
@@ -466,7 +470,7 @@
       }
     }
     const brandLink = elements.header.querySelector(".dictionaryroot-brand-lockup");
-    if (brandLink) brandLink.setAttribute("href", buildHref("concept-v2.html"));
+    if (brandLink) brandLink.setAttribute("href", buildHref("index.html"));
     elements.nav.querySelectorAll("[data-dr-nav-page]").forEach((anchor) => {
       const active = anchor.dataset.drNavPage === page;
       if (active) anchor.setAttribute("aria-current", "page");

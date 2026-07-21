@@ -2,14 +2,30 @@
   "schemaVersion": "1.0",
   "productName": "DictionaryRoot",
   "tagline": "Explore how meaning connects.",
-  "supportingDescription": "Definitions, relationships, and sources connected through a traceable knowledge graph.",
+  "supportingDescription": "Search exact meanings, explore connected concepts, verify sources, and follow knowledge history.",
   "poweredBy": "SourceRoot",
   "defaultPageTitle": "DictionaryRoot",
   "logoPath": "assets/brand/dictionaryroot-mark.svg",
   "navigation": [
-    { "label": "Explore", "href": "concept-v2.html" },
-    { "label": "Knowledge Graph", "href": "graph-v2.html" },
-    { "label": "Sources", "href": "sources-v2.html" },
-    { "label": "Data Status", "href": "dictionaryroot-connection.html" }
+    {
+      "label": "Home",
+      "href": "index.html"
+    },
+    {
+      "label": "Concept",
+      "href": "concept-v2.html"
+    },
+    {
+      "label": "Knowledge Sphere",
+      "href": "graph-v2.html"
+    },
+    {
+      "label": "Sources",
+      "href": "sources-v2.html"
+    },
+    {
+      "label": "History",
+      "href": "history-v2.html"
+    }
   ]
 }
