@@ -29,6 +29,20 @@
     return Number.isFinite(number) ? new Intl.NumberFormat().format(number) : "—";
   }
 
+  function formatPercent(value) {
+    const number = Number(value);
+    return Number.isFinite(number) ? `${number.toFixed(number % 1 ? 1 : 0)}%` : "—";
+  }
+
+  function formatDate(value) {
+    if (!value) return "update time unavailable";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return clean(value);
+    return new Intl.DateTimeFormat(undefined, {
+      year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "2-digit"
+    }).format(date);
+  }
+
   function metadata(record) {
     return record && record.metadata && typeof record.metadata === "object" ? record.metadata : {};
   }
@@ -225,17 +239,26 @@
     try {
       const client = await ensureClient();
       const query = global.DictionaryRootApi.buildQuery({ bundleId: state.manifest.bundleId });
-      const response = await client.request(`/dictionaryroot/lexicon/status${query}`);
+      const response = await client.request(`/dictionaryroot/lexicon/dashboard${query}`);
       const status = response.data || {};
       if (!status.available) {
         setServiceState("Not imported", "offline");
-        elements.coverageNote.textContent = "The SourceRoot service responded, but the complete lexical index has not been imported.";
+        elements.coverageNote.textContent = "The SourceRoot service responded, but the complete lexical index has not been imported. No fallback counts are displayed.";
         return;
       }
       elements.synsets.textContent = formatNumber(status.synsetCount);
       elements.lemmas.textContent = formatNumber(status.lemmaCount);
       elements.relations.textContent = formatNumber(status.relationCount);
-      elements.coverageNote.textContent = `${clean(status.sourceName) || "Open English WordNet"} ${clean(status.sourceVersion)} · ${clean(status.sourceLicense) || "source license available through SourceRoot"}`;
+      elements.graphCount.textContent = formatNumber(status.graphCoveredSenseCount);
+      elements.lexicalOnlyCount.textContent = formatNumber(status.lexicalOnlySenseCount);
+      elements.sourceBackedCount.textContent = formatNumber(status.sourceBackedSenseCount);
+      elements.reviewedCount.textContent = formatNumber(status.reviewedSenseCount);
+      elements.historyCount.textContent = formatNumber(status.conceptRevisionCoveredSenseCount);
+      elements.graphPercent.textContent = `${formatPercent(status.graphCoveragePercent)} of meanings`;
+      elements.sourcePercent.textContent = `${formatPercent(status.sourceCoveragePercent)} resolved`;
+      elements.reviewNote.textContent = `${formatNumber(status.reviewRequiredSenseCount)} still need review`;
+      const datasetLineage = Number(status.datasetRevisionCount) || 0;
+      elements.coverageNote.textContent = `${clean(status.sourceName) || "Open English WordNet"} ${clean(status.sourceVersion)} · live registry updated ${formatDate(status.updatedAt || status.importedAt)} · ${formatNumber(datasetLineage)} dataset-lineage record${datasetLineage === 1 ? "" : "s"} kept separate from concept history.`;
       setServiceState("Connected", "connected");
     } catch (error) {
       setServiceState("Offline", "offline");
@@ -339,6 +362,14 @@
     elements.synsets = document.getElementById("dictionaryrootHomeSynsetCount");
     elements.lemmas = document.getElementById("dictionaryrootHomeLemmaCount");
     elements.relations = document.getElementById("dictionaryrootHomeRelationCount");
+    elements.graphCount = document.getElementById("dictionaryrootHomeGraphCount");
+    elements.lexicalOnlyCount = document.getElementById("dictionaryrootHomeLexicalOnlyCount");
+    elements.sourceBackedCount = document.getElementById("dictionaryrootHomeSourceBackedCount");
+    elements.reviewedCount = document.getElementById("dictionaryrootHomeReviewedCount");
+    elements.historyCount = document.getElementById("dictionaryrootHomeHistoryCount");
+    elements.graphPercent = document.getElementById("dictionaryrootHomeGraphPercent");
+    elements.sourcePercent = document.getElementById("dictionaryrootHomeSourcePercent");
+    elements.reviewNote = document.getElementById("dictionaryrootHomeReviewNote");
     elements.coverageNote = document.getElementById("dictionaryrootHomeCoverageNote");
     elements.valueDemo = document.getElementById("dictionaryrootHomeValueDemo");
     elements.exploreValue = document.getElementById("dictionaryrootHomeExploreValue");

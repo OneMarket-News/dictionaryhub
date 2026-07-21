@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DictionaryRoot — Accounts and Access</title>
+  <meta name="description" content="Inspect DictionaryRoot identities, roles, permissions, verification, and agent delegation provenance.">
+  <link rel="stylesheet" href="assets/css/dictionaryroot-brand.css">
+  <link rel="stylesheet" href="assets/css/dictionaryroot-live.css">
+  <link rel="stylesheet" href="assets/css/dictionaryroot-navigation.css">
+  <link rel="stylesheet" href="assets/css/dictionaryroot-accounts.css">
+</head>
+<body class="dictionaryroot-live-page dictionaryroot-customer-page dictionaryroot-accounts-page">
+  <main id="main-content" class="dr-accounts-main">
+    <section class="dr-accounts-hero" aria-labelledby="dictionaryrootAccountsTitle">
+      <div>
+        <p class="dr-accounts-kicker">Identity provenance foundation</p>
+        <h1 id="dictionaryrootAccountsTitle">Know who acted, how they signed in, and what they were allowed to do.</h1>
+        <p>DictionaryRoot keeps human identities, organizations, services, and autonomous agents distinct. Authentication providers can change later without changing editorial provenance or permissions.</p>
+      </div>
+      <aside class="dr-accounts-policy-card">
+        <span id="dictionaryrootAccountsServiceState" class="dr-live-chip">Checking SourceRoot...</span>
+        <strong>Final approvals remain human-governed.</strong>
+        <p>Autonomous agents may submit recommendations, but approval and graph promotion require a verified-human identity.</p>
+      </aside>
+    </section>
+
+    <section class="dr-accounts-development-notice" role="note">
+      <strong>Local development authentication only</strong>
+      <p>The identities below are fixtures for testing roles and provenance. They are not proof that a public internet user is a real person. Future OIDC, passkey, wallet, service-credential, or proof-of-personhood providers connect through the same identity interface.</p>
+    </section>
+
+    <section class="dr-accounts-grid" aria-label="Session and sign-in">
+      <article class="dr-accounts-panel">
+        <header><p class="dr-accounts-kicker">Active session</p><h2>Current actor</h2></header>
+        <div id="dictionaryrootAccountsCurrent" class="dr-accounts-current" aria-live="polite">
+          <div class="dr-live-empty"><strong>No active identity.</strong>Choose a local development identity to test permissions.</div>
+        </div>
+        <div class="dr-accounts-actions">
+          <button id="dictionaryrootAccountsLogout" class="dr-live-button-secondary" type="button" disabled>Sign out</button>
+          <a class="dr-live-button-secondary" href="editorial-v2.html">Open Editorial</a>
+        </div>
+      </article>
+
+      <article class="dr-accounts-panel">
+        <header><p class="dr-accounts-kicker">Development identity chooser</p><h2>Test human and autonomous access</h2></header>
+        <div id="dictionaryrootDevelopmentActors" class="dr-accounts-actor-chooser" aria-live="polite">
+          <div class="dr-live-empty"><strong>Loading local identities...</strong>No fallback accounts are displayed.</div>
+        </div>
+      </article>
+    </section>
+
+    <section class="dr-accounts-panel dr-accounts-providers" aria-labelledby="dictionaryrootProviderTitle">
+      <header><p class="dr-accounts-kicker">Replaceable authentication adapters</p><h2 id="dictionaryrootProviderTitle">Provider readiness</h2></header>
+      <div id="dictionaryrootIdentityProviders" class="dr-accounts-provider-grid" aria-live="polite"></div>
+    </section>
+
+    <section class="dr-accounts-panel" aria-labelledby="dictionaryrootRoleTitle">
+      <header><p class="dr-accounts-kicker">Role-based authorization</p><h2 id="dictionaryrootRoleTitle">Roles and permission boundaries</h2></header>
+      <div id="dictionaryrootRoleMatrix" class="dr-accounts-role-grid" aria-live="polite">
+        <div class="dr-live-empty"><strong>Sign in as an administrator to inspect the complete role matrix.</strong></div>
+      </div>
+    </section>
+
+    <section class="dr-accounts-grid" aria-label="Actors and delegations">
+      <article class="dr-accounts-panel">
+        <header><p class="dr-accounts-kicker">Identity registry</p><h2>Actors</h2></header>
+        <div id="dictionaryrootActorRegistry" class="dr-accounts-registry" aria-live="polite">
+          <div class="dr-live-empty"><strong>Administrator access required.</strong></div>
+        </div>
+      </article>
+      <article class="dr-accounts-panel">
+        <header><p class="dr-accounts-kicker">Agent accountability</p><h2>Delegations</h2></header>
+        <div id="dictionaryrootDelegationRegistry" class="dr-accounts-registry" aria-live="polite">
+          <div class="dr-live-empty"><strong>Administrator access required.</strong></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="dr-accounts-policy-grid" aria-label="Identity policy">
+      <article><strong>Identity</strong><p>Who or what is acting: human, organization, service, or autonomous agent.</p></article>
+      <article><strong>Authentication</strong><p>Which replaceable provider established the session.</p></article>
+      <article><strong>Verification</strong><p>What the provider actually proved, without overstating assurance.</p></article>
+      <article><strong>Authorization</strong><p>Which role permissions allow or block each action.</p></article>
+      <article><strong>Delegation</strong><p>Which human or organization authorized an agent and whether human approval remains required.</p></article>
+      <article><strong>Provenance</strong><p>Every editorial event stores an actor snapshot so later provider changes do not erase who acted.</p></article>
+    </section>
+  </main>
+
+  <script defer src="assets/js/dictionaryroot-api.js"></script>
+  <script defer src="assets/js/dictionaryroot-brand.js"></script>
+  <script defer src="assets/js/dictionaryroot-navigation.js"></script>
+  <script defer src="assets/js/dictionaryroot-accounts.js"></script>
+</body>
+</html>

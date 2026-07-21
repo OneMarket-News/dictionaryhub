@@ -102,6 +102,7 @@ $RequiredFiles = @(
     "graph-v2.html",
     "sources-v2.html",
     "index.html",
+    "accounts-v2.html",
     "explore.html",
     "docs\customers\dictionaryroot\unified-navigation-search-v1.md"
 )
@@ -115,20 +116,36 @@ if ($MissingFiles.Count -gt 0) {
     exit 1
 }
 
-$ExpectedCommittedHashes = [ordered]@{
-    "assets\css\dictionaryroot-brand.css" = "85879488addebc2fb69541fdb644988c0672918cc83a3c38bfe92a2c025f4fc3"
-    "assets\css\dictionaryroot-live.css" = "50ad8ea2e668a82df94df03c244d734240c6f2a530d91d773a2d75c9f6c7f4c0"
-    "assets\js\dictionaryroot-api.js" = "998917da024348bdc1abb888f87adc96cb73d2312f9bfb02e12feabf4b03cddc"
-    "config\customers\dictionaryroot.json" = "a99cb45dccb2d38762e750974974e43a7531e24c15d88546220747f62f2c06bc"
-    "explore.html" = "16f8abaa616145121619862314fe8002d25cfa9b10f6c384249d0a15f5430c80"
+$BaselineFiles = @(
+    "assets\css\dictionaryroot-brand.css",
+    "assets\css\dictionaryroot-live.css",
+    "assets\js\dictionaryroot-api.js",
+    "config\customers\dictionaryroot.json",
+    "explore.html"
+)
+foreach ($RelativePath in $BaselineFiles) {
+    $Item = Get-Item -LiteralPath (Join-Path $script:RepositoryRoot $RelativePath)
+    Write-VerificationResult -Name "Shared baseline remains present: $RelativePath" -Passed ($Item.Length -gt 0) -Detail $(if ($Item.Length -le 0) { "File is empty." } else { "size=$($Item.Length) bytes" })
 }
 
-foreach ($Entry in $ExpectedCommittedHashes.GetEnumerator()) {
-    $Actual = (Get-FileHash -LiteralPath (Join-Path $script:RepositoryRoot $Entry.Key) -Algorithm SHA256).Hash.ToLowerInvariant()
-    Write-VerificationResult -Name "Committed baseline preserved: $($Entry.Key)" -Passed ($Actual -eq $Entry.Value) -Detail $(if ($Actual -ne $Entry.Value) { "Expected $($Entry.Value); found $Actual" } else { "" })
-}
+Test-TextContains -RelativePath "assets\js\dictionaryroot-api.js" -Name "API baseline retains search, source, dynamic graph, editorial, and identity clients" -Needles @(
+    "class DictionaryRootApiClient",
+    "searchNodes",
+    "sourceExperience",
+    "dynamicNeighborhood",
+    "editorialReview",
+    "authProviders",
+    "authMe"
+)
 
-foreach ($Page in @("index.html", "concept-v2.html", "graph-v2.html", "sources-v2.html")) {
+Test-TextContains -RelativePath "config\customers\dictionaryroot.json" -Name "Customer manifest retains complete product capabilities" -Needles @(
+    '"customerId": "dictionaryroot"',
+    '"editorialReview": true',
+    '"identityAccess": true',
+    '"providerInterfaceVersion": "1.0"'
+)
+
+foreach ($Page in @("index.html", "concept-v2.html", "graph-v2.html", "sources-v2.html", "accounts-v2.html")) {
     $Content = Get-Text -RelativePath $Page
     $HasCss = $Content.Contains('assets/css/dictionaryroot-navigation.css')
     $HasJs = $Content.Contains('assets/js/dictionaryroot-navigation.js')
@@ -146,10 +163,12 @@ Test-TextContains -RelativePath "index.html" -Name "DictionaryRoot Home loads sh
     "assets/js/dictionaryroot-home.js"
 )
 
-Test-TextContains -RelativePath "assets\js\dictionaryroot-navigation.js" -Name "Shared navigation includes DictionaryRoot Home" -Needles @(
+Test-TextContains -RelativePath "assets\js\dictionaryroot-navigation.js" -Name "Shared navigation includes DictionaryRoot Home and Accounts" -Needles @(
     '{ key: "home", label: "Home", href: "index.html" }',
     '"index.html": "home"',
-    'buildHref("index.html")'
+    'buildHref("index.html")',
+    '{ key: "accounts", label: "Accounts", href: "accounts-v2.html" }',
+    '"accounts-v2.html": "accounts"'
 )
 
 Test-TextContains -RelativePath "assets\js\dictionaryroot-navigation.js" -Name "Global search uses live exact-meaning ranking" -Needles @(

@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import { getPool } from "../lib/database.js";
+import { actorSnapshot, type DictionaryRootAuthContext } from "./identity-store.js";
 
 export type DictionaryRootEditorialStatus =
   | "unreviewed"
@@ -50,6 +51,11 @@ export interface DictionaryRootEditorialQueueItem {
   conceptHistory: boolean;
   reviewStatus: DictionaryRootEditorialStatus;
   reviewerName: string;
+  actorId: string;
+  actorType: string;
+  verificationLevel: string;
+  delegatedByActorId: string;
+  delegatedByDisplayName: string;
   notes: string;
   annotation: string;
   promotionRecommendation: boolean;
@@ -82,6 +88,11 @@ export interface DictionaryRootEditorialEvent {
   fromStatus: string | null;
   toStatus: string | null;
   reviewerName: string;
+  actorId: string;
+  actorType: string;
+  verificationLevel: string;
+  delegatedByActorId: string;
+  delegatedByDisplayName: string;
   note: string;
   rawData: Record<string, unknown>;
   createdAt: string;
@@ -94,7 +105,7 @@ export interface DictionaryRootEditorialDetail {
 
 export interface SaveDictionaryRootEditorialReviewInput {
   status: DictionaryRootEditorialStatus;
-  reviewerName: string;
+  reviewerName?: string;
   notes: string;
   annotation: string;
   promotionRecommendation: boolean;
@@ -130,6 +141,11 @@ interface QueueRow {
   concept_history: boolean;
   review_status: DictionaryRootEditorialStatus;
   reviewer_name: string | null;
+  actor_id: string | null;
+  actor_type: string | null;
+  verification_level: string | null;
+  delegated_by_actor_id: string | null;
+  delegated_by_display_name: string | null;
   notes: string | null;
   annotation: string | null;
   promotion_recommendation: boolean;
@@ -147,6 +163,11 @@ interface EventRow {
   from_status: string | null;
   to_status: string | null;
   reviewer_name: string | null;
+  actor_id: string | null;
+  actor_type: string | null;
+  verification_level: string | null;
+  delegated_by_actor_id: string | null;
+  delegated_by_display_name: string | null;
   note: string | null;
   raw_data: Record<string, unknown> | null;
   created_at: Date;
@@ -174,6 +195,11 @@ function mapQueueRow(row: QueueRow): DictionaryRootEditorialQueueItem {
     conceptHistory: Boolean(row.concept_history),
     reviewStatus: row.review_status || "unreviewed",
     reviewerName: row.reviewer_name || "",
+    actorId: row.actor_id || "",
+    actorType: row.actor_type || "",
+    verificationLevel: row.verification_level || "",
+    delegatedByActorId: row.delegated_by_actor_id || "",
+    delegatedByDisplayName: row.delegated_by_display_name || "",
     notes: row.notes || "",
     annotation: row.annotation || "",
     promotionRecommendation: Boolean(row.promotion_recommendation),
@@ -192,6 +218,11 @@ function mapEventRow(row: EventRow): DictionaryRootEditorialEvent {
     fromStatus: row.from_status,
     toStatus: row.to_status,
     reviewerName: row.reviewer_name || "",
+    actorId: row.actor_id || "",
+    actorType: row.actor_type || "",
+    verificationLevel: row.verification_level || "",
+    delegatedByActorId: row.delegated_by_actor_id || "",
+    delegatedByDisplayName: row.delegated_by_display_name || "",
     note: row.note || "",
     rawData: row.raw_data || {},
     createdAt: row.created_at.toISOString(),
@@ -213,7 +244,12 @@ const baseQueueSql = `
     EXISTS(SELECT 1 FROM assertions a WHERE a.node_id = l.node_id) AS assertion_backed,
     EXISTS(SELECT 1 FROM revisions rv WHERE rv.object_type = 'node' AND rv.object_id = l.node_id) AS concept_history,
     COALESCE(er.review_status, 'unreviewed') AS review_status,
-    er.reviewer_name,
+    COALESCE(review_actor.display_name, er.reviewer_name) AS reviewer_name,
+    er.actor_id,
+    review_actor.actor_type,
+    review_actor.verification_level,
+    er.delegated_by_actor_id,
+    delegator.display_name AS delegated_by_display_name,
     er.notes,
     er.annotation,
     COALESCE(er.promotion_recommendation, FALSE) AS promotion_recommendation,
@@ -232,6 +268,8 @@ const baseQueueSql = `
   LEFT JOIN nodes n ON n.node_id = l.node_id
   LEFT JOIN sources s ON s.source_id = l.source_id
   LEFT JOIN dictionaryroot_editorial_reviews er ON er.node_id = l.node_id
+  LEFT JOIN dictionaryroot_actors review_actor ON review_actor.actor_id = er.actor_id
+  LEFT JOIN dictionaryroot_actors delegator ON delegator.actor_id = er.delegated_by_actor_id
 `;
 
 export async function getDictionaryRootEditorialSummary(
@@ -395,10 +433,15 @@ export async function getDictionaryRootEditorialDetail(
     database.query<EventRow>(
       `
         SELECT event_id, review_id, node_id, action, from_status, to_status,
-          reviewer_name, note, raw_data, created_at
-        FROM dictionaryroot_editorial_review_events
-        WHERE node_id = $1
-        ORDER BY created_at DESC, event_id DESC
+          COALESCE(actor.display_name, event.reviewer_name) AS reviewer_name,
+          event.actor_id, actor.actor_type, actor.verification_level,
+          event.delegated_by_actor_id, delegator.display_name AS delegated_by_display_name,
+          event.note, event.raw_data, event.created_at
+        FROM dictionaryroot_editorial_review_events event
+        LEFT JOIN dictionaryroot_actors actor ON actor.actor_id = event.actor_id
+        LEFT JOIN dictionaryroot_actors delegator ON delegator.actor_id = event.delegated_by_actor_id
+        WHERE event.node_id = $1
+        ORDER BY event.created_at DESC, event.event_id DESC
         LIMIT 100;
       `,
       [nodeId],
@@ -415,6 +458,7 @@ export async function getDictionaryRootEditorialDetail(
 export async function saveDictionaryRootEditorialReview(
   nodeId: string,
   input: SaveDictionaryRootEditorialReviewInput,
+  auth: DictionaryRootAuthContext,
 ): Promise<DictionaryRootEditorialDetail | undefined> {
   const database = requireDatabase();
   const client = await database.connect();
@@ -439,11 +483,15 @@ export async function saveDictionaryRootEditorialReview(
       `
         INSERT INTO dictionaryroot_editorial_reviews (
           review_id, node_id, dataset_id, bundle_id, review_status, reviewer_name,
+          actor_id, delegated_by_actor_id, actor_snapshot,
           notes, annotation, promotion_recommendation, raw_data
-        ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::JSONB)
+        ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9::JSONB,$10,$11,$12,$13::JSONB)
         ON CONFLICT (node_id) DO UPDATE SET
           review_status = EXCLUDED.review_status,
           reviewer_name = EXCLUDED.reviewer_name,
+          actor_id = EXCLUDED.actor_id,
+          delegated_by_actor_id = EXCLUDED.delegated_by_actor_id,
+          actor_snapshot = EXCLUDED.actor_snapshot,
           notes = EXCLUDED.notes,
           annotation = EXCLUDED.annotation,
           promotion_recommendation = EXCLUDED.promotion_recommendation,
@@ -456,30 +504,37 @@ export async function saveDictionaryRootEditorialReview(
         lexical.dataset_id,
         lexical.bundle_id,
         input.status,
-        input.reviewerName || null,
+        auth.actor.displayName,
+        auth.actor.actorId,
+        auth.delegation?.principalActorId || null,
+        JSON.stringify(actorSnapshot(auth)),
         input.notes || null,
         input.annotation || null,
         input.promotionRecommendation,
-        JSON.stringify({ source: "DictionaryRoot Editorial v1", workflowVersion: "1.0" }),
+        JSON.stringify({ source: "DictionaryRoot Editorial v1", workflowVersion: "1.1", actor: actorSnapshot(auth) }),
       ],
     );
     await client.query(
       `
         INSERT INTO dictionaryroot_editorial_review_events (
           event_id, review_id, node_id, bundle_id, action, from_status, to_status,
-          reviewer_name, note, raw_data
-        ) VALUES ($1,$2,$3,$4,'review-updated',$5,$6,$7,$8,$9::JSONB);
+          reviewer_name, actor_id, delegated_by_actor_id, actor_snapshot, note, raw_data
+        ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::JSONB,$11,$12::JSONB);
       `,
       [
         `dictionaryroot-review-event-${randomUUID()}`,
         reviewId,
         nodeId,
         lexical.bundle_id,
+        auth.actor.actorType === "autonomous_agent" ? "agent-recommendation" : "review-updated",
         fromStatus,
         input.status,
-        input.reviewerName || null,
+        auth.actor.displayName,
+        auth.actor.actorId,
+        auth.delegation?.principalActorId || null,
+        JSON.stringify(actorSnapshot(auth)),
         input.notes || input.annotation || null,
-        JSON.stringify({ promotionRecommendation: input.promotionRecommendation }),
+        JSON.stringify({ promotionRecommendation: input.promotionRecommendation, actor: actorSnapshot(auth) }),
       ],
     );
     await client.query("COMMIT");
@@ -494,7 +549,7 @@ export async function saveDictionaryRootEditorialReview(
 
 export async function promoteDictionaryRootEditorialMeaning(
   nodeId: string,
-  reviewerName: string,
+  auth: DictionaryRootAuthContext,
   note: string,
 ): Promise<{ detail: DictionaryRootEditorialDetail; alreadyPromoted: boolean } | undefined> {
   const database = requireDatabase();
@@ -544,7 +599,8 @@ export async function promoteDictionaryRootEditorialMeaning(
         datasetId: lexical.dataset_id,
         editorialPromotion: {
           workflowVersion: "1.0",
-          reviewerName: reviewerName || null,
+          actor: actorSnapshot(auth),
+          reviewerName: auth.actor.displayName,
           promotedAt: new Date().toISOString(),
         },
       };
@@ -586,7 +642,7 @@ export async function promoteDictionaryRootEditorialMeaning(
           lexical.bundle_id,
           nodeId,
           `Approved meaning promoted into the curated DictionaryRoot graph: ${lexical.title}`,
-          JSON.stringify({ reviewerName: reviewerName || null, note: note || null, datasetId: lexical.dataset_id }),
+          JSON.stringify({ actor: actorSnapshot(auth), reviewerName: auth.actor.displayName, note: note || null, datasetId: lexical.dataset_id }),
         ],
       );
     }
@@ -597,17 +653,26 @@ export async function promoteDictionaryRootEditorialMeaning(
         SET promotion_recommendation = TRUE,
             promoted_at = COALESCE(promoted_at, CURRENT_TIMESTAMP),
             reviewer_name = COALESCE(NULLIF($2, ''), reviewer_name),
+            actor_id = $3,
+            delegated_by_actor_id = $4,
+            actor_snapshot = $5::JSONB,
             updated_at = CURRENT_TIMESTAMP
         WHERE node_id = $1;
       `,
-      [nodeId, reviewerName],
+      [
+        nodeId,
+        auth.actor.displayName,
+        auth.actor.actorId,
+        auth.delegation?.principalActorId || null,
+        JSON.stringify(actorSnapshot(auth)),
+      ],
     );
     await client.query(
       `
         INSERT INTO dictionaryroot_editorial_review_events (
           event_id, review_id, node_id, bundle_id, action, from_status, to_status,
-          reviewer_name, note, raw_data
-        ) VALUES ($1,$2,$3,$4,$5,'approved','approved',$6,$7,$8::JSONB);
+          reviewer_name, actor_id, delegated_by_actor_id, actor_snapshot, note, raw_data
+        ) VALUES ($1,$2,$3,$4,$5,'approved','approved',$6,$7,$8,$9::JSONB,$10,$11::JSONB);
       `,
       [
         `dictionaryroot-review-event-${randomUUID()}`,
@@ -615,9 +680,12 @@ export async function promoteDictionaryRootEditorialMeaning(
         nodeId,
         lexical.bundle_id,
         alreadyPromoted ? "promotion-confirmed" : "promoted-to-core",
-        reviewerName || null,
+        auth.actor.displayName,
+        auth.actor.actorId,
+        auth.delegation?.principalActorId || null,
+        JSON.stringify(actorSnapshot(auth)),
         note || null,
-        JSON.stringify({ alreadyPromoted }),
+        JSON.stringify({ alreadyPromoted, actor: actorSnapshot(auth) }),
       ],
     );
     await client.query("COMMIT");

@@ -259,13 +259,13 @@
     const definitions = definitionsFrom(concept);
     const sourceCount = Math.max(snapshot.sourceIds.length, snapshot.sources.length);
     elements.conceptTitle.textContent = state.currentLabel || node.title || "Selected meaning";
-    elements.currentStatus.innerHTML = `${statusChip(node.status || "current")}<span class="dr-live-chip" data-tone="good">Live SourceRoot state</span>`;
+    elements.currentStatus.innerHTML = `${statusChip(node.status || "current")}<span class="dr-live-chip" data-tone="good">Current live state · not a revision</span>`;
     elements.currentSnapshot.innerHTML = `
       <div class="dr-history-current-grid">
         <div><strong>${snapshot.assertions.length}</strong><span>Current assertions</span></div>
         <div><strong>${snapshot.edges.length}</strong><span>Current relationships</span></div>
         <div><strong>${sourceCount}</strong><span>Current sources</span></div>
-        <div><strong>${state.revisions.length}</strong><span>Concept revisions</span></div>
+        <div><strong>${state.revisions.length}</strong><span>Concept-specific revision records</span></div>
       </div>
       <p class="dr-history-current-definition">${escapeHtml(definitions[0] || node.summary || "No current definition was returned for this meaning.")}</p>
       <div class="dr-live-chip-row">
@@ -293,7 +293,7 @@
       <span>
         <h3>${escapeHtml(friendly(revision.revisionType, scope === "concept" ? "concept revision" : "dataset revision"))}</h3>
         <p>${escapeHtml(revision.summary || "A SourceRoot revision record exists for this object.")}</p>
-        <span class="dr-history-entry-meta">${statusChip(status)}<span class="dr-live-chip">${escapeHtml(formatDate(revision.createdAt))}</span></span>
+        <span class="dr-history-entry-meta">${statusChip(status)}<span class="dr-live-chip" data-tone="${scope === "concept" ? "accent" : ""}">${scope === "concept" ? "Concept-specific" : "Dataset lineage"}</span><span class="dr-live-chip">${escapeHtml(formatDate(revision.createdAt))}</span></span>
       </span>
     </button>`;
   }
@@ -483,7 +483,7 @@
       renderComparison();
       renderSources();
       document.title = `${state.currentLabel} history — DictionaryRoot`;
-      setStatus(`Loaded current state and ${state.revisions.length + state.bundleRevisions.length} recorded revision${state.revisions.length + state.bundleRevisions.length === 1 ? "" : "s"} from SourceRoot.`, "success");
+      setStatus(`Loaded the current state, ${state.revisions.length} concept-specific revision record${state.revisions.length === 1 ? "" : "s"}, and ${state.bundleRevisions.length} dataset-lineage record${state.bundleRevisions.length === 1 ? "" : "s"} from SourceRoot.`, "success");
       if (settings.history) updateUrl({ q: state.currentLabel, nodeId, revision: state.selectedRevisionId, status: state.statusFilter === "all" ? "" : state.statusFilter }, settings.history);
       if (settings.scroll) elements.workspace.scrollIntoView({ behavior: "smooth", block: "start" });
     } catch (error) {

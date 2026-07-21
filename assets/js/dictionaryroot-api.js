@@ -24,6 +24,32 @@
   function trimSlash(value) {
     return String(value || "").replace(/\/+$/, "");
   }
+  const AUTH_STORAGE_KEY = "dictionaryroot.auth.session";
+
+  function getStoredAuthSession() {
+    try {
+      const raw = global.localStorage.getItem(AUTH_STORAGE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      return parsed && parsed.token ? parsed : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function setStoredAuthSession(session) {
+    try {
+      if (session && session.token) global.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
+      else global.localStorage.removeItem(AUTH_STORAGE_KEY);
+    } catch (_) {}
+    global.dispatchEvent(new CustomEvent("dictionaryroot:authchange", { detail: session || null }));
+  }
+
+  function getStoredAuthToken() {
+    const session = getStoredAuthSession();
+    return session && session.token ? String(session.token) : "";
+  }
+
 
   function normalizeParams(params) {
     const normalized = Object.assign({}, params || {});
@@ -271,11 +297,15 @@
         : `${this.baseUrl}${path.startsWith("/") ? path : `/${path}`}`;
 
       try {
+        const requestOptions = Object.assign({}, options || {});
+        const headers = Object.assign({ Accept: "application/json" }, requestOptions.headers || {});
+        const authToken = getStoredAuthToken();
+        if (authToken && !headers.Authorization) headers.Authorization = `Bearer ${authToken}`;
+        requestOptions.headers = headers;
         const response = await fetch(url, Object.assign({
-          headers: { Accept: "application/json" },
           cache: "no-store",
           signal: controller.signal
-        }, options || {}));
+        }, requestOptions));
 
         const text = await response.text();
         let payload = null;
@@ -304,6 +334,48 @@
       } finally {
         clearTimeout(timer);
       }
+    }
+
+    authProviders() {
+      return this.request("/dictionaryroot/auth/providers");
+    }
+
+    developmentActors() {
+      return this.request("/dictionaryroot/auth/development-actors");
+    }
+
+    async createDevelopmentSession(actorId) {
+      const result = await this.request("/dictionaryroot/auth/development-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ actorId })
+      });
+      setStoredAuthSession({ token: result.data.token, context: result.data.context });
+      return result;
+    }
+
+    authMe() {
+      return this.request("/dictionaryroot/auth/me");
+    }
+
+    async logout() {
+      try {
+        return await this.request("/dictionaryroot/auth/logout", { method: "POST" });
+      } finally {
+        setStoredAuthSession(null);
+      }
+    }
+
+    identityActors() {
+      return this.request("/dictionaryroot/auth/actors");
+    }
+
+    identityRoles() {
+      return this.request("/dictionaryroot/auth/roles");
+    }
+
+    identityDelegations() {
+      return this.request("/dictionaryroot/auth/delegations");
     }
 
     health() {
@@ -573,6 +645,10 @@
     extractTotalPages,
     recordUsesSource,
     buildQuery,
-    mapWithConcurrency
+    mapWithConcurrency,
+    AUTH_STORAGE_KEY,
+    getStoredAuthSession,
+    getStoredAuthToken,
+    setStoredAuthSession
   };
 })(window);

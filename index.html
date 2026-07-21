@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="assets/css/dictionaryroot-navigation.css">
   <link rel="stylesheet" href="assets/css/dictionaryroot-live.css">
   <link rel="stylesheet" href="assets/css/dictionaryroot-home.css">
+  <link rel="stylesheet" href="assets/css/dictionaryroot-product-refinement.css">
 </head>
 <body class="dictionaryroot-live-page dictionaryroot-customer-page dictionaryroot-home-page">
   <main id="main-content" class="dr-home-main">
@@ -44,12 +45,20 @@
           </div>
           <span id="dictionaryrootHomeServiceState" class="dr-home-service-state" data-state="loading">Checking</span>
         </div>
-        <div class="dr-home-stat-grid">
-          <div><strong id="dictionaryrootHomeSynsetCount">—</strong><span>meanings</span></div>
-          <div><strong id="dictionaryrootHomeLemmaCount">—</strong><span>unique lemmas</span></div>
-          <div><strong id="dictionaryrootHomeRelationCount">—</strong><span>relationships</span></div>
+        <div class="dr-home-stat-grid dr-home-coverage-grid">
+          <a href="coverage-v2.html" data-metric="meanings"><strong id="dictionaryrootHomeSynsetCount">—</strong><span>complete meanings</span><small>All exact senses</small></a>
+          <a href="coverage-v2.html?coverageSort=senses" data-metric="lemmas"><strong id="dictionaryrootHomeLemmaCount">—</strong><span>unique lemmas</span><small>Searchable words</small></a>
+          <a href="graph-v2.html" data-metric="relations"><strong id="dictionaryrootHomeRelationCount">—</strong><span>lexical relations</span><small>Available to expand</small></a>
+          <a href="coverage-v2.html?coverage=complete&amp;coverageSort=coverage" data-metric="graph"><strong id="dictionaryrootHomeGraphCount">—</strong><span>graph-covered</span><small id="dictionaryrootHomeGraphPercent">Bounded core</small></a>
+          <a href="coverage-v2.html?coverage=lexical-only" data-metric="lexical-only"><strong id="dictionaryrootHomeLexicalOnlyCount">—</strong><span>lexical-only</span><small>Loaded on demand</small></a>
+          <a href="coverage-v2.html?sourceCoverage=source-backed" data-metric="sources"><strong id="dictionaryrootHomeSourceBackedCount">—</strong><span>source-backed</span><small id="dictionaryrootHomeSourcePercent">Source identity resolved</small></a>
+          <a href="coverage-v2.html?review=reviewed" data-metric="review"><strong id="dictionaryrootHomeReviewedCount">—</strong><span>reviewed graph senses</span><small id="dictionaryrootHomeReviewNote">Graph review only</small></a>
+          <a href="coverage-v2.html?historyCoverage=with-history" data-metric="history"><strong id="dictionaryrootHomeHistoryCount">—</strong><span>meanings with history</span><small>Concept-specific records</small></a>
         </div>
-        <p id="dictionaryrootHomeCoverageNote">Connecting to the live SourceRoot lexical registry. No fallback counts are displayed.</p>
+        <div class="dr-home-coverage-foot">
+          <p id="dictionaryrootHomeCoverageNote">Connecting to the live SourceRoot lexical registry. No fallback counts are displayed.</p>
+          <a href="coverage-v2.html">Open full coverage diagnostics →</a>
+        </div>
       </aside>
     </section>
 

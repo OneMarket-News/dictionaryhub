@@ -1,6 +1,6 @@
 :root {
   --dr-nav-height: 76px;
-  --dr-nav-search-width: 430px;
+  --dr-nav-search-width: 380px;
 }
 
 .dictionaryroot-product-bar.dictionaryroot-unified-header {
@@ -14,11 +14,11 @@
 }
 
 .dictionaryroot-unified-header .dictionaryroot-product-bar-inner {
-  width: min(1540px, calc(100% - 2rem));
+  width: min(1720px, calc(100% - 2rem));
   min-height: var(--dr-nav-height);
   margin: 0 auto;
   display: grid;
-  grid-template-columns: auto minmax(320px, var(--dr-nav-search-width)) auto;
+  grid-template-columns: auto minmax(280px, var(--dr-nav-search-width)) minmax(0, 1fr);
   gap: 1rem;
   align-items: center;
 }
@@ -51,17 +51,27 @@
   justify-content: flex-end;
   gap: 0.65rem;
   min-width: 0;
+  overflow: hidden;
 }
 
 .dictionaryroot-unified-header .dictionaryroot-product-nav {
   display: flex;
   align-items: center;
   gap: 0.3rem;
-  overflow: visible;
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.dictionaryroot-unified-header .dictionaryroot-product-nav::-webkit-scrollbar {
+  display: none;
 }
 
 .dictionaryroot-unified-header .dictionaryroot-product-nav a {
   position: relative;
+  flex: 0 0 auto;
   min-height: 42px;
   padding: 0.58rem 0.82rem;
   border: 1px solid transparent;
@@ -334,14 +344,78 @@
   text-overflow: ellipsis;
 }
 
-@media (max-width: 1180px) {
+.dictionaryroot-unified-context,
+.dictionaryroot-account-chip,
+.dictionaryroot-unified-header .dictionaryroot-powered-by {
+  flex: 0 0 auto;
+}
+
+/* Keep the full desktop header on one clean row without letting navigation
+   intrude into the search field. These rules activate before the existing
+   tablet/mobile layouts. */
+@media (max-width: 1800px) and (min-width: 1321px) {
+  :root {
+    --dr-nav-search-width: 350px;
+  }
+
   .dictionaryroot-unified-header .dictionaryroot-product-bar-inner {
-    grid-template-columns: auto minmax(260px, 1fr) auto;
+    width: min(1700px, calc(100% - 1.5rem));
+    gap: 0.75rem;
+  }
+
+  .dictionaryroot-unified-header .dictionaryroot-product-nav {
+    gap: 0.12rem;
+  }
+
+  .dictionaryroot-unified-header .dictionaryroot-product-nav a {
+    padding-inline: 0.58rem;
+    font-size: 0.78rem;
   }
 
   .dictionaryroot-unified-context,
   .dictionaryroot-unified-header .dictionaryroot-powered-by {
     display: none;
+  }
+
+  .dictionaryroot-account-chip {
+    max-width: 132px;
+  }
+}
+
+@media (max-width: 1320px) and (min-width: 901px) {
+  .dictionaryroot-unified-header .dictionaryroot-product-bar-inner {
+    grid-template-columns: auto minmax(260px, 1fr);
+    grid-template-rows: auto auto;
+    row-gap: 0.4rem;
+    padding: 0.55rem 0;
+  }
+
+  .dictionaryroot-global-search {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .dictionaryroot-unified-nav-wrap {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: center;
+    overflow: visible;
+  }
+
+  .dictionaryroot-unified-header .dictionaryroot-product-nav {
+    flex: 0 1 auto;
+    justify-content: center;
+  }
+
+  .dictionaryroot-unified-context,
+  .dictionaryroot-unified-header .dictionaryroot-powered-by {
+    display: none;
+  }
+}
+
+@media (max-width: 1180px) {
+  .dictionaryroot-account-chip {
+    max-width: 140px;
   }
 }
 
@@ -401,7 +475,7 @@
 
 @media (max-width: 560px) {
   .dictionaryroot-unified-header .dictionaryroot-product-bar-inner {
-    width: min(100% - 1rem, 1540px);
+    width: min(100% - 1rem, 1720px);
   }
 
   .dictionaryroot-unified-header .dictionaryroot-brand-tagline {
@@ -433,5 +507,546 @@
   .dictionaryroot-unified-header *::after {
     scroll-behavior: auto !important;
     transition: none !important;
+  }
+}
+
+.dictionaryroot-account-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  max-width: 190px;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  color: inherit;
+  text-decoration: none;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.dictionaryroot-account-chip span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dictionaryroot-account-chip[data-authenticated="true"]::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  margin-right: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.8;
+}
+
+@media (max-width: 900px) {
+  .dictionaryroot-account-chip {
+    max-width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 1320px) and (min-width: 901px) {
+  .dictionaryroot-unified-header .dictionaryroot-product-nav a {
+    padding-inline: 0.58rem;
+    font-size: 0.78rem;
+  }
+
+  .dictionaryroot-unified-header .dictionaryroot-brand-tagline,
+  .dictionaryroot-unified-header .dictionaryroot-powered-by {
+    display: none;
+  }
+
+  .dictionaryroot-account-chip {
+    max-width: 140px;
+  }
+}
+
+/* DictionaryRoot Product Header and Footer Refinement v1
+   Clear customer navigation, compact management tools, context breadcrumbs,
+   far-right identity controls, and platform attribution in the page footer. */
+
+.dictionaryroot-unified-header .dictionaryroot-product-bar-inner {
+  width: min(1720px, calc(100% - 2rem));
+  grid-template-columns: auto minmax(300px, 410px) minmax(0, 1fr) auto;
+  gap: 0.85rem;
+  overflow: visible;
+}
+
+.dictionaryroot-unified-header .dictionaryroot-unified-brand-area {
+  grid-column: 1;
+  min-width: 0;
+}
+
+.dictionaryroot-unified-header .dictionaryroot-global-search {
+  grid-column: 2;
+  min-width: 0;
+}
+
+.dictionaryroot-unified-header .dictionaryroot-unified-nav-wrap {
+  grid-column: 3;
+  display: flex;
+  min-width: 0;
+  justify-content: flex-end;
+  overflow: visible;
+}
+
+.dictionaryroot-unified-header .dictionaryroot-product-nav {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.25rem;
+  min-width: 0;
+  overflow: visible;
+}
+
+.dictionaryroot-primary-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.16rem;
+  min-width: 0;
+}
+
+.dictionaryroot-unified-header .dictionaryroot-product-nav a,
+.dictionaryroot-manage-menu > summary {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0.58rem 0.72rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: var(--dr-muted, #9fb0c7);
+  background: transparent;
+  text-decoration: none;
+  white-space: nowrap;
+  font-size: 0.82rem;
+  font-weight: 760;
+  cursor: pointer;
+  list-style: none;
+}
+
+.dictionaryroot-manage-menu > summary::-webkit-details-marker,
+.dictionaryroot-account-menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+.dictionaryroot-manage-menu > summary::after {
+  content: "▾";
+  margin-left: 0.42rem;
+  font-size: 0.68rem;
+  opacity: 0.75;
+}
+
+.dictionaryroot-unified-header .dictionaryroot-product-nav a:hover,
+.dictionaryroot-unified-header .dictionaryroot-product-nav a[aria-current="page"],
+.dictionaryroot-manage-menu > summary:hover,
+.dictionaryroot-manage-menu[open] > summary,
+.dictionaryroot-manage-menu[data-active="true"] > summary {
+  border-color: rgba(103, 232, 249, 0.34);
+  color: var(--dr-text, #e8eef8);
+  background: rgba(103, 232, 249, 0.1);
+}
+
+.dictionaryroot-manage-menu {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.dictionaryroot-manage-panel {
+  position: absolute;
+  top: calc(100% + 0.55rem);
+  right: 0;
+  z-index: 1015;
+  display: grid;
+  min-width: 210px;
+  padding: 0.55rem;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 16px;
+  background: rgba(8, 18, 32, 0.99);
+  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.42);
+}
+
+.dictionaryroot-manage-panel a {
+  width: 100%;
+  justify-content: flex-start !important;
+  border-radius: 11px !important;
+}
+
+.dictionaryroot-unified-account-area {
+  grid-column: 4;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+  justify-self: end;
+}
+
+.dictionaryroot-account-menu {
+  position: relative;
+  min-width: 0;
+}
+
+.dictionaryroot-unified-header .dictionaryroot-account-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 40px;
+  max-width: 230px;
+  padding: 0.45rem 0.78rem;
+  border: 1px solid rgba(103, 232, 249, 0.3);
+  border-radius: 999px;
+  color: var(--dr-text, #e8eef8);
+  background: rgba(103, 232, 249, 0.09);
+  text-decoration: none;
+  font-size: 0.78rem;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+  list-style: none;
+}
+
+.dictionaryroot-unified-header .dictionaryroot-account-chip:hover,
+.dictionaryroot-account-menu[open] > .dictionaryroot-account-chip {
+  background: rgba(103, 232, 249, 0.17);
+}
+
+.dictionaryroot-unified-header .dictionaryroot-account-chip[data-authenticated="true"]::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--dr-good, #86efac);
+  box-shadow: 0 0 0 4px rgba(134, 239, 172, 0.1);
+}
+
+.dictionaryroot-account-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dictionaryroot-account-role {
+  padding-left: 0.5rem;
+  border-left: 1px solid rgba(148, 163, 184, 0.25);
+  color: var(--dr-muted, #9fb0c7);
+  font-size: 0.68rem;
+  font-weight: 760;
+}
+
+.dictionaryroot-account-panel {
+  position: absolute;
+  top: calc(100% + 0.55rem);
+  right: 0;
+  z-index: 1015;
+  display: grid;
+  gap: 0.35rem;
+  width: min(310px, calc(100vw - 1rem));
+  padding: 0.65rem;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 16px;
+  background: rgba(8, 18, 32, 0.99);
+  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.42);
+}
+
+.dictionaryroot-account-identity {
+  display: grid;
+  gap: 0.18rem;
+  padding: 0.45rem 0.55rem 0.65rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.dictionaryroot-account-identity strong {
+  color: var(--dr-text, #e8eef8);
+}
+
+.dictionaryroot-account-identity span {
+  color: var(--dr-muted, #9fb0c7);
+  font-size: 0.72rem;
+  text-transform: capitalize;
+}
+
+.dictionaryroot-account-panel a,
+.dictionaryroot-account-panel button {
+  display: flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: var(--dr-text, #e8eef8);
+  background: transparent;
+  text-decoration: none;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 780;
+  cursor: pointer;
+}
+
+.dictionaryroot-account-panel a:hover,
+.dictionaryroot-account-panel button:hover {
+  border-color: rgba(103, 232, 249, 0.25);
+  background: rgba(103, 232, 249, 0.09);
+}
+
+.dictionaryroot-context-bar {
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+  background: rgba(5, 14, 26, 0.72);
+}
+
+.dictionaryroot-context-bar[hidden] {
+  display: none;
+}
+
+.dictionaryroot-context-breadcrumb {
+  width: min(1720px, calc(100% - 2rem));
+  min-height: 34px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  overflow: hidden;
+  color: var(--dr-muted, #9fb0c7);
+  font-size: 0.72rem;
+}
+
+.dictionaryroot-context-breadcrumb a {
+  color: var(--dr-muted, #9fb0c7);
+  text-decoration: none;
+}
+
+.dictionaryroot-context-breadcrumb a:hover {
+  color: var(--dr-text, #e8eef8);
+}
+
+.dictionaryroot-context-breadcrumb strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--dr-text, #e8eef8);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dictionaryroot-context-breadcrumb [hidden] {
+  display: none;
+}
+
+.dictionaryroot-unified-header .dictionaryroot-powered-by,
+.dictionaryroot-unified-header .dictionaryroot-unified-context {
+  display: none !important;
+}
+
+.dictionaryroot-platform-footer {
+  width: 100%;
+  margin-top: clamp(2.5rem, 6vw, 5rem);
+  border-top: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(5, 14, 26, 0.72);
+}
+
+.dictionaryroot-platform-footer-inner {
+  width: min(1720px, calc(100% - 2rem));
+  min-height: 58px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  color: var(--dr-muted, #9fb0c7);
+  font-size: 0.72rem;
+}
+
+.dictionaryroot-platform-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.dictionaryroot-platform-status::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--dr-warn, #fde68a);
+}
+
+.dictionaryroot-platform-status[data-state="online"]::before {
+  background: var(--dr-good, #86efac);
+}
+
+.dictionaryroot-platform-status[data-state="offline"]::before {
+  background: var(--dr-bad, #fca5a5);
+}
+
+.dictionaryroot-platform-credit {
+  color: var(--dr-muted, #9fb0c7);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.dictionaryroot-platform-credit strong {
+  color: var(--dr-text, #e8eef8);
+}
+
+.dictionaryroot-platform-credit:hover strong {
+  color: var(--dr-accent, #67e8f9);
+}
+
+/* Put primary navigation on a second row before any collision can occur. */
+@media (max-width: 1479px) and (min-width: 1101px) {
+  .dictionaryroot-unified-header .dictionaryroot-product-bar-inner {
+    grid-template-columns: auto minmax(280px, 1fr) auto;
+    grid-template-rows: auto auto;
+    row-gap: 0.38rem;
+    padding: 0.55rem 0;
+  }
+
+  .dictionaryroot-unified-header .dictionaryroot-unified-brand-area {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .dictionaryroot-unified-header .dictionaryroot-global-search {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .dictionaryroot-unified-header .dictionaryroot-unified-account-area {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .dictionaryroot-unified-header .dictionaryroot-unified-nav-wrap {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: center;
+  }
+
+  .dictionaryroot-unified-header .dictionaryroot-product-nav,
+  .dictionaryroot-primary-nav {
+    justify-content: center;
+  }
+}
+
+/* Collapse before the header can crowd. The account remains visible at right. */
+@media (max-width: 1100px) {
+  .dictionaryroot-unified-header .dictionaryroot-product-bar-inner {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-rows: auto auto;
+    gap: 0.55rem;
+    padding: 0.62rem 0;
+  }
+
+  .dictionaryroot-unified-header .dictionaryroot-unified-brand-area {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .dictionaryroot-unified-header .dictionaryroot-unified-nav-wrap {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .dictionaryroot-unified-header .dictionaryroot-unified-account-area {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .dictionaryroot-unified-header .dictionaryroot-global-search {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .dictionaryroot-mobile-menu-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .dictionaryroot-unified-header .dictionaryroot-product-nav {
+    position: absolute;
+    top: calc(100% - 0.3rem);
+    right: 1rem;
+    left: 1rem;
+    z-index: 1010;
+    display: none;
+    padding: 0.72rem;
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    border-radius: 16px;
+    background: rgba(8, 18, 32, 0.99);
+    box-shadow: 0 20px 55px rgba(0, 0, 0, 0.42);
+  }
+
+  .dictionaryroot-unified-header[data-menu-open="true"] .dictionaryroot-product-nav {
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  .dictionaryroot-primary-nav {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+  }
+
+  .dictionaryroot-unified-header .dictionaryroot-product-nav a,
+  .dictionaryroot-manage-menu > summary {
+    width: 100%;
+    justify-content: flex-start;
+    border-radius: 11px;
+  }
+
+  .dictionaryroot-manage-panel {
+    position: static;
+    min-width: 0;
+    margin-top: 0.3rem;
+    box-shadow: none;
+  }
+
+  .dictionaryroot-context-breadcrumb,
+  .dictionaryroot-platform-footer-inner {
+    width: min(100% - 1rem, 1720px);
+  }
+}
+
+@media (max-width: 680px) {
+  .dictionaryroot-unified-header .dictionaryroot-brand-tagline,
+  .dictionaryroot-account-role {
+    display: none;
+  }
+
+  .dictionaryroot-unified-header .dictionaryroot-account-chip {
+    max-width: 135px;
+  }
+
+  .dictionaryroot-platform-footer-inner {
+    min-height: 72px;
+    align-items: flex-end;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.35rem;
+  }
+}
+
+@media (max-width: 460px) {
+  .dictionaryroot-unified-header .dictionaryroot-product-bar-inner {
+    width: min(100% - 0.75rem, 1720px);
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+
+  .dictionaryroot-unified-header .dictionaryroot-brand-name {
+    max-width: 112px;
+  }
+
+  .dictionaryroot-unified-header .dictionaryroot-account-chip {
+    max-width: 92px;
+    padding-inline: 0.6rem;
+  }
+
+  .dictionaryroot-mobile-menu-button {
+    min-width: 40px;
+    padding-inline: 0.55rem;
   }
 }

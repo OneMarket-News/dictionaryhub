@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="assets/css/dictionaryroot-live.css">
   <link rel="stylesheet" href="assets/css/dictionaryroot-hybrid-map.css">
   <link rel="stylesheet" href="assets/css/dictionaryroot-dynamic-sphere.css">
+  <link rel="stylesheet" href="assets/css/dictionaryroot-product-refinement.css">
 </head>
 <body class="dictionaryroot-live-page dictionaryroot-customer-page dictionaryroot-graph-page">
   <main id="main-content" class="dr-live-main dr-sphere-main">
@@ -64,24 +65,6 @@
         </label>
       </div>
 
-      <div class="dr-sphere-control-set dr-sphere-control-set-secondary" role="group" aria-label="Visual filters">
-        <strong class="dr-sphere-control-title">Refine</strong>
-        <label>
-          <span>Lens</span>
-          <select id="sphereLensSelect">
-            <option value="domain" selected>Domain lens</option>
-            <option value="importance">Importance lens</option>
-            <option value="strength">Strength lens</option>
-          </select>
-        </label>
-        <label>
-          <span>Domain</span>
-          <select id="sphereDomainFilter">
-            <option value="all">All domains</option>
-          </select>
-        </label>
-      </div>
-
       <div class="dr-sphere-control-actions" role="group" aria-label="Sphere actions">
         <button id="sphereRotationToggle" class="dr-live-icon-button" type="button" aria-pressed="true">Pause rotation</button>
         <button id="sphereResetRotation" class="dr-live-icon-button" type="button">Reset view</button>
@@ -90,7 +73,30 @@
     </section>
 
 
-    <section class="dr-sphere-expansion-panel" aria-label="Dynamic sphere expansion controls">
+    <details id="sphereAdvancedControls" class="dr-sphere-advanced-controls">
+      <summary>
+        <span><strong>Advanced sphere controls</strong><small>Visual filters, dynamic expansion depth, node budget, and branch management</small></span>
+        <span class="dr-sphere-advanced-state" aria-hidden="true">Show</span>
+      </summary>
+      <div class="dr-sphere-advanced-body">
+        <div class="dr-sphere-control-set dr-sphere-control-set-secondary" role="group" aria-label="Visual filters">
+          <strong class="dr-sphere-control-title">Refine</strong>
+          <label>
+            <span>Lens</span>
+            <select id="sphereLensSelect">
+              <option value="domain" selected>Domain lens</option>
+              <option value="importance">Importance lens</option>
+              <option value="strength">Strength lens</option>
+            </select>
+          </label>
+          <label>
+            <span>Domain</span>
+            <select id="sphereDomainFilter">
+              <option value="all">All domains</option>
+            </select>
+          </label>
+        </div>
+        <section class="dr-sphere-expansion-panel" aria-label="Dynamic sphere expansion controls">
       <div class="dr-sphere-expansion-intro">
         <strong>Dynamic expansion</strong>
         <span>Core nodes are in the curated 10,000-meaning graph. Dynamic nodes are loaded from complete lexical coverage only when you need them.</span>
@@ -120,7 +126,9 @@
         <span data-membership="dynamic"><i></i>Loaded on demand</span>
       </div>
       <p id="sphereExpansionStatus" class="dr-live-status" role="status" aria-live="polite"></p>
-    </section>
+        </section>
+      </div>
+    </details>
 
     <section class="dr-sphere-breadcrumb" aria-label="Concept path">
       <div>

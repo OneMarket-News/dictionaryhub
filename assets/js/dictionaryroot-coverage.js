@@ -99,22 +99,25 @@
     return `${file}?${params.toString()}`;
   }
 
-  function metric(label, value, note, tone) {
-    return `<article class="dr-coverage-metric" data-tone="${escapeHtml(tone || "")}">
+  function metric(label, value, note, tone, attributes) {
+    const actionable = Boolean(attributes);
+    const tag = actionable ? "button" : "article";
+    return `<${tag} class="dr-coverage-metric" data-tone="${escapeHtml(tone || "")}"${actionable ? ` type="button" ${attributes}` : ""}>
       <strong>${escapeHtml(formatNumber(value))}</strong>
       <span>${escapeHtml(label)}</span>
       <small>${escapeHtml(note)}</small>
-    </article>`;
+      ${actionable ? '<em>Filter lemma explorer →</em>' : ''}
+    </${tag}>`;
   }
 
   function renderMetrics(data) {
     elements.metrics.innerHTML = [
-      metric("Complete meanings", data.synsetCount, `${formatNumber(data.lemmaCount)} unique lemmas in the live lexical index.`, "accent"),
-      metric("Graph-covered", data.graphCoveredSenseCount, `${formatPercent(data.graphCoveragePercent)} of all exact meanings.`, "good"),
-      metric("Lexical-only", data.lexicalOnlySenseCount, "Searchable and source-backed, but not stored in the bounded graph bundle.", "warn"),
-      metric("Source-backed", data.sourceBackedSenseCount, `${formatPercent(data.sourceCoveragePercent)} linked to a SourceRoot source record.`, "good"),
-      metric("Reviewed graph senses", data.reviewedSenseCount, `${formatNumber(data.reviewRequiredSenseCount)} graph senses still need a reviewed assertion.`, data.reviewRequiredSenseCount ? "warn" : "good"),
-      metric("Concept revisions", data.conceptRevisionCoveredSenseCount, `${formatNumber(data.datasetRevisionCount)} dataset-level revision record${Number(data.datasetRevisionCount) === 1 ? "" : "s"}.`, "accent")
+      metric("Complete meanings", data.synsetCount, `${formatNumber(data.lemmaCount)} unique lemmas in the live lexical index.`, "accent", 'data-coverage-filter="all"'),
+      metric("Graph-covered meanings", data.graphCoveredSenseCount, `${formatPercent(data.graphCoveragePercent)} of all exact meanings are in the bounded graph.`, "good", 'data-coverage-filter="complete"'),
+      metric("Lexical-only meanings", data.lexicalOnlySenseCount, "Searchable through complete lexical coverage and loaded into the Sphere on demand.", "warn", 'data-coverage-filter="lexical-only"'),
+      metric("Source-backed meanings", data.sourceBackedSenseCount, `${formatPercent(data.sourceCoveragePercent)} resolve to a SourceRoot source identity.`, "good", 'data-source-filter="source-backed"'),
+      metric("Reviewed graph meanings", data.reviewedSenseCount, `${formatNumber(data.reviewRequiredSenseCount)} graph meanings still need a reviewed assertion.`, data.reviewRequiredSenseCount ? "warn" : "good", 'data-review-filter="reviewed"'),
+      metric("Meanings with concept history", data.conceptRevisionCoveredSenseCount, `${formatNumber(data.datasetRevisionCount)} dataset-lineage record${Number(data.datasetRevisionCount) === 1 ? "" : "s"} exist separately and are not counted as concept history.`, "accent", 'data-history-filter="with-history"')
     ].join("");
   }
 
@@ -296,7 +299,7 @@
         <div class="dr-coverage-mini-stat"><strong>${escapeHtml(formatNumber(item.exactSenseCount))}</strong><span>exact senses</span></div>
         <div class="dr-coverage-mini-stat"><strong>${escapeHtml(formatNumber(item.graphSenseCount))}</strong><span>graph senses</span></div>
         <div class="dr-coverage-mini-stat"><strong>${escapeHtml(formatPercent(item.graphCoveragePercent))}</strong><span>graph coverage</span></div>
-        <div class="dr-coverage-mini-stat"><strong>${escapeHtml(formatNumber(item.conceptRevisionSenseCount))}</strong><span>concept revisions</span></div>
+        <div class="dr-coverage-mini-stat"><strong>${escapeHtml(formatNumber(item.conceptRevisionSenseCount))}</strong><span>senses with concept history</span></div>
       </div>
       <div class="dr-coverage-result-actions">
         <a href="${escapeHtml(navHref("concept-v2.html", item.lemma, nodeId))}">Concept</a>
@@ -403,10 +406,12 @@
       loadLemmaCoverage({ history: "push", scroll: true });
     });
 
-    elements.queue.addEventListener("click", (event) => {
+    const handleQuickFilter = (event) => {
       const button = event.target.closest("button[data-coverage-filter], button[data-source-filter], button[data-history-filter], button[data-review-filter]");
       if (button) applyQuickFilter(button);
-    });
+    };
+    elements.metrics.addEventListener("click", handleQuickFilter);
+    elements.queue.addEventListener("click", handleQuickFilter);
 
     global.addEventListener("popstate", () => {
       state.navigatingHistory = true;

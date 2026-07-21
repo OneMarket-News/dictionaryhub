@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="assets/css/dictionaryroot-navigation.css">
   <link rel="stylesheet" href="assets/css/dictionaryroot-live.css">
   <link rel="stylesheet" href="assets/css/dictionaryroot-editorial.css">
+  <link rel="stylesheet" href="assets/css/dictionaryroot-product-refinement.css">
 </head>
 <body class="dictionaryroot-live-page dictionaryroot-customer-page dictionaryroot-editorial-page">
   <main id="main-content" class="dr-editorial-main">
@@ -19,10 +20,10 @@
         <h1 id="dictionaryrootEditorialTitle">Turn visible knowledge gaps into reviewable decisions.</h1>
         <p>Inspect one exact meaning at a time, record a status, leave reviewer notes and annotations, preserve an audit trail, and promote approved lexical-only meanings into the curated Knowledge Sphere.</p>
       </div>
-      <aside class="dr-editorial-service-card">
+      <aside class="dr-editorial-service-card dr-editorial-identity-card">
         <span id="dictionaryrootEditorialServiceState" data-state="loading">Checking SourceRoot</span>
-        <strong>No authentication in v1</strong>
-        <small>This local workflow establishes the review model before users and permissions are added.</small>
+        <strong>Identity-aware review records</strong>
+        <small>Reviewer identity is stored with each audit event. Signed-in accounts, roles, and write permissions are enforced only when configured by the connected SourceRoot deployment; this page does not claim an authenticated session.</small>
       </aside>
     </section>
 
@@ -65,7 +66,7 @@
 
           <form id="dictionaryrootEditorialReviewForm" class="dr-editorial-review-form">
             <label><span>Review status</span><select id="dictionaryrootEditorialReviewStatus"><option value="unreviewed">Unreviewed</option><option value="in_review">In review</option><option value="approved">Approved</option><option value="flagged">Flagged</option><option value="rejected">Rejected</option></select></label>
-            <label><span>Reviewer</span><input id="dictionaryrootEditorialReviewer" type="text" maxlength="120" placeholder="Local reviewer"></label>
+            <label class="dr-editorial-account-surface" data-surface="account"><span>Reviewer identity</span><input id="dictionaryrootEditorialReviewer" type="text" maxlength="120" placeholder="Name recorded with this decision"><small>Saved as identity provenance on the review and audit event. Entering a name here does not create or authenticate an account.</small></label>
             <label class="dr-editorial-checkbox"><input id="dictionaryrootEditorialRecommend" type="checkbox"><span>Recommend this lexical-only meaning for graph promotion</span></label>
             <label><span>Reviewer notes</span><textarea id="dictionaryrootEditorialNotes" rows="4" maxlength="5000" placeholder="Decision rationale, questions, or follow-up work..."></textarea></label>
             <label><span>Editorial annotation</span><textarea id="dictionaryrootEditorialAnnotation" rows="4" maxlength="5000" placeholder="Clarify ambiguity, terminology, source concerns, or relationship context..."></textarea></label>
@@ -78,7 +79,7 @@
       </aside>
     </section>
   </main>
-  <footer class="dr-live-footer">Editorial records come from the live SourceRoot database. Promotions require an approved review and create a concept revision; no fallback decisions are displayed.</footer>
+  <footer class="dr-live-footer">Editorial records come from the live SourceRoot database. Reviewer identity is preserved as provenance; deployment-level accounts, roles, and permissions remain authoritative. Promotions require an approved review and create a concept revision; no fallback decisions are displayed.</footer>
   <script defer src="assets/js/dictionaryroot-api.js"></script>
   <script defer src="assets/js/dictionaryroot-brand.js"></script>
   <script defer src="assets/js/dictionaryroot-navigation.js"></script>

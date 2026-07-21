@@ -14,7 +14,8 @@
       { label: "Sources", href: "sources-v2.html" },
       { label: "History", href: "history-v2.html" },
       { label: "Coverage", href: "coverage-v2.html" },
-      { label: "Editorial", href: "editorial-v2.html" }
+      { label: "Editorial", href: "editorial-v2.html" },
+      { label: "Accounts", href: "accounts-v2.html" }
     ]
   };
 
@@ -48,6 +49,11 @@
       title: "DictionaryRoot — Editorial Review",
       heading: "Editorial Review",
       intro: "Review exact meanings, record decisions, annotate issues, and promote approved concepts into the curated graph."
+    },
+    "accounts-v2.html": {
+      title: "DictionaryRoot — Accounts and Access",
+      heading: "Accounts and Access",
+      intro: "See who is acting, how they were authenticated, what has been verified, and which actions their role permits."
     },
     "dictionaryroot-connection.html": {
       title: "DictionaryRoot — Data Status",

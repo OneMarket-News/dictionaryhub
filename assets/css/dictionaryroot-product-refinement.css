@@ -1,0 +1,445 @@
+/* DictionaryRoot Cross-Experience Product Refinement v1
+   Presentation-only refinements layered over the committed customer experiences. */
+
+:root {
+  --dr-refine-account-surface: #dce8f4;
+  --dr-refine-account-surface-strong: #cbdbea;
+  --dr-refine-account-ink: #17324d;
+  --dr-refine-account-muted: #48647f;
+  --dr-refine-focus: rgba(103, 232, 249, 0.72);
+}
+
+/* Wider reading and work surfaces without changing page routing or component structure. */
+.dictionaryroot-concept-page .dictionaryroot-product-bar-inner,
+.dictionaryroot-concept-page .dictionaryroot-page-intro,
+.dictionaryroot-concept-page .dr-live-main,
+.dictionaryroot-concept-page .dr-live-footer,
+.dictionaryroot-history-page .dictionaryroot-product-bar-inner,
+.dictionaryroot-history-page .dictionaryroot-page-intro,
+.dictionaryroot-history-page .dr-live-main,
+.dictionaryroot-history-page .dr-live-footer {
+  width: min(96vw, 1880px);
+  max-width: 1880px;
+}
+
+.dictionaryroot-concept-page .dr-concept-workspace {
+  grid-template-columns: minmax(0, 1fr) clamp(390px, 24vw, 500px);
+  gap: clamp(1rem, 1.35vw, 1.5rem);
+}
+
+.dictionaryroot-history-page .dr-history-workspace {
+  grid-template-columns: minmax(0, 1.72fr) clamp(390px, 25vw, 510px);
+  gap: clamp(1rem, 1.35vw, 1.5rem);
+}
+
+/* Cross-experience small-text readability. */
+.dr-live-chip,
+.dr-live-status,
+.dr-home-kicker,
+.dr-home-example-row,
+.dr-home-example-row button,
+.dr-home-recent-list button,
+.dr-concept-kicker,
+.dr-concept-definition-label,
+.dr-concept-summary-grid span,
+.dr-concept-flow span,
+.dr-history-kicker,
+.dr-history-filter-label,
+.dr-history-timeline-group-title,
+.dr-history-status,
+.dr-history-detail-id,
+.dr-history-fact span:first-child,
+.dr-history-source-card span,
+.dr-coverage-kicker,
+.dr-coverage-filter-form label,
+.dr-coverage-pos-table th,
+.dr-coverage-result-actions a,
+.dr-coverage-mini-stat span,
+.dr-editorial-kicker,
+.dr-editorial-card-score span,
+.dr-editorial-event span,
+.dictionaryroot-global-search-status,
+.dictionaryroot-global-result-meta span,
+.dictionaryroot-global-result-actions a {
+  font-size: max(0.78rem, 12.5px);
+  line-height: 1.45;
+}
+
+.dr-concept-relationship-card p,
+.dr-concept-source-item span,
+.dr-concept-flow strong,
+.dr-history-fact strong,
+.dr-coverage-metric span,
+.dr-coverage-queue-card span,
+.dr-editorial-filters label,
+.dr-editorial-review-form label,
+.dr-editorial-context-links a {
+  font-size: max(0.84rem, 13.5px);
+  line-height: 1.5;
+}
+
+.dr-sphere-control-title,
+.dr-sphere-controls label,
+.dr-sphere-expansion-panel label,
+.dr-sphere-expansion-intro span,
+.dr-sphere-membership-legend span,
+.dr-sphere-hint,
+.dr-sphere-node-pos,
+.dr-sphere-node-membership,
+.dr-sphere-related-button small,
+.dr-sphere-stat-grid span {
+  font-size: max(0.76rem, 12px);
+  line-height: 1.4;
+}
+
+.dr-live-button:focus-visible,
+.dr-live-button-secondary:focus-visible,
+.dr-live-icon-button:focus-visible,
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible {
+  outline: 3px solid var(--dr-refine-focus);
+  outline-offset: 3px;
+}
+
+/* Rich, live, clickable homepage coverage panel. */
+.dr-home-hero {
+  grid-template-columns: minmax(0, 1.32fr) minmax(430px, 0.78fr);
+}
+
+.dr-home-coverage {
+  display: flex;
+  flex-direction: column;
+}
+
+.dr-home-coverage-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: start;
+}
+
+.dr-home-stat-grid a {
+  position: relative;
+  display: block;
+  min-width: 0;
+  min-height: 112px;
+  padding: 0.9rem;
+  border: 1px solid rgba(103, 232, 249, 0.18);
+  border-radius: 16px;
+  background: rgba(103, 232, 249, 0.05);
+  color: var(--dr-live-copy);
+  text-decoration: none;
+  transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
+}
+
+.dr-home-stat-grid a::after {
+  content: "↗";
+  position: absolute;
+  top: 0.7rem;
+  right: 0.75rem;
+  color: var(--dr-live-cyan);
+  font-size: 0.78rem;
+  opacity: 0.72;
+}
+
+.dr-home-stat-grid a:hover {
+  transform: translateY(-2px);
+  border-color: rgba(103, 232, 249, 0.44);
+  background: rgba(103, 232, 249, 0.1);
+}
+
+.dr-home-stat-grid a strong,
+.dr-home-stat-grid a span,
+.dr-home-stat-grid a small {
+  display: block;
+}
+
+.dr-home-stat-grid a strong {
+  padding-right: 1.25rem;
+  overflow: hidden;
+  font-size: clamp(1.25rem, 2vw, 1.85rem);
+  letter-spacing: -0.04em;
+  text-overflow: ellipsis;
+}
+
+.dr-home-stat-grid a span {
+  margin-top: 0.22rem;
+  color: var(--dr-live-copy);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.dr-home-stat-grid a small {
+  margin-top: 0.24rem;
+  color: var(--dr-live-muted);
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+.dr-home-coverage-foot {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: auto;
+  padding-top: 1rem;
+}
+
+.dr-home-coverage-foot p {
+  margin: 0;
+  color: var(--dr-live-muted);
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+.dr-home-coverage-foot a {
+  color: var(--dr-live-cyan);
+  font-size: 0.82rem;
+  font-weight: 820;
+  text-decoration: none;
+}
+
+.dr-home-coverage-foot a:hover { text-decoration: underline; }
+
+/* Collapsible advanced Sphere controls. */
+.dr-sphere-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(440px, 0.55fr);
+}
+
+.dr-sphere-control-set-primary {
+  grid-template-columns: repeat(3, minmax(150px, 1fr));
+}
+
+.dr-sphere-control-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(125px, 1fr));
+  align-items: end;
+}
+
+.dr-sphere-advanced-controls {
+  margin-top: 1rem;
+  border: 1px solid rgba(103, 232, 249, 0.22);
+  border-radius: 20px;
+  background: linear-gradient(145deg, rgba(8, 24, 42, 0.96), rgba(5, 14, 26, 0.96));
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.22);
+  overflow: clip;
+}
+
+.dr-sphere-advanced-controls > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 64px;
+  padding: 0.9rem 1rem;
+  color: var(--dr-live-copy);
+  cursor: pointer;
+  list-style: none;
+}
+
+.dr-sphere-advanced-controls > summary::-webkit-details-marker { display: none; }
+
+.dr-sphere-advanced-controls > summary > span:first-child {
+  display: grid;
+  gap: 0.18rem;
+}
+
+.dr-sphere-advanced-controls > summary strong { font-size: 0.95rem; }
+.dr-sphere-advanced-controls > summary small {
+  color: var(--dr-live-muted);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.dr-sphere-advanced-state {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 72px;
+  min-height: 34px;
+  padding: 0.25rem 0.65rem;
+  border: 1px solid rgba(103, 232, 249, 0.28);
+  border-radius: 999px;
+  color: var(--dr-live-cyan);
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.dr-sphere-advanced-controls[open] .dr-sphere-advanced-state::before { content: "Hide"; }
+.dr-sphere-advanced-controls[open] .dr-sphere-advanced-state { font-size: 0; }
+.dr-sphere-advanced-controls[open] .dr-sphere-advanced-state::before { font-size: 0.78rem; }
+
+.dr-sphere-advanced-body {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.55fr) minmax(0, 1.45fr);
+  gap: 0.85rem;
+  padding: 0 1rem 1rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.dr-sphere-advanced-body .dr-sphere-control-set-secondary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(145px, 1fr));
+  align-content: start;
+  margin-top: 1rem;
+}
+
+.dr-sphere-advanced-body .dr-sphere-expansion-panel {
+  margin-top: 1rem;
+  grid-template-columns: minmax(240px, 1.1fr) minmax(140px, 0.55fr) minmax(150px, 0.6fr);
+  box-shadow: none;
+}
+
+.dr-sphere-advanced-body .dr-sphere-expansion-actions,
+.dr-sphere-advanced-body .dr-sphere-membership-legend,
+.dr-sphere-advanced-body #sphereExpansionStatus {
+  grid-column: 1 / -1;
+}
+
+.dr-sphere-advanced-body #sphereExpansionStatus { text-align: left; }
+
+/* Coverage summary cards are controls, not decorative counts. */
+button.dr-coverage-metric {
+  width: 100%;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
+}
+
+button.dr-coverage-metric:hover {
+  transform: translateY(-2px);
+  border-color: rgba(103, 232, 249, 0.48);
+}
+
+.dr-coverage-metric em {
+  display: block;
+  margin-top: 0.72rem;
+  color: var(--dr-live-cyan);
+  font-size: 0.78rem;
+  font-style: normal;
+  font-weight: 820;
+}
+
+/* Honest revision language is visually distinct from live-state and dataset lineage. */
+.dr-history-current-panel .dr-live-chip[data-tone="good"] {
+  border-style: solid;
+}
+
+.dr-history-entry-meta .dr-live-chip[data-tone="accent"] {
+  background: rgba(103, 232, 249, 0.07);
+}
+
+.dr-history-entry[data-scope="dataset"] {
+  border-style: dashed;
+}
+
+/* Identity/account surfaces: intentionally pale blue-gray and explicit about provenance. */
+.dr-editorial-identity-card {
+  border-color: rgba(203, 219, 234, 0.9);
+  background: linear-gradient(145deg, var(--dr-refine-account-surface), var(--dr-refine-account-surface-strong));
+  color: var(--dr-refine-account-ink);
+  box-shadow: 0 18px 44px rgba(4, 15, 31, 0.2);
+}
+
+.dr-editorial-identity-card strong { color: var(--dr-refine-account-ink); }
+.dr-editorial-identity-card small {
+  color: var(--dr-refine-account-muted);
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+
+.dr-editorial-identity-card span,
+.dr-editorial-identity-card span[data-state="online"] {
+  border: 1px solid rgba(23, 85, 74, 0.2);
+  background: rgba(226, 246, 237, 0.86);
+  color: #17554a;
+}
+
+.dr-editorial-identity-card span[data-state="offline"] {
+  border-color: rgba(139, 46, 61, 0.18);
+  background: rgba(255, 231, 235, 0.88);
+  color: #8b2e3d;
+}
+
+.dr-editorial-account-surface {
+  padding: 1rem;
+  border: 1px solid rgba(203, 219, 234, 0.88);
+  border-radius: 14px;
+  background: linear-gradient(145deg, var(--dr-refine-account-surface), #e8f0f7);
+  color: var(--dr-refine-account-ink) !important;
+}
+
+.dr-editorial-account-surface > span {
+  color: var(--dr-refine-account-ink);
+  font-weight: 850;
+}
+
+.dr-editorial-account-surface input {
+  border-color: rgba(72, 100, 127, 0.36) !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  color: var(--dr-refine-account-ink) !important;
+}
+
+.dr-editorial-account-surface small {
+  color: var(--dr-refine-account-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+@media (max-width: 1320px) {
+  .dr-home-hero { grid-template-columns: minmax(0, 1fr) minmax(390px, 0.72fr); }
+  .dr-sphere-controls { grid-template-columns: 1fr; }
+  .dr-sphere-advanced-body { grid-template-columns: 1fr; }
+  .dr-sphere-advanced-body .dr-sphere-control-set-secondary { margin-bottom: 0; }
+}
+
+@media (max-width: 1120px) {
+  .dictionaryroot-concept-page .dr-concept-workspace,
+  .dictionaryroot-history-page .dr-history-workspace { grid-template-columns: 1fr; }
+  .dr-home-hero { grid-template-columns: 1fr; }
+  .dr-home-coverage-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+@media (max-width: 820px) {
+  .dictionaryroot-concept-page .dictionaryroot-product-bar-inner,
+  .dictionaryroot-concept-page .dictionaryroot-page-intro,
+  .dictionaryroot-concept-page .dr-live-main,
+  .dictionaryroot-concept-page .dr-live-footer,
+  .dictionaryroot-history-page .dictionaryroot-product-bar-inner,
+  .dictionaryroot-history-page .dictionaryroot-page-intro,
+  .dictionaryroot-history-page .dr-live-main,
+  .dictionaryroot-history-page .dr-live-footer {
+    width: min(100% - 1rem, 1880px);
+  }
+
+  .dr-home-coverage-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dr-sphere-control-set-primary,
+  .dr-sphere-control-actions,
+  .dr-sphere-advanced-body .dr-sphere-control-set-secondary,
+  .dr-sphere-advanced-body .dr-sphere-expansion-panel,
+  .dr-sphere-advanced-body .dr-sphere-expansion-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .dr-sphere-advanced-body .dr-sphere-expansion-actions,
+  .dr-sphere-advanced-body .dr-sphere-membership-legend,
+  .dr-sphere-advanced-body #sphereExpansionStatus {
+    grid-column: 1;
+  }
+}
+
+@media (max-width: 520px) {
+  .dr-home-coverage-grid { grid-template-columns: 1fr; }
+  .dr-home-stat-grid a { min-height: 96px; }
+  .dr-sphere-advanced-controls > summary { align-items: flex-start; }
+  .dr-sphere-advanced-state { min-width: 58px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dr-home-stat-grid a,
+  button.dr-coverage-metric { transition: none; }
+}

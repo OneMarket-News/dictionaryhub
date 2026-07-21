@@ -29,7 +29,8 @@
     "knowledgeGraph": true,
     "sources": true,
     "advancedDetails": true,
-    "editorialReview": true
+    "editorialReview": true,
+    "identityAccess": true
   },
   "dynamicExpansion": {
     "defaultDepth": 1,
@@ -42,5 +43,22 @@
     "defaultStatus": "all",
     "pageSize": 20,
     "reviewerLabel": "Local reviewer"
+  },
+  "identity": {
+    "mode": "development",
+    "providerInterfaceVersion": "1.0",
+    "sessionStorageKey": "dictionaryroot.auth.session",
+    "developmentSessionHours": 12,
+    "actorTypes": [
+      "human",
+      "organization",
+      "service",
+      "autonomous_agent"
+    ],
+    "verifiedHumanRequiredFor": [
+      "editorial.approve",
+      "graph.promote"
+    ],
+    "autonomousAgentFinalization": false
   }
 }
