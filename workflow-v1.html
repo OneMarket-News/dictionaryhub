@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Draft, review, approve, publish, and roll back governed DictionaryRoot knowledge changes.">
+  <title>DictionaryRoot — Governed Editorial Workflow</title>
+  <link rel="icon" href="assets/brand/dictionaryroot-mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/dictionaryroot-brand.css">
+  <link rel="stylesheet" href="assets/css/dictionaryroot-navigation.css">
+  <link rel="stylesheet" href="assets/css/dictionaryroot-live.css">
+  <link rel="stylesheet" href="assets/css/dictionaryroot-governance.css">
+</head>
+<body class="dictionaryroot-customer-page dr-governance-page dictionaryroot-workflow-page">
+  <main id="main-content" class="dr-governance-main">
+    <section class="dr-governance-hero" aria-labelledby="dictionaryrootWorkflowTitle">
+      <div>
+        <p class="dr-governance-kicker">Editorial Workflow and Revision Publishing v1</p>
+        <h1 id="dictionaryrootWorkflowTitle">Change knowledge without erasing how the decision was made.</h1>
+        <p>Draft a sourced proposal, disclose interpretation, submit it for independent review, record decisions and comments, publish an approved overlay, and preserve a reversible publication record.</p>
+      </div>
+      <aside class="dr-governance-status-card">
+        <strong id="dictionaryrootWorkflowIdentity">Checking identity</strong>
+        <span id="dictionaryrootWorkflowIdentityDetail">Protected actions are evaluated by SourceRoot permissions, not by the visibility of a button.</span>
+      </aside>
+    </section>
+
+    <div id="dictionaryrootWorkflowMessage" class="dr-governance-message" role="status" aria-live="polite" hidden></div>
+
+    <section class="dr-governance-panel" data-span="full" style="margin-top:1rem">
+      <div class="dr-governance-actions" style="justify-content:space-between">
+        <div><p class="dr-governance-kicker">Live workflow snapshot</p><h2 style="margin:0">Governed proposal queue</h2></div>
+        <div class="dr-governance-actions"><button id="dictionaryrootWorkflowRefresh" class="dr-governance-button" data-variant="secondary" type="button">Refresh</button><button id="dictionaryrootWorkflowNew" class="dr-governance-button" type="button">New proposal</button></div>
+      </div>
+      <div id="dictionaryrootWorkflowMetrics" class="dr-metric-grid" style="margin-top:1rem"></div>
+    </section>
+
+    <section id="dictionaryrootWorkflowSignedOut" class="dr-governance-panel" data-span="full" style="margin-top:1rem" hidden>
+      <h2>Sign in to use the governed workflow</h2>
+      <p>Public DictionaryRoot reading remains available. Creating, reviewing, publishing, or rolling back a proposal requires a verified account and the matching permission.</p>
+      <a class="dr-governance-button" href="account-v1.html">Open account sign-in</a>
+    </section>
+
+    <section id="dictionaryrootWorkflowWorkspace" class="dr-workflow-layout" style="margin-top:1rem" hidden>
+      <article class="dr-governance-panel" data-span="full">
+        <form id="dictionaryrootWorkflowFilters" class="dr-governance-form">
+          <div class="dr-governance-form-row">
+            <label class="dr-governance-field"><span>Search proposals</span><input id="dictionaryrootWorkflowSearch" type="search" placeholder="Title, target ID, or summary"></label>
+            <label class="dr-governance-field"><span>Status</span><select id="dictionaryrootWorkflowStatus"><option value="all">All visible proposals</option><option value="draft">Draft</option><option value="submitted">Submitted</option><option value="under_review">Under review</option><option value="changes_requested">Changes requested</option><option value="approved">Approved</option><option value="rejected">Rejected</option><option value="published">Published</option><option value="superseded">Superseded</option></select></label>
+          </div>
+          <div class="dr-governance-form-row">
+            <label class="dr-governance-field"><span>Target type</span><select id="dictionaryrootWorkflowTargetTypeFilter"><option value="all">All target types</option><option value="concept">Concept</option><option value="meaning">Meaning</option><option value="relationship">Relationship</option><option value="source">Source</option><option value="assertion">Assertion</option></select></label>
+            <div class="dr-governance-actions" style="align-self:end"><button class="dr-governance-button" data-variant="secondary" type="submit">Apply filters</button></div>
+          </div>
+        </form>
+        <p id="dictionaryrootWorkflowQueueStatus" class="dr-governance-help">Loading proposals…</p>
+        <div id="dictionaryrootWorkflowQueue" class="dr-card-list dr-workflow-queue"></div>
+        <div class="dr-governance-actions" style="justify-content:space-between;margin-top:1rem"><button id="dictionaryrootWorkflowPrevious" class="dr-governance-button" data-variant="secondary" type="button">Previous</button><span id="dictionaryrootWorkflowPage">Page 1</span><button id="dictionaryrootWorkflowNext" class="dr-governance-button" data-variant="secondary" type="button">Next</button></div>
+      </article>
+
+      <article class="dr-governance-panel" data-span="full">
+        <div id="dictionaryrootWorkflowEmpty" class="dr-governance-message">Select a proposal from the queue or create a new one.</div>
+        <div id="dictionaryrootWorkflowDetail" hidden>
+          <div class="dr-governance-actions" style="justify-content:space-between;align-items:flex-start">
+            <div><p class="dr-governance-kicker">Selected proposal</p><h2 id="dictionaryrootWorkflowDetailTitle">Proposal</h2><p id="dictionaryrootWorkflowDetailMeta" class="dr-governance-help"></p></div>
+            <span id="dictionaryrootWorkflowDetailStatus" class="dr-governance-chip">Draft</span>
+          </div>
+          <p id="dictionaryrootWorkflowDetailSummary"></p>
+          <div id="dictionaryrootWorkflowDetailActions" class="dr-governance-actions"></div>
+
+          <div class="dr-governance-grid" style="margin-top:1rem">
+            <section class="dr-governance-panel" data-span="6" style="box-shadow:none"><h3>Base snapshot</h3><pre id="dictionaryrootWorkflowBase" class="dr-json-preview"></pre></section>
+            <section class="dr-governance-panel" data-span="6" style="box-shadow:none"><h3>Proposed overlay</h3><pre id="dictionaryrootWorkflowPatch" class="dr-json-preview"></pre></section>
+            <section class="dr-governance-panel" data-span="6" style="box-shadow:none"><h3>Evidence</h3><div id="dictionaryrootWorkflowEvidence" class="dr-card-list"></div></section>
+            <section class="dr-governance-panel" data-span="6" style="box-shadow:none"><h3>Interpretation disclosure</h3><p id="dictionaryrootWorkflowDisclosure" class="dr-governance-help"></p><h3>Editorial rationale</h3><p id="dictionaryrootWorkflowRationale" class="dr-governance-help"></p></section>
+          </div>
+
+          <section style="margin-top:1rem"><h3>Discussion and review notes</h3><div id="dictionaryrootWorkflowComments" class="dr-card-list"></div>
+            <form id="dictionaryrootWorkflowCommentForm" class="dr-governance-form" style="margin-top:1rem"><label class="dr-governance-field"><span>Add comment</span><textarea id="dictionaryrootWorkflowComment" required maxlength="5000"></textarea></label><div class="dr-governance-actions"><button class="dr-governance-button" data-variant="secondary" type="submit">Add comment</button></div></form>
+          </section>
+          <section style="margin-top:1rem"><h3>Decision and publication history</h3><div id="dictionaryrootWorkflowEvents" class="dr-card-list"></div></section>
+        </div>
+      </article>
+    </section>
+
+    <dialog id="dictionaryrootWorkflowDialog" style="width:min(900px,calc(100% - 24px));border:1px solid var(--dr-governance-border);border-radius:20px;padding:0">
+      <form id="dictionaryrootWorkflowProposalForm" class="dr-governance-form" method="dialog" style="padding:1.4rem">
+        <div class="dr-governance-actions" style="justify-content:space-between"><div><p class="dr-governance-kicker">Governed draft</p><h2 id="dictionaryrootWorkflowFormTitle">Create proposal</h2></div><button id="dictionaryrootWorkflowCloseDialog" class="dr-governance-button" data-variant="secondary" type="button">Close</button></div>
+        <label class="dr-governance-field"><span>Governance organization</span><select id="dictionaryrootProposalOrganization" required></select><small>Organization-scoped permissions are enforced by the API. Only organizations where you can create proposals are listed.</small></label>
+        <div class="dr-governance-form-row">
+          <label class="dr-governance-field"><span>Target type</span><select id="dictionaryrootProposalTargetType" required><option value="meaning">Meaning</option><option value="concept">Concept</option><option value="relationship">Relationship</option><option value="source">Source</option><option value="assertion">Assertion</option></select></label>
+          <label class="dr-governance-field"><span>Stable target ID</span><input id="dictionaryrootProposalTargetId" required maxlength="300"></label>
+        </div>
+        <label class="dr-governance-field"><span>Proposal title</span><input id="dictionaryrootProposalTitle" required minlength="3" maxlength="200"></label>
+        <label class="dr-governance-field"><span>Summary</span><textarea id="dictionaryrootProposalSummary" maxlength="3000"></textarea></label>
+        <div class="dr-governance-form-row">
+          <label class="dr-governance-field"><span>Base snapshot JSON</span><textarea id="dictionaryrootProposalBase" spellcheck="false">{}</textarea></label>
+          <label class="dr-governance-field"><span>Proposed overlay JSON</span><textarea id="dictionaryrootProposalPatch" spellcheck="false">{}</textarea></label>
+        </div>
+        <label class="dr-governance-field"><span>Editorial rationale</span><textarea id="dictionaryrootProposalRationale" maxlength="5000" placeholder="Why should DictionaryRoot adopt this change?"></textarea></label>
+        <label class="dr-governance-field"><span>Interpretation disclosure</span><textarea id="dictionaryrootProposalDisclosure" maxlength="5000" placeholder="Separate source evidence from editorial inference or judgment."></textarea></label>
+        <label class="dr-governance-field"><span>Source IDs</span><textarea id="dictionaryrootProposalSources" placeholder="One SourceRoot source ID per line"></textarea></label>
+        <div class="dr-governance-actions"><button class="dr-governance-button" type="submit">Save draft proposal</button></div>
+      </form>
+    </dialog>
+  </main>
+  <footer class="dr-live-footer">Publication creates a governed, reversible overlay and a revision record when the target belongs to a known SourceRoot bundle. Imported lexical source records remain distinct from DictionaryRoot editorial interpretation.</footer>
+  <script defer src="assets/js/dictionaryroot-api.js"></script>
+  <script defer src="assets/js/dictionaryroot-auth.js"></script>
+  <script defer src="assets/js/dictionaryroot-brand.js"></script>
+  <script defer src="assets/js/dictionaryroot-navigation.js"></script>
+  <script defer src="assets/js/dictionaryroot-workflow.js"></script>
+</body>
+</html>

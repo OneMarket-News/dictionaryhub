@@ -1,5 +1,4 @@
 import "dotenv/config";
-import "dotenv/config";
 import { createApp } from "./app.js";
 import { closeDatabase } from "./lib/database.js";
 
@@ -9,6 +8,8 @@ const server = app.listen(port, () => {
   console.log(`SourceRoot backend listening on http://localhost:${port}`);
   console.log(`Health: http://localhost:${port}/health`);
   console.log(`Validate: POST http://localhost:${port}/api/v1/validate`);
+  console.log(`Account: http://localhost:${port}/api/v1/auth/session`);
+  console.log(`Readiness: http://localhost:${port}/api/v1/deployment-readiness`);
 });
 
 async function shutdown(signal: string): Promise<void> {

@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="assets/css/dictionaryroot-live.css">
   <link rel="stylesheet" href="assets/css/dictionaryroot-editorial.css">
   <link rel="stylesheet" href="assets/css/dictionaryroot-product-refinement.css">
+  <link rel="stylesheet" href="assets/css/dictionaryroot-governance.css">
 </head>
 <body class="dictionaryroot-live-page dictionaryroot-customer-page dictionaryroot-editorial-page">
   <main id="main-content" class="dr-editorial-main">
@@ -22,8 +23,8 @@
       </div>
       <aside class="dr-editorial-service-card dr-editorial-identity-card">
         <span id="dictionaryrootEditorialServiceState" data-state="loading">Checking SourceRoot</span>
-        <strong>Identity-aware review records</strong>
-        <small>Reviewer identity is stored with each audit event. Signed-in accounts, roles, and write permissions are enforced only when configured by the connected SourceRoot deployment; this page does not claim an authenticated session.</small>
+        <strong>Authenticated, permission-gated decisions</strong>
+        <small id="dictionaryrootEditorialIdentityStatus">Checking the current DictionaryRoot account. Public queue inspection remains readable; review and publication writes require explicit permissions.</small>
       </aside>
     </section>
 
@@ -66,11 +67,11 @@
 
           <form id="dictionaryrootEditorialReviewForm" class="dr-editorial-review-form">
             <label><span>Review status</span><select id="dictionaryrootEditorialReviewStatus"><option value="unreviewed">Unreviewed</option><option value="in_review">In review</option><option value="approved">Approved</option><option value="flagged">Flagged</option><option value="rejected">Rejected</option></select></label>
-            <label class="dr-editorial-account-surface" data-surface="account"><span>Reviewer identity</span><input id="dictionaryrootEditorialReviewer" type="text" maxlength="120" placeholder="Name recorded with this decision"><small>Saved as identity provenance on the review and audit event. Entering a name here does not create or authenticate an account.</small></label>
+            <label class="dr-editorial-account-surface" data-surface="account"><span>Authenticated reviewer identity</span><input id="dictionaryrootEditorialReviewer" type="text" maxlength="120" readonly placeholder="Sign in to review"><small>The backend derives this identity from the active session. Typing a name cannot grant review or publication authority.</small></label>
             <label class="dr-editorial-checkbox"><input id="dictionaryrootEditorialRecommend" type="checkbox"><span>Recommend this lexical-only meaning for graph promotion</span></label>
             <label><span>Reviewer notes</span><textarea id="dictionaryrootEditorialNotes" rows="4" maxlength="5000" placeholder="Decision rationale, questions, or follow-up work..."></textarea></label>
             <label><span>Editorial annotation</span><textarea id="dictionaryrootEditorialAnnotation" rows="4" maxlength="5000" placeholder="Clarify ambiguity, terminology, source concerns, or relationship context..."></textarea></label>
-            <div class="dr-editorial-form-actions"><button id="dictionaryrootEditorialSave" class="dr-live-button" type="submit">Save review</button><button id="dictionaryrootEditorialPromote" class="dr-live-button-secondary" type="button">Promote approved meaning</button></div>
+            <div class="dr-editorial-form-actions"><button id="dictionaryrootEditorialSave" class="dr-live-button" type="submit">Save review</button><button id="dictionaryrootEditorialPromote" class="dr-live-button-secondary" type="button">Promote approved meaning</button><a class="dr-live-button-secondary" href="workflow-v1.html">Open governed proposals</a></div>
             <p id="dictionaryrootEditorialFormStatus" class="dr-live-status" role="status" aria-live="polite"></p>
           </form>
 
@@ -79,8 +80,9 @@
       </aside>
     </section>
   </main>
-  <footer class="dr-live-footer">Editorial records come from the live SourceRoot database. Reviewer identity is preserved as provenance; deployment-level accounts, roles, and permissions remain authoritative. Promotions require an approved review and create a concept revision; no fallback decisions are displayed.</footer>
+  <footer class="dr-live-footer">Editorial records come from the live SourceRoot database. Authenticated identity, role permissions, proposals, decisions, publications, and rollback events remain separate provenance records. Promotions require publisher permission and an approved review; no fallback decisions are displayed.</footer>
   <script defer src="assets/js/dictionaryroot-api.js"></script>
+  <script defer src="assets/js/dictionaryroot-auth.js"></script>
   <script defer src="assets/js/dictionaryroot-brand.js"></script>
   <script defer src="assets/js/dictionaryroot-navigation.js"></script>
   <script defer src="assets/js/dictionaryroot-editorial.js"></script>

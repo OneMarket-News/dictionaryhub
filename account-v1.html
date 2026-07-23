@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Sign in to DictionaryRoot, link trusted identity providers, review roles, and manage active sessions.">
+  <title>DictionaryRoot — Account and Identity</title>
+  <link rel="icon" href="assets/brand/dictionaryroot-mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/dictionaryroot-brand.css">
+  <link rel="stylesheet" href="assets/css/dictionaryroot-navigation.css">
+  <link rel="stylesheet" href="assets/css/dictionaryroot-live.css">
+  <link rel="stylesheet" href="assets/css/dictionaryroot-governance.css">
+</head>
+<body class="dictionaryroot-customer-page dr-governance-page dictionaryroot-account-page">
+  <main id="main-content" class="dr-governance-main">
+    <section class="dr-governance-hero" aria-labelledby="dictionaryrootAccountTitle">
+      <div>
+        <p class="dr-governance-kicker">Authentication and Account Foundation v1</p>
+        <h1 id="dictionaryrootAccountTitle">One account. Multiple verified ways to reach it.</h1>
+        <p>DictionaryRoot connects email, Google, Apple, and approved development identities to one persistent account. Authentication proves who is present; roles and permissions separately determine what that account may change.</p>
+      </div>
+      <aside id="dictionaryrootAccountStatusCard" class="dr-governance-status-card">
+        <strong id="dictionaryrootAccountStatusTitle">Checking your session</strong>
+        <span id="dictionaryrootAccountStatusText">Connecting to the live SourceRoot identity service.</span>
+      </aside>
+    </section>
+
+    <div id="dictionaryrootAccountMessage" class="dr-governance-message" role="status" aria-live="polite" hidden></div>
+
+    <section id="dictionaryrootSignedOut" class="dr-governance-grid" aria-label="Sign in to DictionaryRoot">
+      <article class="dr-governance-panel" data-span="8">
+        <p class="dr-governance-kicker">Sign in</p>
+        <h2>Use a verified identity provider</h2>
+        <p>Provider secrets stay on the SourceRoot backend. DictionaryRoot stores an opaque, HTTP-only session cookie rather than provider passwords.</p>
+        <div class="dr-provider-grid">
+          <a id="dictionaryrootGoogleSignIn" class="dr-provider-button" href="#" aria-disabled="true">Continue with Google</a>
+          <a id="dictionaryrootAppleSignIn" class="dr-provider-button" href="#" aria-disabled="true">Continue with Apple</a>
+        </div>
+        <form id="dictionaryrootEmailSignInForm" class="dr-governance-form" style="margin-top:1rem">
+          <label class="dr-governance-field"><span>Email address</span><input id="dictionaryrootEmailSignIn" type="email" required autocomplete="email" placeholder="you@example.com"></label>
+          <div class="dr-governance-actions"><button class="dr-governance-button" type="submit">Email me a sign-in link</button></div>
+        </form>
+        <div id="dictionaryrootDevelopmentLink" class="dr-governance-message" hidden></div>
+      </article>
+
+      <aside class="dr-governance-panel" data-span="4">
+        <p class="dr-governance-kicker">Identity is not authority</p>
+        <h2>Signing in does not grant editing rights</h2>
+        <p>A new verified account receives only registered-user access. Contributor, reviewer, publisher, organization administrator, and system administrator roles must be assigned independently.</p>
+        <div class="dr-chip-row">
+          <span class="dr-governance-chip">Registered</span>
+          <span class="dr-governance-chip">Contributor</span>
+          <span class="dr-governance-chip">Reviewer</span>
+          <span class="dr-governance-chip">Publisher</span>
+        </div>
+      </aside>
+
+      <article id="dictionaryrootDevelopmentPanel" class="dr-governance-panel" data-span="full" hidden>
+        <p class="dr-governance-kicker">Local development only</p>
+        <h2>Development sign-in</h2>
+        <p>This adapter is available only when <code>ALLOW_DEVELOPMENT_AUTH=true</code>. It must remain disabled in staging and production.</p>
+        <form id="dictionaryrootDevelopmentForm" class="dr-governance-form-row">
+          <label class="dr-governance-field"><span>Development email</span><input id="dictionaryrootDevelopmentEmail" type="email" required value="admin@dictionaryroot.local"></label>
+          <label class="dr-governance-field"><span>Display name</span><input id="dictionaryrootDevelopmentName" type="text" required value="DictionaryRoot Administrator"></label>
+          <div class="dr-governance-actions"><button class="dr-governance-button" type="submit">Sign in locally</button></div>
+        </form>
+      </article>
+    </section>
+
+    <section id="dictionaryrootSignedIn" class="dr-governance-grid" aria-label="DictionaryRoot account" hidden>
+      <article class="dr-governance-panel" data-span="4">
+        <p class="dr-governance-kicker">Profile</p>
+        <h2 id="dictionaryrootProfileHeading">Your DictionaryRoot identity</h2>
+        <form id="dictionaryrootProfileForm" class="dr-governance-form">
+          <label class="dr-governance-field"><span>Display name</span><input id="dictionaryrootProfileName" type="text" required maxlength="120"></label>
+          <label class="dr-governance-field"><span>Public handle</span><input id="dictionaryrootProfileHandle" type="text" maxlength="40" pattern="[A-Za-z0-9_-]{3,40}" placeholder="optional_handle"></label>
+          <label class="dr-governance-field"><span>Verified email</span><input id="dictionaryrootProfileEmail" type="email" disabled></label>
+          <div class="dr-governance-actions">
+            <button class="dr-governance-button" type="submit">Save profile</button>
+            <button id="dictionaryrootSignOut" class="dr-governance-button" data-variant="secondary" type="button">Sign out</button>
+          </div>
+        </form>
+      </article>
+
+      <article class="dr-governance-panel" data-span="8">
+        <p class="dr-governance-kicker">Authorization</p>
+        <h2>Roles and explicit permissions</h2>
+        <p>Your account may hold different roles inside different organizations. The backend checks permission keys for every protected write.</p>
+        <div id="dictionaryrootRoleList" class="dr-chip-row"></div>
+        <h3 style="margin-top:1.2rem">Effective permissions</h3>
+        <div id="dictionaryrootPermissionList" class="dr-chip-row"></div>
+        <div id="dictionaryrootAdminAccess" class="dr-governance-actions" style="margin-top:1rem" hidden><a class="dr-governance-button" href="admin-v1.html">Open administration</a><a class="dr-governance-button" data-variant="secondary" href="workflow-v1.html">Open editorial workflow</a></div>
+      </article>
+
+      <article class="dr-governance-panel" data-span="6">
+        <p class="dr-governance-kicker">Linked sign-in methods</p>
+        <h2>Connected identities</h2>
+        <div id="dictionaryrootIdentityList" class="dr-card-list"></div>
+        <div class="dr-provider-grid" style="margin-top:1rem">
+          <a id="dictionaryrootGoogleLink" class="dr-provider-button" href="#" aria-disabled="true">Link Google</a>
+          <a id="dictionaryrootAppleLink" class="dr-provider-button" href="#" aria-disabled="true">Link Apple</a>
+        </div>
+        <form id="dictionaryrootEmailLinkForm" class="dr-governance-form" style="margin-top:1rem">
+          <label class="dr-governance-field"><span>Link another email</span><input id="dictionaryrootEmailLink" type="email" required autocomplete="email"></label>
+          <div class="dr-governance-actions"><button class="dr-governance-button" data-variant="secondary" type="submit">Verify and link email</button></div>
+        </form>
+      </article>
+
+      <article class="dr-governance-panel" data-span="6">
+        <p class="dr-governance-kicker">Organizations</p>
+        <h2>Membership and scoped roles</h2>
+        <div id="dictionaryrootOrganizationList" class="dr-card-list"></div>
+      </article>
+
+      <article class="dr-governance-panel" data-span="6">
+        <p class="dr-governance-kicker">Organization invitation</p>
+        <h2>Accept a verified invitation</h2>
+        <p>Invitation membership is activated only when this signed-in account owns the verified email address that received it.</p>
+        <form id="dictionaryrootInvitationForm" class="dr-governance-form">
+          <label class="dr-governance-field"><span>Invitation token</span><input id="dictionaryrootInvitationToken" type="text" required autocomplete="off" placeholder="Paste the invitation token"></label>
+          <div class="dr-governance-actions"><button class="dr-governance-button" type="submit">Accept invitation</button></div>
+        </form>
+      </article>
+
+      <article class="dr-governance-panel" data-span="6">
+        <p class="dr-governance-kicker">Data and privacy</p>
+        <h2>Export or delete your account</h2>
+        <p>Download the account, identity, role, organization, proposal, comment, and audit records tied to your user ID before deleting access.</p>
+        <div class="dr-governance-actions">
+          <button id="dictionaryrootExportAccount" class="dr-governance-button" data-variant="secondary" type="button">Download account export</button>
+          <button id="dictionaryrootRequestDeletion" class="dr-governance-button" data-variant="warning" type="button">Request deletion</button>
+        </div>
+        <form id="dictionaryrootDeleteAccountForm" class="dr-governance-form" hidden style="margin-top:1rem">
+          <label class="dr-governance-field"><span>Type DELETE to confirm</span><input id="dictionaryrootDeleteConfirmation" type="text" autocomplete="off" placeholder="DELETE"></label>
+          <div class="dr-governance-actions"><button class="dr-governance-button" data-variant="danger" type="submit">Delete account and revoke sessions</button></div>
+        </form>
+      </article>
+
+      <article class="dr-governance-panel" data-span="full">
+        <p class="dr-governance-kicker">Session security</p>
+        <h2>Active browser sessions</h2>
+        <p>Revoke a session you do not recognize or sign out every other device while preserving this browser.</p>
+        <div id="dictionaryrootSessionList" class="dr-governance-table-wrap"></div>
+        <div class="dr-governance-actions" style="margin-top:1rem"><button id="dictionaryrootRevokeOtherSessions" class="dr-governance-button" data-variant="warning" type="button">Sign out other sessions</button></div>
+      </article>
+    </section>
+  </main>
+
+  <footer class="dr-live-footer">Authentication establishes identity. DictionaryRoot authorization, organization roles, proposal decisions, publications, and audit events remain separate, explainable records. <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="acceptable-use.html">Acceptable use</a> · <a href="corrections-policy.html">Corrections</a></footer>
+  <script defer src="assets/js/dictionaryroot-api.js"></script>
+  <script defer src="assets/js/dictionaryroot-auth.js"></script>
+  <script defer src="assets/js/dictionaryroot-brand.js"></script>
+  <script defer src="assets/js/dictionaryroot-navigation.js"></script>
+  <script defer src="assets/js/dictionaryroot-account.js"></script>
+</body>
+</html>

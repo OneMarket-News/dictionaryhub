@@ -1,0 +1,175 @@
+openapi: 3.1.0
+info:
+  title: DictionaryRoot Governed Platform API
+  version: 0.2.0
+  description: Authentication, account, governance, workflow, moderation, and audit additions to SourceRoot.
+servers:
+  - url: http://localhost:3000/api/v1
+paths:
+  /auth/config:
+    get:
+      summary: Read configured sign-in provider availability
+      responses: { '200': { description: Provider configuration } }
+  /auth/session:
+    get:
+      summary: Read the current authenticated session
+      responses: { '200': { description: Auth context or anonymous context } }
+  /auth/email/start:
+    post:
+      summary: Request a one-time email sign-in or linking link
+      responses: { '202': { description: Request accepted }, '429': { description: Rate limited } }
+  /auth/google/start:
+    get:
+      summary: Start Google OAuth
+      responses: { '302': { description: Redirect to Google } }
+  /auth/apple/start:
+    get:
+      summary: Start Sign in with Apple
+      responses: { '302': { description: Redirect to Apple } }
+  /auth/sign-out:
+    post:
+      summary: Revoke the current session
+      responses: { '200': { description: Signed out } }
+  /account:
+    get:
+      summary: Read the authenticated account
+      responses: { '200': { description: Account context }, '401': { description: Sign-in required } }
+  /account/export:
+    get:
+      summary: Download account data as JSON
+      responses: { '200': { description: Account export }, '401': { description: Sign-in required } }
+  /account/invitations/accept:
+    post:
+      summary: Accept an organization invitation matching a verified account email
+      responses: { '200': { description: Invitation accepted }, '403': { description: Email mismatch } }
+  /auth/identities/{identityId}:
+    delete:
+      summary: Unlink a non-active sign-in identity; the identity that created the current session cannot be removed
+      parameters:
+        - in: path
+          name: identityId
+          required: true
+          schema: { type: string, format: uuid }
+      responses: { '204': { description: Identity unlinked }, '409': { description: Active or final identity cannot be removed } }
+  /account/sessions:
+    get:
+      summary: List active browser sessions
+      responses: { '200': { description: Session list }, '401': { description: Sign-in required } }
+  /account/sessions/revoke-others:
+    post:
+      summary: Revoke every session except the current session
+      responses: { '200': { description: Other sessions revoked } }
+  /dictionaryroot/workflow/proposals:
+    get:
+      summary: List visible change proposals
+      responses: { '200': { description: Proposal queue } }
+    post:
+      summary: Create a sourced change proposal
+      responses: { '201': { description: Proposal created }, '403': { description: Permission required } }
+  /dictionaryroot/workflow/proposals/{proposalId}/approve:
+    post:
+      summary: Approve a proposal; self-approval is blocked by default
+      parameters:
+        - in: path
+          name: proposalId
+          required: true
+          schema: { type: string, format: uuid }
+      responses: { '200': { description: Proposal approved }, '409': { description: Self-approval or transition conflict } }
+  /dictionaryroot/workflow/proposals/{proposalId}/publish:
+    post:
+      summary: Publish an approved, unlocked proposal
+      parameters:
+        - in: path
+          name: proposalId
+          required: true
+          schema: { type: string, format: uuid }
+      responses: { '201': { description: Publication created }, '423': { description: Target is moderation locked } }
+  /dictionaryroot/workflow/publications/{publicationId}/rollback:
+    post:
+      summary: Roll back a publication with a recorded reason
+      parameters:
+        - in: path
+          name: publicationId
+          required: true
+          schema: { type: string, format: uuid }
+      responses: { '200': { description: Publication rolled back } }
+  /admin/overview:
+    get:
+      summary: Read governance operating metrics
+      responses: { '200': { description: Overview }, '403': { description: Audit permission required } }
+  /admin/organizations:
+    get:
+      summary: List organizations visible to the current administrator
+      responses: { '200': { description: Scoped organization list } }
+    post:
+      summary: Create an organization; system permission is required
+      responses: { '201': { description: Organization created }, '403': { description: System permission required } }
+  /admin/organizations/{organizationId}/members:
+    get:
+      summary: List active members and organization-scoped roles for an administered organization
+      parameters:
+        - in: path
+          name: organizationId
+          required: true
+          schema: { type: string, format: uuid }
+      responses: { '200': { description: Member and scoped role list }, '403': { description: Organization permission required } }
+  /admin/organizations/{organizationId}/members/{userId}/roles:
+    post:
+      summary: Assign an organization-scoped role to an active member
+      parameters:
+        - in: path
+          name: organizationId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: userId
+          required: true
+          schema: { type: string, format: uuid }
+      responses: { '204': { description: Role assigned }, '403': { description: Organization permission required }, '409': { description: Invalid membership or role state } }
+  /admin/organizations/{organizationId}/members/{userId}/roles/{roleKey}:
+    delete:
+      summary: Remove an organization-scoped role while preserving at least one organization administrator
+      parameters:
+        - in: path
+          name: organizationId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: userId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: roleKey
+          required: true
+          schema: { type: string }
+      responses: { '204': { description: Role removed }, '409': { description: Final organization administrator cannot be removed } }
+  /admin/organizations/{organizationId}/invitations:
+    post:
+      summary: Invite a verified email to an administered organization with an organization-scoped role
+      parameters:
+        - in: path
+          name: organizationId
+          required: true
+          schema: { type: string, format: uuid }
+      responses: { '201': { description: Invitation created and delivered }, '403': { description: Organization permission required } }
+  /admin/moderation/locks:
+    get:
+      summary: List active publication locks
+      responses: { '200': { description: Active locks } }
+    post:
+      summary: Create a publication lock
+      responses: { '201': { description: Lock created }, '409': { description: Target already locked } }
+  /moderation/reports:
+    post:
+      summary: Report a target for moderation
+      responses: { '201': { description: Report created } }
+components:
+  securitySchemes:
+    dictionaryRootSession:
+      type: apiKey
+      in: cookie
+      name: dr_session
+    csrfToken:
+      type: apiKey
+      in: header
+      name: X-CSRF-Token

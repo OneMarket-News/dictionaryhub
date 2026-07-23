@@ -1,0 +1,49 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: sourceroot
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - dictionaryroot-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d sourceroot"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    image: node:22-bookworm-slim
+    working_dir: /workspace/backend
+    command: sh -c "npm ci && npm run db:migrate && npm start"
+    env_file:
+      - backend/.env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/sourceroot
+      FRONTEND_PUBLIC_URL: http://localhost:8080
+      BACKEND_PUBLIC_URL: http://localhost:3000
+      CORS_ORIGIN: http://localhost:8080,http://127.0.0.1:8080
+    volumes:
+      - ./:/workspace
+      - dictionaryroot-node-modules:/workspace/backend/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    image: python:3.12-alpine
+    working_dir: /workspace
+    command: python -m http.server 8080
+    volumes:
+      - ./:/workspace:ro
+    ports:
+      - "8080:8080"
+
+volumes:
+  dictionaryroot-postgres:
+  dictionaryroot-node-modules:

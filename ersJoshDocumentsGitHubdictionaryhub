@@ -1,0 +1,53 @@
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'VERIFY-DICTIONARYROOT-CROSS-EXPERIENCE-PRODUCT-REFINEMENT.ps1', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'VERIFY-DICTIONARYROOT-RESPONSIVE.mjs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'assets/js/dictionaryroot-api.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'assets/js/dictionaryroot-editorial.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'assets/js/dictionaryroot-navigation.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/.env.example', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/package-lock.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/app.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/lib/query-params.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/routes/auth.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/routes/editorial.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/routes/health.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/routes/import.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/server.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/src/services/editorial-store.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/test/helpers/database.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'concept-v2.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'coverage-v2.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'editorial-v2.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'graph-v2.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'history-v2.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'index.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'sources-v2.html', LF will be replaced by CRLF the next time Git touches it
+ .gitignore                                         |   5 [32m+[m
+ ...ARYROOT-CROSS-EXPERIENCE-PRODUCT-REFINEMENT.ps1 |  10 [32m+[m[31m-[m
+ VERIFY-DICTIONARYROOT-RESPONSIVE.mjs               |   8 [32m+[m[31m-[m
+ assets/js/dictionaryroot-api.js                    |  94 [32m+[m[31m-----[m
+ assets/js/dictionaryroot-editorial.js              |  25 [32m+[m[31m-[m
+ assets/js/dictionaryroot-navigation.js             | 244 [32m+++[m[31m-----------[m
+ backend/.env.example                               |  47 [32m++[m[31m-[m
+ backend/README.md                                  | 107 [32m++++[m[31m---[m
+ backend/package-lock.json                          |  62 [32m+++[m[31m-[m
+ backend/package.json                               |   4 [32m+[m[31m-[m
+ backend/src/app.ts                                 |  62 [32m+++[m[31m-[m
+ backend/src/lib/query-params.ts                    |   9 [32m+[m
+ backend/src/routes/auth.ts                         | 351 [32m+++++++++++++++[m[31m------[m
+ backend/src/routes/editorial.ts                    | 108 [32m+++[m[31m----[m
+ backend/src/routes/health.ts                       |  21 [32m+[m[31m-[m
+ backend/src/routes/import.ts                       |  44 [32m++[m[31m-[m
+ backend/src/server.ts                              |   3 [32m+[m[31m-[m
+ backend/src/services/editorial-store.ts            |  47 [32m++[m[31m-[m
+ backend/test/helpers/database.ts                   |  22 [32m++[m
+ concept-v2.html                                    |   2 [32m+[m
+ coverage-v2.html                                   |   2 [32m+[m
+ editorial-v2.html                                  |  12 [32m+[m[31m-[m
+ graph-v2.html                                      |   2 [32m+[m
+ history-v2.html                                    |   2 [32m+[m
+ index.html                                         |   2 [32m+[m
+ sources-v2.html                                    |   2 [32m+[m
+ 26 files changed, 758 insertions(+), 539 deletions(-)

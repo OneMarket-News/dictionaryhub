@@ -252,5 +252,11 @@ try {
     if (typeof server.closeAllConnections === "function") server.closeAllConnections();
     await new Promise((resolve) => server.close(resolve));
   }
-  if (tempDir) fs.rmSync(tempDir, { recursive: true, force: true });
+  if (tempDir) {
+    try {
+      fs.rmSync(tempDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
+    } catch (cleanupError) {
+      console.warn(`RESPONSIVE CLEANUP WARNING: ${cleanupError.message}`);
+    }
+  }
 }

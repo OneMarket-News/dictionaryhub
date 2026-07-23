@@ -1,0 +1,29 @@
+DictionaryRoot Governed Platform Foundation v1
+Installer hotfix: 1.0.1 (Windows PowerShell 5.1 array syntax correction)
+
+Base source of truth:
+DictionaryRoot Cross-Experience Product Refinement v1
+
+Product additions:
+- Google and Apple OAuth adapters with state, nonce, PKCE/JWT verification, and protected identity linking
+- Email magic-link authentication with console and Resend delivery modes
+- Persistent HTTP-only sessions, exact provider-identity provenance, CSRF protection, revocation, export, and deletion
+- Organizations, memberships, invitations, organization-scoped member role management, permission keys, and organization-scoped authorization
+- Governed editorial proposals, evidence, comments, review decisions, publication overlays, rollback, and self-approval prevention
+- Moderation reports, account suspension actions, publication record locks, and audit events
+- Account, Workflow, and Administration customer experiences
+- Local/staging/production environment examples, Docker templates, backup/restore tools, setup/start scripts, OpenAPI reference, policy drafts, and pilot checklist
+
+Preserved experiences:
+- DictionaryRoot Home
+- Knowledge Sphere
+- Concepts
+- Sources
+- Coverage
+- Editorial
+- History
+- Shared navigation and global search
+- URL state, SourceRoot live integration, roles/permissions language, identity provenance, and offline states
+
+Operational boundary:
+The release implements provider adapters and deployment-ready configuration, but it does not contain live provider credentials, purchase hosting, create public domains, finalize legal policies, or deploy production infrastructure. Public login requires operator-supplied HTTPS domains, OAuth credentials, email delivery, PostgreSQL, secrets, migrations, backups, monitoring, and staging acceptance.

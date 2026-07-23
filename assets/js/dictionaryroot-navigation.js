@@ -8,21 +8,17 @@
     logoPath: "assets/brand/dictionaryroot-mark.svg"
   };
 
-  const PRIMARY_NAV_ITEMS = [
+  const NAV_ITEMS = [
     { key: "home", label: "Home", href: "index.html" },
-    { key: "concept", label: "Concepts", href: "concept-v2.html" },
-    { key: "graph", label: "Sphere", href: "graph-v2.html" },
+    { key: "concept", label: "Concept", href: "concept-v2.html" },
+    { key: "graph", label: "Knowledge Sphere", href: "graph-v2.html" },
     { key: "sources", label: "Sources", href: "sources-v2.html" },
-    { key: "history", label: "History", href: "history-v2.html" }
-  ];
-
-  const MANAGE_NAV_ITEMS = [
+    { key: "history", label: "History", href: "history-v2.html" },
     { key: "coverage", label: "Coverage", href: "coverage-v2.html" },
     { key: "editorial", label: "Editorial", href: "editorial-v2.html" },
-    { key: "accounts", label: "Accounts", href: "accounts-v2.html" }
+    { key: "workflow", label: "Workflow", href: "workflow-v1.html" },
+    { key: "account", label: "Account", href: "account-v1.html" }
   ];
-
-  const NAV_ITEMS = PRIMARY_NAV_ITEMS.concat(MANAGE_NAV_ITEMS);
 
   const PAGE_KEYS = {
     "index.html": "home",
@@ -32,7 +28,9 @@
     "history-v2.html": "history",
     "coverage-v2.html": "coverage",
     "editorial-v2.html": "editorial",
-    "accounts-v2.html": "accounts"
+    "workflow-v1.html": "workflow",
+    "account-v1.html": "account",
+    "admin-v1.html": "admin"
   };
 
   const state = {
@@ -165,6 +163,9 @@
         setOrDelete(params, "pos", context.editorialPartOfSpeech && context.editorialPartOfSpeech !== "all" ? context.editorialPartOfSpeech : "");
         setOrDelete(params, "editorialSort", context.editorialSort && context.editorialSort !== "priority" ? context.editorialSort : "");
       }
+    } else if (targetPage === "workflow") {
+      setOrDelete(params, "targetId", context.nodeId);
+      setOrDelete(params, "q", activeMeaning);
     }
 
     const query = params.toString();
@@ -194,100 +195,18 @@
     </a>`;
   }
 
-  function navMarkup(items) {
+  function navMarkup() {
     const page = currentPageKey();
-    return (items || PRIMARY_NAV_ITEMS).map((item) => {
+    return NAV_ITEMS.map((item) => {
       const active = page === item.key;
       return `<a href="${escapeHtml(buildNavHref(item))}" data-dr-nav-page="${escapeHtml(item.key)}"${active ? ' aria-current="page"' : ""}>${escapeHtml(item.label)}</a>`;
     }).join("");
   }
 
-  function manageMarkup() {
-    const active = MANAGE_NAV_ITEMS.some((item) => item.key === currentPageKey());
-    return `<details class="dictionaryroot-manage-menu" data-dr-manage-menu${active ? ' data-active="true"' : ""}>
-      <summary>Manage</summary>
-      <div class="dictionaryroot-manage-panel" role="group" aria-label="DictionaryRoot management tools">${navMarkup(MANAGE_NAV_ITEMS)}</div>
-    </details>`;
-  }
-
-  function pageLabel(page) {
-    const item = NAV_ITEMS.find((candidate) => candidate.key === page);
-    return item ? item.label : "DictionaryRoot";
-  }
-
-  function contextLabel(context) {
-    return clean(context.meaning || context.coverageSearch || context.editorialSearch || context.sourceSearch || context.sourceId);
-  }
-
   function contextMarkup() {
     const context = readContext();
-    const label = contextLabel(context);
-    const page = context.page || currentPageKey();
-    const visible = page !== "home" || Boolean(label);
-    return `<div class="dictionaryroot-context-bar" data-dr-context${visible ? "" : " hidden"}>
-      <nav class="dictionaryroot-context-breadcrumb" aria-label="Current DictionaryRoot context">
-        <a href="${escapeHtml(buildHref("index.html"))}">DictionaryRoot</a>
-        <span aria-hidden="true">›</span>
-        <span data-dr-context-page>${escapeHtml(pageLabel(page))}</span>
-        <span data-dr-context-detail-separator${label ? "" : " hidden"} aria-hidden="true">›</span>
-        <strong data-dr-context-detail${label ? "" : " hidden"} title="${escapeHtml(label)}">${escapeHtml(label)}</strong>
-      </nav>
-    </div>`;
-  }
-
-  function authSession() {
-    return global.DictionaryRootApi && global.DictionaryRootApi.getStoredAuthSession
-      ? global.DictionaryRootApi.getStoredAuthSession()
-      : null;
-  }
-
-  function roleLabel(session) {
-    const roles = session && session.context && Array.isArray(session.context.roles) ? session.context.roles : [];
-    const role = clean(roles[0]);
-    if (!role) return "Account";
-    return role.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
-  }
-
-  function authMarkup() {
-    const session = authSession();
-    const actor = session && session.context && session.context.actor;
-    if (!actor) {
-      return `<a class="dictionaryroot-account-chip" href="accounts-v2.html" data-dr-account-chip data-authenticated="false" title="Open Accounts and sign in"><span class="dictionaryroot-account-name">Sign in</span></a>`;
-    }
-
-    const actorType = String(actor.actorType || "identity").replace(/_/g, " ");
-    const verification = String(actor.verificationLevel || "unverified").replace(/_/g, " ");
-    const role = roleLabel(session);
-    return `<details class="dictionaryroot-account-menu" data-dr-account-menu>
-      <summary class="dictionaryroot-account-chip" data-dr-account-chip data-authenticated="true" title="${escapeHtml(actorType)} · ${escapeHtml(role)}">
-        <span class="dictionaryroot-account-name">${escapeHtml(actor.displayName)}</span>
-        <span class="dictionaryroot-account-role">${escapeHtml(role)}</span>
-      </summary>
-      <div class="dictionaryroot-account-panel">
-        <div class="dictionaryroot-account-identity"><strong>${escapeHtml(actor.displayName)}</strong><span>${escapeHtml(actorType)} · ${escapeHtml(verification)}</span></div>
-        <a href="accounts-v2.html">Accounts &amp; access</a>
-        <button type="button" data-dr-sign-out>Sign out</button>
-      </div>
-    </details>`;
-  }
-
-  function footerMarkup(brand) {
-    return `<div class="dictionaryroot-platform-footer-inner">
-      <span class="dictionaryroot-platform-status" data-dr-platform-status data-state="checking">SourceRoot status: checking</span>
-      <a class="dictionaryroot-platform-credit" href="sourceroot.html">Powered by <strong>${escapeHtml(brand.poweredBy)}</strong></a>
-    </div>`;
-  }
-
-  function createFooter(brand) {
-    let footer = document.querySelector(".dictionaryroot-platform-footer");
-    if (!footer) {
-      footer = document.createElement("footer");
-      document.body.appendChild(footer);
-    }
-    footer.className = "dictionaryroot-platform-footer";
-    footer.dataset.drPlatformFooter = "v1";
-    footer.innerHTML = footerMarkup(brand);
-    return footer;
+    const label = context.meaning || context.coverageSearch || context.editorialSearch || context.sourceId;
+    return `<span class="dictionaryroot-unified-context" data-dr-context${label ? "" : " hidden"}><span>Context</span><strong title="${escapeHtml(label)}">${escapeHtml(label)}</strong></span>`;
   }
 
   function createHeader(brand) {
@@ -298,7 +217,7 @@
     }
 
     header.className = "dictionaryroot-product-bar dictionaryroot-unified-header";
-    header.dataset.drUnifiedNavigation = "v2";
+    header.dataset.drUnifiedNavigation = "v1";
     header.dataset.menuOpen = "false";
     header.innerHTML = `<div class="dictionaryroot-product-bar-inner">
       <div class="dictionaryroot-unified-brand-area">${brandMarkup(brand)}</div>
@@ -317,27 +236,21 @@
         </section>
       </div>
       <div class="dictionaryroot-unified-nav-wrap">
+        <nav class="dictionaryroot-product-nav" aria-label="DictionaryRoot experiences">${navMarkup()}</nav>
+        ${contextMarkup()}
+        <a class="dictionaryroot-account-chip" href="account-v1.html" data-dr-account-chip><span class="dictionaryroot-account-dot" aria-hidden="true"></span><span data-dr-account-label>Sign in</span></a>
+        <span class="dictionaryroot-powered-by">Powered by <strong>${escapeHtml(brand.poweredBy)}</strong></span>
         <button class="dictionaryroot-mobile-menu-button" type="button" aria-expanded="false" aria-controls="dictionaryrootUnifiedNavigation">Menu</button>
-        <nav class="dictionaryroot-product-nav" id="dictionaryrootUnifiedNavigation" aria-label="DictionaryRoot experiences">
-          <div class="dictionaryroot-primary-nav">${navMarkup(PRIMARY_NAV_ITEMS)}</div>
-          ${manageMarkup()}
-        </nav>
       </div>
-      <div class="dictionaryroot-unified-account-area">${authMarkup()}</div>
-    </div>
-    ${contextMarkup()}`;
+    </div>`;
 
+    const nav = header.querySelector(".dictionaryroot-product-nav");
+    nav.id = "dictionaryrootUnifiedNavigation";
     return header;
   }
 
-  function cacheAccountElements() {
-    elements.accountMenu = elements.header.querySelector("[data-dr-account-menu]");
-    elements.accountChip = elements.header.querySelector("[data-dr-account-chip]");
-  }
-
-  function cacheElements(header, footer) {
+  function cacheElements(header) {
     elements.header = header;
-    elements.footer = footer;
     elements.form = header.querySelector(".dictionaryroot-global-search-form");
     elements.input = header.querySelector(".dictionaryroot-global-search-input");
     elements.button = header.querySelector(".dictionaryroot-global-search-button");
@@ -347,11 +260,18 @@
     elements.close = header.querySelector(".dictionaryroot-global-search-close");
     elements.menuButton = header.querySelector(".dictionaryroot-mobile-menu-button");
     elements.nav = header.querySelector(".dictionaryroot-product-nav");
-    elements.manageMenu = header.querySelector("[data-dr-manage-menu]");
     elements.context = header.querySelector("[data-dr-context]");
-    elements.accountArea = header.querySelector(".dictionaryroot-unified-account-area");
-    elements.platformStatus = footer.querySelector("[data-dr-platform-status]");
-    cacheAccountElements();
+    elements.accountChip = header.querySelector("[data-dr-account-chip]");
+    elements.accountLabel = header.querySelector("[data-dr-account-label]");
+  }
+
+  function updateAccountChip(detail) {
+    if (!elements.accountChip || !elements.accountLabel) return;
+    const auth = detail || (global.DictionaryRootAuth && global.DictionaryRootAuth.session);
+    const signedIn = Boolean(auth && auth.authenticated && auth.user);
+    elements.accountChip.dataset.signedIn = signedIn ? "true" : "false";
+    elements.accountLabel.textContent = signedIn ? (auth.user.displayName || auth.user.primaryEmail || "Account") : "Sign in";
+    elements.accountChip.title = signedIn ? "Open your DictionaryRoot account" : "Sign in to DictionaryRoot";
   }
 
   function showPanel() {
@@ -567,24 +487,6 @@
     elements.menuButton.setAttribute("aria-expanded", "false");
   }
 
-  async function signOut() {
-    try {
-      const client = await ensureClient();
-      await client.logout();
-    } catch (_) {
-      if (global.DictionaryRootApi && global.DictionaryRootApi.setStoredAuthSession) {
-        global.DictionaryRootApi.setStoredAuthSession(null);
-      }
-    }
-    global.dispatchEvent(new CustomEvent("dictionaryroot:authchange"));
-  }
-
-  function closeDetails(except) {
-    [elements.manageMenu, elements.accountMenu].forEach((detail) => {
-      if (detail && detail !== except) detail.open = false;
-    });
-  }
-
   function bindEvents() {
     elements.form.addEventListener("submit", (event) => {
       event.preventDefault();
@@ -599,26 +501,12 @@
       elements.menuButton.setAttribute("aria-expanded", open ? "true" : "false");
     });
 
-    elements.header.addEventListener("toggle", (event) => {
-      const detail = event.target;
-      if (detail && detail.open && (detail === elements.manageMenu || detail === elements.accountMenu)) closeDetails(detail);
-    }, true);
-
-    elements.header.addEventListener("click", (event) => {
-      const signOutButton = event.target.closest("[data-dr-sign-out]");
-      if (signOutButton) {
-        event.preventDefault();
-        signOut();
-        return;
-      }
-      if (event.target.closest("a[href]")) closeMenu();
-    });
+    elements.nav.addEventListener("click", closeMenu);
 
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
         closePanel();
         closeMenu();
-        closeDetails();
       }
     });
 
@@ -626,69 +514,35 @@
       if (!elements.header.contains(event.target)) {
         closePanel();
         closeMenu();
-        closeDetails();
       }
     });
 
     global.addEventListener("popstate", syncFromUrl);
     global.addEventListener("dictionaryroot:urlchange", syncFromUrl);
-    global.addEventListener("dictionaryroot:authchange", refreshAuthChip);
   }
 
   function refreshHeaderState() {
     if (!elements.header) return;
     const page = currentPageKey();
     const context = readContext();
-    const detail = contextLabel(context);
+    const contextLabel = context.meaning || context.sourceId;
     if (elements.context) {
-      const visible = page !== "home" || Boolean(detail);
-      elements.context.hidden = !visible;
-      const pageElement = elements.context.querySelector("[data-dr-context-page]");
-      const detailElement = elements.context.querySelector("[data-dr-context-detail]");
-      const separator = elements.context.querySelector("[data-dr-context-detail-separator]");
-      if (pageElement) pageElement.textContent = pageLabel(page);
-      if (detailElement) {
-        detailElement.hidden = !detail;
-        detailElement.textContent = detail;
-        detailElement.title = detail;
+      elements.context.hidden = !contextLabel;
+      const strong = elements.context.querySelector("strong");
+      if (strong) {
+        strong.textContent = contextLabel;
+        strong.title = contextLabel;
       }
-      if (separator) separator.hidden = !detail;
     }
     const brandLink = elements.header.querySelector(".dictionaryroot-brand-lockup");
     if (brandLink) brandLink.setAttribute("href", buildHref("index.html"));
-    elements.header.querySelectorAll("[data-dr-nav-page]").forEach((anchor) => {
+    elements.nav.querySelectorAll("[data-dr-nav-page]").forEach((anchor) => {
       const active = anchor.dataset.drNavPage === page;
       if (active) anchor.setAttribute("aria-current", "page");
       else anchor.removeAttribute("aria-current");
       const item = NAV_ITEMS.find((candidate) => candidate.key === anchor.dataset.drNavPage);
       if (item) anchor.href = buildNavHref(item);
     });
-    if (elements.manageMenu) {
-      const manageActive = MANAGE_NAV_ITEMS.some((item) => item.key === page);
-      elements.manageMenu.dataset.active = manageActive ? "true" : "false";
-    }
-  }
-
-  function refreshAuthChip() {
-    if (!elements.accountArea) return;
-    elements.accountArea.innerHTML = authMarkup();
-    cacheAccountElements();
-    refreshContextLinks(elements.accountArea);
-  }
-
-  async function refreshPlatformStatus() {
-    if (!elements.platformStatus) return;
-    elements.platformStatus.dataset.state = "checking";
-    elements.platformStatus.textContent = "SourceRoot status: checking";
-    try {
-      const client = await ensureClient();
-      await client.health();
-      elements.platformStatus.dataset.state = "online";
-      elements.platformStatus.textContent = "SourceRoot connected";
-    } catch (_) {
-      elements.platformStatus.dataset.state = "offline";
-      elements.platformStatus.textContent = "SourceRoot offline";
-    }
   }
 
   function updateBrand(brand) {
@@ -696,7 +550,7 @@
     if (!state.initialized) return;
     const brandArea = elements.header.querySelector(".dictionaryroot-unified-brand-area");
     if (brandArea) brandArea.innerHTML = brandMarkup(state.brand);
-    const powered = elements.footer && elements.footer.querySelector(".dictionaryroot-platform-credit strong");
+    const powered = elements.header.querySelector(".dictionaryroot-powered-by strong");
     if (powered) powered.textContent = state.brand.poweredBy;
     refreshContextLinks(elements.header);
   }
@@ -705,17 +559,15 @@
     if (state.initialized) return;
     state.initialized = true;
     const header = createHeader(state.brand);
-    const footer = createFooter(state.brand);
-    cacheElements(header, footer);
+    cacheElements(header);
     const context = readContext();
     if (context.meaning || context.editorialSearch || context.coverageSearch) elements.input.value = context.meaning || context.editorialSearch || context.coverageSearch;
+    updateAccountChip();
+    global.addEventListener("dictionaryroot:auth-change", (event) => updateAccountChip(event.detail));
     installHistoryEvents();
     bindEvents();
-    refreshAuthChip();
-    refreshHeaderState();
     refreshContextLinks(document);
     installLinkObserver();
-    refreshPlatformStatus();
     document.dispatchEvent(new CustomEvent("dictionaryroot:navigation-ready", {
       detail: { page: currentPageKey(), context }
     }));

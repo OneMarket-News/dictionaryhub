@@ -1,19 +1,20 @@
 import { Router, type Response } from "express";
 import { z } from "zod";
 
-import { getQueryString, isQueryParameterError, parsePagination } from "../lib/query-params.js";
-import { requireDictionaryRootAuth } from "../middleware/auth-context.js";
+import { getQueryString, getRouteParam, isQueryParameterError, parsePagination } from "../lib/query-params.js";
+import { getAuth, requireCsrf, requirePermission } from "../middleware/auth.js";
+import { writeAuditEvent } from "../services/audit-store.js";
 import {
   getDictionaryRootEditorialDetail,
   getDictionaryRootEditorialSummary,
   listDictionaryRootEditorialQueue,
   promoteDictionaryRootEditorialMeaning,
   saveDictionaryRootEditorialReview,
+  type DictionaryRootEditorialActorContext,
   type DictionaryRootEditorialCategory,
   type DictionaryRootEditorialSort,
   type DictionaryRootEditorialStatus,
 } from "../services/editorial-store.js";
-import { hasPermission, isVerifiedHuman } from "../services/identity-store.js";
 
 export const editorialRouter = Router();
 
@@ -27,35 +28,33 @@ const sorts = new Set<DictionaryRootEditorialSort>(["priority", "updated", "lemm
 
 const reviewSchema = z.object({
   status: z.enum(["unreviewed", "in_review", "approved", "flagged", "rejected"]),
+  reviewerName: z.string().trim().max(120).default(""),
   notes: z.string().trim().max(5000).default(""),
   annotation: z.string().trim().max(5000).default(""),
   promotionRecommendation: z.boolean().default(false),
 });
 
 const promotionSchema = z.object({
+  reviewerName: z.string().trim().max(120).default(""),
   note: z.string().trim().max(2000).default(""),
 });
 
-function permissionDenied(response: Response, permission: string) {
-  const auth = response.locals.dictionaryRootAuth;
-  return response.status(403).json({
-    error: "PERMISSION_DENIED",
-    message: `The active identity does not have the ${permission} permission.`,
-    permission,
-    actorId: auth?.actor.actorId,
-    requestId: response.locals.requestId,
-  });
-}
-
-function verifiedHumanDenied(response: Response, action: string) {
-  const auth = response.locals.dictionaryRootAuth;
-  return response.status(403).json({
-    error: "VERIFIED_HUMAN_REQUIRED",
-    message: `${action} requires a verified-human identity. Autonomous agents may submit recommendations but cannot finalize this action.`,
-    actorType: auth?.actor.actorType,
-    verificationLevel: auth?.actor.verificationLevel,
-    requestId: response.locals.requestId,
-  });
+function editorialActorContext(response: Response): DictionaryRootEditorialActorContext {
+  const auth = getAuth(response);
+  const user = auth.user!;
+  return {
+    actor: {
+      actorId: null,
+      userId: user.userId,
+      identityId: auth.activeIdentityId,
+      displayName: user.displayName,
+      actorType: "human",
+      verificationLevel: user.emailVerifiedAt ? "email_verified" : "unverified",
+    },
+    roles: auth.roles,
+    permissions: auth.permissions,
+    delegation: null,
+  };
 }
 
 editorialRouter.get("/summary", async (request, response, next) => {
@@ -98,70 +97,49 @@ editorialRouter.get("/queue", async (request, response, next) => {
 
 editorialRouter.get("/reviews/:nodeId", async (request, response, next) => {
   try {
-    const detail = await getDictionaryRootEditorialDetail(request.params.nodeId);
-    if (!detail) return response.status(404).json({ error: "NODE_NOT_FOUND", message: `No DictionaryRoot meaning found with ID ${request.params.nodeId}.` });
+    const nodeId = getRouteParam(request.params.nodeId);
+    const detail = await getDictionaryRootEditorialDetail(nodeId);
+    if (!detail) return response.status(404).json({ error: "NODE_NOT_FOUND", message: `No DictionaryRoot meaning found with ID ${nodeId}.` });
     return response.status(200).json(detail);
   } catch (error) {
     return next(error);
   }
 });
 
-editorialRouter.put("/reviews/:nodeId", requireDictionaryRootAuth, async (request, response, next) => {
+editorialRouter.put("/reviews/:nodeId", requireCsrf, requirePermission("revision.review"), async (request, response, next) => {
   try {
     const parsed = reviewSchema.safeParse(request.body || {});
     if (!parsed.success) return response.status(400).json({ error: "INVALID_REVIEW", message: "Review status, notes, or annotations are invalid.", details: parsed.error.issues });
-    const auth = response.locals.dictionaryRootAuth;
-    if (!auth) return response.status(401).json({ error: "AUTHENTICATION_REQUIRED", message: "Sign in before saving a review." });
-
-    const finalDecision = parsed.data.status === "approved" || parsed.data.status === "rejected";
-    if (finalDecision) {
-      if (!hasPermission(auth, "editorial.approve")) return permissionDenied(response, "editorial.approve");
-      if (!isVerifiedHuman(auth)) return verifiedHumanDenied(response, "Final editorial approval or rejection");
-    } else if (!hasPermission(auth, "editorial.review") && !hasPermission(auth, "agent.submit")) {
-      return permissionDenied(response, "editorial.review");
-    }
-
+    const nodeId = getRouteParam(request.params.nodeId);
     if (getQueryString(request.query.dryRun) === "true") {
-      return response.status(200).json({
-        valid: true,
-        nodeId: request.params.nodeId,
-        review: parsed.data,
-        actor: auth.actor,
-        delegation: auth.delegation,
-        dryRun: true,
-      });
+      return response.status(200).json({ valid: true, nodeId, review: parsed.data, dryRun: true });
     }
-    const nodeId = String(request.params.nodeId || "");
-    const detail = await saveDictionaryRootEditorialReview(nodeId, parsed.data, auth);
-    if (!detail) return response.status(404).json({ error: "NODE_NOT_FOUND", message: `No DictionaryRoot meaning found with ID ${request.params.nodeId}.` });
+    const auth = getAuth(response);
+    const detail = await saveDictionaryRootEditorialReview(
+      nodeId,
+      { ...parsed.data, reviewerName: auth.user?.displayName || parsed.data.reviewerName },
+      editorialActorContext(response),
+    );
+    if (!detail) return response.status(404).json({ error: "NODE_NOT_FOUND", message: `No DictionaryRoot meaning found with ID ${nodeId}.` });
+    await writeAuditEvent({ actorUserId: auth.user!.userId, actorIdentityId: auth.activeIdentityId, action: "editorial.review_saved", targetType: "meaning", targetId: nodeId, request, response, metadata: { status: parsed.data.status, promotionRecommendation: parsed.data.promotionRecommendation } });
     return response.status(200).json(detail);
   } catch (error) {
     return next(error);
   }
 });
 
-editorialRouter.post("/reviews/:nodeId/promote", requireDictionaryRootAuth, async (request, response, next) => {
+editorialRouter.post("/reviews/:nodeId/promote", requireCsrf, requirePermission("revision.publish"), async (request, response, next) => {
   try {
     const parsed = promotionSchema.safeParse(request.body || {});
     if (!parsed.success) return response.status(400).json({ error: "INVALID_PROMOTION", message: "Promotion details are invalid.", details: parsed.error.issues });
-    const auth = response.locals.dictionaryRootAuth;
-    if (!auth) return response.status(401).json({ error: "AUTHENTICATION_REQUIRED", message: "Sign in before promoting a meaning." });
-    if (!hasPermission(auth, "graph.promote")) return permissionDenied(response, "graph.promote");
-    if (!isVerifiedHuman(auth)) return verifiedHumanDenied(response, "Curated graph promotion");
-
+    const nodeId = getRouteParam(request.params.nodeId);
     if (getQueryString(request.query.dryRun) === "true") {
-      return response.status(200).json({
-        valid: true,
-        nodeId: request.params.nodeId,
-        promotion: parsed.data,
-        actor: auth.actor,
-        delegation: auth.delegation,
-        dryRun: true,
-      });
+      return response.status(200).json({ valid: true, nodeId, promotion: parsed.data, dryRun: true });
     }
-    const nodeId = String(request.params.nodeId || "");
-    const result = await promoteDictionaryRootEditorialMeaning(nodeId, auth, parsed.data.note);
-    if (!result) return response.status(404).json({ error: "NODE_NOT_FOUND", message: `No DictionaryRoot meaning found with ID ${request.params.nodeId}.` });
+    const auth = getAuth(response);
+    const result = await promoteDictionaryRootEditorialMeaning(nodeId, editorialActorContext(response), parsed.data.note);
+    if (!result) return response.status(404).json({ error: "NODE_NOT_FOUND", message: `No DictionaryRoot meaning found with ID ${nodeId}.` });
+    await writeAuditEvent({ actorUserId: auth.user!.userId, actorIdentityId: auth.activeIdentityId, action: result.alreadyPromoted ? "editorial.promotion_confirmed" : "editorial.meaning_promoted", targetType: "meaning", targetId: nodeId, request, response, metadata: { alreadyPromoted: result.alreadyPromoted } });
     return response.status(result.alreadyPromoted ? 200 : 201).json(result);
   } catch (error) {
     const statusCode = error && typeof error === "object" && "statusCode" in error ? Number((error as { statusCode?: number }).statusCode) : 0;

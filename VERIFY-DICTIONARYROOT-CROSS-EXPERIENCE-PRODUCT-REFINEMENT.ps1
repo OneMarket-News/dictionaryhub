@@ -187,11 +187,11 @@ Contains-All "assets\js\dictionaryroot-history.js" @(
 ) "History distinguishes live state, concept revisions, and dataset lineage"
 
 Contains-All "editorial-v2.html" @(
-    "Identity-aware review records",
-    "Reviewer identity",
-    "identity provenance",
-    "does not create or authenticate an account",
-    "deployment-level accounts, roles, and permissions remain authoritative",
+    "Authenticated, permission-gated decisions",
+    "Authenticated reviewer identity",
+    "backend derives this identity from the active session",
+    "cannot grant review or publication authority",
+    "role permissions, proposals, decisions, publications, and rollback events remain separate provenance records",
     'data-surface="account"'
 ) "Editorial identity messaging is accurate and provenance-aware"
 

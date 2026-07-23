@@ -1,7 +1,46 @@
 import { randomUUID } from "node:crypto";
 
 import { getPool } from "../lib/database.js";
-import { actorSnapshot, type DictionaryRootAuthContext } from "./identity-store.js";
+
+export interface DictionaryRootEditorialActorContext {
+  actor: {
+    actorId: string | null;
+    displayName: string;
+    actorType: string;
+    verificationLevel: string;
+    userId?: string;
+    identityId?: string | null;
+  };
+  roles: string[];
+  permissions: string[];
+  delegation: {
+    delegationId?: string;
+    principalActorId: string | null;
+    principalDisplayName?: string;
+    humanApprovalRequired?: boolean;
+  } | null;
+}
+
+function actorSnapshot(context: DictionaryRootEditorialActorContext): Record<string, unknown> {
+  return {
+    actorId: context.actor.actorId,
+    userId: context.actor.userId ?? null,
+    identityId: context.actor.identityId ?? null,
+    displayName: context.actor.displayName,
+    actorType: context.actor.actorType,
+    verificationLevel: context.actor.verificationLevel,
+    roles: context.roles,
+    permissions: context.permissions,
+    delegation: context.delegation
+      ? {
+          delegationId: context.delegation.delegationId ?? null,
+          principalActorId: context.delegation.principalActorId,
+          principalDisplayName: context.delegation.principalDisplayName ?? "",
+          humanApprovalRequired: context.delegation.humanApprovalRequired ?? false,
+        }
+      : null,
+  };
+}
 
 export type DictionaryRootEditorialStatus =
   | "unreviewed"
@@ -458,7 +497,7 @@ export async function getDictionaryRootEditorialDetail(
 export async function saveDictionaryRootEditorialReview(
   nodeId: string,
   input: SaveDictionaryRootEditorialReviewInput,
-  auth: DictionaryRootAuthContext,
+  auth: DictionaryRootEditorialActorContext,
 ): Promise<DictionaryRootEditorialDetail | undefined> {
   const database = requireDatabase();
   const client = await database.connect();
@@ -519,7 +558,7 @@ export async function saveDictionaryRootEditorialReview(
         INSERT INTO dictionaryroot_editorial_review_events (
           event_id, review_id, node_id, bundle_id, action, from_status, to_status,
           reviewer_name, actor_id, delegated_by_actor_id, actor_snapshot, note, raw_data
-        ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::JSONB,$11,$12::JSONB);
+        ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11::JSONB,$12,$13::JSONB);
       `,
       [
         `dictionaryroot-review-event-${randomUUID()}`,
@@ -549,7 +588,7 @@ export async function saveDictionaryRootEditorialReview(
 
 export async function promoteDictionaryRootEditorialMeaning(
   nodeId: string,
-  auth: DictionaryRootAuthContext,
+  auth: DictionaryRootEditorialActorContext,
   note: string,
 ): Promise<{ detail: DictionaryRootEditorialDetail; alreadyPromoted: boolean } | undefined> {
   const database = requireDatabase();

@@ -6,3 +6,8 @@ data/dictionaryroot/dictionaryroot-oewn-2025-pilot-*.json
 !data/dictionaryroot/dictionaryroot-oewn-2025-pilot-500.json
 
 backups/
+backend/node_modules/
+backend/dist/
+verification/
+*.sql.gz
+*.dump
