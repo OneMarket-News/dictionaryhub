@@ -21,6 +21,11 @@ const validSearchTypes =
     "edge",
     "source",
     "revision",
+    "context-entity",
+    "context-account",
+    "context-claim",
+    "context-interpretation",
+    "context-relationship",
   ]);
 
 

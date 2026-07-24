@@ -3,6 +3,10 @@ import type {
   ValidationIssue,
   ValidationResult
 } from "../types.js";
+import {
+  countContextualRecords,
+  validateContextualBundle,
+} from "./contextual-schemas.js";
 
 const allowedValues = {
   credibilityTier: new Set([
@@ -150,6 +154,21 @@ export function validateBundle(input: unknown): ValidationResult {
   edges.forEach(edge => validateEdge(edge, warnings, errors, nodeIds, sourceIds));
   sources.forEach(source => validateSource(source, warnings, errors));
   revisions.forEach(revision => validateRevision(revision, warnings, objectIds));
+
+  if (bundle.context !== undefined) {
+    for (
+      const contextualIssue
+      of validateContextualBundle(bundle.context, sourceIds)
+    ) {
+      errors.push(issue(
+        contextualIssue.code,
+        contextualIssue.objectType,
+        contextualIssue.objectId,
+        contextualIssue.message,
+        contextualIssue.field,
+      ));
+    }
+  }
 
   return buildResult(bundleId, bundle, errors, warnings);
 }
@@ -338,6 +357,12 @@ function buildResult(
     edges: Array.isArray(bundle.edges) ? bundle.edges.length : 0,
     sources: Array.isArray(bundle.sources) ? bundle.sources.length : 0,
     revisions: Array.isArray(bundle.revisions) ? bundle.revisions.length : 0,
+    ...(bundle.context !== undefined
+      ? {
+          contextualRecords:
+            countContextualRecords(bundle.context),
+        }
+      : {}),
     errors: errors.length,
     warnings: warnings.length
   };

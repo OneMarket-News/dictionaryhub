@@ -1,0 +1,440 @@
+{
+  "bundleId": "sourceroot-integration-test-contextual-foundation",
+  "bundleType": "sourceroot-import-bundle",
+  "version": "1.0",
+  "domain": "HistoryRoot",
+  "createdAt": "2026-07-23T12:00:00.000Z",
+  "createdBy": "SourceRoot contextual framework test fixture",
+  "description": "Invented records for testing the domain-neutral contextual knowledge foundation.",
+  "nodes": [],
+  "assertions": [],
+  "edges": [],
+  "sources": [
+    {
+      "id": "ctx-source-field-log",
+      "name": "Invented Cedar Reach Field Log",
+      "type": "technical-fixture-document",
+      "domain": "HistoryRoot",
+      "publisher": "SourceRoot Test Fixtures",
+      "qualityTier": "prototype",
+      "credibilityTier": "prototype",
+      "verificationStatus": "prototype",
+      "sourceClass": "invented-primary-account",
+      "license": "Repository test fixture",
+      "licenseStatus": "repository-fixture",
+      "reviewStatus": "prototype",
+      "lastReviewed": "2026-07-23",
+      "notes": "Invented content; not a researched historical source."
+    },
+    {
+      "id": "ctx-source-later-summary",
+      "name": "Invented Later Cedar Reach Summary",
+      "type": "technical-fixture-document",
+      "domain": "HistoryRoot",
+      "publisher": "SourceRoot Test Fixtures",
+      "qualityTier": "prototype",
+      "credibilityTier": "prototype",
+      "verificationStatus": "prototype",
+      "sourceClass": "invented-later-account",
+      "license": "Repository test fixture",
+      "licenseStatus": "repository-fixture",
+      "reviewStatus": "prototype",
+      "lastReviewed": "2026-07-23",
+      "notes": "Invented content that intentionally contradicts part of the field log."
+    }
+  ],
+  "revisions": [],
+  "context": {
+    "entities": [
+      {
+        "id": "ctx-person-mara-quill",
+        "label": "Mara Quill",
+        "entityType": "person",
+        "name": "Mara Quill",
+        "description": "An invented recorder used only by the technical fixture.",
+        "status": "fixture"
+      },
+      {
+        "id": "ctx-group-river-survey-circle",
+        "label": "River Survey Circle",
+        "entityType": "group",
+        "name": "River Survey Circle",
+        "description": "An invented volunteer group.",
+        "status": "fixture"
+      },
+      {
+        "id": "ctx-place-cedar-reach",
+        "label": "Cedar Reach",
+        "entityType": "place",
+        "name": "Cedar Reach",
+        "alternateNames": [
+          "North Bend Reach"
+        ],
+        "description": "An invented riverside place.",
+        "status": "fixture"
+      },
+      {
+        "id": "ctx-event-annual-field-survey",
+        "label": "Annual field survey",
+        "entityType": "event",
+        "name": "Annual field survey",
+        "description": "An invented parent event.",
+        "status": "fixture"
+      },
+      {
+        "id": "ctx-event-morning-observation",
+        "label": "Morning crossing observation",
+        "entityType": "event",
+        "name": "Morning crossing observation",
+        "description": "An invented child event during the field survey.",
+        "status": "fixture"
+      },
+      {
+        "id": "ctx-event-council-meeting",
+        "label": "Parallel council meeting",
+        "entityType": "event",
+        "name": "Parallel council meeting",
+        "description": "An invented event occurring in parallel.",
+        "status": "fixture"
+      },
+      {
+        "id": "ctx-event-regional-rainfall",
+        "label": "Regional rainfall period",
+        "entityType": "event",
+        "name": "Regional rainfall period",
+        "description": "An invented possible cause.",
+        "status": "fixture"
+      },
+      {
+        "id": "ctx-event-crossing-repair",
+        "label": "Crossing repair campaign",
+        "entityType": "event",
+        "name": "Crossing repair campaign",
+        "description": "An invented possible consequence.",
+        "status": "fixture"
+      },
+      {
+        "id": "ctx-document-field-log",
+        "label": "Cedar Reach field log",
+        "entityType": "document",
+        "name": "Cedar Reach field log",
+        "description": "The invented contemporary account document.",
+        "sourceIds": [
+          "ctx-source-field-log"
+        ],
+        "status": "fixture"
+      },
+      {
+        "id": "ctx-document-later-summary",
+        "label": "Later Cedar Reach summary",
+        "entityType": "document",
+        "name": "Later Cedar Reach summary",
+        "description": "The invented later account document.",
+        "sourceIds": [
+          "ctx-source-later-summary"
+        ],
+        "status": "fixture"
+      }
+    ],
+    "temporalAssertions": [
+      {
+        "id": "ctx-time-survey-disputed",
+        "label": "Disputed year of the annual survey",
+        "subjectId": "ctx-event-annual-field-survey",
+        "temporalKind": "disputed",
+        "proposedDates": [
+          {
+            "date": "1894-05-10",
+            "label": "Date proposed by the field log",
+            "precision": "day"
+          },
+          {
+            "date": "1894-05-17",
+            "label": "Date proposed by the later summary",
+            "precision": "day"
+          }
+        ],
+        "dateLabel": "Either 10 or 17 May 1894",
+        "calendarSystem": "gregorian",
+        "datePrecision": "disputed-day",
+        "dateNotes": "The fixture intentionally preserves two proposed dates.",
+        "sourceIds": [
+          "ctx-source-field-log",
+          "ctx-source-later-summary"
+        ],
+        "status": "disputed"
+      },
+      {
+        "id": "ctx-time-observation-approximate",
+        "label": "Approximate morning observation date",
+        "subjectId": "ctx-event-morning-observation",
+        "temporalKind": "approximate",
+        "exactDate": "1894-05-10",
+        "dateLabel": "Around mid-May 1894",
+        "calendarSystem": "gregorian",
+        "datePrecision": "approximate-day",
+        "startUncertainty": "Possibly two days earlier",
+        "endUncertainty": "Possibly three days later",
+        "dateNotes": "The ISO date is a nominal anchor, not a claim of precision.",
+        "sourceIds": [
+          "ctx-source-field-log"
+        ],
+        "status": "approximate"
+      },
+      {
+        "id": "ctx-time-council-unknown",
+        "label": "Unknown council meeting date",
+        "subjectId": "ctx-event-council-meeting",
+        "temporalKind": "unknown",
+        "dateLabel": "Date unknown",
+        "calendarSystem": "unspecified",
+        "datePrecision": "unknown",
+        "dateNotes": "Only the claimed parallel relationship is represented.",
+        "status": "unknown"
+      },
+      {
+        "id": "ctx-time-group-range",
+        "label": "Survey Circle activity range",
+        "subjectId": "ctx-group-river-survey-circle",
+        "temporalKind": "range",
+        "startDate": "1890-01-01",
+        "endDate": "1895-12-31",
+        "dateLabel": "Between 1890 and 1895",
+        "calendarSystem": "gregorian",
+        "datePrecision": "year-range",
+        "startUncertainty": "Start year is approximate",
+        "endUncertainty": "End year is approximate",
+        "status": "approximate"
+      },
+      {
+        "id": "ctx-time-field-log-exact",
+        "label": "Field log entry date",
+        "subjectId": "ctx-document-field-log",
+        "temporalKind": "exact",
+        "exactDate": "1894-05-11",
+        "dateLabel": "11 May 1894",
+        "calendarSystem": "gregorian",
+        "datePrecision": "day",
+        "sourceIds": [
+          "ctx-source-field-log"
+        ],
+        "status": "fixture"
+      }
+    ],
+    "accounts": [
+      {
+        "id": "ctx-account-field-log-entry",
+        "label": "Field log account of the crossing",
+        "summary": "An invented contemporary account distinct from the event.",
+        "subjectId": "ctx-event-morning-observation",
+        "authorEntityId": "ctx-person-mara-quill",
+        "sourceId": "ctx-source-field-log",
+        "accountType": "contemporary-field-log",
+        "content": "The recorder described high water and three survey-circle participants at the crossing.",
+        "publicationLabel": "Invented field log entry",
+        "status": "fixture"
+      }
+    ],
+    "claims": [
+      {
+        "id": "ctx-claim-high-water",
+        "label": "Claim that the water was high",
+        "summary": "A claim extracted from the field-log account.",
+        "accountId": "ctx-account-field-log-entry",
+        "subjectId": "ctx-event-morning-observation",
+        "claimType": "condition",
+        "statement": "The water at Cedar Reach was unusually high.",
+        "confidence": "moderate",
+        "uncertainty": "The account supplies no measurement.",
+        "sourceIds": [
+          "ctx-source-field-log"
+        ],
+        "status": "asserted"
+      },
+      {
+        "id": "ctx-claim-three-participants",
+        "label": "Claim of three participants",
+        "summary": "A second claim extracted from the same account.",
+        "accountId": "ctx-account-field-log-entry",
+        "subjectId": "ctx-event-morning-observation",
+        "objectId": "ctx-group-river-survey-circle",
+        "claimType": "participation-count",
+        "statement": "Three members of the River Survey Circle attended.",
+        "confidence": "disputed",
+        "uncertainty": "The later summary names only two participants.",
+        "sourceIds": [
+          "ctx-source-field-log",
+          "ctx-source-later-summary"
+        ],
+        "status": "disputed"
+      }
+    ],
+    "evidence": [
+      {
+        "id": "ctx-evidence-field-log",
+        "label": "Field-log support for high water",
+        "summary": "Supporting evidence for the high-water claim.",
+        "claimId": "ctx-claim-high-water",
+        "evidenceType": "evidence",
+        "sourceId": "ctx-source-field-log",
+        "evidenceRecordId": "ctx-document-field-log",
+        "explanation": "The contemporary field log directly describes high water.",
+        "strength": "direct",
+        "confidence": "moderate",
+        "status": "supporting"
+      },
+      {
+        "id": "ctx-counterevidence-later-summary",
+        "label": "Later-summary counterevidence on attendance",
+        "summary": "Counterevidence for the participant-count claim.",
+        "claimId": "ctx-claim-three-participants",
+        "evidenceType": "counterevidence",
+        "sourceId": "ctx-source-later-summary",
+        "evidenceRecordId": "ctx-document-later-summary",
+        "explanation": "The later summary lists only two participants.",
+        "strength": "indirect",
+        "confidence": "weak",
+        "status": "contradicting"
+      }
+    ],
+    "interpretations": [
+      {
+        "id": "ctx-interpretation-survey-practice",
+        "label": "Interpretation of the observation",
+        "summary": "An interpretation kept separate from the account and claims.",
+        "subjectId": "ctx-event-morning-observation",
+        "accountId": "ctx-account-field-log-entry",
+        "sourceId": "ctx-source-field-log",
+        "interpretation": "The observation may reflect an emerging local practice of recording seasonal risk.",
+        "confidence": "working",
+        "uncertainty": "The fixture contains too little evidence for a published conclusion.",
+        "publishedConclusion": false,
+        "status": "interpretive"
+      }
+    ],
+    "perspectives": [
+      {
+        "id": "ctx-perspective-field-recorder",
+        "label": "Field recorder perspective",
+        "name": "Field recorder perspective",
+        "description": "The perspective of an invented contemporary recorder.",
+        "status": "fixture"
+      },
+      {
+        "id": "ctx-perspective-later-analyst",
+        "label": "Later analyst perspective",
+        "name": "Later analyst perspective",
+        "description": "The perspective of a later interpreter reviewing incomplete records.",
+        "status": "fixture"
+      }
+    ],
+    "recordPerspectives": [
+      {
+        "recordId": "ctx-account-field-log-entry",
+        "perspectiveId": "ctx-perspective-field-recorder",
+        "stance": "firsthand-account",
+        "notes": "The account is not treated as the event itself."
+      },
+      {
+        "recordId": "ctx-interpretation-survey-practice",
+        "perspectiveId": "ctx-perspective-later-analyst",
+        "stance": "retrospective-interpretation",
+        "notes": "The interpretation is not a published conclusion."
+      }
+    ],
+    "causalLinks": [
+      {
+        "id": "ctx-cause-rainfall-high-water",
+        "label": "Rainfall as a possible cause",
+        "summary": "A cause relationship represented with uncertainty.",
+        "causeId": "ctx-event-regional-rainfall",
+        "effectId": "ctx-event-morning-observation",
+        "causalKind": "cause",
+        "explanation": "Regional rainfall may have caused the high-water condition.",
+        "confidence": "working",
+        "uncertainty": "No measurement is present in the fixture.",
+        "status": "proposed"
+      },
+      {
+        "id": "ctx-consequence-crossing-repair",
+        "label": "Repair as a possible consequence",
+        "summary": "A consequence relationship represented with uncertainty.",
+        "causeId": "ctx-event-morning-observation",
+        "effectId": "ctx-event-crossing-repair",
+        "causalKind": "consequence",
+        "explanation": "The observation may have contributed to the later repair campaign.",
+        "confidence": "weak",
+        "uncertainty": "The causal chain is not established.",
+        "status": "proposed"
+      }
+    ],
+    "relationships": [
+      {
+        "id": "ctx-relationship-event-hierarchy",
+        "label": "Survey contains morning observation",
+        "summary": "A parent-child event relationship.",
+        "fromId": "ctx-event-annual-field-survey",
+        "toId": "ctx-event-morning-observation",
+        "relationshipType": "parent_event",
+        "relationshipRole": "contains",
+        "explanation": "The morning observation is represented as part of the annual survey.",
+        "confidence": "strong",
+        "status": "fixture"
+      },
+      {
+        "id": "ctx-relationship-parallel-events",
+        "label": "Observation parallel to council meeting",
+        "summary": "A parallel-event relationship without a forced exact date.",
+        "fromId": "ctx-event-morning-observation",
+        "toId": "ctx-event-council-meeting",
+        "relationshipType": "parallel_event",
+        "explanation": "The account presents the events as contemporaneous, but the council date is unknown.",
+        "confidence": "weak",
+        "status": "proposed"
+      },
+      {
+        "id": "ctx-relationship-participation",
+        "label": "Mara Quill participated in the observation",
+        "summary": "An event-participation relationship.",
+        "fromId": "ctx-person-mara-quill",
+        "toId": "ctx-event-morning-observation",
+        "relationshipType": "event_participation",
+        "relationshipRole": "recorder",
+        "confidence": "moderate",
+        "sourceIds": [
+          "ctx-source-field-log"
+        ],
+        "status": "asserted"
+      },
+      {
+        "id": "ctx-relationship-source-contradiction",
+        "label": "Documents contradict on participant count",
+        "summary": "A source-contradiction relationship.",
+        "fromId": "ctx-document-field-log",
+        "toId": "ctx-document-later-summary",
+        "relationshipType": "source_contradiction",
+        "explanation": "The documents report different participant counts.",
+        "confidence": "strong",
+        "sourceIds": [
+          "ctx-source-field-log",
+          "ctx-source-later-summary"
+        ],
+        "status": "documented"
+      }
+    ],
+    "culturalMemories": [
+      {
+        "id": "ctx-memory-crossing-story",
+        "label": "Later crossing story",
+        "summary": "A later cultural-memory record distinct from the original event.",
+        "subjectId": "ctx-event-morning-observation",
+        "perspectiveId": "ctx-perspective-later-analyst",
+        "sourceId": "ctx-source-later-summary",
+        "memoryType": "later-local-retelling",
+        "narrative": "A later retelling turned the ordinary survey observation into a story about communal foresight.",
+        "periodLabel": "Several decades later",
+        "status": "later-memory"
+      }
+    ]
+  }
+}
