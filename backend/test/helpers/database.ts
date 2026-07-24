@@ -61,6 +61,62 @@ export async function resetTestDatabase(): Promise<void> {
     RESTART IDENTITY
     CASCADE;
   `);
+
+  await pool.query(`
+    INSERT INTO dr_permissions(permission_key, permission_description) VALUES
+      ('account.read', 'Read account.'),
+      ('account.update', 'Update account.'),
+      ('revision.create', 'Create proposals.'),
+      ('revision.submit', 'Submit proposals.'),
+      ('revision.comment', 'Comment on proposals.'),
+      ('revision.review', 'Review proposals.'),
+      ('revision.publish', 'Publish and roll back.'),
+      ('revision.edit_any', 'Edit proposals in scope.'),
+      ('organization.read', 'Read organization.'),
+      ('organization.manage', 'Manage organization.'),
+      ('source.import', 'Import bundles.'),
+      ('user.manage', 'Manage users.'),
+      ('audit.read', 'Read audit.'),
+      ('moderation.manage', 'Moderate records.'),
+      ('system.admin', 'System administration.')
+    ON CONFLICT (permission_key) DO NOTHING;
+
+    INSERT INTO dr_roles(
+      role_key, role_name, role_description, role_scope
+    ) VALUES
+      ('registered', 'Registered user', 'Account access.', 'system'),
+      ('contributor', 'Contributor', 'Draft and submit.', 'organization'),
+      ('reviewer', 'Reviewer', 'Review proposals.', 'organization'),
+      ('publisher', 'Publisher', 'Publish and roll back.', 'organization'),
+      ('organization_admin', 'Organization administrator', 'Manage an organization.', 'organization'),
+      ('system_admin', 'System administrator', 'System access.', 'system')
+    ON CONFLICT (role_key) DO NOTHING;
+
+    INSERT INTO dr_role_permissions(role_key, permission_key) VALUES
+      ('registered', 'account.read'),
+      ('registered', 'account.update'),
+      ('registered', 'organization.read'),
+      ('contributor', 'account.read'),
+      ('contributor', 'organization.read'),
+      ('contributor', 'revision.create'),
+      ('contributor', 'revision.submit'),
+      ('contributor', 'revision.comment'),
+      ('reviewer', 'account.read'),
+      ('reviewer', 'organization.read'),
+      ('reviewer', 'revision.create'),
+      ('reviewer', 'revision.submit'),
+      ('reviewer', 'revision.comment'),
+      ('reviewer', 'revision.review'),
+      ('publisher', 'account.read'),
+      ('publisher', 'organization.read'),
+      ('publisher', 'revision.create'),
+      ('publisher', 'revision.submit'),
+      ('publisher', 'revision.comment'),
+      ('publisher', 'revision.review'),
+      ('publisher', 'revision.publish'),
+      ('system_admin', 'system.admin')
+    ON CONFLICT DO NOTHING;
+  `);
 }
 
 export async function closeTestDatabase(): Promise<void> {

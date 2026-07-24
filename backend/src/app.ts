@@ -103,7 +103,7 @@ export function createApp(options: CreateAppOptions = {}) {
         if (!origin || allowedOrigins.includes(origin) || isLocalDevelopmentOrigin(origin)) {
           return callback(null, true);
         }
-        return callback(new Error("Origin is not permitted by DictionaryRoot CORS policy."));
+        return callback(new Error("Origin is not permitted by SourceRoot CORS policy."));
       },
       credentials: true,
       allowedHeaders: ["content-type", "x-csrf-token", "x-request-id", "x-sourceroot-import-token"],
@@ -114,7 +114,7 @@ export function createApp(options: CreateAppOptions = {}) {
   app.use(express.urlencoded({ extended: false, limit: "100kb" }));
   app.use(express.json({ limit: jsonLimit }));
   app.use((request: Request, response: Response, next: NextFunction) => {
-    if (/^\/api\/v1\/(auth|account|admin|dictionaryroot\/workflow)/.test(request.path)) {
+    if (/^\/api\/v1\/(auth|account|admin|governance|dictionaryroot\/workflow)/.test(request.path)) {
       response.setHeader("cache-control", "no-store");
     }
     next();
@@ -126,6 +126,7 @@ export function createApp(options: CreateAppOptions = {}) {
   app.use("/api/v1/account", accountRouter);
   app.use("/api/v1/admin", adminRouter);
   app.use("/api/v1/dictionaryroot/workflow", workflowRouter);
+  app.use("/api/v1/governance", workflowRouter);
   app.use("/api/v1/moderation", moderationRouter);
   app.use("/api/v1", validateRouter);
   app.use("/api/v1/import", importRouter);

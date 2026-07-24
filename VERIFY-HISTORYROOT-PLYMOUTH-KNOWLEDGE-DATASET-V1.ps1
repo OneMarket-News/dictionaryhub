@@ -1,9 +1,12 @@
 [CmdletBinding()]
-param()
+param(
+  [string]$ExpectedBranch =
+    "feature/historyroot-plymouth-knowledge-dataset-v1",
+  [switch]$AllowStackedCustomerChanges,
+  [switch]$AllowStackedGovernanceChanges
+)
 
 $ErrorActionPreference = "Continue"
-$ExpectedBranch =
-  "feature/historyroot-plymouth-knowledge-dataset-v1"
 $FoundationCommit =
   "ec01f4a8b6ab3220cb5a8e700bad029f5c4cff03"
 $ExpectedMainCommit =
@@ -238,14 +241,24 @@ try {
   $unexpectedChanges = @(
     $pendingPaths |
       Where-Object {
-        $_ -notmatch "^backend/package\.json$" -and
-        $_ -notmatch "^backend/src/historyroot/" -and
-        $_ -notmatch "^backend/src/scripts/(generate|validate|import|remove)-historyroot-plymouth\.ts$" -and
-        $_ -notmatch "^backend/src/services/(import-store|search-store)\.ts$" -and
-        $_ -notmatch "^backend/test/historyroot-plymouth\.test\.ts$" -and
-        $_ -notmatch "^data/historyroot/($|plymouth-v1/)" -and
-        $_ -notmatch "^docs/customers/historyroot/" -and
-        $_ -notmatch "^VERIFY-(HISTORYROOT-PLYMOUTH-KNOWLEDGE-DATASET-V1|SOURCEROOT-CONTEXTUAL-KNOWLEDGE-FOUNDATION)\.ps1$"
+        $path = $_
+        $datasetAllowed =
+          $path -match "^backend/package\.json$" -or
+          $path -match "^backend/src/historyroot/" -or
+          $path -match "^backend/src/scripts/(generate|validate|import|remove)-historyroot-plymouth\.ts$" -or
+          $path -match "^backend/src/services/(import-store|search-store)\.ts$" -or
+          $path -match "^backend/test/historyroot-plymouth\.test\.ts$" -or
+          $path -match "^data/historyroot/($|plymouth-v1/)" -or
+          $path -match "^docs/customers/historyroot/" -or
+          $path -match "^VERIFY-(HISTORYROOT-PLYMOUTH-KNOWLEDGE-DATASET-V1|SOURCEROOT-CONTEXTUAL-KNOWLEDGE-FOUNDATION)\.ps1$"
+        $governanceAllowed = $AllowStackedGovernanceChanges -and (
+          $path -match "^VERIFY-(GOVERNED-HISTORYROOT-ALPHA-V1|HISTORYROOT-CUSTOMER-EXPERIENCE-V1)\.ps1$" -or
+          $path -match "^assets/(css/historyroot-governance\.css|js/(dictionaryroot-auth|historyroot-governance|historyroot-governance-entry)\.js)$" -or
+          $path -match "^backend/(docs/migration-plan\.md|db/migrations/010_extend_contextual_governance\.sql|src/(app\.ts|routes/workflow\.ts|services/(audit-store|context-store|contextual-governance|source-store|workflow-store)\.ts)|test/(governed-historyroot\.test\.ts|helpers/database\.ts))$" -or
+          $path -match "^history-(governance|proposal|record|review-queue|review|revisions)-v1\.html$" -or
+          $path -match "^verification/governed-historyroot\.test\.mjs$"
+        )
+        -not ($datasetAllowed -or $governanceAllowed)
       }
   )
   if ($unexpectedChanges.Count -eq 0) {
@@ -321,19 +334,24 @@ Invoke-NativeCheck `
     "src/scripts/remove-historyroot-plymouth.ts"
   )
 
+$contextualVerifierArguments = @(
+  "-NoProfile",
+  "-ExecutionPolicy",
+  "Bypass",
+  "-File",
+  ".\VERIFY-SOURCEROOT-CONTEXTUAL-KNOWLEDGE-FOUNDATION.ps1",
+  "-ExpectedBranch",
+  $ExpectedBranch
+)
+if ($AllowStackedCustomerChanges) {
+  $contextualVerifierArguments += "-AllowCustomerChanges"
+}
+
 Invoke-NativeCheck `
   -Label "Contextual foundation verifier and full regression suite" `
   -WorkingDirectory $RepositoryRoot `
   -FilePath "powershell.exe" `
-  -Arguments @(
-    "-NoProfile",
-    "-ExecutionPolicy",
-    "Bypass",
-    "-File",
-    ".\VERIFY-SOURCEROOT-CONTEXTUAL-KNOWLEDGE-FOUNDATION.ps1",
-    "-ExpectedBranch",
-    $ExpectedBranch
-  )
+  -Arguments $contextualVerifierArguments
 
 Write-InfoResult `
   "This verifier checks structure, provenance controls, lifecycle behavior, and regressions; it is not proof of historical accuracy."

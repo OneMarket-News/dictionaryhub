@@ -1,6 +1,16 @@
 import { randomUUID } from "node:crypto";
 import type { PoolClient } from "pg";
 import { getPool } from "../lib/database.js";
+import {
+  contextualGovernanceTargetTypes,
+  governanceVersionToken,
+  hideNewGovernedTarget,
+  loadGovernedTarget,
+  materializeGovernedSnapshot,
+  mergeGovernedPatch,
+  validateGovernedChange,
+  type GovernanceValidationResult,
+} from "./contextual-governance.js";
 
 export type ProposalStatus =
   | "draft" | "submitted" | "under_review" | "changes_requested"
@@ -32,11 +42,17 @@ interface ProposalRow {
   reviewer_name: string | null;
   target_type: string;
   target_id: string;
+  root_key: string;
+  bundle_id: string | null;
+  change_type: string;
   proposal_title: string;
   proposal_summary: string;
   base_revision_id: string | null;
+  base_version_token: string | null;
   base_snapshot: Record<string, unknown> | null;
   proposed_patch: Record<string, unknown> | null;
+  validation_result: GovernanceValidationResult | null;
+  last_validated_at: Date | null;
   editorial_rationale: string;
   interpretation_disclosure: string;
   status: ProposalStatus;
@@ -62,11 +78,24 @@ function mapProposal(row: ProposalRow) {
     reviewerName: row.reviewer_name,
     targetType: row.target_type,
     targetId: row.target_id,
+    rootKey: row.root_key,
+    bundleId: row.bundle_id,
+    changeType: row.change_type,
     title: row.proposal_title,
     summary: row.proposal_summary,
     baseRevisionId: row.base_revision_id,
+    baseVersionToken: row.base_version_token,
     baseSnapshot: row.base_snapshot || {},
     proposedPatch: row.proposed_patch || {},
+    validation: row.validation_result || {
+      valid: true,
+      errors: [],
+      warnings: [],
+      checkedAt: null,
+      disclaimer:
+        "Automated validation checks structure, provenance, attribution, and process; it does not prove historical truth.",
+    },
+    lastValidatedAt: row.last_validated_at?.toISOString() || null,
     editorialRationale: row.editorial_rationale,
     interpretationDisclosure: row.interpretation_disclosure,
     status: row.status,
@@ -78,6 +107,7 @@ function mapProposal(row: ProposalRow) {
     lockedAt: row.locked_at?.toISOString() || null,
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString(),
+    staleBase: false,
   };
 }
 
@@ -145,6 +175,13 @@ export async function listProposals(input: {
   status?: string;
   query?: string;
   targetType?: string;
+  rootKey?: string;
+  bundleId?: string;
+  organizationId?: string;
+  submitterId?: string;
+  reviewerId?: string;
+  warningStatus?: string;
+  sort?: "submitted" | "activity";
 }) {
   const database = requireDatabase();
   const conditions = ["(p.created_by_user_id = $1 OR $2::boolean OR p.organization_id = ANY($3::uuid[]))"];
@@ -156,6 +193,40 @@ export async function listProposals(input: {
   if (input.targetType && input.targetType !== "all") {
     values.push(input.targetType);
     conditions.push(`p.target_type = $${values.length}`);
+  }
+  if (input.rootKey) {
+    values.push(input.rootKey);
+    conditions.push(`p.root_key = $${values.length}`);
+  }
+  if (input.bundleId) {
+    values.push(input.bundleId);
+    conditions.push(`p.bundle_id = $${values.length}`);
+  }
+  if (input.organizationId) {
+    values.push(input.organizationId);
+    conditions.push(`p.organization_id = $${values.length}::UUID`);
+  }
+  if (input.submitterId) {
+    values.push(input.submitterId);
+    conditions.push(`p.created_by_user_id = $${values.length}::UUID`);
+  }
+  if (input.reviewerId) {
+    values.push(input.reviewerId);
+    conditions.push(`p.assigned_reviewer_user_id = $${values.length}::UUID`);
+  }
+  if (input.warningStatus === "warnings") {
+    conditions.push(
+      `JSONB_ARRAY_LENGTH(COALESCE(p.validation_result -> 'warnings', '[]'::JSONB)) > 0`,
+    );
+  } else if (input.warningStatus === "errors") {
+    conditions.push(
+      `JSONB_ARRAY_LENGTH(COALESCE(p.validation_result -> 'errors', '[]'::JSONB)) > 0`,
+    );
+  } else if (input.warningStatus === "clear") {
+    conditions.push(
+      `JSONB_ARRAY_LENGTH(COALESCE(p.validation_result -> 'warnings', '[]'::JSONB)) = 0
+       AND JSONB_ARRAY_LENGTH(COALESCE(p.validation_result -> 'errors', '[]'::JSONB)) = 0`,
+    );
   }
   if (input.query) {
     values.push(`%${input.query}%`);
@@ -170,7 +241,9 @@ export async function listProposals(input: {
      WHERE ${conditions.join(" AND ")}
      ORDER BY
        CASE p.status WHEN 'submitted' THEN 1 WHEN 'under_review' THEN 2 WHEN 'changes_requested' THEN 3 WHEN 'approved' THEN 4 ELSE 5 END,
-       p.updated_at DESC
+       ${input.sort === "submitted"
+         ? "p.submitted_at DESC NULLS LAST, p.updated_at DESC"
+         : "p.updated_at DESC"}
      LIMIT $${values.length - 1} OFFSET $${values.length}`,
     values,
   );
@@ -220,8 +293,35 @@ export async function getProposal(proposalId: string) {
     }>(`SELECT publication_id, published_revision_id, publication_note, created_at, rolled_back_at, rollback_reason
         FROM dr_publications WHERE proposal_id = $1 ORDER BY created_at DESC`, [proposalId]),
   ]);
+  const proposal = mapProposal(row);
+  let currentPublished: Record<string, unknown> | null = null;
+  let currentVersionToken: string | null = null;
+  if (contextualGovernanceTargetTypes.has(row.target_type)) {
+    const client = await database.connect();
+    try {
+      const current = await loadGovernedTarget(
+        client,
+        row.target_type,
+        row.target_id,
+      );
+      currentPublished = current.exists ? current.snapshot : null;
+      currentVersionToken = current.versionToken;
+      proposal.staleBase =
+        Boolean(row.base_version_token)
+        && row.base_version_token !== current.versionToken;
+    } finally {
+      client.release();
+    }
+  }
   return {
-    proposal: mapProposal(row),
+    proposal,
+    currentPublished,
+    currentVersionToken,
+    proposedRecord: mergeGovernedPatch(
+      row.base_snapshot || {},
+      row.proposed_patch || {},
+      row.target_id,
+    ),
     comments: comments.rows.map((item) => ({
       commentId: item.comment_id, authorUserId: item.author_user_id, authorName: item.author_name,
       commentType: item.comment_type, body: item.comment_body, isResolved: item.is_resolved,
@@ -249,6 +349,9 @@ export async function createProposal(input: {
   organizationId?: string | null | undefined;
   targetType: string;
   targetId: string;
+  rootKey?: string | undefined;
+  bundleId?: string | null | undefined;
+  changeType?: string | undefined;
   title: string;
   summary: string;
   baseRevisionId?: string | null | undefined;
@@ -263,15 +366,81 @@ export async function createProposal(input: {
   const proposalId = randomUUID();
   try {
     await client.query("BEGIN");
+    let baseSnapshot = input.baseSnapshot;
+    let baseVersionToken: string | null = null;
+    let bundleId = input.bundleId || null;
+    let validation: GovernanceValidationResult | null = null;
+    const contextualRequest =
+      contextualGovernanceTargetTypes.has(input.targetType)
+      && Boolean(input.rootKey || input.bundleId);
+    if (contextualRequest) {
+      const current = await loadGovernedTarget(
+        client,
+        input.targetType,
+        input.targetId,
+      );
+      if (current.exists) {
+        if (bundleId && bundleId !== current.bundleId) {
+          throw new WorkflowError(
+            409,
+            "GOVERNANCE_BUNDLE_MISMATCH",
+            "The target belongs to a different dataset.",
+          );
+        }
+        bundleId = current.bundleId;
+        baseSnapshot = current.snapshot;
+      } else {
+        baseSnapshot = {};
+      }
+      if (!bundleId) {
+        throw new WorkflowError(
+          400,
+          "GOVERNANCE_BUNDLE_REQUIRED",
+          "A dataset is required for a new governed record.",
+        );
+      }
+      const bundle = await client.query(
+        "SELECT 1 FROM imported_bundles WHERE bundle_id = $1",
+        [bundleId],
+      );
+      if (!bundle.rowCount) {
+        throw new WorkflowError(
+          404,
+          "GOVERNANCE_BUNDLE_NOT_FOUND",
+          "The governed dataset was not found.",
+        );
+      }
+      baseVersionToken = current.versionToken;
+      validation = await validateGovernedChange(client, {
+        targetType: input.targetType,
+        targetId: input.targetId,
+        bundleId,
+        baseSnapshot,
+        proposedPatch: input.proposedPatch,
+        editorialRationale: input.editorialRationale,
+        evidenceSourceIds: input.evidence.map((item) => item.sourceId),
+        changeType: input.changeType || "structured_update",
+      });
+    }
     await client.query(
       `INSERT INTO dr_change_proposals (
          proposal_id, organization_id, created_by_user_id, target_type, target_id,
-         proposal_title, proposal_summary, base_revision_id, base_snapshot,
-         proposed_patch, editorial_rationale, interpretation_disclosure
-       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb,$10::jsonb,$11,$12)`,
+         root_key, bundle_id, change_type, proposal_title, proposal_summary,
+         base_revision_id, base_version_token, base_snapshot, proposed_patch,
+         editorial_rationale, interpretation_disclosure, validation_result,
+         last_validated_at
+       ) VALUES (
+         $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::JSONB,$14::JSONB,
+         $15,$16,$17::JSONB,$18
+       )`,
       [proposalId, input.organizationId || null, input.userId, input.targetType, input.targetId,
-        input.title, input.summary, input.baseRevisionId || null, JSON.stringify(input.baseSnapshot),
-        JSON.stringify(input.proposedPatch), input.editorialRationale, input.interpretationDisclosure],
+        input.rootKey || "", bundleId, input.changeType || "structured_update",
+        input.title, input.summary, input.baseRevisionId || baseVersionToken,
+        baseVersionToken, JSON.stringify(baseSnapshot),
+        JSON.stringify(input.proposedPatch), input.editorialRationale,
+        input.interpretationDisclosure,
+        JSON.stringify(validation || { valid: true, errors: [], warnings: [] }),
+        validation ? new Date(validation.checkedAt) : null],
     );
     for (const evidence of input.evidence) {
       await client.query(
@@ -283,7 +452,18 @@ export async function createProposal(input: {
           evidence.note || "", evidence.role || "supporting", input.userId],
       );
     }
-    await insertEvent(client, { proposalId, actorUserId: input.userId, eventType: "proposal.created", toStatus: "draft" });
+    await insertEvent(client, {
+      proposalId,
+      actorUserId: input.userId,
+      eventType: "proposal.created",
+      toStatus: "draft",
+      data: {
+        rootKey: input.rootKey || "",
+        bundleId,
+        changeType: input.changeType || "structured_update",
+        validation,
+      },
+    });
     await client.query("COMMIT");
     return await getProposal(proposalId);
   } catch (error) {
@@ -301,29 +481,136 @@ export async function updateProposal(input: {
   proposedPatch: Record<string, unknown>;
   editorialRationale: string;
   interpretationDisclosure: string;
+  evidence?: Array<{
+    sourceId: string;
+    assertionId?: string | null | undefined;
+    note?: string | undefined;
+    role?: string | undefined;
+  }> | undefined;
 }) {
   const database = requireDatabase();
-  const result = await database.query<{ created_by_user_id: string; status: ProposalStatus }>(
-    `SELECT created_by_user_id, status FROM dr_change_proposals WHERE proposal_id = $1`, [input.proposalId],
-  );
-  const current = result.rows[0];
-  if (!current) throw new WorkflowError(404, "PROPOSAL_NOT_FOUND", "The proposal was not found.");
-  if (!input.canEditAny && current.created_by_user_id !== input.userId) throw new WorkflowError(403, "PROPOSAL_EDIT_DENIED", "Only the proposal owner or an authorized editor may change this draft.");
-  if (!["draft", "changes_requested"].includes(current.status)) throw new WorkflowError(409, "PROPOSAL_LOCKED", "Only draft or changes-requested proposals may be edited.");
-  await database.query(
-    `UPDATE dr_change_proposals SET
-       proposal_title=$1, proposal_summary=$2, proposed_patch=$3::jsonb,
-       editorial_rationale=$4, interpretation_disclosure=$5,
-       version_number=version_number+1, updated_at=CURRENT_TIMESTAMP
-     WHERE proposal_id=$6`,
-    [input.title, input.summary, JSON.stringify(input.proposedPatch), input.editorialRationale, input.interpretationDisclosure, input.proposalId],
-  );
-  await database.query(
-    `INSERT INTO dr_proposal_events (proposal_event_id, proposal_id, actor_user_id, event_type, event_data)
-     VALUES ($1,$2,$3,'proposal.updated',$4::jsonb)`,
-    [randomUUID(), input.proposalId, input.userId, JSON.stringify({ versionIncremented: true })],
-  );
-  return getProposal(input.proposalId);
+  const client = await database.connect();
+  try {
+    await client.query("BEGIN");
+    const result = await client.query<{
+      created_by_user_id: string;
+      status: ProposalStatus;
+      target_type: string;
+      target_id: string;
+      bundle_id: string | null;
+      root_key: string;
+      base_snapshot: Record<string, unknown>;
+      change_type: string;
+    }>(
+      `SELECT created_by_user_id, status, target_type, target_id, bundle_id, root_key,
+              base_snapshot, change_type
+       FROM dr_change_proposals
+       WHERE proposal_id = $1
+       FOR UPDATE`,
+      [input.proposalId],
+    );
+    const current = result.rows[0];
+    if (!current) {
+      throw new WorkflowError(
+        404,
+        "PROPOSAL_NOT_FOUND",
+        "The proposal was not found.",
+      );
+    }
+    if (!input.canEditAny && current.created_by_user_id !== input.userId) {
+      throw new WorkflowError(
+        403,
+        "PROPOSAL_EDIT_DENIED",
+        "Only the proposal owner or an authorized editor may change this draft.",
+      );
+    }
+    if (!["draft", "changes_requested"].includes(current.status)) {
+      throw new WorkflowError(
+        409,
+        "PROPOSAL_LOCKED",
+        "Only draft or changes-requested proposals may be edited.",
+      );
+    }
+    let validation: GovernanceValidationResult | null = null;
+    const evidenceSourceIds = input.evidence
+      ? input.evidence.map((item) => item.sourceId)
+      : (
+          await client.query<{ source_id: string }>(
+            "SELECT source_id FROM dr_proposal_evidence WHERE proposal_id = $1",
+            [input.proposalId],
+          )
+        ).rows.map((item) => item.source_id);
+    if (
+      contextualGovernanceTargetTypes.has(current.target_type)
+      && Boolean(current.root_key)
+      && current.bundle_id
+    ) {
+      validation = await validateGovernedChange(client, {
+        targetType: current.target_type,
+        targetId: current.target_id,
+        bundleId: current.bundle_id,
+        baseSnapshot: current.base_snapshot || {},
+        proposedPatch: input.proposedPatch,
+        editorialRationale: input.editorialRationale,
+        evidenceSourceIds,
+        changeType: current.change_type,
+      });
+    }
+    await client.query(
+      `UPDATE dr_change_proposals SET
+         proposal_title=$1, proposal_summary=$2, proposed_patch=$3::JSONB,
+         editorial_rationale=$4, interpretation_disclosure=$5,
+         validation_result=COALESCE($6::JSONB, validation_result),
+         last_validated_at=CASE WHEN $6::JSONB IS NULL THEN last_validated_at ELSE CURRENT_TIMESTAMP END,
+         version_number=version_number+1, updated_at=CURRENT_TIMESTAMP
+       WHERE proposal_id=$7`,
+      [
+        input.title,
+        input.summary,
+        JSON.stringify(input.proposedPatch),
+        input.editorialRationale,
+        input.interpretationDisclosure,
+        validation ? JSON.stringify(validation) : null,
+        input.proposalId,
+      ],
+    );
+    if (input.evidence) {
+      await client.query(
+        "DELETE FROM dr_proposal_evidence WHERE proposal_id = $1",
+        [input.proposalId],
+      );
+      for (const evidence of input.evidence) {
+        await client.query(
+          `INSERT INTO dr_proposal_evidence(
+             evidence_id, proposal_id, source_id, assertion_id, evidence_note,
+             evidence_role, created_by_user_id
+           ) VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+          [
+            randomUUID(),
+            input.proposalId,
+            evidence.sourceId,
+            evidence.assertionId || null,
+            evidence.note || "",
+            evidence.role || "supporting",
+            input.userId,
+          ],
+        );
+      }
+    }
+    await insertEvent(client, {
+      proposalId: input.proposalId,
+      actorUserId: input.userId,
+      eventType: "proposal.updated",
+      data: { versionIncremented: true, validation },
+    });
+    await client.query("COMMIT");
+    return getProposal(input.proposalId);
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
 export async function addProposalComment(input: {
@@ -375,8 +662,26 @@ export async function transitionProposal(input: {
   const client = await database.connect();
   try {
     await client.query("BEGIN");
-    const result = await client.query<{ status: ProposalStatus; created_by_user_id: string }>(
-      `SELECT status, created_by_user_id FROM dr_change_proposals WHERE proposal_id=$1 FOR UPDATE`, [input.proposalId],
+    const result = await client.query<{
+      status: ProposalStatus;
+      created_by_user_id: string;
+      target_type: string;
+      target_id: string;
+      bundle_id: string | null;
+      root_key: string;
+      base_snapshot: Record<string, unknown>;
+      base_version_token: string | null;
+      proposed_patch: Record<string, unknown>;
+      editorial_rationale: string;
+      change_type: string;
+    }>(
+      `SELECT status, created_by_user_id, target_type, target_id, bundle_id, root_key,
+              base_snapshot, base_version_token, proposed_patch,
+              editorial_rationale, change_type
+       FROM dr_change_proposals
+       WHERE proposal_id=$1
+       FOR UPDATE`,
+      [input.proposalId],
     );
     const proposal = result.rows[0];
     if (!proposal) throw new WorkflowError(404, "PROPOSAL_NOT_FOUND", "The proposal was not found.");
@@ -391,8 +696,64 @@ export async function transitionProposal(input: {
     if (input.action === "approve" && proposal.created_by_user_id === input.userId && !allowSelfApproval) {
       throw new WorkflowError(409, "SELF_APPROVAL_BLOCKED", "A contributor cannot approve their own proposal.");
     }
+    let validation: GovernanceValidationResult | null = null;
+    if (
+      ["submit", "approve"].includes(input.action)
+      && contextualGovernanceTargetTypes.has(proposal.target_type)
+      && Boolean(proposal.root_key)
+      && proposal.bundle_id
+    ) {
+      const current = await loadGovernedTarget(
+        client,
+        proposal.target_type,
+        proposal.target_id,
+      );
+      if (
+        proposal.base_version_token
+        && current.versionToken !== proposal.base_version_token
+      ) {
+        throw new WorkflowError(
+          409,
+          "STALE_PROPOSAL_BASE",
+          "The published target changed after this proposal was created. Refresh the proposal before continuing.",
+        );
+      }
+      const evidence = await client.query<{ source_id: string }>(
+        "SELECT source_id FROM dr_proposal_evidence WHERE proposal_id = $1",
+        [input.proposalId],
+      );
+      validation = await validateGovernedChange(client, {
+        targetType: proposal.target_type,
+        targetId: proposal.target_id,
+        bundleId: proposal.bundle_id,
+        baseSnapshot: proposal.base_snapshot || {},
+        proposedPatch: proposal.proposed_patch || {},
+        editorialRationale: proposal.editorial_rationale,
+        evidenceSourceIds: evidence.rows.map((item) => item.source_id),
+        changeType: proposal.change_type,
+      });
+      await client.query(
+        `UPDATE dr_change_proposals
+         SET validation_result = $1::JSONB,
+             last_validated_at = CURRENT_TIMESTAMP
+         WHERE proposal_id = $2`,
+        [JSON.stringify(validation), input.proposalId],
+      );
+      if (!validation.valid) {
+        throw new WorkflowError(
+          422,
+          "GOVERNANCE_VALIDATION_FAILED",
+          "The proposal must resolve its validation errors before this workflow action.",
+        );
+      }
+    }
     const nextStatus = transitionStatus[input.action];
-    const timestampColumn = input.action === "submit" ? "submitted_at" : input.action === "approve" ? "approved_at" : ["request_changes", "reject"].includes(input.action) ? "reviewed_at" : null;
+    const timestampColumn =
+      input.action === "submit"
+        ? "submitted_at"
+        : input.action === "approve"
+          ? "approved_at"
+          : null;
     const timestampSql = timestampColumn ? `, ${timestampColumn}=CURRENT_TIMESTAMP` : "";
     const reviewerSql = ["start_review", "request_changes", "approve", "reject"].includes(input.action)
       ? ", assigned_reviewer_user_id=$3, reviewed_at=CASE WHEN $4::text IN ('request_changes','approve','reject') THEN CURRENT_TIMESTAMP ELSE reviewed_at END"
@@ -410,7 +771,15 @@ export async function transitionProposal(input: {
           input.note],
       );
     }
-    await insertEvent(client, { proposalId: input.proposalId, actorUserId: input.userId, eventType: `proposal.${input.action}`, fromStatus: proposal.status, toStatus: nextStatus, note: input.note });
+    await insertEvent(client, {
+      proposalId: input.proposalId,
+      actorUserId: input.userId,
+      eventType: `proposal.${input.action}`,
+      fromStatus: proposal.status,
+      toStatus: nextStatus,
+      note: input.note,
+      data: validation ? { validation } : {},
+    });
     await client.query("COMMIT");
     return getProposal(input.proposalId);
   } catch (error) {
@@ -432,6 +801,20 @@ async function resolveBundleId(client: PoolClient, targetType: string, targetId:
     if (result.rows[0]?.bundle_id) return result.rows[0].bundle_id;
   }
   return null;
+}
+
+function stringArrayFromSnapshot(
+  snapshot: Record<string, unknown>,
+): string[] {
+  const values = Array.isArray(snapshot.sourceIds)
+    ? snapshot.sourceIds.filter(
+        (value): value is string => typeof value === "string",
+      )
+    : [];
+  if (typeof snapshot.sourceId === "string" && snapshot.sourceId) {
+    values.push(snapshot.sourceId);
+  }
+  return [...new Set(values)];
 }
 
 export async function getPublicationProposal(publicationId: string): Promise<{ proposalId: string; organizationId: string | null } | null> {
@@ -457,10 +840,26 @@ export async function publishProposal(input: {
   try {
     await client.query("BEGIN");
     const result = await client.query<{
-      status: ProposalStatus; target_type: string; target_id: string;
-      proposed_patch: Record<string, unknown>; created_by_user_id: string;
-    }>(`SELECT status, target_type, target_id, proposed_patch, created_by_user_id
-        FROM dr_change_proposals WHERE proposal_id=$1 FOR UPDATE`, [input.proposalId]);
+      status: ProposalStatus;
+      target_type: string;
+      target_id: string;
+      root_key: string;
+      bundle_id: string | null;
+      change_type: string;
+      base_snapshot: Record<string, unknown>;
+      base_version_token: string | null;
+      proposed_patch: Record<string, unknown>;
+      editorial_rationale: string;
+      created_by_user_id: string;
+    }>(
+      `SELECT status, target_type, target_id, root_key, bundle_id,
+              change_type, base_snapshot, base_version_token, proposed_patch,
+              editorial_rationale, created_by_user_id
+       FROM dr_change_proposals
+       WHERE proposal_id=$1
+       FOR UPDATE`,
+      [input.proposalId],
+    );
     const proposal = result.rows[0];
     if (!proposal) throw new WorkflowError(404, "PROPOSAL_NOT_FOUND", "The proposal was not found.");
     if (proposal.status !== "approved") throw new WorkflowError(409, "PROPOSAL_NOT_APPROVED", "Only an approved proposal may be published.");
@@ -475,12 +874,103 @@ export async function publishProposal(input: {
       throw new WorkflowError(423, "TARGET_RECORD_LOCKED", `Publication is blocked by an active moderation lock: ${activeLock.rows[0]!.lock_reason}`);
     }
     const publicationId = randomUUID();
-    const revisionId = `dictionaryroot-governed-${publicationId}`;
+    const contextualPublication =
+      Boolean(proposal.root_key)
+      && Boolean(proposal.bundle_id)
+      && contextualGovernanceTargetTypes.has(proposal.target_type);
+    const revisionId = contextualPublication
+      ? `sourceroot-governed-${publicationId}`
+      : `dictionaryroot-governed-${publicationId}`;
     const previous = await client.query<{ publication_id: string }>(
       `SELECT publication_id FROM dr_publications
        WHERE target_type=$1 AND target_id=$2 AND rolled_back_at IS NULL
        ORDER BY created_at DESC LIMIT 1`, [proposal.target_type, proposal.target_id],
     );
+    let priorSnapshot: Record<string, unknown> = {};
+    let publishedSnapshot: Record<string, unknown> =
+      proposal.proposed_patch || {};
+    let bundleId = proposal.bundle_id;
+    let validation: GovernanceValidationResult | null = null;
+
+    if (contextualPublication && bundleId) {
+      await client.query(
+        "SELECT pg_advisory_xact_lock(hashtext($1), hashtext($2))",
+        [proposal.target_type, proposal.target_id],
+      );
+      const current = await loadGovernedTarget(
+        client,
+        proposal.target_type,
+        proposal.target_id,
+      );
+      if (
+        proposal.base_version_token
+        && current.versionToken !== proposal.base_version_token
+      ) {
+        throw new WorkflowError(
+          409,
+          "STALE_PROPOSAL_BASE",
+          "Publication was blocked because the target has changed since this proposal was created.",
+        );
+      }
+      if (
+        current.exists
+        && current.bundleId !== bundleId
+      ) {
+        throw new WorkflowError(
+          409,
+          "GOVERNANCE_BUNDLE_MISMATCH",
+          "Publication cannot move a governed target between datasets.",
+        );
+      }
+      const evidence = await client.query<{ source_id: string }>(
+        "SELECT source_id FROM dr_proposal_evidence WHERE proposal_id = $1",
+        [input.proposalId],
+      );
+      validation = await validateGovernedChange(client, {
+        targetType: proposal.target_type,
+        targetId: proposal.target_id,
+        bundleId,
+        baseSnapshot: proposal.base_snapshot || {},
+        proposedPatch: proposal.proposed_patch || {},
+        editorialRationale: proposal.editorial_rationale,
+        evidenceSourceIds: evidence.rows.map((item) => item.source_id),
+        changeType: proposal.change_type,
+      });
+      if (!validation.valid) {
+        throw new WorkflowError(
+          422,
+          "GOVERNANCE_VALIDATION_FAILED",
+          "Publication revalidation found unresolved historical-governance errors.",
+        );
+      }
+      priorSnapshot = current.exists ? current.snapshot : {};
+      publishedSnapshot = mergeGovernedPatch(
+        proposal.base_snapshot || {},
+        proposal.proposed_patch || {},
+        proposal.target_id,
+      );
+      await materializeGovernedSnapshot(
+        client,
+        proposal.target_type,
+        proposal.target_id,
+        bundleId,
+        publishedSnapshot,
+      );
+      publishedSnapshot = (
+        await loadGovernedTarget(
+          client,
+          proposal.target_type,
+          proposal.target_id,
+        )
+      ).snapshot;
+    } else {
+      bundleId = await resolveBundleId(
+        client,
+        proposal.target_type,
+        proposal.target_id,
+      );
+    }
+
     await client.query(
       `UPDATE dr_published_overlays SET is_active=FALSE, deactivated_at=CURRENT_TIMESTAMP
        WHERE target_type=$1 AND target_id=$2 AND is_active=TRUE`, [proposal.target_type, proposal.target_id],
@@ -489,18 +979,19 @@ export async function publishProposal(input: {
       `INSERT INTO dr_publications (
          publication_id, proposal_id, target_type, target_id, published_revision_id,
          published_snapshot, published_by_user_id, publication_note,
-         supersedes_publication_id
-       ) VALUES ($1,$2,$3,$4,$5,$6::jsonb,$7,$8,$9)`,
+         supersedes_publication_id, root_key, bundle_id, prior_snapshot
+       ) VALUES ($1,$2,$3,$4,$5,$6::JSONB,$7,$8,$9,$10,$11,$12::JSONB)`,
       [publicationId, input.proposalId, proposal.target_type, proposal.target_id, revisionId,
-        JSON.stringify(proposal.proposed_patch || {}), input.userId, input.note, previous.rows[0]?.publication_id || null],
+        JSON.stringify(publishedSnapshot), input.userId, input.note,
+        previous.rows[0]?.publication_id || null, proposal.root_key, bundleId,
+        JSON.stringify(priorSnapshot)],
     );
     await client.query(
       `INSERT INTO dr_published_overlays (
          overlay_id, publication_id, target_type, target_id, overlay_data
        ) VALUES ($1,$2,$3,$4,$5::jsonb)`,
-      [randomUUID(), publicationId, proposal.target_type, proposal.target_id, JSON.stringify(proposal.proposed_patch || {})],
+      [randomUUID(), publicationId, proposal.target_type, proposal.target_id, JSON.stringify(publishedSnapshot)],
     );
-    const bundleId = await resolveBundleId(client, proposal.target_type, proposal.target_id);
     if (bundleId) {
       await client.query(
         `INSERT INTO revisions (
@@ -508,14 +999,46 @@ export async function publishProposal(input: {
            summary, status, raw_data
          ) VALUES ($1,$2,$3,$4,'governed-publication',$5,'published',$6::jsonb)
          ON CONFLICT (revision_id) DO NOTHING`,
-        [revisionId, bundleId, proposal.target_type, proposal.target_id, input.note || "Governed DictionaryRoot publication", JSON.stringify({ proposalId: input.proposalId, publicationId, overlay: proposal.proposed_patch })],
+        [
+          revisionId,
+          bundleId,
+          proposal.target_type,
+          proposal.target_id,
+          input.note || "Governed SourceRoot publication",
+          JSON.stringify({
+            proposalId: input.proposalId,
+            publicationId,
+            rootKey: proposal.root_key,
+            changeType: proposal.change_type,
+            before: priorSnapshot,
+            after: publishedSnapshot,
+            validation,
+          }),
+        ],
       );
     }
     await client.query(
       `UPDATE dr_change_proposals SET status='published', published_at=CURRENT_TIMESTAMP,
-              updated_at=CURRENT_TIMESTAMP WHERE proposal_id=$1`, [input.proposalId],
+              validation_result=COALESCE($2::JSONB, validation_result),
+              last_validated_at=CASE WHEN $2::JSONB IS NULL THEN last_validated_at ELSE CURRENT_TIMESTAMP END,
+              updated_at=CURRENT_TIMESTAMP WHERE proposal_id=$1`,
+      [input.proposalId, validation ? JSON.stringify(validation) : null],
     );
-    await insertEvent(client, { proposalId: input.proposalId, actorUserId: input.userId, eventType: "proposal.published", fromStatus: "approved", toStatus: "published", note: input.note, data: { publicationId, revisionId, bundleRevisionWritten: Boolean(bundleId) } });
+    await insertEvent(client, {
+      proposalId: input.proposalId,
+      actorUserId: input.userId,
+      eventType: "proposal.published",
+      fromStatus: "approved",
+      toStatus: "published",
+      note: input.note,
+      data: {
+        publicationId,
+        revisionId,
+        bundleRevisionWritten: Boolean(bundleId),
+        materialized: contextualPublication,
+        validation,
+      },
+    });
     await client.query("COMMIT");
     return getProposal(input.proposalId);
   } catch (error) {
@@ -534,13 +1057,122 @@ export async function rollbackPublication(input: {
   try {
     await client.query("BEGIN");
     const result = await client.query<{
-      proposal_id: string; target_type: string; target_id: string;
-      supersedes_publication_id: string | null; rolled_back_at: Date | null;
-    }>(`SELECT proposal_id, target_type, target_id, supersedes_publication_id, rolled_back_at
-        FROM dr_publications WHERE publication_id=$1 FOR UPDATE`, [input.publicationId]);
+      proposal_id: string;
+      target_type: string;
+      target_id: string;
+      root_key: string;
+      bundle_id: string | null;
+      published_snapshot: Record<string, unknown>;
+      prior_snapshot: Record<string, unknown>;
+      published_revision_id: string;
+      supersedes_publication_id: string | null;
+      rolled_back_at: Date | null;
+      is_active: boolean | null;
+    }>(
+      `SELECT publication.proposal_id, publication.target_type,
+              publication.target_id, publication.root_key,
+              publication.bundle_id, publication.published_snapshot,
+              publication.prior_snapshot, publication.published_revision_id,
+              publication.supersedes_publication_id,
+              publication.rolled_back_at, overlay.is_active
+       FROM dr_publications publication
+       JOIN dr_published_overlays overlay
+         ON overlay.publication_id = publication.publication_id
+       WHERE publication.publication_id=$1
+       FOR UPDATE OF publication, overlay`,
+      [input.publicationId],
+    );
     const publication = result.rows[0];
     if (!publication) throw new WorkflowError(404, "PUBLICATION_NOT_FOUND", "The publication was not found.");
     if (publication.rolled_back_at) throw new WorkflowError(409, "PUBLICATION_ALREADY_ROLLED_BACK", "This publication was already rolled back.");
+    if (publication.is_active === false) {
+      throw new WorkflowError(
+        409,
+        "PUBLICATION_NOT_CURRENT",
+        "Only the current active publication can be rolled back.",
+      );
+    }
+    const contextualRollback =
+      Boolean(publication.root_key)
+      && Boolean(publication.bundle_id)
+      && contextualGovernanceTargetTypes.has(publication.target_type);
+    let rollbackRevisionId: string | null = null;
+    if (contextualRollback && publication.bundle_id) {
+      await client.query(
+        "SELECT pg_advisory_xact_lock(hashtext($1), hashtext($2))",
+        [publication.target_type, publication.target_id],
+      );
+      const current = await loadGovernedTarget(
+        client,
+        publication.target_type,
+        publication.target_id,
+      );
+      if (
+        !current.exists
+        || current.versionToken
+          !== governanceVersionToken(publication.published_snapshot || {})
+      ) {
+        throw new WorkflowError(
+          409,
+          "ROLLBACK_TARGET_CONFLICT",
+          "Rollback was blocked because the published target no longer matches this revision.",
+        );
+      }
+      if (Object.keys(publication.prior_snapshot || {}).length === 0) {
+        await hideNewGovernedTarget(
+          client,
+          publication.target_type,
+          publication.target_id,
+        );
+      } else {
+        const restoredValidation = await validateGovernedChange(client, {
+          targetType: publication.target_type,
+          targetId: publication.target_id,
+          bundleId: publication.bundle_id,
+          baseSnapshot: publication.prior_snapshot,
+          proposedPatch: {},
+          editorialRationale: input.reason,
+          evidenceSourceIds: stringArrayFromSnapshot(
+            publication.prior_snapshot,
+          ),
+          changeType: "governed_rollback",
+        });
+        if (!restoredValidation.valid) {
+          throw new WorkflowError(
+            409,
+            "ROLLBACK_VALIDATION_FAILED",
+            "The prior contextual snapshot no longer passes governed validation.",
+          );
+        }
+        await materializeGovernedSnapshot(
+          client,
+          publication.target_type,
+          publication.target_id,
+          publication.bundle_id,
+          publication.prior_snapshot,
+        );
+      }
+      rollbackRevisionId = `sourceroot-rollback-${randomUUID()}`;
+      await client.query(
+        `INSERT INTO revisions(
+           revision_id, bundle_id, object_type, object_id, revision_type,
+           summary, status, raw_data
+         ) VALUES ($1,$2,$3,$4,'governed-rollback',$5,'published',$6::JSONB)`,
+        [
+          rollbackRevisionId,
+          publication.bundle_id,
+          publication.target_type,
+          publication.target_id,
+          input.reason,
+          JSON.stringify({
+            publicationId: input.publicationId,
+            rolledBackRevisionId: publication.published_revision_id,
+            before: publication.published_snapshot,
+            after: publication.prior_snapshot,
+          }),
+        ],
+      );
+    }
     await client.query(
       `UPDATE dr_publications SET rolled_back_at=CURRENT_TIMESTAMP, rolled_back_by_user_id=$1,
               rollback_reason=$2 WHERE publication_id=$3`, [input.userId, input.reason, input.publicationId],
@@ -559,7 +1191,20 @@ export async function rollbackPublication(input: {
       `UPDATE dr_change_proposals SET status='superseded', updated_at=CURRENT_TIMESTAMP
        WHERE proposal_id=$1`, [publication.proposal_id],
     );
-    await insertEvent(client, { proposalId: publication.proposal_id, actorUserId: input.userId, eventType: "publication.rolled_back", fromStatus: "published", toStatus: "superseded", note: input.reason, data: { publicationId: input.publicationId, restoredPublicationId: publication.supersedes_publication_id } });
+    await insertEvent(client, {
+      proposalId: publication.proposal_id,
+      actorUserId: input.userId,
+      eventType: "publication.rolled_back",
+      fromStatus: "published",
+      toStatus: "superseded",
+      note: input.reason,
+      data: {
+        publicationId: input.publicationId,
+        restoredPublicationId: publication.supersedes_publication_id,
+        rollbackRevisionId,
+        materialized: contextualRollback,
+      },
+    });
     await client.query("COMMIT");
     return getProposal(publication.proposal_id);
   } catch (error) {

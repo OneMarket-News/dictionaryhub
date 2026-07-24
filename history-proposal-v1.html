@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en" data-history-governance-page="proposal">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Create, inspect, and revise a structured HistoryRoot proposal.">
+    <title>Proposal | HistoryRoot governance</title>
+    <link rel="icon" href="assets/brand/dictionaryroot-mark.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="assets/css/dictionaryroot-brand.css">
+    <link rel="stylesheet" href="assets/css/historyroot.css?v=1">
+    <link rel="stylesheet" href="assets/css/historyroot-governance.css?v=2">
+  </head>
+  <body>
+    <main class="hrg-main" id="main-content">
+      <nav class="hrg-workspace-nav" aria-label="HistoryRoot governance">
+        <a href="history-governance-v1.html" hidden data-governance-permissions="revision.create revision.review revision.publish">Workspace</a>
+        <a href="history-review-queue-v1.html" hidden data-governance-permissions="revision.review">Review queue</a>
+        <a href="history-proposal-v1.html?mode=new" aria-current="page" hidden data-governance-permissions="revision.create">New proposal</a>
+        <a href="historyroot.html">Public HistoryRoot</a>
+        <span class="hrg-account" id="historyGovernanceAccount">Checking session…</span>
+      </nav>
+
+      <section class="hrg-hero" aria-labelledby="history-proposal-title">
+        <div>
+          <p class="hrg-kicker" id="historyProposalKicker">Structured proposal</p>
+          <h1 id="history-proposal-title">Prepare a governed change.</h1>
+          <p id="historyProposalLead">
+            Current published values remain untouched until an authorized
+            reviewer approves and an authorized publisher completes publication.
+          </p>
+        </div>
+        <aside class="hrg-session-card" aria-live="polite">
+          <strong id="historyGovernanceSessionTitle">Checking contributor access</strong>
+          <span id="historyGovernanceSessionCopy">Loading SourceRoot permissions.</span>
+        </aside>
+      </section>
+
+      <div class="hrg-state" id="historyGovernanceState" aria-live="polite">
+        <h2>Loading proposal workspace</h2>
+        <p>Connecting to the private SourceRoot workflow.</p>
+      </div>
+
+      <div class="hrg-grid" id="historyGovernanceContent" hidden>
+        <section class="hrg-panel" data-span="8" aria-labelledby="history-proposal-editor-title">
+          <p class="hrg-kicker">Record-aware editor</p>
+          <h2 id="history-proposal-editor-title">Proposed fields</h2>
+          <form class="hrg-form" id="historyProposalForm">
+            <div class="hrg-form-row" id="historyProposalIdentityFields"></div>
+            <div id="historyProposalStructuredFields" class="hrg-form"></div>
+            <div class="hrg-field">
+              <label for="historyProposalSummary">Contributor summary</label>
+              <textarea id="historyProposalSummary" name="summary"></textarea>
+            </div>
+            <div class="hrg-field">
+              <label for="historyProposalRationale">Editorial rationale</label>
+              <textarea id="historyProposalRationale" name="rationale"></textarea>
+            </div>
+            <div class="hrg-field">
+              <label for="historyProposalDisclosure">Interpretation or attribution disclosure</label>
+              <textarea id="historyProposalDisclosure" name="disclosure"></textarea>
+            </div>
+            <div class="hrg-field">
+              <label for="historyProposalEvidence">Evidence source IDs (one per line)</label>
+              <textarea id="historyProposalEvidence" name="evidence" aria-describedby="historyProposalEvidenceHelp"></textarea>
+              <span class="hrg-help" id="historyProposalEvidenceHelp">Sources must exist in the selected dataset and retain inspected locators and limitations.</span>
+            </div>
+            <div class="hrg-actions">
+              <button class="hrg-button" id="historyProposalSave" type="submit">Save draft</button>
+              <button class="hrg-button" id="historyProposalDiscard" data-variant="danger" type="button" hidden>Withdraw draft</button>
+            </div>
+            <p class="hrg-sr-status" id="historyProposalFormStatus" role="status"></p>
+          </form>
+        </section>
+
+        <aside class="hrg-panel" data-span="4">
+          <p class="hrg-kicker">Workflow</p>
+          <h2>Proposal state</h2>
+          <div id="historyProposalStatus"></div>
+          <div class="hrg-actions" id="historyProposalActions"></div>
+          <p class="hrg-disclosure">
+            Automated checks verify structure, provenance, attribution, and
+            process. They do not prove historical truth.
+          </p>
+        </aside>
+
+        <section class="hrg-panel" data-span="full">
+          <p class="hrg-kicker">Field-level comparison</p>
+          <h2>Current and proposed record</h2>
+          <div class="hrg-diff-list" id="historyProposalDiff"></div>
+          <details class="hrg-json-details">
+            <summary>Developer structured payload</summary>
+            <pre id="historyProposalRaw"></pre>
+          </details>
+        </section>
+
+        <section class="hrg-panel" data-span="full">
+          <p class="hrg-kicker">Automated review assistance</p>
+          <h2>Validation errors and warnings</h2>
+          <div class="hrg-validation" id="historyProposalValidation"></div>
+        </section>
+
+        <section class="hrg-panel" data-span="8">
+          <p class="hrg-kicker">Private review discussion</p>
+          <h2>Notes and requested changes</h2>
+          <div class="hrg-card-list" id="historyProposalComments"></div>
+          <form class="hrg-form" id="historyProposalCommentForm">
+            <div class="hrg-field">
+              <label for="historyProposalCommentType">Note type</label>
+              <select id="historyProposalCommentType">
+                <option value="discussion">Contributor response</option>
+                <option value="review_note">Reviewer note</option>
+                <option value="change_request">Requested change</option>
+              </select>
+            </div>
+            <div class="hrg-field">
+              <label for="historyProposalComment">Private note</label>
+              <textarea id="historyProposalComment"></textarea>
+            </div>
+            <button class="hrg-button" type="submit">Add note</button>
+          </form>
+        </section>
+
+        <section class="hrg-panel" data-span="4">
+          <p class="hrg-kicker">Immutable activity</p>
+          <h2>Audit timeline</h2>
+          <ol class="hrg-event-list" id="historyProposalEvents"></ol>
+        </section>
+      </div>
+    </main>
+    <script src="assets/js/historyroot-api.js?v=1"></script>
+    <script src="assets/js/historyroot-shared.js?v=1"></script>
+    <script src="assets/js/dictionaryroot-auth.js?v=1"></script>
+    <script src="assets/js/historyroot-governance.js?v=2"></script>
+  </body>
+</html>

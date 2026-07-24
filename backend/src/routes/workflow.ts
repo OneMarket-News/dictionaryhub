@@ -28,11 +28,29 @@ import { writeAuditEvent } from "../services/audit-store.js";
 export const workflowRouter = Router();
 workflowRouter.use(requireAuthentication);
 
-const targetTypes = ["concept", "meaning", "relationship", "source", "assertion"] as const;
+const targetTypes = [
+  "concept",
+  "meaning",
+  "relationship",
+  "source",
+  "assertion",
+  "entity",
+  "temporal_assertion",
+  "account",
+  "claim",
+  "evidence",
+  "interpretation",
+  "perspective",
+  "causal_link",
+  "cultural_memory",
+] as const;
 const proposalSchema = z.object({
   organizationId: z.string().uuid().nullable().optional(),
   targetType: z.enum(targetTypes),
   targetId: z.string().trim().min(1).max(300),
+  rootKey: z.string().trim().max(100).optional(),
+  bundleId: z.string().trim().max(300).nullable().optional(),
+  changeType: z.string().trim().min(1).max(120).optional(),
   title: z.string().trim().min(3).max(200),
   summary: z.string().trim().max(3000).default(""),
   baseRevisionId: z.string().trim().max(300).nullable().optional(),
@@ -53,6 +71,7 @@ const updateSchema = proposalSchema.pick({
   proposedPatch: true,
   editorialRationale: true,
   interpretationDisclosure: true,
+  evidence: true,
 });
 const noteSchema = z.object({ note: z.string().trim().max(5000).default("") });
 const commentSchema = z.object({
@@ -133,6 +152,14 @@ workflowRouter.get("/proposals", async (request, response, next) => {
     const status = getQueryString(request.query.status);
     const query = getQueryString(request.query.q);
     const targetType = getQueryString(request.query.targetType);
+    const rootKey = getQueryString(request.query.rootKey);
+    const bundleId = getQueryString(request.query.bundleId);
+    const organizationId = getQueryString(request.query.organizationId);
+    const submitterId = getQueryString(request.query.submitterId);
+    const reviewerId = getQueryString(request.query.reviewerId);
+    const warningStatus = getQueryString(request.query.warningStatus);
+    const sortValue = getQueryString(request.query.sort);
+    const sort = sortValue === "submitted" ? "submitted" : "activity";
     return response.status(200).json(await listProposals({
       userId: auth.user!.userId,
       globalReview: hasSystemPermission(auth, "revision.review"),
@@ -142,6 +169,13 @@ workflowRouter.get("/proposals", async (request, response, next) => {
       ...(status ? { status } : {}),
       ...(query ? { query } : {}),
       ...(targetType ? { targetType } : {}),
+      ...(rootKey ? { rootKey } : {}),
+      ...(bundleId ? { bundleId } : {}),
+      ...(organizationId ? { organizationId } : {}),
+      ...(submitterId ? { submitterId } : {}),
+      ...(reviewerId ? { reviewerId } : {}),
+      ...(warningStatus ? { warningStatus } : {}),
+      sort,
     }));
   } catch (error) {
     next(error);
@@ -153,7 +187,12 @@ workflowRouter.get("/proposals/:proposalId", async (request, response, next) => 
     const proposalId = getRouteParam(request.params.proposalId);
     const detail = await getProposal(proposalId);
     if (!detail) return response.status(404).json({ error: "PROPOSAL_NOT_FOUND", message: "The proposal was not found." });
-    if (!canReadProposal(response, detail.proposal)) return denyScope(request, response, "revision.review", detail.proposal.organizationId);
+    if (!canReadProposal(response, detail.proposal)) {
+      return response.status(404).json({
+        error: "PROPOSAL_NOT_FOUND",
+        message: "The proposal was not found or is not accessible.",
+      });
+    }
     return response.status(200).json(detail);
   } catch (error) {
     next(error);
@@ -192,6 +231,12 @@ workflowRouter.patch("/proposals/:proposalId", requireCsrf, requirePermission("r
     const proposalId = getRouteParam(request.params.proposalId);
     const current = await getProposal(proposalId);
     if (!current) return response.status(404).json({ error: "PROPOSAL_NOT_FOUND", message: "The proposal was not found." });
+    if (!canReadProposal(response, current.proposal)) {
+      return response.status(404).json({
+        error: "PROPOSAL_NOT_FOUND",
+        message: "The proposal was not found or is not accessible.",
+      });
+    }
     if (!scopedPermission(response, current.proposal.organizationId, "revision.create")) {
       return denyScope(request, response, "revision.create", current.proposal.organizationId);
     }
@@ -201,6 +246,16 @@ workflowRouter.patch("/proposals/:proposalId", requireCsrf, requirePermission("r
       userId: auth.user!.userId,
       canEditAny: hasOrganizationPermission(auth, current.proposal.organizationId, "revision.edit_any"),
       ...parsed.data,
+    });
+    await writeAuditEvent({
+      actorUserId: auth.user!.userId,
+      actorIdentityId: auth.activeIdentityId,
+      organizationId: current.proposal.organizationId,
+      action: "proposal.updated",
+      targetType: "proposal",
+      targetId: proposalId,
+      request,
+      response,
     });
     return response.status(200).json(detail);
   } catch (error) {
@@ -215,16 +270,34 @@ workflowRouter.post("/proposals/:proposalId/comments", requireCsrf, requirePermi
     const proposalId = getRouteParam(request.params.proposalId);
     const current = await getProposal(proposalId);
     if (!current) return response.status(404).json({ error: "PROPOSAL_NOT_FOUND", message: "The proposal was not found." });
+    if (!canReadProposal(response, current.proposal)) {
+      return response.status(404).json({
+        error: "PROPOSAL_NOT_FOUND",
+        message: "The proposal was not found or is not accessible.",
+      });
+    }
     if (!scopedPermission(response, current.proposal.organizationId, "revision.comment")) {
       return denyScope(request, response, "revision.comment", current.proposal.organizationId);
     }
     const auth = getAuth(response);
-    return response.status(201).json(await addProposalComment({
+    const detail = await addProposalComment({
       proposalId,
       userId: auth.user!.userId,
       body: parsed.data.body,
       type: parsed.data.type,
-    }));
+    });
+    await writeAuditEvent({
+      actorUserId: auth.user!.userId,
+      actorIdentityId: auth.activeIdentityId,
+      organizationId: current.proposal.organizationId,
+      action: "proposal.comment_added",
+      targetType: "proposal",
+      targetId: proposalId,
+      request,
+      response,
+      metadata: { commentType: parsed.data.type },
+    });
+    return response.status(201).json(detail);
   } catch (error) {
     handleWorkflowError(error, response, next);
   }
@@ -243,6 +316,12 @@ for (const action of ["submit", "start_review", "request_changes", "approve", "r
         const proposalId = getRouteParam(request.params.proposalId);
         const current = await getProposal(proposalId);
         if (!current) return response.status(404).json({ error: "PROPOSAL_NOT_FOUND", message: "The proposal was not found." });
+        if (!canReadProposal(response, current.proposal)) {
+          return response.status(404).json({
+            error: "PROPOSAL_NOT_FOUND",
+            message: "The proposal was not found or is not accessible.",
+          });
+        }
         if (!scopedPermission(response, current.proposal.organizationId, permission)) {
           return denyScope(request, response, permission, current.proposal.organizationId);
         }
@@ -280,6 +359,12 @@ workflowRouter.post("/proposals/:proposalId/publish", requireCsrf, requirePermis
     const proposalId = getRouteParam(request.params.proposalId);
     const current = await getProposal(proposalId);
     if (!current) return response.status(404).json({ error: "PROPOSAL_NOT_FOUND", message: "The proposal was not found." });
+    if (!canReadProposal(response, current.proposal)) {
+      return response.status(404).json({
+        error: "PROPOSAL_NOT_FOUND",
+        message: "The proposal was not found or is not accessible.",
+      });
+    }
     if (!scopedPermission(response, current.proposal.organizationId, "revision.publish")) {
       return denyScope(request, response, "revision.publish", current.proposal.organizationId);
     }
@@ -309,7 +394,10 @@ workflowRouter.post("/publications/:publicationId/rollback", requireCsrf, requir
     const publication = await getPublicationProposal(publicationId);
     if (!publication) return response.status(404).json({ error: "PUBLICATION_NOT_FOUND", message: "The publication was not found." });
     if (!scopedPermission(response, publication.organizationId, "revision.publish")) {
-      return denyScope(request, response, "revision.publish", publication.organizationId);
+      return response.status(404).json({
+        error: "PUBLICATION_NOT_FOUND",
+        message: "The publication was not found or is not accessible.",
+      });
     }
     const auth = getAuth(response);
     const detail = await rollbackPublication({ publicationId, userId: auth.user!.userId, reason: parsed.data.reason });

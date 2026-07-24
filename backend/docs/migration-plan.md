@@ -180,3 +180,14 @@ The backend imports this artifact once, validates each record, preserves origina
 - Persist migration version and source.
 - Reject unsupported major package versions.
 - Preserve extension JSON even before it is normalized.
+
+## Implemented governed contextual extension
+
+Migration `010_extend_contextual_governance.sql` extends the existing proposal
+and publication tables for any contextual Root. It adds Root and bundle scope,
+structured change type, canonical base-version tokens, validation results, and
+prior publication snapshots. It also expands the proposal target constraint to
+the contextual record kinds introduced by migration 009.
+
+The extension remains backward compatible with the existing DictionaryRoot
+workflow mount. It does not add Root-specific proposal or revision tables.
