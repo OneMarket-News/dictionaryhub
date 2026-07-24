@@ -1,8 +1,11 @@
 [CmdletBinding()]
-param()
+param(
+  [string]$ExpectedBranch =
+    "feature/historyroot-customer-experience-v1",
+  [switch]$AllowStackedGovernanceChanges
+)
 
 $ErrorActionPreference = "Continue"
-$ExpectedBranch = "feature/historyroot-customer-experience-v1"
 $ExpectedBaseCommit = "6a26de35ff219c201a608149751f50fd4c17191b"
 $ExpectedFoundationCommit = "ec01f4a8b6ab3220cb5a8e700bad029f5c4cff03"
 $ExpectedMainCommit = "da3694c01dd16a831f09e9c5a85b825746fe289d"
@@ -403,14 +406,25 @@ try {
   $unexpectedPending = @(
     $pendingPaths |
       Where-Object {
-        $_ -notmatch "^history(root|-explore-v1|-timeline-v1|-record-v1|-sources-v1|-graph-v1)\.html$" -and
-        $_ -notmatch "^assets/(css/historyroot\.css|js/historyroot-[a-z-]+\.js)$" -and
-        $_ -notmatch "^config/customers/historyroot\.json$" -and
-        $_ -notmatch "^backend/src/services/(context-store|source-store)\.ts$" -and
-        $_ -notmatch "^backend/test/(contextual-knowledge|historyroot-plymouth)\.test\.ts$" -and
-        $_ -notmatch "^verification/historyroot-customer-experience\.test\.mjs$" -and
-        $_ -notmatch "^docs/customers/historyroot/customer-experience-v1\.md$" -and
-        $_ -notmatch "^VERIFY-HISTORYROOT-(CUSTOMER-EXPERIENCE-V1\.ps1|RESPONSIVE\.mjs)$"
+        $path = $_
+        $customerAllowed =
+          $path -match "^history(root|-explore-v1|-timeline-v1|-record-v1|-sources-v1|-graph-v1)\.html$" -or
+          $path -match "^assets/(css/historyroot\.css|js/historyroot-[a-z-]+\.js)$" -or
+          $path -match "^config/customers/historyroot\.json$" -or
+          $path -match "^backend/src/services/(context-store|source-store)\.ts$" -or
+          $path -match "^backend/test/(contextual-knowledge|historyroot-plymouth)\.test\.ts$" -or
+          $path -match "^verification/historyroot-customer-experience\.test\.mjs$" -or
+          $path -match "^docs/customers/historyroot/customer-experience-v1\.md$" -or
+          $path -match "^VERIFY-HISTORYROOT-(CUSTOMER-EXPERIENCE-V1\.ps1|RESPONSIVE\.mjs)$"
+        $governanceAllowed = $AllowStackedGovernanceChanges -and (
+          $path -match "^VERIFY-(GOVERNED-HISTORYROOT-ALPHA-V1|HISTORYROOT-PLYMOUTH-KNOWLEDGE-DATASET-V1|SOURCEROOT-CONTEXTUAL-KNOWLEDGE-FOUNDATION)\.ps1$" -or
+          $path -match "^assets/(css/historyroot-governance\.css|js/(dictionaryroot-auth|historyroot-governance|historyroot-governance-entry)\.js)$" -or
+          $path -match "^backend/(docs/migration-plan\.md|package\.json|db/migrations/010_extend_contextual_governance\.sql|src/(app\.ts|routes/workflow\.ts|services/(audit-store|contextual-governance|search-store|workflow-store)\.ts)|test/(governed-historyroot\.test\.ts|helpers/database\.ts))$" -or
+          $path -match "^docs/customers/historyroot/governed-historyroot-alpha-v1\.md$" -or
+          $path -match "^history-(governance|proposal|review-queue|review|revisions)-v1\.html$" -or
+          $path -match "^verification/governed-historyroot\.test\.mjs$"
+        )
+        -not ($customerAllowed -or $governanceAllowed)
       }
   )
   if ($unexpectedPending.Count -eq 0) {

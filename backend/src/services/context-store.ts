@@ -157,7 +157,8 @@ export async function getContextRecordById(
     `
       ${contextRecordSelect}
       WHERE cr.context_id = $1
-        AND ($2::TEXT IS NULL OR cr.record_kind = $2);
+        AND ($2::TEXT IS NULL OR cr.record_kind = $2)
+        AND cr.status <> 'governance-withdrawn';
     `,
     [contextId, recordKind ?? null],
   );
@@ -199,6 +200,7 @@ export async function listContextRecords(
   addEquals("causal.causal_kind", options.causalKind);
   addEquals("relationship.from_context_id", options.fromId);
   addEquals("relationship.to_context_id", options.toId);
+  conditions.push("cr.status <> 'governance-withdrawn'");
 
   if (options.sourceId !== undefined) {
     values.push(options.sourceId);

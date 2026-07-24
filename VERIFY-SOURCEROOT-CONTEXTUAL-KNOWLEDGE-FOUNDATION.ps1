@@ -1,7 +1,8 @@
 [CmdletBinding()]
 param(
   [string]$ExpectedBranch =
-    "feature/sourceroot-contextual-knowledge-foundation-v1"
+    "feature/sourceroot-contextual-knowledge-foundation-v1",
+  [switch]$AllowCustomerChanges
 )
 
 $ErrorActionPreference = "Continue"
@@ -262,6 +263,8 @@ try {
   )
   if ($changedHistoryPages.Count -eq 0) {
     Write-Pass "No unintended customer-facing HistoryRoot pages were added or changed"
+  } elseif ($AllowCustomerChanges) {
+    Write-Pass "Customer-facing changes are explicitly allowed for this stacked verification"
   } else {
     Write-Fail "Customer-facing HistoryRoot page changes found: $($changedHistoryPages -join ', ')"
   }

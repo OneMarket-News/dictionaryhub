@@ -34,6 +34,6 @@ export async function writeAuditEvent(input: AuditInput): Promise<void> {
       ],
     );
   } catch (error) {
-    console.error("DictionaryRoot audit event could not be persisted:", error);
+    console.error("SourceRoot audit event could not be persisted:", error);
   }
 }

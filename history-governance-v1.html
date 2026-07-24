@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en" data-history-governance-page="dashboard">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Authenticated HistoryRoot proposal and editorial-governance workspace.">
+    <title>Governance workspace | HistoryRoot</title>
+    <link rel="icon" href="assets/brand/dictionaryroot-mark.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="assets/css/dictionaryroot-brand.css">
+    <link rel="stylesheet" href="assets/css/historyroot.css?v=1">
+    <link rel="stylesheet" href="assets/css/historyroot-governance.css?v=2">
+  </head>
+  <body>
+    <main class="hrg-main" id="main-content">
+      <nav class="hrg-workspace-nav" aria-label="HistoryRoot governance">
+        <a href="history-governance-v1.html" aria-current="page" hidden data-governance-permissions="revision.create revision.review revision.publish">Workspace</a>
+        <a href="history-review-queue-v1.html" hidden data-governance-permissions="revision.review">Review queue</a>
+        <a href="history-proposal-v1.html?mode=new" hidden data-governance-permissions="revision.create">New proposal</a>
+        <a href="historyroot.html">Public HistoryRoot</a>
+        <span class="hrg-account" id="historyGovernanceAccount">Checking session…</span>
+      </nav>
+
+      <section class="hrg-hero" aria-labelledby="history-governance-title">
+        <div>
+          <p class="hrg-kicker">Authenticated SourceRoot workspace</p>
+          <h1 id="history-governance-title">Govern HistoryRoot carefully.</h1>
+          <p>
+            Draft sourced corrections, preserve uncertainty and attribution,
+            and move reviewed work through approval, publication, revision,
+            and auditable rollback.
+          </p>
+          <div class="hrg-actions">
+            <a class="hrg-button" id="historyGovernanceNewLink" href="history-proposal-v1.html?mode=new" hidden>Start a proposal</a>
+            <a class="hrg-button" data-variant="secondary" id="historyGovernanceReviewLink" href="history-review-queue-v1.html" hidden>Open review queue</a>
+          </div>
+        </div>
+        <aside class="hrg-session-card" aria-live="polite">
+          <strong id="historyGovernanceSessionTitle">Checking access</strong>
+          <span id="historyGovernanceSessionCopy">Loading the current SourceRoot session and organization scope.</span>
+        </aside>
+      </section>
+
+      <div class="hrg-state" id="historyGovernanceState" aria-live="polite">
+        <h2>Loading governance workspace</h2>
+        <p>Connecting to the SourceRoot governance API.</p>
+      </div>
+
+      <div class="hrg-grid" id="historyGovernanceContent" hidden>
+        <section class="hrg-panel" data-span="full" aria-labelledby="history-governance-summary-title">
+          <p class="hrg-kicker">Your authorized scope</p>
+          <h2 id="history-governance-summary-title">Proposal activity</h2>
+          <div class="hrg-summary-grid" id="historyGovernanceSummary"></div>
+        </section>
+
+        <section class="hrg-panel" data-span="full" aria-labelledby="history-governance-filter-title">
+          <h2 id="history-governance-filter-title">Find proposals</h2>
+          <form class="hrg-form" id="historyGovernanceFilters">
+            <div class="hrg-form-row">
+              <div class="hrg-field">
+                <label for="historyGovernanceStatus">Status</label>
+                <select id="historyGovernanceStatus" name="status">
+                  <option value="all">All visible statuses</option>
+                  <option value="draft">Draft</option>
+                  <option value="submitted">Submitted</option>
+                  <option value="under_review">Under review</option>
+                  <option value="changes_requested">Changes requested</option>
+                  <option value="approved">Approved</option>
+                  <option value="rejected">Rejected</option>
+                  <option value="published">Published</option>
+                </select>
+              </div>
+              <div class="hrg-field">
+                <label for="historyGovernanceType">Record type</label>
+                <select id="historyGovernanceType" name="targetType">
+                  <option value="all">All record types</option>
+                </select>
+              </div>
+            </div>
+            <div class="hrg-form-row">
+              <div class="hrg-field">
+                <label for="historyGovernanceWarnings">Validation</label>
+                <select id="historyGovernanceWarnings" name="warningStatus">
+                  <option value="">All validation states</option>
+                  <option value="warnings">Has warnings</option>
+                  <option value="errors">Has errors</option>
+                  <option value="clear">No warnings or errors</option>
+                </select>
+              </div>
+              <div class="hrg-field">
+                <label for="historyGovernanceQuery">Search title, target, or summary</label>
+                <input id="historyGovernanceQuery" name="q" type="search" autocomplete="off">
+              </div>
+            </div>
+            <div class="hrg-actions">
+              <button class="hrg-button" type="submit">Apply filters</button>
+              <a class="hrg-button" data-variant="secondary" href="history-governance-v1.html">Clear</a>
+            </div>
+          </form>
+        </section>
+
+        <section class="hrg-panel" data-span="full" aria-labelledby="history-governance-list-title">
+          <p class="hrg-kicker">Private editorial work</p>
+          <h2 id="history-governance-list-title">Visible proposals</h2>
+          <div class="hrg-card-list" id="historyGovernanceList"></div>
+        </section>
+      </div>
+    </main>
+    <script src="assets/js/historyroot-api.js?v=1"></script>
+    <script src="assets/js/historyroot-shared.js?v=1"></script>
+    <script src="assets/js/dictionaryroot-auth.js?v=1"></script>
+    <script src="assets/js/historyroot-governance.js?v=2"></script>
+  </body>
+</html>

@@ -16,8 +16,12 @@
 
   async function ensureManifest() {
     if (state.manifest) return state.manifest;
-    if (global.DictionaryRootApi && global.DictionaryRootApi.loadManifest) {
-      state.manifest = await global.DictionaryRootApi.loadManifest();
+    const manifestApi =
+      global.HistoryRootApi && global.HistoryRootApi.loadManifest
+        ? global.HistoryRootApi
+        : global.DictionaryRootApi;
+    if (manifestApi && manifestApi.loadManifest) {
+      state.manifest = await manifestApi.loadManifest();
       state.apiBaseUrl = trimSlash(state.manifest.apiBaseUrl || state.apiBaseUrl);
     }
     return state.manifest;

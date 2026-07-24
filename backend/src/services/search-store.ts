@@ -251,6 +251,10 @@ const searchRecordsCte = `
     FROM sources s
     LEFT JOIN imported_bundles ib
       ON ib.bundle_id = s.bundle_id
+    WHERE COALESCE(
+      s.raw_data ->> 'governanceVisibility',
+      'public'
+    ) = 'public'
 
     UNION ALL
 
@@ -357,6 +361,7 @@ const searchRecordsCte = `
       'interpretation',
       'relationship'
     )
+      AND cr.status <> 'governance-withdrawn'
   )
 `;
 

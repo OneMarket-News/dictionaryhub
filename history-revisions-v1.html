@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en" data-history-governance-page="revisions">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Published HistoryRoot revision history without private proposal notes.">
+    <title>Revision history | HistoryRoot</title>
+    <link rel="icon" href="assets/brand/dictionaryroot-mark.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="assets/css/dictionaryroot-brand.css">
+    <link rel="stylesheet" href="assets/css/historyroot.css?v=1">
+    <link rel="stylesheet" href="assets/css/historyroot-governance.css?v=2">
+  </head>
+  <body>
+    <main class="hrg-main" id="main-content">
+      <nav class="hrg-workspace-nav" aria-label="HistoryRoot revisions">
+        <a href="historyroot.html">Public HistoryRoot</a>
+        <a id="historyRevisionRecordLink" href="history-explore-v1.html">Affected record</a>
+        <a id="historyRevisionGovernanceLink" href="history-governance-v1.html" hidden data-governance-permissions="revision.create revision.review revision.publish">Governance workspace</a>
+      </nav>
+      <section class="hrg-hero" aria-labelledby="history-revisions-title">
+        <div>
+          <p class="hrg-kicker">Published SourceRoot history</p>
+          <h1 id="history-revisions-title">Revision history.</h1>
+          <p>Published changes and rollbacks are visible here. Private drafts, rejected payloads, organization details, and review-only notes are not exposed.</p>
+        </div>
+        <aside class="hrg-session-card">
+          <strong id="historyRevisionTarget">Choose a record</strong>
+          <span>Revision deep links preserve the stable record ID and record type.</span>
+        </aside>
+      </section>
+      <div class="hrg-state" id="historyGovernanceState" aria-live="polite">
+        <h2>Loading published revisions</h2>
+        <p>Reading the public SourceRoot revision API.</p>
+      </div>
+      <div class="hrg-grid" id="historyGovernanceContent" hidden>
+        <section class="hrg-panel" data-span="full">
+          <div class="hrg-card-list" id="historyRevisionList"></div>
+        </section>
+      </div>
+    </main>
+    <script src="assets/js/historyroot-api.js?v=1"></script>
+    <script src="assets/js/historyroot-shared.js?v=1"></script>
+    <script src="assets/js/dictionaryroot-auth.js?v=1"></script>
+    <script src="assets/js/historyroot-governance.js?v=2"></script>
+  </body>
+</html>

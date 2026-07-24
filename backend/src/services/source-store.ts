@@ -140,7 +140,11 @@ export async function getSourceById(
         created_at,
         updated_at
       FROM sources
-      WHERE source_id = $1;
+      WHERE source_id = $1
+        AND COALESCE(
+          raw_data ->> 'governanceVisibility',
+          'public'
+        ) = 'public';
     `,
     [sourceId],
   );
@@ -161,6 +165,9 @@ export async function listSources(
 
   const conditions: string[] = [];
   const filterValues: string[] = [];
+  conditions.push(
+    "COALESCE(raw_data ->> 'governanceVisibility', 'public') = 'public'",
+  );
 
   if (options.bundleId) {
     filterValues.push(options.bundleId);
