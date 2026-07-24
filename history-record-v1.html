@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Inspect a live HistoryRoot record with its chronology, claims, evidence, sources, interpretations, perspectives, relationships, and memory.">
+    <title>Record | HistoryRoot</title>
+    <link rel="icon" href="assets/brand/dictionaryroot-mark.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="assets/css/dictionaryroot-brand.css">
+    <link rel="stylesheet" href="assets/css/historyroot.css?v=1">
+  </head>
+  <body>
+    <main class="hr-main" id="main-content">
+      <div id="historyrootRecordState"></div>
+      <article id="historyrootRecord" hidden>
+        <header class="hr-record-hero">
+          <div class="hr-record-hero-top">
+            <div>
+              <p class="hr-eyebrow" id="historyrootRecordType">Historical record</p>
+              <h1 id="historyrootRecordTitle">Loading record</h1>
+              <p class="hr-record-lede" id="historyrootRecordSummary"></p>
+            </div>
+            <div class="hr-chip-row" id="historyrootRecordChips"></div>
+          </div>
+          <div class="hr-alias-list" id="historyrootRecordAliases" hidden></div>
+          <p class="hr-naming-note" id="historyrootRecordNamingNote" hidden></p>
+        </header>
+
+        <div class="hr-record-layout">
+          <div class="hr-record-sections" id="historyrootRecordSections"></div>
+          <aside class="hr-record-aside" aria-label="Record tools and provenance">
+            <section class="hr-panel">
+              <p class="hr-kicker">Navigate the knowledge</p>
+              <h2>Continue exploring</h2>
+              <div class="hr-action-row">
+                <a class="hr-button-secondary" id="historyrootRecordGraphLink" href="history-graph-v1.html">View connections</a>
+                <a class="hr-button-secondary" id="historyrootRecordTimelineLink" href="history-timeline-v1.html">Find in timeline</a>
+              </div>
+            </section>
+            <section class="hr-panel" id="historyrootRecordMetadataPanel" hidden>
+              <p class="hr-kicker">Record metadata</p>
+              <h2>About this entry</h2>
+              <dl class="hr-metadata-list" id="historyrootRecordMetadata"></dl>
+            </section>
+            <p class="hr-disclosure">Pilot dataset · review required. Empty evidence categories are omitted.</p>
+          </aside>
+        </div>
+      </article>
+    </main>
+    <script src="assets/js/historyroot-api.js?v=1"></script>
+    <script src="assets/js/historyroot-shared.js?v=1"></script>
+    <script src="assets/js/historyroot-record.js?v=1"></script>
+  </body>
+</html>

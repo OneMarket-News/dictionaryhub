@@ -381,10 +381,25 @@ test("stable contextual IDs resolve through typed and universal routes", async (
   assert.equal(typed.body.recordKind, "entity");
   assert.equal(universal.body.id, typed.body.id);
   assert.equal(universal.body.bundleId, typed.body.bundleId);
+  assert.deepEqual(typed.body.perspectiveLinks, []);
 
   await request(app)
     .get("/api/v1/context/claims/ctx-person-mara-quill")
     .expect(404);
+
+  const interpretation = await request(app)
+    .get(
+      "/api/v1/context/interpretations/ctx-interpretation-survey-practice",
+    )
+    .expect(200);
+
+  assert.deepEqual(interpretation.body.perspectiveLinks, [
+    {
+      perspectiveId: "ctx-perspective-later-analyst",
+      stance: "retrospective-interpretation",
+      notes: "The interpretation is not a published conclusion.",
+    },
+  ]);
 });
 
 test("temporal APIs preserve approximate, range, disputed, and unknown dates", async () => {

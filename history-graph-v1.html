@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Explore a focused live HistoryRoot knowledge graph with accessible relationship details.">
+    <title>Knowledge Graph | HistoryRoot</title>
+    <link rel="icon" href="assets/brand/dictionaryroot-mark.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="assets/css/dictionaryroot-brand.css">
+    <link rel="stylesheet" href="assets/css/historyroot.css?v=1">
+  </head>
+  <body>
+    <main class="hr-main" id="main-content">
+      <header class="hr-page-header">
+        <div>
+          <p class="hr-eyebrow">HistoryRoot knowledge graph</p>
+          <h1>Follow one record’s documented connections.</h1>
+          <p class="hr-page-intro">
+            This focused view shows an active record and a bounded neighborhood.
+            Relationship labels and evidence remain available outside the visual graph.
+          </p>
+        </div>
+        <p class="hr-disclosure">The graph is a navigation aid, not a claim of equal certainty.</p>
+      </header>
+
+      <section class="hr-panel hr-graph-toolbar" aria-labelledby="historyroot-graph-tools-title">
+        <div>
+          <p class="hr-kicker">Choose a focus</p>
+          <h2 id="historyroot-graph-tools-title">Graph controls</h2>
+        </div>
+        <form class="hr-search-form" id="historyrootGraphForm" role="search">
+          <label class="hr-sr-only" for="historyrootGraphQuery">Find a graph record</label>
+          <input id="historyrootGraphQuery" name="q" type="search" placeholder="Find a person, group, place, event, or document">
+          <button class="hr-button" type="submit">Find focus</button>
+        </form>
+        <fieldset class="hr-fieldset" id="historyrootGraphTypes">
+          <legend>Connection types</legend>
+          <label class="hr-check"><input type="checkbox" value="relationship" checked><span>Relationships</span></label>
+          <label class="hr-check"><input type="checkbox" value="causal" checked><span>Causes and consequences</span></label>
+          <label class="hr-check"><input type="checkbox" value="knowledge" checked><span>Claims and interpretation</span></label>
+          <label class="hr-check"><input type="checkbox" value="memory" checked><span>Cultural memory</span></label>
+        </fieldset>
+      </section>
+
+      <div id="historyrootGraphState" hidden></div>
+      <div class="hr-graph-layout">
+        <section class="hr-graph-panel" aria-labelledby="historyroot-graph-view-title">
+          <div class="hr-panel-header">
+            <div>
+              <p class="hr-kicker">Focused neighborhood</p>
+              <h2 id="historyroot-graph-view-title">Live connections</h2>
+            </div>
+            <p id="historyrootGraphCount" role="status" aria-live="polite"></p>
+          </div>
+          <div class="hr-graph-stage" id="historyrootGraphStage" role="group" aria-label="Interactive historical relationship graph">
+            <svg class="hr-graph-edges" id="historyrootGraphEdges" aria-hidden="true"></svg>
+            <div class="hr-graph-node-layer" id="historyrootGraphNodes"></div>
+          </div>
+          <div class="hr-graph-legend" aria-label="Graph legend">
+            <span data-kind="entity"><i aria-hidden="true"></i>Entity</span>
+            <span data-kind="claim"><i aria-hidden="true"></i>Claim</span>
+            <span data-kind="interpretation"><i aria-hidden="true"></i>Interpretation</span>
+            <span data-kind="causal"><i aria-hidden="true"></i>Cause or consequence</span>
+            <span data-kind="memory"><i aria-hidden="true"></i>Memory</span>
+          </div>
+        </section>
+
+        <aside class="hr-graph-detail" id="historyrootGraphDetail" aria-label="Selected graph record details">
+          <p class="hr-kicker">Graph focus</p>
+          <h2>Select a connected record</h2>
+          <p>Keyboard-accessible record buttons and the list below provide the same connections as the visual layout.</p>
+        </aside>
+      </div>
+
+      <section class="hr-section hr-graph-alternative" aria-labelledby="historyroot-graph-list-title">
+        <div class="hr-section-header">
+          <div>
+            <p class="hr-kicker">Accessible alternative</p>
+            <h2 id="historyroot-graph-list-title">Connections as a list</h2>
+          </div>
+        </div>
+        <div class="hr-results-grid" id="historyrootGraphList"></div>
+      </section>
+    </main>
+    <script src="assets/js/historyroot-api.js?v=1"></script>
+    <script src="assets/js/historyroot-shared.js?v=1"></script>
+    <script src="assets/js/historyroot-graph.js?v=1"></script>
+  </body>
+</html>

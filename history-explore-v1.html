@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Search and filter live HistoryRoot people, communities, places, events, documents, and works.">
+    <title>Explore | HistoryRoot</title>
+    <link rel="icon" href="assets/brand/dictionaryroot-mark.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="assets/css/dictionaryroot-brand.css">
+    <link rel="stylesheet" href="assets/css/historyroot.css?v=1">
+  </head>
+  <body>
+    <main class="hr-main" id="main-content">
+      <header class="hr-page-header">
+        <div>
+          <p class="hr-eyebrow">Explore HistoryRoot</p>
+          <h1>Find records without losing their context.</h1>
+          <p class="hr-page-intro">
+            Search canonical names and aliases across the live dataset. Use the
+            filters to narrow results by record type, period, uncertainty, or memory.
+          </p>
+        </div>
+        <p class="hr-disclosure">Pilot dataset · review required</p>
+      </header>
+
+      <div id="historyrootExploreState" hidden></div>
+
+      <div class="hr-explore-layout">
+        <aside class="hr-filter-panel" aria-labelledby="historyroot-explore-filter-title">
+          <h2 id="historyroot-explore-filter-title">Refine results</h2>
+          <form id="historyrootExploreForm">
+            <div class="hr-filter-stack">
+              <label class="hr-control" for="historyrootExploreQuery">
+                <span>Search</span>
+                <input id="historyrootExploreQuery" name="q" type="search" autocomplete="off" placeholder="Name, alias, event, or place">
+              </label>
+              <label class="hr-control" for="historyrootExploreType">
+                <span>Record type</span>
+                <select id="historyrootExploreType" name="type">
+                  <option value="all">All record types</option>
+                  <option value="person">People</option>
+                  <option value="group">Groups and communities</option>
+                  <option value="place">Places</option>
+                  <option value="event">Events</option>
+                  <option value="document">Documents</option>
+                  <option value="work">Works</option>
+                  <option value="political_jurisdiction">Political jurisdictions</option>
+                  <option value="claim">Claims</option>
+                  <option value="interpretation">Interpretations</option>
+                  <option value="cultural_memory">Cultural memories</option>
+                </select>
+              </label>
+              <div class="hr-control-pair">
+                <label class="hr-control" for="historyrootExploreFrom">
+                  <span>From year</span>
+                  <input id="historyrootExploreFrom" name="from" type="number" inputmode="numeric" min="1000" max="2100" placeholder="1616">
+                </label>
+                <label class="hr-control" for="historyrootExploreTo">
+                  <span>To year</span>
+                  <input id="historyrootExploreTo" name="to" type="number" inputmode="numeric" min="1000" max="2100" placeholder="1691">
+                </label>
+              </div>
+              <label class="hr-check" for="historyrootExploreUncertain">
+                <input id="historyrootExploreUncertain" name="uncertain" type="checkbox">
+                <span>Only dates with uncertainty</span>
+              </label>
+              <label class="hr-check" for="historyrootExploreMemory">
+                <input id="historyrootExploreMemory" name="memory" type="checkbox">
+                <span>Include cultural-memory afterlives</span>
+              </label>
+              <button class="hr-button" type="submit">Apply filters</button>
+              <button class="hr-button-secondary" id="historyrootExploreReset" type="button">Reset</button>
+            </div>
+          </form>
+        </aside>
+
+        <section class="hr-results-panel" aria-labelledby="historyroot-explore-results-title">
+          <div class="hr-results-toolbar">
+            <div>
+              <p class="hr-kicker">Live SourceRoot results</p>
+              <h2 id="historyroot-explore-results-title">Historical records</h2>
+            </div>
+            <p id="historyrootExploreCount" role="status" aria-live="polite">Loading…</p>
+          </div>
+          <div class="hr-results-grid" id="historyrootExploreResults"></div>
+          <div class="hr-load-more">
+            <button class="hr-button-secondary" id="historyrootExploreMore" type="button" hidden>Show more records</button>
+          </div>
+        </section>
+      </div>
+    </main>
+    <script src="assets/js/historyroot-api.js?v=1"></script>
+    <script src="assets/js/historyroot-shared.js?v=1"></script>
+    <script src="assets/js/historyroot-explore.js?v=1"></script>
+  </body>
+</html>
