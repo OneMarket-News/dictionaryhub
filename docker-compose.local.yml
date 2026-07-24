@@ -26,6 +26,7 @@ services:
       FRONTEND_PUBLIC_URL: http://localhost:8080
       BACKEND_PUBLIC_URL: http://localhost:3000
       CORS_ORIGIN: http://localhost:8080,http://127.0.0.1:8080
+      ALLOW_LOCAL_DEVELOPMENT_ORIGINS: "true"
     volumes:
       - ./:/workspace
       - dictionaryroot-node-modules:/workspace/backend/node_modules

@@ -25,6 +25,27 @@
     return String(value || "").replace(/\/+$/, "");
   }
 
+  function resolveLocalApiBaseUrl(value) {
+    const configured = trimSlash(value);
+    try {
+      if (!global.location || !global.location.hostname) return configured;
+      const pageHost = global.location.hostname;
+      const parsed = new URL(configured, global.location.href);
+      const loopbackHosts = new Set(["localhost", "127.0.0.1", "[::1]"]);
+      if (
+        global.location.protocol === "http:" &&
+        loopbackHosts.has(pageHost) &&
+        loopbackHosts.has(parsed.hostname) &&
+        pageHost !== parsed.hostname
+      ) {
+        parsed.hostname = pageHost;
+      }
+      return trimSlash(parsed.toString());
+    } catch (_) {
+      return configured;
+    }
+  }
+
   function normalizeParams(params) {
     const normalized = Object.assign({}, params || {});
     if (normalized.pageSize !== undefined && normalized.limit === undefined) {
@@ -54,14 +75,18 @@
       const response = await fetch(manifestPath, { cache: "no-store" });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const loaded = await response.json();
-      return Object.assign({}, DEFAULT_MANIFEST, loaded, {
+      const manifest = Object.assign({}, DEFAULT_MANIFEST, loaded, {
         defaults: Object.assign({}, DEFAULT_MANIFEST.defaults, loaded.defaults || {}),
         graph: Object.assign({}, DEFAULT_MANIFEST.graph, loaded.graph || {}),
         dynamicExpansion: Object.assign({}, DEFAULT_MANIFEST.dynamicExpansion, loaded.dynamicExpansion || {})
       });
+      manifest.apiBaseUrl = resolveLocalApiBaseUrl(manifest.apiBaseUrl);
+      return manifest;
     } catch (error) {
       console.warn("DictionaryRoot manifest fallback active:", error);
-      return Object.assign({}, DEFAULT_MANIFEST);
+      const fallback = Object.assign({}, DEFAULT_MANIFEST);
+      fallback.apiBaseUrl = resolveLocalApiBaseUrl(fallback.apiBaseUrl);
+      return fallback;
     }
   }
 
@@ -572,6 +597,7 @@
     DictionaryRootApiClient,
     DictionaryRootApiError,
     loadManifest,
+    resolveLocalApiBaseUrl,
     extractItems,
     extractTotal,
     edgeItems,

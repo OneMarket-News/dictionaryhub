@@ -76,6 +76,21 @@ export function createApp(options: CreateAppOptions = {}) {
     .split(",")
     .map((value) => value.trim())
     .filter(Boolean);
+  const nodeEnvironment = (process.env.NODE_ENV || "development").trim().toLowerCase();
+  const allowLocalDevelopmentOrigins =
+    nodeEnvironment === "development" &&
+    (process.env.ALLOW_LOCAL_DEVELOPMENT_ORIGINS || "true").trim().toLowerCase() === "true";
+  const localDevelopmentHosts = new Set(["localhost", "127.0.0.1", "[::1]"]);
+
+  function isLocalDevelopmentOrigin(origin: string): boolean {
+    if (!allowLocalDevelopmentOrigins) return false;
+    try {
+      const parsed = new URL(origin);
+      return parsed.protocol === "http:" && localDevelopmentHosts.has(parsed.hostname);
+    } catch {
+      return false;
+    }
+  }
 
   if ((process.env.TRUST_PROXY || "false").toLowerCase() === "true") {
     app.set("trust proxy", 1);
@@ -84,7 +99,9 @@ export function createApp(options: CreateAppOptions = {}) {
   app.use(
     cors({
       origin(origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+        if (!origin || allowedOrigins.includes(origin) || isLocalDevelopmentOrigin(origin)) {
+          return callback(null, true);
+        }
         return callback(new Error("Origin is not permitted by DictionaryRoot CORS policy."));
       },
       credentials: true,
