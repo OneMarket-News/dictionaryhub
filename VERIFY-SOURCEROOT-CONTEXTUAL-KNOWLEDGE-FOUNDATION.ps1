@@ -1,8 +1,10 @@
 [CmdletBinding()]
-param()
+param(
+  [string]$ExpectedBranch =
+    "feature/sourceroot-contextual-knowledge-foundation-v1"
+)
 
 $ErrorActionPreference = "Continue"
-$ExpectedBranch = "feature/sourceroot-contextual-knowledge-foundation-v1"
 $ExpectedBaseCommit = "da3694c01dd16a831f09e9c5a85b825746fe289d"
 $RepositoryRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $BackendRoot = Join-Path $RepositoryRoot "backend"

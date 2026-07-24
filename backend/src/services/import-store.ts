@@ -48,6 +48,13 @@ export interface DeletedImportedBundleCounts {
   edgeSources: number;
 }
 
+export interface DetailedDeletedImportedBundleCounts
+  extends DeletedImportedBundleCounts {
+  contextualRecords: number;
+  contextPerspectiveLinks: number;
+  contextSourceLinks: number;
+}
+
 const INTEGRATION_TEST_PREFIX = "sourceroot-integration-test-";
 
 type UnknownRecord = Record<string, unknown>;
@@ -712,15 +719,9 @@ export async function listImportedBundles(
   };
 }
 
-export async function deleteImportedTestBundle(
+async function deleteImportedBundleTransaction(
   bundleId: string,
-): Promise<DeletedImportedBundleCounts> {
-  if (!bundleId.startsWith(INTEGRATION_TEST_PREFIX)) {
-    throw new Error(
-      `Refusing to delete bundle "${bundleId}". Only bundle IDs beginning with "${INTEGRATION_TEST_PREFIX}" may be deleted.`,
-    );
-  }
-
+): Promise<DetailedDeletedImportedBundleCounts> {
   const database = requireDatabase();
   const client = await database.connect();
 
@@ -752,6 +753,9 @@ export async function deleteImportedTestBundle(
         nodeSources: 0,
         assertionSources: 0,
         edgeSources: 0,
+        contextualRecords: 0,
+        contextPerspectiveLinks: 0,
+        contextSourceLinks: 0,
       };
     }
 
@@ -765,6 +769,9 @@ export async function deleteImportedTestBundle(
       node_sources: string;
       assertion_sources: string;
       edge_sources: string;
+      contextual_records: string;
+      context_perspective_links: string;
+      context_source_links: string;
     }>(
       `
         SELECT
@@ -812,7 +819,24 @@ export async function deleteImportedTestBundle(
             SELECT COUNT(*)
             FROM edge_sources
             WHERE bundle_id = $1
-          ) AS edge_sources;
+          ) AS edge_sources,
+          (
+            SELECT COUNT(*)
+            FROM context_records
+            WHERE bundle_id = $1
+          ) AS contextual_records,
+          (
+            SELECT COUNT(*)
+            FROM context_record_perspectives crp
+            JOIN context_records cr
+              ON cr.context_id = crp.record_context_id
+            WHERE cr.bundle_id = $1
+          ) AS context_perspective_links,
+          (
+            SELECT COUNT(*)
+            FROM context_record_sources
+            WHERE bundle_id = $1
+          ) AS context_source_links;
       `,
       [bundleId],
     );
@@ -851,6 +875,11 @@ export async function deleteImportedTestBundle(
       nodeSources: Number(row?.node_sources ?? 0),
       assertionSources: Number(row?.assertion_sources ?? 0),
       edgeSources: Number(row?.edge_sources ?? 0),
+      contextualRecords: Number(row?.contextual_records ?? 0),
+      contextPerspectiveLinks: Number(
+        row?.context_perspective_links ?? 0,
+      ),
+      contextSourceLinks: Number(row?.context_source_links ?? 0),
     };
   } catch (error) {
     try {
@@ -863,4 +892,36 @@ export async function deleteImportedTestBundle(
   } finally {
     client.release();
   }
+}
+
+export async function deleteImportedBundle(
+  bundleId: string,
+  allowedBundleIds: ReadonlySet<string>,
+): Promise<DetailedDeletedImportedBundleCounts> {
+  if (!allowedBundleIds.has(bundleId)) {
+    throw new Error(
+      `Refusing to delete bundle "${bundleId}". It is not in the caller's explicit allow-list.`,
+    );
+  }
+
+  return deleteImportedBundleTransaction(bundleId);
+}
+
+export async function deleteImportedTestBundle(
+  bundleId: string,
+): Promise<DeletedImportedBundleCounts> {
+  if (!bundleId.startsWith(INTEGRATION_TEST_PREFIX)) {
+    throw new Error(
+      `Refusing to delete bundle "${bundleId}". Only bundle IDs beginning with "${INTEGRATION_TEST_PREFIX}" may be deleted.`,
+    );
+  }
+
+  const {
+    contextualRecords: _contextualRecords,
+    contextPerspectiveLinks: _contextPerspectiveLinks,
+    contextSourceLinks: _contextSourceLinks,
+    ...publicCounts
+  } = await deleteImportedBundleTransaction(bundleId);
+
+  return publicCounts;
 }

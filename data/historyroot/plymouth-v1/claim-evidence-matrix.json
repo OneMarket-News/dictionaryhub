@@ -1,0 +1,666 @@
+{
+  "datasetId": "historyroot-plymouth-v1",
+  "generatedOn": "2026-07-23",
+  "claims": [
+    {
+      "claimId": "historyroot-plymouth-claim-wampanoag-deep-history",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-wampanoag-deep-history"
+      ],
+      "accountId": "historyroot-plymouth-account-nmai-timeline",
+      "sourceIds": [
+        "historyroot-plymouth-source-nmai-timeline"
+      ],
+      "locator": "Timeline, 12,000+ Years Ago",
+      "limitation": "Educational synthesis; archaeological citations should be independently reviewed.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-epenow-escape",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-epenow-escape"
+      ],
+      "accountId": "historyroot-plymouth-account-aquinnah",
+      "sourceIds": [
+        "historyroot-plymouth-source-aquinnah-ancient-ways"
+      ],
+      "locator": "Ancient Ways, Epenow section",
+      "limitation": "Tribal public history; precise voyage chronology needs specialist review.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-hunt-kidnappings",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-hunt-kidnappings"
+      ],
+      "accountId": "historyroot-plymouth-account-nmai-timeline",
+      "sourceIds": [
+        "historyroot-plymouth-source-nmai-timeline"
+      ],
+      "locator": "Timeline, 1524-1615",
+      "limitation": "Educational synthesis; individual identities beyond Tisquantum are not reconstructed here.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-epidemic-depopulation",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-epidemic-depopulation"
+      ],
+      "accountId": "historyroot-plymouth-account-nmai-timeline",
+      "sourceIds": [
+        "historyroot-plymouth-source-nmai-timeline",
+        "historyroot-plymouth-source-cdc-epidemic-study",
+        "historyroot-plymouth-source-mashpee-culture"
+      ],
+      "locator": "NMAI Timeline 1616-1620; CDC pp. 281-286; Mashpee contact timeline 1616",
+      "limitation": "Retrospective estimates vary; the dataset does not adopt a single percentage.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-epidemic-diagnosis-uncertain",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-epidemic-diagnosis-uncertain"
+      ],
+      "accountId": "historyroot-plymouth-account-cdc",
+      "sourceIds": [
+        "historyroot-plymouth-source-cdc-epidemic-study"
+      ],
+      "locator": "CDC article pp. 281-286, especially limitations and conclusion",
+      "limitation": "The article is a retrospective hypothesis and expressly not a definite diagnosis.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-tisquantum-travels-return",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-tisquantum-travels-return"
+      ],
+      "accountId": "historyroot-plymouth-account-nmai-timeline",
+      "sourceIds": [
+        "historyroot-plymouth-source-nmai-timeline"
+      ],
+      "locator": "Timeline, 1616-1620",
+      "limitation": "The timeline compresses a complex travel history; exact routes and intervals need deeper review.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-settlement-at-patuxet",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-settlement-at-patuxet"
+      ],
+      "accountId": "historyroot-plymouth-account-nmai-timeline",
+      "sourceIds": [
+        "historyroot-plymouth-source-nmai-timeline",
+        "historyroot-plymouth-source-mashpee-culture",
+        "historyroot-plymouth-source-bradford-eada"
+      ],
+      "locator": "NMAI Timeline 1620-1621; Mashpee timeline 1620; Bradford settlement sequence",
+      "limitation": "English descriptions of an 'empty' place must not erase Patuxet ownership, memory, or survivors.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-compact-original-lost",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-compact-original-lost"
+      ],
+      "accountId": "historyroot-plymouth-account-compact-exhibit",
+      "sourceIds": [
+        "historyroot-plymouth-source-compact-loc-exhibit",
+        "historyroot-plymouth-source-compact-loc-law-blog"
+      ],
+      "locator": "LOC exhibit, The Mayflower Compact; LOC Law blog paragraphs 298-299",
+      "limitation": "Surviving texts are witnesses, not the original signed sheet.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-mourts-earliest-witness",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-mourts-earliest-witness"
+      ],
+      "accountId": "historyroot-plymouth-account-compact-law",
+      "sourceIds": [
+        "historyroot-plymouth-source-compact-loc-exhibit",
+        "historyroot-plymouth-source-compact-loc-law-blog",
+        "historyroot-plymouth-source-mourts-relation-loc"
+      ],
+      "locator": "LOC exhibit paragraph 66; LOC Law blog paragraph 298; Mourt's Relation pp. 5-6",
+      "limitation": "Earliest surviving witness does not mean original manuscript.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-compact-three-witnesses",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-compact-three-witnesses"
+      ],
+      "accountId": "historyroot-plymouth-account-compact-law",
+      "sourceIds": [
+        "historyroot-plymouth-source-compact-loc-law-blog"
+      ],
+      "locator": "LOC Law blog paragraphs 298-299",
+      "limitation": "This pilot records witness relationships but does not collate textual variants.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-compact-immediate-function",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-compact-immediate-function"
+      ],
+      "accountId": "historyroot-plymouth-account-compact-exhibit",
+      "sourceIds": [
+        "historyroot-plymouth-source-compact-loc-exhibit",
+        "historyroot-plymouth-source-compact-loc-law-blog",
+        "historyroot-plymouth-source-bradford-eada"
+      ],
+      "locator": "LOC exhibit paragraphs 65-66; LOC Law blog paragraphs 284-292; Bradford Compact passage",
+      "limitation": "It was an interim governing agreement, not a complete constitution or universal democratic compact.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-compact-signers-scope",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-compact-signers-scope"
+      ],
+      "accountId": "historyroot-plymouth-account-compact-law",
+      "sourceIds": [
+        "historyroot-plymouth-source-compact-loc-law-blog"
+      ],
+      "locator": "LOC Law blog paragraph 289",
+      "limitation": "The familiar phrase 'the colonists agreed' can obscure exclusions from formal signature.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-first-winter-mortality",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-first-winter-mortality"
+      ],
+      "accountId": "historyroot-plymouth-account-bradford",
+      "sourceIds": [
+        "historyroot-plymouth-source-bradford-eada"
+      ],
+      "locator": "EADA lines 2376-2386",
+      "limitation": "Bradford is retrospective and emphasizes providential meaning; exact medical diagnoses are limited.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-samoset-contact",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-samoset-contact"
+      ],
+      "accountId": "historyroot-plymouth-account-bradford",
+      "sourceIds": [
+        "historyroot-plymouth-source-bradford-eada"
+      ],
+      "locator": "EADA lines 2436-2451",
+      "limitation": "The description is solely through Bradford's account.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-agreement-terms",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-agreement-terms"
+      ],
+      "accountId": "historyroot-plymouth-account-nmai-treaty",
+      "sourceIds": [
+        "historyroot-plymouth-source-bradford-eada",
+        "historyroot-plymouth-source-nmai-treaty-harvest"
+      ],
+      "locator": "Bradford EADA lines 2454-2475; NMAI Treaty and Harvest sections",
+      "limitation": "The surviving written terms are English-language records; Wampanoag understandings are not preserved in a contemporary Wampanoag document.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-ousamequin-strategy",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-ousamequin-strategy"
+      ],
+      "accountId": "historyroot-plymouth-account-nmai-timeline",
+      "sourceIds": [
+        "historyroot-plymouth-source-nmai-timeline"
+      ],
+      "locator": "Timeline, 1620-1621",
+      "limitation": "Institutional interpretation; motives should remain plural and reviewable.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-tisquantum-mediator",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-tisquantum-mediator"
+      ],
+      "accountId": "historyroot-plymouth-account-bradford",
+      "sourceIds": [
+        "historyroot-plymouth-source-bradford-eada",
+        "historyroot-plymouth-source-nmai-timeline"
+      ],
+      "locator": "Bradford EADA lines 2476-2481; NMAI Timeline 1620-1621",
+      "limitation": "Bradford's providential praise can flatten Tisquantum's own purposes and coercive history.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-tisquantum-political-agency",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-tisquantum-political-agency"
+      ],
+      "accountId": "historyroot-plymouth-account-good-newes",
+      "sourceIds": [
+        "historyroot-plymouth-source-good-newes-gutenberg"
+      ],
+      "locator": "Good Newes, 1841 ed., pp. 24-26",
+      "limitation": "A hostile English assessment of motive; it must remain attributed, not stated as transparent fact.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-harvest-three-days",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-harvest-three-days"
+      ],
+      "accountId": "historyroot-plymouth-account-nmai-timeline",
+      "sourceIds": [
+        "historyroot-plymouth-source-mourts-relation-loc",
+        "historyroot-plymouth-source-nmai-timeline"
+      ],
+      "locator": "Mourt's Relation harvest passage; NMAI Timeline 1620-1621",
+      "limitation": "The account does not provide an exact date, full attendee list, or a contemporary Wampanoag description.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-harvest-evidence-limits",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-harvest-evidence-limits"
+      ],
+      "accountId": "historyroot-plymouth-account-thanksgiving",
+      "sourceIds": [
+        "historyroot-plymouth-source-plimoth-thanksgiving-unit"
+      ],
+      "locator": "You Are The Historian Unit 4, Key Idea 1",
+      "limitation": "Absence of a surviving written record is not absence of Wampanoag knowledge, memory, or interpretation.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-harvest-diplomatic-context",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-harvest-diplomatic-context"
+      ],
+      "accountId": "historyroot-plymouth-account-thanksgiving",
+      "sourceIds": [
+        "historyroot-plymouth-source-nmai-treaty-harvest",
+        "historyroot-plymouth-source-plimoth-thanksgiving-unit"
+      ],
+      "locator": "NMAI Treaty and Harvest; Plimoth Patuxet Unit 4 Key Idea 4",
+      "limitation": "This is a modern interpretation rather than a verbatim intention stated by all participants.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-wessagusset-corn-theft",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-wessagusset-corn-theft"
+      ],
+      "accountId": "historyroot-plymouth-account-good-newes",
+      "sourceIds": [
+        "historyroot-plymouth-source-good-newes-gutenberg",
+        "historyroot-plymouth-source-bradford-eada"
+      ],
+      "locator": "Good Newes pp. 41-44; Bradford EADA lines 3367-3399",
+      "limitation": "English accounts dominate and frame Indigenous responses as conspiracy.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-wessagusset-killings",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-wessagusset-killings"
+      ],
+      "accountId": "historyroot-plymouth-account-good-newes",
+      "sourceIds": [
+        "historyroot-plymouth-source-good-newes-gutenberg"
+      ],
+      "locator": "Good Newes, 1841 ed., pp. 47-49",
+      "limitation": "The assailants' own narrative justifies the action as preemption and uses dehumanizing language.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-wessagusset-head-display",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-wessagusset-head-display"
+      ],
+      "accountId": "historyroot-plymouth-account-good-newes",
+      "sourceIds": [
+        "historyroot-plymouth-source-good-newes-gutenberg"
+      ],
+      "locator": "Good Newes, 1841 ed., pp. 50-51",
+      "limitation": "English account; the dataset avoids repeating spectacle beyond what is necessary to document the violence.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-wessagusset-aftermath-attributed",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-wessagusset-aftermath-attributed"
+      ],
+      "accountId": "historyroot-plymouth-account-good-newes",
+      "sourceIds": [
+        "historyroot-plymouth-source-good-newes-gutenberg"
+      ],
+      "locator": "Good Newes, 1841 ed., pp. 51-52",
+      "limitation": "The source collapses complex events into providential explanation and is not an Indigenous account.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-robinson-critique",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-robinson-critique"
+      ],
+      "accountId": "historyroot-plymouth-account-bradford",
+      "sourceIds": [
+        "historyroot-plymouth-source-bradford-eada"
+      ],
+      "locator": "EADA lines 4217-4239",
+      "limitation": "The letter is preserved through Bradford's text; Robinson still writes within a colonial missionary framework.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-merrymount-contested",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-merrymount-contested"
+      ],
+      "accountId": "historyroot-plymouth-account-bradford",
+      "sourceIds": [
+        "historyroot-plymouth-source-bradford-eada"
+      ],
+      "locator": "EADA lines 5381-5389",
+      "limitation": "Bradford was Morton's opponent; his moral language is partisan evidence, not neutral description.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-merrymount-suppressed",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-merrymount-suppressed"
+      ],
+      "accountId": "historyroot-plymouth-account-bradford",
+      "sourceIds": [
+        "historyroot-plymouth-source-bradford-eada"
+      ],
+      "locator": "EADA chapter 19, especially lines 5385 onward",
+      "limitation": "Bradford's narrative centers colonial legitimacy and does not recover all participants' views.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-english-patent-not-native-consent",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-english-patent-not-native-consent"
+      ],
+      "accountId": "historyroot-plymouth-account-mass-archives",
+      "sourceIds": [
+        "historyroot-plymouth-source-charter-1691-avalon",
+        "historyroot-plymouth-source-massachusetts-plymouth-records"
+      ],
+      "locator": "Avalon 1629 patent metadata; Massachusetts Archives Plymouth records guide",
+      "limitation": "This is an editorial scope distinction; tribal legal-historical review is required.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-land-pressure",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-land-pressure"
+      ],
+      "accountId": "historyroot-plymouth-account-nmai-timeline",
+      "sourceIds": [
+        "historyroot-plymouth-source-nmai-timeline"
+      ],
+      "locator": "Timeline, 1622-1640s through 1640s-1660s",
+      "limitation": "Regional synthesis; local deeds and community-specific experiences require record-level review.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-wamsutta-succession",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-wamsutta-succession"
+      ],
+      "accountId": "historyroot-plymouth-account-nmai-timeline",
+      "sourceIds": [
+        "historyroot-plymouth-source-nmai-timeline"
+      ],
+      "locator": "Timeline, 1660s-1670s",
+      "limitation": "Succession and governance should be reviewed with Wampanoag historians rather than mapped to European monarchy.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-wamsutta-death-suspicion",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-wamsutta-death-suspicion"
+      ],
+      "accountId": "historyroot-plymouth-account-nmai-timeline",
+      "sourceIds": [
+        "historyroot-plymouth-source-nmai-timeline"
+      ],
+      "locator": "Timeline, 1660s-1670s",
+      "limitation": "The date varies across chronologies, and the cause of death remains contested.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-metacom-alliance-building",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-metacom-alliance-building"
+      ],
+      "accountId": "historyroot-plymouth-account-nmai-timeline",
+      "sourceIds": [
+        "historyroot-plymouth-source-nmai-timeline"
+      ],
+      "locator": "Timeline, 1660s-1670s and 1675-1676",
+      "limitation": "Alliances were dynamic; the record should not imply unified command over every action.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-weetamoo-leadership",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-weetamoo-leadership"
+      ],
+      "accountId": "historyroot-plymouth-account-nmai-timeline",
+      "sourceIds": [
+        "historyroot-plymouth-source-nmai-timeline"
+      ],
+      "locator": "Timeline, 1675-1676",
+      "limitation": "Concise synthesis; community-specific sources should deepen her political biography.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-awashonks-diplomacy",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-awashonks-diplomacy"
+      ],
+      "accountId": "historyroot-plymouth-account-church",
+      "sourceIds": [
+        "historyroot-plymouth-source-church-war-narrative"
+      ],
+      "locator": "Entertaining Passages, 1716 ed., pp. 22-28",
+      "limitation": "Retrospective English military narrative; Awashonks's words and choices are mediated through Church.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-war-multiple-causes",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-war-multiple-causes"
+      ],
+      "accountId": "historyroot-plymouth-account-nps-war",
+      "sourceIds": [
+        "historyroot-plymouth-source-nps-king-philips-war",
+        "historyroot-plymouth-source-nps-swansea-war-start",
+        "historyroot-plymouth-source-nmai-timeline"
+      ],
+      "locator": "NPS King Philip's War paragraphs 50-54; NPS Swansea paragraphs 47-49; NMAI timeline",
+      "limitation": "No single cause is treated as sufficient, and named actors did not form two internally unified blocs.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-war-outbreak-uncertain-command",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-war-outbreak-uncertain-command"
+      ],
+      "accountId": "historyroot-plymouth-account-nps-swansea",
+      "sourceIds": [
+        "historyroot-plymouth-source-nps-swansea-war-start"
+      ],
+      "locator": "NPS Swansea article paragraph 48",
+      "limitation": "Short public-history project overview; further primary-source comparison is required.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-great-swamp-escalation",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-great-swamp-escalation"
+      ],
+      "accountId": "historyroot-plymouth-account-nps-war",
+      "sourceIds": [
+        "historyroot-plymouth-source-nps-king-philips-war"
+      ],
+      "locator": "NPS King Philip's War paragraphs 52-55",
+      "limitation": "Casualty totals are approximate and the page is a concise institutional narrative.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-war-native-enslavement",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-war-native-enslavement"
+      ],
+      "accountId": "historyroot-plymouth-account-nmai-timeline",
+      "sourceIds": [
+        "historyroot-plymouth-source-nmai-timeline"
+      ],
+      "locator": "Timeline, 1675-1676 and aftermath",
+      "limitation": "The regional summary does not enumerate every community, destination, or legal disposition.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-war-not-simple-binary",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-war-not-simple-binary"
+      ],
+      "accountId": "historyroot-plymouth-account-nps-war",
+      "sourceIds": [
+        "historyroot-plymouth-source-nps-king-philips-war",
+        "historyroot-plymouth-source-church-war-narrative",
+        "historyroot-plymouth-source-nmai-timeline"
+      ],
+      "locator": "NPS war overview; Church pp. 22-28; NMAI timeline",
+      "limitation": "This high-level formulation requires expansion with community-specific records.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-charter-annexed-plymouth",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-charter-annexed-plymouth"
+      ],
+      "accountId": "historyroot-plymouth-account-mass-archives",
+      "sourceIds": [
+        "historyroot-plymouth-source-charter-1691-avalon",
+        "historyroot-plymouth-source-massachusetts-archives-overview"
+      ],
+      "locator": "Avalon 1691 Charter; Massachusetts Archives lines 277-280",
+      "limitation": "Signature created the legal instrument; local implementation followed in 1692.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-charter-implementation-1692",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-charter-implementation-1692"
+      ],
+      "accountId": "historyroot-plymouth-account-mass-archives",
+      "sourceIds": [
+        "historyroot-plymouth-source-massachusetts-archives-overview"
+      ],
+      "locator": "Massachusetts Archives lines 277-283",
+      "limitation": "Related milestones include Phips's swearing-in; the dataset distinguishes rather than collapses them.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-plymouth-records-scope",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-plymouth-records-scope"
+      ],
+      "accountId": "historyroot-plymouth-account-plymouth-records",
+      "sourceIds": [
+        "historyroot-plymouth-source-massachusetts-plymouth-records"
+      ],
+      "locator": "Massachusetts Archives Plymouth records guide, volume list",
+      "limitation": "The register was inspected; record-level claims require consulting specific volumes and pages.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-rock-absent-early-accounts",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-rock-absent-early-accounts"
+      ],
+      "accountId": "historyroot-plymouth-account-rock",
+      "sourceIds": [
+        "historyroot-plymouth-source-pilgrim-hall-rock"
+      ],
+      "locator": "History of Plymouth Rock, Plymouth Rock in the 17th Century",
+      "limitation": "Silence does not disprove every oral tradition, but it prevents treating the Rock landing as contemporaneously documented.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-rock-later-tradition",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-rock-later-tradition"
+      ],
+      "accountId": "historyroot-plymouth-account-rock",
+      "sourceIds": [
+        "historyroot-plymouth-source-pilgrim-hall-rock"
+      ],
+      "locator": "History of Plymouth Rock, 1741 tradition and Revolutionary sections",
+      "limitation": "The tradition's chain of transmission contains unavoidable evidentiary gaps.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-compact-memory-development",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-compact-memory-development"
+      ],
+      "accountId": "historyroot-plymouth-account-compact-law",
+      "sourceIds": [
+        "historyroot-plymouth-source-compact-loc-law-blog"
+      ],
+      "locator": "LOC Law blog paragraphs 293-297",
+      "limitation": "Later symbolic uses should not be projected unchanged back onto 1620.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-thanksgiving-later-holiday",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-thanksgiving-later-holiday"
+      ],
+      "accountId": "historyroot-plymouth-account-thanksgiving",
+      "sourceIds": [
+        "historyroot-plymouth-source-plimoth-thanksgiving-unit"
+      ],
+      "locator": "You Are The Historian Unit 4 and linked memory materials",
+      "limitation": "The cultural history extends beyond this dataset's core period and is represented selectively.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-national-day-mourning-origin",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-national-day-mourning-origin"
+      ],
+      "accountId": "historyroot-plymouth-account-uaine",
+      "sourceIds": [
+        "historyroot-plymouth-source-uaine-national-day-mourning",
+        "historyroot-plymouth-source-nmai-timeline"
+      ],
+      "locator": "UAINE homepage and Historical Information; NMAI Timeline 1900-present",
+      "limitation": "This is an explicitly attributed Indigenous activist and commemorative perspective.",
+      "reviewRequired": true
+    },
+    {
+      "claimId": "historyroot-plymouth-claim-wampanoag-continuity",
+      "evidenceIds": [
+        "historyroot-plymouth-evidence-wampanoag-continuity"
+      ],
+      "accountId": "historyroot-plymouth-account-nmai-timeline",
+      "sourceIds": [
+        "historyroot-plymouth-source-nmai-timeline",
+        "historyroot-plymouth-source-mashpee-culture",
+        "historyroot-plymouth-source-aquinnah-ancient-ways"
+      ],
+      "locator": "NMAI Timeline 1900-present; tribal culture pages",
+      "limitation": "This pilot includes only a small selection of living communities and must not imply exhaustive representation.",
+      "reviewRequired": true
+    }
+  ]
+}
