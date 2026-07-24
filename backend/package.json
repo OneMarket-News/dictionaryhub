@@ -14,11 +14,17 @@
     "start:compiled": "node dist/server.js",
     "test": "node --env-file=.env.test --import tsx --test --test-concurrency=1 test/**/*.test.ts",
     "test:context": "node --env-file=.env.test --import tsx --test --test-concurrency=1 test/contextual-knowledge.test.ts",
+    "test:historyroot:plymouth": "node --env-file=.env.test --import tsx --test --test-concurrency=1 test/historyroot-plymouth.test.ts",
     "db:migrate": "tsx src/scripts/migrate.ts",
     "db:migrate:test": "node --env-file=.env.test --import tsx src/scripts/migrate.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "dictionaryroot:pilot": "tsx src/scripts/build-dictionaryroot-pilot.ts",
-    "dictionaryroot:lexicon": "tsx src/scripts/import-dictionaryroot-lexicon.ts"
+    "dictionaryroot:lexicon": "tsx src/scripts/import-dictionaryroot-lexicon.ts",
+    "historyroot:plymouth:generate": "tsx src/scripts/generate-historyroot-plymouth.ts",
+    "historyroot:plymouth:validate": "tsx src/scripts/validate-historyroot-plymouth.ts",
+    "historyroot:plymouth:import": "tsx src/scripts/import-historyroot-plymouth.ts",
+    "historyroot:plymouth:verify": "npm run test:historyroot:plymouth",
+    "historyroot:plymouth:remove": "tsx src/scripts/remove-historyroot-plymouth.ts"
   },
   "dependencies": {
     "cors": "^2.8.6",

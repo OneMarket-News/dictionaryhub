@@ -312,6 +312,10 @@ const searchRecordsCte = `
           'recordKind', cr.record_kind,
           'status', cr.status,
           'entityType', entity.entity_type,
+          'alternateNames',
+            TO_JSONB(
+              COALESCE(entity.alternate_names, ARRAY[]::TEXT[])
+            ),
           'relationshipType', relationship.relationship_type,
           'fromId', relationship.from_context_id,
           'toId', relationship.to_context_id
@@ -442,6 +446,19 @@ async function searchRegistryKnowledge(
                   WHERE LOWER(lemma.value) = LOWER($5)
                 )
                 THEN 1
+              WHEN result_type = 'context-entity'
+                AND EXISTS (
+                  SELECT 1
+                  FROM JSONB_ARRAY_ELEMENTS_TEXT(
+                    CASE
+                      WHEN JSONB_TYPEOF(metadata -> 'alternateNames') = 'array'
+                        THEN metadata -> 'alternateNames'
+                      ELSE '[]'::JSONB
+                    END
+                  ) AS alternate_name(value)
+                  WHERE LOWER(alternate_name.value) = LOWER($5)
+                )
+                THEN 1
               WHEN title ILIKE $6
                 THEN 2
               WHEN result_type = 'node'
@@ -455,6 +472,19 @@ async function searchRegistryKnowledge(
                     END
                   ) AS lemma(value)
                   WHERE lemma.value ILIKE $6
+                )
+                THEN 3
+              WHEN result_type = 'context-entity'
+                AND EXISTS (
+                  SELECT 1
+                  FROM JSONB_ARRAY_ELEMENTS_TEXT(
+                    CASE
+                      WHEN JSONB_TYPEOF(metadata -> 'alternateNames') = 'array'
+                        THEN metadata -> 'alternateNames'
+                      ELSE '[]'::JSONB
+                    END
+                  ) AS alternate_name(value)
+                  WHERE alternate_name.value ILIKE $6
                 )
                 THEN 3
               ELSE 4

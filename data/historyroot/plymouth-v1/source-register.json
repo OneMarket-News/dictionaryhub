@@ -1,0 +1,383 @@
+{
+  "datasetId": "historyroot-plymouth-v1",
+  "reviewedOn": "2026-07-23",
+  "policy": "Only sources marked accessed-and-inspected may support detailed claims. Other statuses may establish identity, bibliography, gaps, or future review tasks.",
+  "sources": [
+    {
+      "id": "historyroot-plymouth-source-mourts-relation-loc",
+      "name": "Mourt's Relation or Journal of the Plantation at Plymouth",
+      "publisher": "Library of Congress",
+      "sourceClass": "primary-account-later-edition",
+      "citation": "William Bradford and Edward Winslow, Mourt's Relation, 1622; Henry Martyn Dexter ed., Boston: J. K. Wiggin, 1865, Library of Congress LCCN 03008746.",
+      "url": "https://www.loc.gov/item/03008746/",
+      "accessStatus": "accessed-and-inspected",
+      "accessDate": "2026-07-23",
+      "locatorsInspected": [
+        "Library of Congress item metadata and rights statement",
+        "1865 edition, pp. 5-6 (Mayflower Compact introduction and text)",
+        "1621 harvest account as reproduced in the edition"
+      ],
+      "limitations": "English colonial account published partly to report and promote the plantation; the inspected object is an 1865 edition of the 1622 printing, not the lost manuscripts behind it.",
+      "supportsDetailedClaims": true,
+      "license": "Public domain digitized book",
+      "licenseStatus": "public-domain"
+    },
+    {
+      "id": "historyroot-plymouth-source-bradford-eada",
+      "name": "Of Plymouth Plantation, electronic edition",
+      "publisher": "Early Americas Digital Archive, University of Maryland",
+      "sourceClass": "primary-retrospective-account",
+      "citation": "William Bradford, Of Plymouth Plantation, electronic edition based on William T. Davis ed., Bradford's History of Plymouth Plantation, 1606-1646 (1908).",
+      "url": "https://eada.lib.umd.edu/text-entries/of-plymouth-plantation/",
+      "accessStatus": "accessed-and-inspected",
+      "accessDate": "2026-07-23",
+      "locatorsInspected": [
+        "EADA lines 2345-2386 (Compact, government, first winter)",
+        "EADA lines 2436-2481 (Samoset, Ousamequin agreement, Tisquantum)",
+        "EADA lines 3355-3379 and 3382-3399 (Tisquantum death and Wessagusset)",
+        "EADA lines 4217-4239 (John Robinson's criticism)",
+        "EADA lines 5381-5389 (Merrymount)"
+      ],
+      "limitations": "Retrospective English colonial narrative written over years, with providential interpretation and hostile period terminology; it does not supply an Indigenous account.",
+      "supportsDetailedClaims": true,
+      "license": "Freely available electronic text when distributed with archive header information",
+      "licenseStatus": "repository-link-and-paraphrase"
+    },
+    {
+      "id": "historyroot-plymouth-source-good-newes-gutenberg",
+      "name": "Good Newes from New England",
+      "publisher": "Project Gutenberg",
+      "sourceClass": "primary-contemporary-account-later-edition",
+      "citation": "Edward Winslow, Good Newes from New England (London, 1624), 1841 edition digitized by Project Gutenberg.",
+      "url": "https://www.gutenberg.org/ebooks/66332",
+      "accessStatus": "accessed-and-inspected",
+      "accessDate": "2026-07-23",
+      "locatorsInspected": [
+        "1841 edition, pp. 13-26 (Tisquantum, Ousamequin, diplomacy)",
+        "1841 edition, pp. 41-52 (Wessagusset crisis and killings)"
+      ],
+      "limitations": "English colonial and promotional narrative; later editorial notes and modernization must be distinguished from Winslow's 1624 text.",
+      "supportsDetailedClaims": true,
+      "license": "Public domain ebook",
+      "licenseStatus": "public-domain"
+    },
+    {
+      "id": "historyroot-plymouth-source-charter-1691-avalon",
+      "name": "Charter of Massachusetts Bay, October 7, 1691",
+      "publisher": "Avalon Project, Yale Law School",
+      "sourceClass": "primary-legal-document",
+      "citation": "William III and Mary II, Charter of Massachusetts Bay, October 7, 1691, Avalon Project transcription.",
+      "url": "https://avalon.law.yale.edu/17th_century/mass07.asp",
+      "accessStatus": "accessed-and-inspected",
+      "accessDate": "2026-07-23",
+      "locatorsInspected": [
+        "Document title and date",
+        "Territorial grant incorporating New Plymouth into the Province"
+      ],
+      "limitations": "Modern transcription of a royal legal instrument; issuance and later inauguration are distinct events and require institutional chronology.",
+      "supportsDetailedClaims": true,
+      "license": "Yale Avalon educational transcription; link and paraphrase",
+      "licenseStatus": "repository-link-and-paraphrase"
+    },
+    {
+      "id": "historyroot-plymouth-source-bradford-manuscript-massachusetts",
+      "name": "Bradford's manuscript Of Plimoth Plantation, 1630-1650",
+      "publisher": "State Library of Massachusetts",
+      "sourceClass": "primary-manuscript-metadata",
+      "citation": "William Bradford, Of Plimoth Plantation manuscript, 1630-1650, State Library of Massachusetts digital collections.",
+      "url": "https://www.mass.gov/info-details/bradfords-manuscript-of-plimoth-plantation",
+      "accessStatus": "metadata-verified-not-inspected",
+      "accessDate": "2026-07-23",
+      "locatorsInspected": [
+        "State Library catalog/search metadata for manuscript title, author, and date range"
+      ],
+      "limitations": "The manuscript object was not directly inspected during this build because the page denied automated access; it supports document identity only, not detailed historical claims.",
+      "supportsDetailedClaims": false,
+      "license": "Archival metadata; rights vary by digital object",
+      "licenseStatus": "metadata-only"
+    },
+    {
+      "id": "historyroot-plymouth-source-compact-loc-exhibit",
+      "name": "The Mayflower Compact: A Toolkit for Associations",
+      "publisher": "Library of Congress",
+      "sourceClass": "government-institutional-synthesis",
+      "citation": "Library of Congress, The Mayflower Compact, Join In exhibition.",
+      "url": "https://www.loc.gov/exhibitions/join-in-voluntary-associations-in-america/about-this-exhibition/a-toolkit-for-associations/the-mayflower-compact/",
+      "accessStatus": "accessed-and-inspected",
+      "accessDate": "2026-07-23",
+      "locatorsInspected": [
+        "Exhibit section The Mayflower Compact, paragraphs on patent, civil body politic, and lost original"
+      ],
+      "limitations": "Concise exhibit interpretation intended for a broad audience; it should be paired with the surviving textual witnesses.",
+      "supportsDetailedClaims": true,
+      "license": "U.S. government institutional webpage; linked and paraphrased",
+      "licenseStatus": "repository-link-and-paraphrase"
+    },
+    {
+      "id": "historyroot-plymouth-source-compact-loc-law-blog",
+      "name": "The 400th Anniversary of the Mayflower Compact",
+      "publisher": "Law Library of Congress",
+      "sourceClass": "government-institutional-analysis",
+      "citation": "Robert Brammer, The 400th Anniversary of the Mayflower Compact, In Custodia Legis, Library of Congress, 2020.",
+      "url": "https://blogs.loc.gov/law/2020/11/the-400th-anniversary-of-the-mayflower-compact/",
+      "accessStatus": "accessed-and-inspected",
+      "accessDate": "2026-07-23",
+      "locatorsInspected": [
+        "Paragraphs 284-299 (patent context, immediate function, textual witnesses, later memory)"
+      ],
+      "limitations": "Modern legal-historical interpretation on an institutional blog; cited secondary scholarship was not independently inspected for this pilot.",
+      "supportsDetailedClaims": true,
+      "license": "U.S. government institutional webpage; linked and paraphrased",
+      "licenseStatus": "repository-link-and-paraphrase"
+    },
+    {
+      "id": "historyroot-plymouth-source-nmai-timeline",
+      "name": "The First Thanksgiving: Wampanoag and English Perspectives timeline",
+      "publisher": "Smithsonian National Museum of the American Indian",
+      "sourceClass": "indigenous-centered-institutional-synthesis",
+      "citation": "Native Knowledge 360°, The First Thanksgiving: Wampanoag and English Perspectives, Timeline, Smithsonian NMAI.",
+      "url": "https://americanindian.si.edu/nk360/thanksgiving/timeline.html",
+      "accessStatus": "accessed-and-inspected",
+      "accessDate": "2026-07-23",
+      "locatorsInspected": [
+        "Timeline sections 1524-1615 through 1675-1676",
+        "Timeline section 1900-present"
+      ],
+      "limitations": "Educational synthesis, not a primary source; its broad chronology compresses local variation and historiographic disagreement.",
+      "supportsDetailedClaims": true,
+      "license": "Smithsonian terms of use; linked and paraphrased",
+      "licenseStatus": "repository-link-and-paraphrase"
+    },
+    {
+      "id": "historyroot-plymouth-source-nmai-treaty-harvest",
+      "name": "Treaty and Harvest Celebration",
+      "publisher": "Smithsonian National Museum of the American Indian",
+      "sourceClass": "indigenous-centered-institutional-analysis",
+      "citation": "Native Knowledge 360°, Treaty and Harvest Celebration, Smithsonian NMAI.",
+      "url": "https://americanindian.si.edu/nk360/Thanksgiving/sq4ss1.html",
+      "accessStatus": "accessed-and-inspected",
+      "accessDate": "2026-07-23",
+      "locatorsInspected": [
+        "Treaty terms and discussion questions",
+        "Sections on weapons, punishment, diplomacy, and harvest"
+      ],
+      "limitations": "Educational interpretation that paraphrases primary accounts; it foregrounds asymmetry but is not a substitute for community review.",
+      "supportsDetailedClaims": true,
+      "license": "Smithsonian terms of use; linked and paraphrased",
+      "licenseStatus": "repository-link-and-paraphrase"
+    },
+    {
+      "id": "historyroot-plymouth-source-mashpee-culture",
+      "name": "History and Culture of the Mashpee Wampanoag",
+      "publisher": "Mashpee Wampanoag Tribe",
+      "sourceClass": "tribal-institutional-perspective",
+      "citation": "jessie little doe baird, History and Culture of the Mashpee Wampanoag, Mashpee Wampanoag Tribe.",
+      "url": "https://mashpeewampanoagtribe-nsn.gov/culture",
+      "accessStatus": "accessed-and-inspected",
+      "accessDate": "2026-07-23",
+      "locatorsInspected": [
+        "Contact timeline entries for 1616, 1620, 1632, and 1655"
+      ],
+      "limitations": "A concise tribal public-history timeline; numerical and diagnostic epidemic claims require specialist review and are not treated as settled in this dataset.",
+      "supportsDetailedClaims": true,
+      "license": "Tribal website; linked and paraphrased",
+      "licenseStatus": "repository-link-and-paraphrase"
+    },
+    {
+      "id": "historyroot-plymouth-source-aquinnah-ancient-ways",
+      "name": "Ancient Ways",
+      "publisher": "Wampanoag Tribe of Gay Head (Aquinnah)",
+      "sourceClass": "tribal-institutional-perspective",
+      "citation": "Wampanoag Tribe of Gay Head (Aquinnah), Ancient Ways.",
+      "url": "https://wampanoagtribe-nsn.gov/ancientways",
+      "accessStatus": "accessed-and-inspected",
+      "accessDate": "2026-07-23",
+      "locatorsInspected": [
+        "Epenow account",
+        "Creation of Noepe and Wampanoag cultural-practice sections"
+      ],
+      "limitations": "Tribal public-history and cultural page combining historical narrative, oral tradition, and present-day practice; each mode must retain its own attribution.",
+      "supportsDetailedClaims": true,
+      "license": "Tribal website; linked and paraphrased",
+      "licenseStatus": "repository-link-and-paraphrase"
+    },
+    {
+      "id": "historyroot-plymouth-source-uaine-national-day-mourning",
+      "name": "National Day of Mourning and Historical Information",
+      "publisher": "United American Indians of New England",
+      "sourceClass": "indigenous-organizational-perspective",
+      "citation": "United American Indians of New England, National Day of Mourning homepage and Historical Information.",
+      "url": "https://www.uaine.org/",
+      "accessStatus": "accessed-and-inspected",
+      "accessDate": "2026-07-23",
+      "locatorsInspected": [
+        "National Day of Mourning homepage introduction",
+        "Historical Information, 1970 origins and Wamsutta Frank James"
+      ],
+      "limitations": "Explicitly activist and commemorative organizational perspective; use for attributed memory and critique, not as an unattributed universal Indigenous view.",
+      "supportsDetailedClaims": true,
+      "license": "Organizational website; linked and paraphrased",
+      "licenseStatus": "repository-link-and-paraphrase"
+    },
+    {
+      "id": "historyroot-plymouth-source-cdc-epidemic-study",
+      "name": "New Hypothesis for Cause of Epidemic among Native Americans, New England, 1616-1619",
+      "publisher": "CDC Emerging Infectious Diseases",
+      "sourceClass": "modern-scholarly-analysis",
+      "citation": "John S. Marr and John T. Cathey, Emerging Infectious Diseases 16, no. 2 (2010): 281-286, doi:10.3201/eid1602.090276.",
+      "url": "https://wwwnc.cdc.gov/eid/article/16/2/09-0276_article",
+      "accessStatus": "accessed-and-inspected",
+      "accessDate": "2026-07-23",
+      "locatorsInspected": [
+        "pp. 281-286; especially limitations and competing disease hypotheses"
+      ],
+      "limitations": "Retrospective diagnostic hypothesis based on sparse descriptions; the authors explicitly state that the cause may never be proven.",
+      "supportsDetailedClaims": true,
+      "license": "U.S. government journal webpage; linked and paraphrased",
+      "licenseStatus": "repository-link-and-paraphrase"
+    },
+    {
+      "id": "historyroot-plymouth-source-nps-king-philips-war",
+      "name": "King Philip's War (1675-1678)",
+      "publisher": "National Park Service, Roger Williams National Memorial",
+      "sourceClass": "government-institutional-synthesis",
+      "citation": "National Park Service, Roger Williams National Memorial, King Philip's War (1675-1678).",
+      "url": "https://www.nps.gov/rowi/learn/historyculture/kingphilip.htm",
+      "accessStatus": "accessed-and-inspected",
+      "accessDate": "2026-07-23",
+      "locatorsInspected": [
+        "Overview paragraphs on land purchases, refugees, neutrality, Great Swamp, and Narragansett entry"
+      ],
+      "limitations": "Concise site interpretation with some rounded casualty estimates; this pilot uses it for broad sequence and qualified causal framing.",
+      "supportsDetailedClaims": true,
+      "license": "U.S. government webpage; linked and paraphrased",
+      "licenseStatus": "repository-link-and-paraphrase"
+    },
+    {
+      "id": "historyroot-plymouth-source-nps-swansea-war-start",
+      "name": "The Unexpected Start to Metacom's War",
+      "publisher": "National Park Service, American Battlefield Protection Program",
+      "sourceClass": "government-institutional-synthesis",
+      "citation": "National Park Service, The Unexpected Start to Metacom's War: Investigating the Archeological Remains of Swansea at Nockum Hill.",
+      "url": "https://www.nps.gov/articles/000/the-unexpected-start-to-metacom-s-war-investigating-the-archeological-remains-of-swansea-at-nockum-hill.htm",
+      "accessStatus": "accessed-and-inspected",
+      "accessDate": "2026-07-23",
+      "locatorsInspected": [
+        "Article paragraphs on the executions, Swansea attack, and uncertainty over Metacom's authorization"
+      ],
+      "limitations": "Short project description rather than a full historiographic study; the archaeological project was prospective when described.",
+      "supportsDetailedClaims": true,
+      "license": "U.S. government webpage; linked and paraphrased",
+      "licenseStatus": "repository-link-and-paraphrase"
+    },
+    {
+      "id": "historyroot-plymouth-source-church-war-narrative",
+      "name": "Entertaining Passages Relating to Philip's War",
+      "publisher": "University of Michigan Library Digital Collections",
+      "sourceClass": "primary-retrospective-war-narrative",
+      "citation": "Benjamin Church, Entertaining Passages Relating to Philip's War (Boston: B. Green, 1716), Evans-TCP digital edition.",
+      "url": "https://quod.lib.umich.edu/e/evans/N01515.0001.001/1:3?rgn=div1;view=fulltext",
+      "accessStatus": "accessed-and-inspected",
+      "accessDate": "2026-07-23",
+      "locatorsInspected": [
+        "1716 edition, pp. 22-28 (Awashonks/Sakonnet negotiations)",
+        "Catalog metadata and rights statement"
+      ],
+      "limitations": "Retrospective English military narrative published in 1716; dialogue and motives are mediated through Church and later publication.",
+      "supportsDetailedClaims": true,
+      "license": "TCP text CC0 1.0; image rights may differ",
+      "licenseStatus": "cc0-text"
+    },
+    {
+      "id": "historyroot-plymouth-source-pilgrim-hall-rock",
+      "name": "History of Plymouth Rock",
+      "publisher": "Pilgrim Hall Museum",
+      "sourceClass": "museum-memory-study",
+      "citation": "Pilgrim Hall Museum, History of Plymouth Rock.",
+      "url": "https://www.pilgrimhall.org/history-of-plymouth-rock/",
+      "accessStatus": "accessed-and-inspected",
+      "accessDate": "2026-07-23",
+      "locatorsInspected": [
+        "Sections Plymouth Rock in the 17th Century and Landing Place of the Pilgrims?",
+        "Sections on the 1741 oral tradition and Revolutionary memory"
+      ],
+      "limitations": "Museum interpretation of layered evidence and oral tradition; it expressly notes that the landing claim cannot be definitively resolved.",
+      "supportsDetailedClaims": true,
+      "license": "Museum website; linked and paraphrased",
+      "licenseStatus": "repository-link-and-paraphrase"
+    },
+    {
+      "id": "historyroot-plymouth-source-plimoth-thanksgiving-unit",
+      "name": "You Are The Historian, Unit 4: Plymouth and America's Holiday",
+      "publisher": "Plimoth Patuxet Museums",
+      "sourceClass": "museum-multiperspectival-synthesis",
+      "citation": "Plimoth Patuxet Museums, You Are The Historian, Unit 4: Plymouth and America's Holiday.",
+      "url": "https://plimoth.org/yath/unit-4",
+      "accessStatus": "accessed-and-inspected",
+      "accessDate": "2026-07-23",
+      "locatorsInspected": [
+        "Unit 4 key ideas on the single English eyewitness account, absent contemporary Wampanoag record, gratitude, and diplomacy"
+      ],
+      "limitations": "Public-history curriculum; statements about missing evidence are valuable, but reconstructions and educational prompts are not primary testimony.",
+      "supportsDetailedClaims": true,
+      "license": "Museum educational website; linked and paraphrased",
+      "licenseStatus": "repository-link-and-paraphrase"
+    },
+    {
+      "id": "historyroot-plymouth-source-massachusetts-archives-overview",
+      "name": "Massachusetts Archives Collection Overview",
+      "publisher": "Massachusetts Archives",
+      "sourceClass": "government-archival-synthesis",
+      "citation": "Massachusetts Archives, Massachusetts Archives Collection Overview.",
+      "url": "https://www.sec.state.ma.us/divisions/archives/collections/mass-archives-collection.htm",
+      "accessStatus": "accessed-and-inspected",
+      "accessDate": "2026-07-23",
+      "locatorsInspected": [
+        "Inter-charter period, lines 246-276",
+        "Provincial period, lines 277-284"
+      ],
+      "limitations": "Archival overview rather than a monograph; useful for institutional chronology and holdings, not for reconstructing all local consequences.",
+      "supportsDetailedClaims": true,
+      "license": "Massachusetts government webpage; linked and paraphrased",
+      "licenseStatus": "repository-link-and-paraphrase"
+    },
+    {
+      "id": "historyroot-plymouth-source-massachusetts-plymouth-records",
+      "name": "Transcripts of the Records of New Plymouth Colony, 1620-1691",
+      "publisher": "Massachusetts Archives",
+      "sourceClass": "primary-records-series-register",
+      "citation": "Massachusetts Archives, Transcripts of the Records of New Plymouth Colony, 1620-1691; Shurtleff and Pulsifer eds., 12 vols.",
+      "url": "https://www.sec.state.ma.us/divisions/archives/collections/plymouth-records.htm",
+      "accessStatus": "accessed-and-inspected",
+      "accessDate": "2026-07-23",
+      "locatorsInspected": [
+        "Collection description and volume list, including Court Orders, Judicial Acts, Laws, and Deeds"
+      ],
+      "limitations": "The collection register and volume metadata were inspected, not every record in the twelve-volume series; detailed record claims require volume-and-page review.",
+      "supportsDetailedClaims": true,
+      "license": "Massachusetts government archival guide; linked and paraphrased",
+      "licenseStatus": "repository-link-and-paraphrase"
+    }
+  ],
+  "consideredButNotUsed": [
+    {
+      "id": "historyroot-plymouth-candidate-fisher-surrenderers",
+      "name": "Why Shall Wee Have Peace to Bee Made Slaves: Indian Surrenderers During and After King Philip's War",
+      "accessStatus": "metadata-verified-not-inspected",
+      "reason": "Search metadata was verified, but automated access presented a challenge page. It is listed for specialist review and does not support dataset claims.",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5654607/"
+    },
+    {
+      "id": "historyroot-plymouth-candidate-sargent-compact-myth",
+      "name": "The Conservative Covenant: The Rise of the Mayflower Compact in American Myth",
+      "accessStatus": "bibliographic-only",
+      "reason": "Bibliographic details were encountered through the Library of Congress essay, but the article itself was not inspected."
+    },
+    {
+      "id": "historyroot-plymouth-candidate-unsourced-popular-pages",
+      "name": "Unsourced or weakly sourced popular summaries",
+      "accessStatus": "rejected",
+      "reason": "Rejected where claims could instead be grounded in primary texts, tribal institutions, archives, museums, government sources, or inspected scholarship."
+    }
+  ]
+}

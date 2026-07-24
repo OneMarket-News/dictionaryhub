@@ -1,0 +1,115 @@
+{
+  "datasetId": "historyroot-plymouth-v1",
+  "bundleId": "historyroot-plymouth-knowledge-dataset-v1",
+  "version": "1.0.0",
+  "title": "HistoryRoot Plymouth Knowledge Dataset v1",
+  "disclaimer": "A machine-assisted pilot dataset awaiting further historical, editorial, and tribal review.",
+  "generatedOn": "2026-07-23",
+  "bundleFile": "historyroot-plymouth-v1.bundle.json",
+  "sourceRegisterFile": "source-register.json",
+  "claimEvidenceMatrixFile": "claim-evidence-matrix.json",
+  "reviewFiles": [
+    "open-questions-and-gaps.md",
+    "historical-review-guide.md"
+  ],
+  "chronologicalScope": {
+    "core": "1616-1691",
+    "background": "Approximately 1605-1615 only where needed",
+    "transition": "1692 implementation of the 1691 Province charter",
+    "memoryAfterlife": "Selected later commemorative developments only"
+  },
+  "counts": {
+    "people": 25,
+    "groups": 10,
+    "places": 22,
+    "events": 45,
+    "documentsAndWorks": 10,
+    "politicalJurisdictions": 3,
+    "sources": 20,
+    "temporalAssertions": 45,
+    "accounts": 18,
+    "claims": 49,
+    "evidence": 49,
+    "interpretations": 12,
+    "perspectives": 10,
+    "perspectiveLinks": 18,
+    "causalLinks": 18,
+    "relationships": 71,
+    "culturalMemories": 6,
+    "contextualRecords": 393
+  },
+  "minimums": {
+    "people": 15,
+    "groups": 6,
+    "places": 12,
+    "events": 20,
+    "sources": 12,
+    "claims": 30,
+    "evidence": 15,
+    "relationships": 40,
+    "interpretationsOrPerspectives": 8,
+    "causalLinks": 12,
+    "culturalMemories": 4
+  },
+  "targets": {
+    "people": [
+      20,
+      35
+    ],
+    "groups": [
+      6,
+      12
+    ],
+    "places": [
+      15,
+      25
+    ],
+    "events": [
+      25,
+      45
+    ],
+    "sources": [
+      12,
+      25
+    ],
+    "relationships": [
+      50,
+      90
+    ],
+    "claims": [
+      35,
+      70
+    ],
+    "evidence": [
+      20,
+      50
+    ],
+    "interpretations": [
+      8,
+      20
+    ],
+    "perspectives": [
+      6,
+      15
+    ],
+    "causalLinks": [
+      15,
+      35
+    ],
+    "culturalMemories": [
+      4,
+      10
+    ]
+  },
+  "sourcePolicy": {
+    "detailedClaimsRequire": "accessed-and-inspected",
+    "statuses": [
+      "accessed-and-inspected",
+      "metadata-verified-not-inspected",
+      "bibliographic-only",
+      "inaccessible",
+      "rejected"
+    ]
+  },
+  "schemaDecision": "No migration is required. The domain-neutral contextual foundation represents the dataset through existing entity, temporal, account, claim, evidence, interpretation, perspective, causal, relationship, cultural-memory, and source structures."
+}
