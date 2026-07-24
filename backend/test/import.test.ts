@@ -12,6 +12,30 @@ import {
 
 const app = createApp();
 
+function requireImportServiceToken(): string {
+  const token = process.env.IMPORT_SERVICE_TOKEN;
+
+  if (!token) {
+    throw new Error(
+      "Test import authorization requires IMPORT_SERVICE_TOKEN in .env.test.",
+    );
+  }
+
+  return token;
+}
+
+function authorizedImportRequest() {
+  return request(app)
+    .post("/api/v1/import")
+    .set("x-sourceroot-import-token", requireImportServiceToken());
+}
+
+function authorizedImportDelete(path: string) {
+  return request(app)
+    .delete(path)
+    .set("x-sourceroot-import-token", requireImportServiceToken());
+}
+
 beforeEach(async () => {
   await resetTestDatabase();
 });
@@ -40,8 +64,7 @@ async function readJsonFixture(
 test("POST /api/v1/import stores a valid bundle", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  const response = await request(app)
-    .post("/api/v1/import")
+  const response = await authorizedImportRequest()
     .send(bundle)
     .expect("Content-Type", /json/)
     .expect(201);
@@ -56,8 +79,7 @@ test("POST /api/v1/import stores a valid bundle", async () => {
 test("POST /api/v1/import populates normalized knowledge tables", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
@@ -121,8 +143,7 @@ test("POST /api/v1/import rolls back the entire import on database failure", asy
   (sources[0] as Record<string, unknown>).lastReviewed =
     "not-a-valid-date";
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(500);
 
@@ -177,13 +198,11 @@ test("POST /api/v1/import rolls back the entire import on database failure", asy
 test("POST /api/v1/import safely replaces normalized records on re-import", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
@@ -238,8 +257,7 @@ test("POST /api/v1/import safely replaces normalized records on re-import", asyn
 test("GET /api/v1/nodes lists normalized nodes with default pagination", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
@@ -275,8 +293,7 @@ test("GET /api/v1/nodes lists normalized nodes with default pagination", async (
 test("GET /api/v1/nodes filters normalized nodes", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
@@ -340,8 +357,7 @@ test("GET /api/v1/nodes rejects an invalid limit", async () => {
 test("GET /api/v1/nodes/:nodeId retrieves a normalized node", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
@@ -381,8 +397,7 @@ test("GET /api/v1/nodes/:nodeId returns 404 for an unknown node", async () => {
 test("GET /api/v1/nodes/:nodeId/assertions retrieves normalized assertions", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
@@ -441,8 +456,7 @@ test("GET /api/v1/nodes/:nodeId/assertions returns an empty list for a node with
     metadata: {},
   });
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
@@ -469,8 +483,7 @@ test("GET /api/v1/nodes/:nodeId/assertions returns 404 for an unknown node", asy
 test("GET /api/v1/nodes/:nodeId/edges retrieves incoming and outgoing normalized edges", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
@@ -570,8 +583,7 @@ test("GET /api/v1/nodes/:nodeId/edges returns empty arrays for a node without ed
     metadata: {},
   });
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
@@ -601,8 +613,7 @@ test("GET /api/v1/nodes/:nodeId/edges returns 404 for an unknown node", async ()
 test("GET /api/v1/assertions lists normalized assertions with default pagination", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
@@ -637,8 +648,7 @@ test("GET /api/v1/assertions lists normalized assertions with default pagination
 test("GET /api/v1/assertions filters normalized assertions", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
@@ -697,8 +707,7 @@ test("GET /api/v1/assertions rejects an invalid limit", async () => {
 test("GET /api/v1/assertions/:assertionId retrieves a normalized assertion", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
@@ -755,8 +764,7 @@ test("GET /api/v1/assertions/:assertionId returns 404 for an unknown assertion",
 test("GET /api/v1/edges lists normalized edges with default pagination", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
@@ -807,8 +815,7 @@ test("GET /api/v1/edges lists normalized edges with default pagination", async (
 test("GET /api/v1/edges filters normalized edges", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
@@ -869,8 +876,7 @@ test("GET /api/v1/edges rejects an invalid limit", async () => {
 test("GET /api/v1/edges/:edgeId retrieves a normalized edge", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
@@ -940,8 +946,7 @@ test("GET /api/v1/edges/:edgeId returns 404 for an unknown edge", async () => {
 test("GET /api/v1/sources lists normalized sources with default pagination", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
@@ -1003,8 +1008,7 @@ test("GET /api/v1/sources lists normalized sources with default pagination", asy
 test("GET /api/v1/sources filters normalized sources", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
@@ -1064,8 +1068,7 @@ test("GET /api/v1/sources rejects an invalid limit", async () => {
 test("GET /api/v1/sources/:sourceId retrieves a normalized source", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
@@ -1126,8 +1129,7 @@ test("GET /api/v1/sources/:sourceId returns 404 for an unknown source", async ()
 test("GET /api/v1/revisions lists normalized revisions with default pagination", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
@@ -1172,8 +1174,7 @@ test("GET /api/v1/revisions lists normalized revisions with default pagination",
 test("GET /api/v1/revisions filters normalized revisions", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
@@ -1244,8 +1245,7 @@ test("GET /api/v1/revisions rejects an invalid limit", async () => {
 test("GET /api/v1/revisions/:revisionId retrieves a normalized revision", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
@@ -1296,13 +1296,12 @@ test("GET /api/v1/revisions/:revisionId returns 404 for an unknown revision", as
 test("GET /api/v1/search searches across normalized record types", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
   const response = await request(app)
-    .get("/api/v1/search?q=fire")
+    .get("/api/v1/search?q=fire&domain=HistoryRoot")
     .expect("Content-Type", /json/)
     .expect(200);
 
@@ -1346,8 +1345,7 @@ test("GET /api/v1/search searches across normalized record types", async () => {
 test("GET /api/v1/search filters results by type", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
@@ -1375,8 +1373,7 @@ test("GET /api/v1/search filters results by type", async () => {
 test("GET /api/v1/search filters results by bundle and domain", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
@@ -1401,13 +1398,12 @@ test("GET /api/v1/search filters results by bundle and domain", async () => {
 test("GET /api/v1/search paginates results", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
   const firstPage = await request(app)
-    .get("/api/v1/search?q=fire&page=1&limit=2")
+    .get("/api/v1/search?q=fire&page=1&limit=2&domain=HistoryRoot")
     .expect("Content-Type", /json/)
     .expect(200);
 
@@ -1421,7 +1417,7 @@ test("GET /api/v1/search paginates results", async () => {
   );
 
   const secondPage = await request(app)
-    .get("/api/v1/search?q=fire&page=2&limit=2")
+    .get("/api/v1/search?q=fire&page=2&limit=2&domain=HistoryRoot")
     .expect("Content-Type", /json/)
     .expect(200);
 
@@ -1504,8 +1500,7 @@ test("GET /api/v1/search rejects an invalid limit", async () => {
 test("GET /api/v1/bundles/:bundleId/nodes lists bundle-scoped nodes", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
@@ -1529,8 +1524,7 @@ test("GET /api/v1/bundles/:bundleId/nodes lists bundle-scoped nodes", async () =
 test("GET /api/v1/bundles/:bundleId/assertions lists bundle-scoped assertions", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
@@ -1554,8 +1548,7 @@ test("GET /api/v1/bundles/:bundleId/assertions lists bundle-scoped assertions", 
 test("GET /api/v1/bundles/:bundleId/edges lists bundle-scoped edges", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
@@ -1576,8 +1569,7 @@ test("GET /api/v1/bundles/:bundleId/edges lists bundle-scoped edges", async () =
 test("GET /api/v1/bundles/:bundleId/sources lists bundle-scoped sources", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
@@ -1598,8 +1590,7 @@ test("GET /api/v1/bundles/:bundleId/sources lists bundle-scoped sources", async 
 test("GET /api/v1/bundles/:bundleId/revisions lists bundle-scoped revisions", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
@@ -1623,8 +1614,7 @@ test("GET /api/v1/bundles/:bundleId/revisions lists bundle-scoped revisions", as
 test("GET /api/v1/bundles/:bundleId/nodes supports filters", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
@@ -1653,8 +1643,7 @@ test("GET /api/v1/bundles/:bundleId/nodes supports filters", async () => {
 test("GET /api/v1/bundles/:bundleId/nodes paginates results", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
@@ -1676,8 +1665,7 @@ test("GET /api/v1/bundles/:bundleId/nodes paginates results", async () => {
 test("GET /api/v1/bundles/:bundleId/nodes rejects an invalid page", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
@@ -1698,8 +1686,7 @@ test("GET /api/v1/bundles/:bundleId/nodes rejects an invalid page", async () => 
 test("GET /api/v1/bundles/:bundleId/nodes rejects an invalid limit", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
@@ -1730,8 +1717,7 @@ test("GET /api/v1/bundles/:bundleId/nodes returns 404 for an unknown bundle", as
 test("GET /api/v1/import/:bundleId retrieves an imported bundle", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
@@ -1750,8 +1736,7 @@ test("GET /api/v1/import/:bundleId retrieves an imported bundle", async () => {
 test("GET /api/v1/import lists imported bundle metadata", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
@@ -1812,8 +1797,7 @@ test("GET /api/v1/import rejects an invalid limit", async () => {
 test("POST /api/v1/import blocks an invalid bundle", async () => {
   const bundle = await readJsonFixture(brokenFixtureUrl);
 
-  const response = await request(app)
-    .post("/api/v1/import")
+  const response = await authorizedImportRequest()
     .send(bundle)
     .expect("Content-Type", /json/)
     .expect(422);
@@ -1848,13 +1832,11 @@ test("DELETE /api/v1/import/:bundleId deletes an integration-test bundle and nor
 
   bundle.bundleId = bundleId;
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
-  const response = await request(app)
-    .delete(`/api/v1/import/${bundleId}`)
+  const response = await authorizedImportDelete(`/api/v1/import/${bundleId}`)
     .expect("Content-Type", /json/)
     .expect(200);
 
@@ -1930,8 +1912,7 @@ test("DELETE /api/v1/import/:bundleId deletes an integration-test bundle and nor
 test("DELETE /api/v1/import/:bundleId returns 404 for a missing integration-test bundle", async () => {
   const bundleId = "sourceroot-integration-test-does-not-exist";
 
-  const response = await request(app)
-    .delete(`/api/v1/import/${bundleId}`)
+  const response = await authorizedImportDelete(`/api/v1/import/${bundleId}`)
     .expect("Content-Type", /json/)
     .expect(404);
 
@@ -1943,13 +1924,11 @@ test("DELETE /api/v1/import/:bundleId returns 404 for a missing integration-test
 test("DELETE /api/v1/import/:bundleId forbids deletion of a normal bundle", async () => {
   const bundle = await readJsonFixture(validFixtureUrl);
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(bundle)
     .expect(201);
 
-  const response = await request(app)
-    .delete("/api/v1/import/historyroot-fire-events-v2")
+  const response = await authorizedImportDelete("/api/v1/import/historyroot-fire-events-v2")
     .expect("Content-Type", /json/)
     .expect(403);
 
@@ -1973,8 +1952,7 @@ test("DELETE /api/v1/import/:bundleId leaves unrelated bundles intact", async ()
   const testBundle = structuredClone(normalBundle);
   const testBundleId = "sourceroot-integration-test-isolated-delete";
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(normalBundle)
     .expect(201);
 
@@ -2041,13 +2019,11 @@ test("DELETE /api/v1/import/:bundleId leaves unrelated bundles intact", async ()
 
   isolatedTestBundle.bundleId = testBundleId;
 
-  await request(app)
-    .post("/api/v1/import")
+  await authorizedImportRequest()
     .send(isolatedTestBundle)
     .expect(201);
 
-  const deleteResponse = await request(app)
-    .delete(`/api/v1/import/${testBundleId}`)
+  const deleteResponse = await authorizedImportDelete(`/api/v1/import/${testBundleId}`)
     .expect("Content-Type", /json/)
     .expect(200);
 
