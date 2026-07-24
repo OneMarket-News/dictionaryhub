@@ -81,11 +81,14 @@ function mapProposal(row: ProposalRow) {
   };
 }
 
-const proposalSelect = `
-  SELECT p.*, creator.display_name AS creator_name, reviewer.display_name AS reviewer_name
+const proposalFrom = `
   FROM dr_change_proposals p
   JOIN dr_users creator ON creator.user_id = p.created_by_user_id
   LEFT JOIN dr_users reviewer ON reviewer.user_id = p.assigned_reviewer_user_id`;
+
+const proposalSelect = `
+  SELECT p.*, creator.display_name AS creator_name, reviewer.display_name AS reviewer_name
+  ${proposalFrom}`;
 
 async function insertEvent(client: PoolClient, input: {
   proposalId: string;
@@ -161,7 +164,9 @@ export async function listProposals(input: {
   const offset = (input.page - 1) * input.limit;
   values.push(input.limit, offset);
   const result = await database.query<ProposalRow>(
-    `${proposalSelect}, COUNT(*) OVER()::text AS total_count
+    `SELECT p.*, creator.display_name AS creator_name, reviewer.display_name AS reviewer_name,
+            COUNT(*) OVER()::text AS total_count
+     ${proposalFrom}
      WHERE ${conditions.join(" AND ")}
      ORDER BY
        CASE p.status WHEN 'submitted' THEN 1 WHEN 'under_review' THEN 2 WHEN 'changes_requested' THEN 3 WHEN 'approved' THEN 4 ELSE 5 END,
