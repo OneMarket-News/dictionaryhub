@@ -46,6 +46,11 @@ interface ContextRecordRow {
   metadata: Record<string, unknown>;
   raw_data: Record<string, unknown>;
   source_ids: string[] | null;
+  perspective_links: Array<{
+    perspectiveId: string;
+    stance: string | null;
+    notes: string | null;
+  }> | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -73,6 +78,7 @@ function mapContextRecord(
     summary: row.summary,
     status: row.status,
     sourceIds: row.source_ids ?? [],
+    perspectiveLinks: row.perspective_links ?? [],
     metadata: row.metadata,
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString(),
@@ -102,7 +108,25 @@ const contextRecordSelect = `
         WHERE context_source.context_id = cr.context_id
       ),
       ARRAY[]::TEXT[]
-    ) AS source_ids
+    ) AS source_ids,
+    COALESCE(
+      (
+        SELECT JSONB_AGG(
+          JSONB_BUILD_OBJECT(
+            'perspectiveId',
+            context_perspective.perspective_context_id,
+            'stance',
+            context_perspective.stance,
+            'notes',
+            context_perspective.notes
+          )
+          ORDER BY context_perspective.perspective_context_id
+        )
+        FROM context_record_perspectives context_perspective
+        WHERE context_perspective.record_context_id = cr.context_id
+      ),
+      '[]'::JSONB
+    ) AS perspective_links
   FROM context_records cr
   LEFT JOIN context_entities entity
     ON entity.context_id = cr.context_id

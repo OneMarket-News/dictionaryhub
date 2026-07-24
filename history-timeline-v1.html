@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Navigate the live HistoryRoot chronology with explicit date precision and uncertainty.">
+    <title>Timeline | HistoryRoot</title>
+    <link rel="icon" href="assets/brand/dictionaryroot-mark.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="assets/css/dictionaryroot-brand.css">
+    <link rel="stylesheet" href="assets/css/historyroot.css?v=1">
+  </head>
+  <body>
+    <main class="hr-main" id="main-content">
+      <header class="hr-page-header">
+        <div>
+          <p class="hr-eyebrow">HistoryRoot timeline</p>
+          <h1>Chronology with uncertainty intact.</h1>
+          <p class="hr-page-intro">
+            Exact dates, ranges, approximate dates, and disputed chronologies
+            remain visibly distinct. The core period is the default; background,
+            transition, and memory afterlives are deliberate additions.
+          </p>
+        </div>
+        <p class="hr-disclosure">Dates reproduce the dataset’s stated calendars and qualifications.</p>
+      </header>
+
+      <section class="hr-panel hr-timeline-panel" aria-labelledby="historyroot-timeline-controls-title">
+        <div class="hr-panel-header">
+          <div>
+            <p class="hr-kicker">Control the view</p>
+            <h2 id="historyroot-timeline-controls-title">Timeline scope</h2>
+          </div>
+          <p id="historyrootTimelineCount" role="status" aria-live="polite">Loading…</p>
+        </div>
+        <form class="hr-timeline-controls" id="historyrootTimelineForm">
+          <label class="hr-control hr-control-wide" for="historyrootTimelineQuery">
+            <span>Search within the timeline</span>
+            <input id="historyrootTimelineQuery" name="q" type="search" placeholder="Person, group, place, event, or alias">
+          </label>
+          <label class="hr-control" for="historyrootTimelineFrom">
+            <span>From</span>
+            <input id="historyrootTimelineFrom" name="from" type="number" min="1000" max="2100" placeholder="1616">
+          </label>
+          <label class="hr-control" for="historyrootTimelineTo">
+            <span>To</span>
+            <input id="historyrootTimelineTo" name="to" type="number" min="1000" max="2100" placeholder="1691">
+          </label>
+          <label class="hr-control" for="historyrootTimelinePrecision">
+            <span>Date precision</span>
+            <select id="historyrootTimelinePrecision" name="precision">
+              <option value="all">All date types</option>
+              <option value="exact">Exact</option>
+              <option value="approximate">Approximate</option>
+              <option value="range">Range</option>
+              <option value="disputed">Disputed</option>
+              <option value="multiple_proposed">Multiple proposed</option>
+              <option value="before">Before</option>
+              <option value="after">After</option>
+            </select>
+          </label>
+          <fieldset class="hr-fieldset">
+            <legend>Additional periods</legend>
+            <label class="hr-check"><input id="historyrootTimelineBackground" name="background" type="checkbox"><span>Background</span></label>
+            <label class="hr-check"><input id="historyrootTimelineTransition" name="transition" type="checkbox"><span>1692 transition</span></label>
+            <label class="hr-check"><input id="historyrootTimelineMemory" name="memory" type="checkbox"><span>Memory afterlife</span></label>
+          </fieldset>
+          <button class="hr-button" type="submit">Update timeline</button>
+          <button class="hr-button-secondary" id="historyrootTimelineReset" type="button">Reset</button>
+        </form>
+      </section>
+
+      <div id="historyrootTimelineState" hidden></div>
+      <section class="hr-timeline-list" id="historyrootTimelineResults" aria-label="Historical chronology"></section>
+      <div class="hr-load-more">
+        <button class="hr-button-secondary" id="historyrootTimelineMore" type="button" hidden>Continue timeline</button>
+      </div>
+    </main>
+    <script src="assets/js/historyroot-api.js?v=1"></script>
+    <script src="assets/js/historyroot-shared.js?v=1"></script>
+    <script src="assets/js/historyroot-timeline.js?v=1"></script>
+  </body>
+</html>

@@ -367,11 +367,18 @@ test("stable IDs resolve through contextual APIs", async () => {
   const claims = await request(app)
     .get(`/api/v1/context/claims?bundleId=${PLYMOUTH_BUNDLE_ID}&limit=100`)
     .expect(200);
+  const source = await request(app)
+    .get("/api/v1/sources/historyroot-plymouth-source-mourts-relation-loc")
+    .expect(200);
 
   assert.equal(person.body.name, "Ousamequin");
   assert.ok(person.body.alternateNames.includes("Massasoit"));
   assert.equal(event.body.name, "Metacom's War");
   assert.equal(claims.body.total, 49);
+  assert.equal(source.body.accessStatus, "accessed-and-inspected");
+  assert.ok(source.body.citation.includes("Mourt's Relation"));
+  assert.ok(source.body.locatorsInspected.length >= 1);
+  assert.ok(source.body.limitations.includes("English colonial account"));
 });
 
 test("SourceRoot search resolves required Plymouth names and aliases", async () => {

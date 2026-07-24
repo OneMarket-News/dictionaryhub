@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "1.0",
+  "customerId": "historyroot",
+  "customerName": "HistoryRoot",
+  "applicationType": "historical-context-platform",
+  "domain": "HistoryRoot",
+  "environment": "development",
+  "status": "pilot-review-required",
+  "apiBaseUrl": "http://localhost:3000/api/v1",
+  "bundleId": "historyroot-plymouth-knowledge-dataset-v1",
+  "dataset": {
+    "id": "historyroot-plymouth-knowledge-dataset-v1",
+    "name": "Plymouth and Regional Context",
+    "version": "1.0.0",
+    "coreStartYear": 1616,
+    "coreEndYear": 1691,
+    "transitionEndYear": 1692,
+    "disclaimer": "A machine-assisted pilot dataset awaiting further historical, editorial, and tribal review."
+  },
+  "defaults": {
+    "pageSize": 24,
+    "searchTerm": "Plymouth",
+    "graphCenterId": "historyroot-plymouth-place-patuxet-plymouth"
+  },
+  "featuredRecordIds": [
+    "historyroot-plymouth-person-ousamequin",
+    "historyroot-plymouth-person-tisquantum",
+    "historyroot-plymouth-group-wampanoag",
+    "historyroot-plymouth-group-patuxet",
+    "historyroot-plymouth-place-patuxet-plymouth",
+    "historyroot-plymouth-event-peace-agreement",
+    "historyroot-plymouth-event-mayflower-compact",
+    "historyroot-plymouth-event-metacoms-war",
+    "historyroot-plymouth-person-metacom"
+  ],
+  "graph": {
+    "initialNodeLimit": 18,
+    "maximumNodeLimit": 30
+  }
+}

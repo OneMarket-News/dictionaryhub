@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Review the live HistoryRoot source register, including source class, access status, locators, limitations, and linked records.">
+    <title>Sources | HistoryRoot</title>
+    <link rel="icon" href="assets/brand/dictionaryroot-mark.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="assets/css/dictionaryroot-brand.css">
+    <link rel="stylesheet" href="assets/css/historyroot.css?v=1">
+  </head>
+  <body>
+    <main class="hr-main" id="main-content">
+      <header class="hr-page-header">
+        <div>
+          <p class="hr-eyebrow">HistoryRoot sources</p>
+          <h1>See what supports the record—and what limits it.</h1>
+          <p class="hr-page-intro">
+            Source class, access status, inspected locators, and limitations are
+            part of the historical interface rather than hidden metadata.
+          </p>
+        </div>
+        <p class="hr-disclosure">Only inspected sources support detailed claims in this pilot.</p>
+      </header>
+
+      <section class="hr-panel" aria-labelledby="historyroot-source-tools-title">
+        <div class="hr-panel-header">
+          <div>
+            <p class="hr-kicker">Source register</p>
+            <h2 id="historyroot-source-tools-title">Filter sources</h2>
+          </div>
+          <p id="historyrootSourcesCount" role="status" aria-live="polite">Loading…</p>
+        </div>
+        <form class="hr-source-tools" id="historyrootSourcesForm">
+          <label class="hr-control" for="historyrootSourcesQuery">
+            <span>Search sources</span>
+            <input id="historyrootSourcesQuery" name="q" type="search" placeholder="Title, publisher, citation, or limitation">
+          </label>
+          <label class="hr-control" for="historyrootSourcesClass">
+            <span>Source class</span>
+            <select id="historyrootSourcesClass" name="class">
+              <option value="all">All source classes</option>
+            </select>
+          </label>
+          <label class="hr-control" for="historyrootSourcesStatus">
+            <span>Access status</span>
+            <select id="historyrootSourcesStatus" name="status">
+              <option value="all">All access statuses</option>
+              <option value="accessed-and-inspected">Accessed and inspected</option>
+              <option value="metadata-verified-not-inspected">Metadata verified, not inspected</option>
+              <option value="bibliographic-only">Bibliographic only</option>
+              <option value="inaccessible">Inaccessible</option>
+            </select>
+          </label>
+          <button class="hr-button" type="submit">Apply filters</button>
+          <button class="hr-button-secondary" id="historyrootSourcesReset" type="button">Reset</button>
+        </form>
+      </section>
+
+      <div id="historyrootSourcesState" hidden></div>
+      <div class="hr-source-layout">
+        <section aria-label="Source results">
+          <div class="hr-source-grid" id="historyrootSourcesResults"></div>
+        </section>
+        <aside class="hr-source-detail" id="historyrootSourceDetail" aria-label="Selected source details">
+          <p class="hr-kicker">Select a source</p>
+          <h2>Provenance in context</h2>
+          <p>Choose a source to inspect its citation, access record, limitations, and linked historical records.</p>
+        </aside>
+      </div>
+    </main>
+    <script src="assets/js/historyroot-api.js?v=1"></script>
+    <script src="assets/js/historyroot-shared.js?v=1"></script>
+    <script src="assets/js/historyroot-sources.js?v=1"></script>
+  </body>
+</html>

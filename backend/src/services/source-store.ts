@@ -1,6 +1,7 @@
 import { getPool } from "../lib/database.js";
 
 export interface NormalizedSource {
+  [key: string]: unknown;
   sourceId: string;
   bundleId: string;
   name: string;
@@ -58,6 +59,7 @@ interface SourceRow {
   last_reviewed: Date | string | null;
   url: string | null;
   notes: string | null;
+  raw_data: Record<string, unknown>;
   created_at: Date;
   updated_at: Date;
 }
@@ -88,6 +90,7 @@ function formatLastReviewed(
 
 function mapSourceRow(row: SourceRow): NormalizedSource {
   return {
+    ...row.raw_data,
     sourceId: row.source_id,
     bundleId: row.bundle_id,
     name: row.name,
@@ -133,6 +136,7 @@ export async function getSourceById(
         last_reviewed,
         url,
         notes,
+        raw_data,
         created_at,
         updated_at
       FROM sources
@@ -227,6 +231,7 @@ export async function listSources(
           last_reviewed,
           url,
           notes,
+          raw_data,
           created_at,
           updated_at
         FROM sources
