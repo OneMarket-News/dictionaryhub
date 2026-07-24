@@ -12,10 +12,14 @@ healthRouter.get("/health", async (_request, response) => {
   response.status(healthy ? 200 : 503).json({
     status: healthy ? "ok" : "degraded",
     service: "sourceroot-backend",
-    productStage: "dictionaryroot-governed-platform-foundation-v1",
+    productStage: "historyroot-alpha-integration-v1",
     version: "0.2.0",
     timestamp: new Date().toISOString(),
-    database,
+    database: {
+      configured: database.configured,
+      reachable: database.reachable,
+      latencyMs: database.latencyMs,
+    },
     deployment: {
       environment: deployment.environment,
       readyForPublicTraffic: deployment.readyForPublicTraffic,
@@ -28,7 +32,20 @@ healthRouter.get("/health", async (_request, response) => {
   });
 });
 
-healthRouter.get("/api/v1/deployment-readiness", (_request, response) => {
+healthRouter.get("/api/v1/deployment-readiness", async (_request, response) => {
   const readiness = getDeploymentReadiness();
-  response.status(readiness.readyForPublicTraffic ? 200 : 503).json(readiness);
+  const database = await checkDatabase();
+  const readyForPublicTraffic =
+    readiness.readyForPublicTraffic
+    && database.configured
+    && database.reachable;
+  response.status(readyForPublicTraffic ? 200 : 503).json({
+    ...readiness,
+    readyForPublicTraffic,
+    database: {
+      configured: database.configured,
+      reachable: database.reachable,
+      latencyMs: database.latencyMs,
+    },
+  });
 });

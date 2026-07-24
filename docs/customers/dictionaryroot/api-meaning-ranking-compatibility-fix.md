@@ -37,7 +37,7 @@ No backend files are changed.
 ## Verification
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File "C:\Users\Josh\Documents\GitHub\dictionaryhub\VERIFY-DICTIONARYROOT-API-MEANING-RANKING-FIX.ps1"
+powershell -ExecutionPolicy Bypass -File .\VERIFY-DICTIONARYROOT-API-MEANING-RANKING-FIX.ps1
 ```
 
 After verification, open `graph-v2.html` and `concept-v2.html` and press **Ctrl+F5**.

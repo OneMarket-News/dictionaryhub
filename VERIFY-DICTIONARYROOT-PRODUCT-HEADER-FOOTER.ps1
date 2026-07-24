@@ -1,5 +1,5 @@
 param(
-  [string]$Repository = "C:\Users\Josh\Documents\GitHub\dictionaryhub"
+  [string]$Repository = $PSScriptRoot
 )
 
 $ErrorActionPreference = "Stop"

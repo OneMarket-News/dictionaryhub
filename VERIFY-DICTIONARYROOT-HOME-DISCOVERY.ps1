@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [string]$RepositoryPath = "C:\Users\Josh\Documents\GitHub\dictionaryhub",
+    [string]$RepositoryPath = $PSScriptRoot,
     [switch]$SkipApi,
     [string]$ApiBaseUrl = ""
 )

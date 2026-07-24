@@ -7,6 +7,7 @@ import express, {
 
 import { requestIdMiddleware } from "./lib/request-id.js";
 import { authContextMiddleware } from "./middleware/auth.js";
+import { requestLoggingMiddleware } from "./middleware/request-logging.js";
 import { accountRouter } from "./routes/account.js";
 import { adminRouter } from "./routes/admin.js";
 import { assertionsRouter } from "./routes/assertions.js";
@@ -68,10 +69,14 @@ export function createApp(options: CreateAppOptions = {}) {
     response.setHeader("referrer-policy", "strict-origin-when-cross-origin");
     response.setHeader("permissions-policy", "camera=(), microphone=(), geolocation=()");
     response.setHeader("cross-origin-opener-policy", "same-origin-allow-popups");
+    if ((process.env.NODE_ENV || "development").trim().toLowerCase() === "production") {
+      response.setHeader("strict-transport-security", "max-age=31536000; includeSubDomains");
+    }
     next();
   });
 
   app.use(requestIdMiddleware);
+  app.use(requestLoggingMiddleware);
 
   const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:8080,http://127.0.0.1:8080")
     .split(",")
@@ -103,7 +108,10 @@ export function createApp(options: CreateAppOptions = {}) {
         if (!origin || allowedOrigins.includes(origin) || isLocalDevelopmentOrigin(origin)) {
           return callback(null, true);
         }
-        return callback(new Error("Origin is not permitted by SourceRoot CORS policy."));
+        const error = new Error("Origin is not permitted by SourceRoot CORS policy.") as HttpError;
+        error.statusCode = 403;
+        error.code = "CORS_ORIGIN_DENIED";
+        return callback(error);
       },
       credentials: true,
       allowedHeaders: ["content-type", "x-csrf-token", "x-request-id", "x-sourceroot-import-token"],

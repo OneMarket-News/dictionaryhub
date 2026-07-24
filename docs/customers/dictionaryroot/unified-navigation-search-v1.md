@@ -107,9 +107,7 @@ The Source Experience intentionally reserves `q` for source-library filtering. C
 powershell -ExecutionPolicy Bypass -File .\INSTALL-DICTIONARYROOT-UNIFIED-NAVIGATION-SEARCH.ps1
 ```
 
-The default repository is:
-
-`C:\Users\Josh\Documents\GitHub\dictionaryhub`
+The verifier defaults to the repository containing the script.
 
 To use another path:
 

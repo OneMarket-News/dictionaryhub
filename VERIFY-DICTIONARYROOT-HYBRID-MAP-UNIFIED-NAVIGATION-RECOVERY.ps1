@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [Parameter()]
-    [string]$RepositoryPath = "C:\Users\Josh\Documents\GitHub\dictionaryhub"
+    [string]$RepositoryPath = $PSScriptRoot
 )
 
 Set-StrictMode -Version Latest

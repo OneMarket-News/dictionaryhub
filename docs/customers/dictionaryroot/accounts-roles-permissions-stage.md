@@ -1,5 +1,13 @@
 # DictionaryRoot User Accounts, Roles, Permissions, and Identity Provenance v1
 
+> Historical implementation record: the provider-neutral concepts in this
+> document remain useful, but the development-only `accounts-v2.html` client
+> and `/api/v1/dictionaryroot/auth` routes were superseded by the governed
+> SourceRoot account, session, organization, and permission architecture.
+> The supported customer surface is now `account-v1.html`, backed by
+> `/api/v1/auth`, `/api/v1/account`, and authorized `/api/v1/admin` routes.
+> `accounts-v2.html` is retained only as a static redirect for old bookmarks.
+
 ## Purpose
 
 This stage gives DictionaryRoot a provider-neutral identity and authorization foundation. It separates the identity of an actor from the method used to authenticate that actor, the claims that have been verified, and the actions the actor is permitted to perform.
@@ -83,7 +91,7 @@ These are test identities only. They are explicitly marked as development fixtur
 
 ## Frontend experience
 
-`accounts-v2.html` provides:
+At this historical stage, `accounts-v2.html` provided:
 
 - active session inspection
 - local development identity switching
@@ -97,7 +105,7 @@ The Editorial page uses the active authenticated actor instead of a free-text re
 
 ## API routes
 
-Base route: `/api/v1/dictionaryroot/auth`
+Historical base route: `/api/v1/dictionaryroot/auth` (retired)
 
 - `GET /providers`
 - `GET /development-actors`

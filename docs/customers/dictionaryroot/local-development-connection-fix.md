@@ -25,7 +25,7 @@ The local browser failure was caused by origin and hostname handling:
 Restart the backend:
 
 ```powershell
-cd "C:\Users\Josh\Documents\GitHub\dictionaryhub\backend"
+Set-Location .\backend
 npm.cmd run dev
 ```
 

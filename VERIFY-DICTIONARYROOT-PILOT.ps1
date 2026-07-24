@@ -7,7 +7,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$repo = "C:\Users\Josh\Documents\GitHub\dictionaryhub"
+$repo = $PSScriptRoot
 $bundlePath = Join-Path $repo "data\dictionaryroot\dictionaryroot-oewn-2025-pilot-$Limit.json"
 $apiBase = "$($ApiOrigin.TrimEnd('/'))/api/v1"
 

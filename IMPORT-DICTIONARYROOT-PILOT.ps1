@@ -13,7 +13,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$repo = "C:\Users\Josh\Documents\GitHub\dictionaryhub"
+$repo = $PSScriptRoot
 $bundlePath = Join-Path $repo "data\dictionaryroot\dictionaryroot-oewn-2025-pilot-$Limit.json"
 $apiOriginNormalized = $ApiOrigin.TrimEnd('/')
 $apiBase = "$apiOriginNormalized/api/v1"
@@ -34,7 +34,7 @@ try {
 catch {
     Write-Host "The SourceRoot backend is not reachable at $ApiOrigin."
     Write-Host "Start it with:"
-    Write-Host "npm.cmd --prefix `"C:\Users\Josh\Documents\GitHub\dictionaryhub\backend`" run dev"
+    Write-Host "npm.cmd --prefix `"$repo\backend`" run dev"
     throw
 }
 

@@ -104,13 +104,13 @@ Extract the ZIP to a folder outside the live repository, then run:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass
-powershell -ExecutionPolicy Bypass -File .\INSTALL-DICTIONARYROOT-CROSS-EXPERIENCE-PRODUCT-REFINEMENT.ps1 -RepositoryPath "C:\Users\Josh\Documents\GitHub\dictionaryhub"
+powershell -ExecutionPolicy Bypass -File .\INSTALL-DICTIONARYROOT-CROSS-EXPERIENCE-PRODUCT-REFINEMENT.ps1 -RepositoryPath (Get-Location).Path
 ```
 
 The installer creates a timestamped backup under:
 
 ```text
-C:\Users\Josh\Documents\GitHub\dictionaryhub\backups\dictionaryroot-cross-experience-product-refinement-v1-YYYYMMDD-HHMMSS
+.\backups\dictionaryroot-cross-experience-product-refinement-v1-YYYYMMDD-HHMMSS
 ```
 
 It preserves relative paths and writes `INSTALL-MANIFEST.txt` inside that backup.
@@ -120,19 +120,19 @@ It preserves relative paths and writes `INSTALL-MANIFEST.txt` inside that backup
 Run the full source and responsive verifier:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\VERIFY-DICTIONARYROOT-CROSS-EXPERIENCE-PRODUCT-REFINEMENT.ps1 -RepositoryPath "C:\Users\Josh\Documents\GitHub\dictionaryhub"
+powershell -ExecutionPolicy Bypass -File .\VERIFY-DICTIONARYROOT-CROSS-EXPERIENCE-PRODUCT-REFINEMENT.ps1 -RepositoryPath (Get-Location).Path
 ```
 
 To require a successfully launched Edge, Chrome, or Chromium browser rather than allowing a browser-unavailable warning:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\VERIFY-DICTIONARYROOT-CROSS-EXPERIENCE-PRODUCT-REFINEMENT.ps1 -RepositoryPath "C:\Users\Josh\Documents\GitHub\dictionaryhub" -RequireBrowser
+powershell -ExecutionPolicy Bypass -File .\VERIFY-DICTIONARYROOT-CROSS-EXPERIENCE-PRODUCT-REFINEMENT.ps1 -RepositoryPath (Get-Location).Path -RequireBrowser
 ```
 
 To run only source and syntax checks:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\VERIFY-DICTIONARYROOT-CROSS-EXPERIENCE-PRODUCT-REFINEMENT.ps1 -RepositoryPath "C:\Users\Josh\Documents\GitHub\dictionaryhub" -SkipBrowser
+powershell -ExecutionPolicy Bypass -File .\VERIFY-DICTIONARYROOT-CROSS-EXPERIENCE-PRODUCT-REFINEMENT.ps1 -RepositoryPath (Get-Location).Path -SkipBrowser
 ```
 
 The browser verifier tests all six experiences at:

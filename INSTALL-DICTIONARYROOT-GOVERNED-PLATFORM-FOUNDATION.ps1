@@ -1,6 +1,6 @@
 ﻿[CmdletBinding()]
 param(
-    [string]$RepositoryPath = "C:\Users\Josh\Documents\GitHub\dictionaryhub",
+    [string]$RepositoryPath = "",
     [switch]$RunBrowserVerification,
     [switch]$SkipVerification
 )
@@ -10,6 +10,17 @@ $ErrorActionPreference = "Stop"
 
 $StageName = "dictionaryroot-governed-platform-foundation-v1"
 $SourceRoot = [System.IO.Path]::GetFullPath((Split-Path -Parent $MyInvocation.MyCommand.Path)).TrimEnd('\','/')
+if ([string]::IsNullOrWhiteSpace($RepositoryPath)) {
+    $CurrentDirectory = [System.IO.Path]::GetFullPath((Get-Location).Path).TrimEnd('\','/')
+    if (
+        (Test-Path -LiteralPath (Join-Path $CurrentDirectory ".git") -PathType Container) -and
+        (Test-Path -LiteralPath (Join-Path $CurrentDirectory "backend") -PathType Container)
+    ) {
+        $RepositoryPath = $CurrentDirectory
+    } else {
+        throw "RepositoryPath is required. Pass -RepositoryPath with the target dictionaryhub clone."
+    }
+}
 if (-not (Test-Path -LiteralPath $RepositoryPath -PathType Container)) {
     throw "Repository not found: $RepositoryPath"
 }

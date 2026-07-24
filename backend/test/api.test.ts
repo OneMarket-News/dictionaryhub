@@ -16,6 +16,7 @@ test("GET /health returns service status without requiring PostgreSQL", async ()
   assert.equal(response.body.status, "ok");
   assert.equal(response.body.service, "sourceroot-backend");
   assert.equal(response.body.database.configured, false);
+  assert.equal(response.body.database.error, undefined);
   assert.ok(response.headers["x-request-id"]);
 });
 

@@ -1,7 +1,7 @@
 [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact="High")]
 param(
     [Parameter(Mandatory=$true)][string]$BackupPath,
-    [string]$RepositoryPath = "C:\Users\Josh\Documents\GitHub\dictionaryhub",
+    [string]$RepositoryPath = $PSScriptRoot,
     [string]$DatabaseUrl = ""
 )
 Set-StrictMode -Version Latest

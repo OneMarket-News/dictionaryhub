@@ -1,6 +1,8 @@
-# SourceRoot backend for DictionaryRoot
+# SourceRoot backend for DictionaryRoot and HistoryRoot
 
-This service provides the existing SourceRoot validation, import, registry, lexical, search, editorial, and revision APIs plus the DictionaryRoot Governed Platform Foundation.
+This service provides SourceRoot validation, import, registry, lexical,
+contextual, search, editorial, governance, revision, audit, publication, and
+rollback APIs for DictionaryRoot and HistoryRoot.
 
 ## Governed platform capabilities
 
@@ -19,6 +21,8 @@ This service provides the existing SourceRoot validation, import, registry, lexi
 Copy-Item .env.example .env
 npm.cmd ci
 npm.cmd run db:migrate
+npm.cmd run historyroot:plymouth:validate
+npm.cmd run historyroot:plymouth:import
 npm.cmd start
 ```
 
@@ -91,3 +95,4 @@ See:
 - `../docs/customers/dictionaryroot/deployment-readiness.md`
 - `../docs/customers/dictionaryroot/pilot-readiness-checklist.md`
 - `docs/openapi-governance.yaml`
+- `../docs/platform/historyroot-alpha-integration-v1/README.md`

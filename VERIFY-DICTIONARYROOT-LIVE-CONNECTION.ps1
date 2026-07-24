@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
 
-$RepoRoot = "C:\Users\Josh\Documents\GitHub\dictionaryhub"
+$RepoRoot = $PSScriptRoot
 
 function Pass([string]$Message) {
     Write-Host "[PASS] $Message" -ForegroundColor Green

@@ -121,13 +121,13 @@ The stage is accepted when local verification confirms:
 ## Verification command
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File "C:\Users\Josh\Documents\GitHub\dictionaryhub\VERIFY-DICTIONARYROOT-SOURCE-EXPERIENCE.ps1"
+powershell -ExecutionPolicy Bypass -File .\VERIFY-DICTIONARYROOT-SOURCE-EXPERIENCE.ps1
 ```
 
 The SourceRoot backend must be running before live verification:
 
 ```powershell
-npm.cmd --prefix "C:\Users\Josh\Documents\GitHub\dictionaryhub\backend" run dev
+npm.cmd --prefix .\backend run dev
 ```
 
 ## Future multi-source scaling considerations

@@ -8,7 +8,7 @@ param(
 $ErrorActionPreference = "Stop"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-$repo = "C:\Users\Josh\Documents\GitHub\dictionaryhub"
+$repo = $PSScriptRoot
 $backend = Join-Path $repo "backend"
 $cache = Join-Path $env:LOCALAPPDATA "SourceRoot\oewn-2025"
 $archive = Join-Path $cache "english-wordnet-2025.zip"

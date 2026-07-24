@@ -1,8 +1,10 @@
 [CmdletBinding()]
-param()
+param(
+  [string]$ExpectedBranch =
+    "feature/governed-historyroot-alpha-v1"
+)
 
 $ErrorActionPreference = "Continue"
-$ExpectedBranch = "feature/governed-historyroot-alpha-v1"
 $ExpectedBaseCommit = "947a242fff4c112e0cb6749d0711978de8b5591e"
 $ExpectedDatasetCommit = "6a26de35ff219c201a608149751f50fd4c17191b"
 $ExpectedFoundationCommit = "ec01f4a8b6ab3220cb5a8e700bad029f5c4cff03"
