@@ -1,3 +1,5 @@
+import type { ContextualBundle } from "./contextual-types.js";
+
 export type ValidationSeverity = "error" | "warning";
 
 export interface ValidationIssue {
@@ -15,6 +17,7 @@ export interface ValidationSummary {
   edges: number;
   sources: number;
   revisions: number;
+  contextualRecords?: number;
   errors: number;
   warnings: number;
 }
@@ -41,6 +44,7 @@ export interface SourceRootBundle {
   edges?: unknown[];
   sources?: unknown[];
   revisions?: unknown[];
+  context?: ContextualBundle;
   extensions?: Record<string, unknown>;
   [key: string]: unknown;
 }

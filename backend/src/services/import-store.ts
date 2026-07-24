@@ -2,6 +2,10 @@ import type { PoolClient } from "pg";
 
 import { getPool } from "../lib/database.js";
 import type { SourceRootBundle } from "../types.js";
+import {
+  deleteContextRecords,
+  insertContextualBundle,
+} from "./context-import-store.js";
 
 export interface ImportedBundleMetadata {
   bundleId: string;
@@ -123,9 +127,12 @@ async function deleteExistingNormalizedRecords(
   bundleId: string,
 ): Promise<void> {
   /*
+   * Deleting contextual records first releases their source references.
    * Deleting nodes cascades to assertions, edges, and their source links.
    * Deleting sources cascades to remaining source-link records.
    */
+  await deleteContextRecords(client, bundleId);
+
   await client.query(
     `
       DELETE FROM revisions
@@ -573,6 +580,12 @@ export async function saveImportedBundle(
     await insertAssertions(client, bundleId, assertions);
     await insertEdges(client, bundleId, edges);
     await insertRevisions(client, bundleId, revisions);
+    await insertContextualBundle(
+      client,
+      bundleId,
+      bundle.domain,
+      bundle.context,
+    );
 
     await client.query("COMMIT");
   } catch (error) {

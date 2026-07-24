@@ -9,7 +9,12 @@ export type SearchResultType =
   | "assertion"
   | "edge"
   | "source"
-  | "revision";
+  | "revision"
+  | "context-entity"
+  | "context-account"
+  | "context-claim"
+  | "context-interpretation"
+  | "context-relationship";
 
 export interface SearchOptions {
   query: string;
@@ -281,6 +286,73 @@ const searchRecordsCte = `
     FROM revisions r
     LEFT JOIN imported_bundles ib
       ON ib.bundle_id = r.bundle_id
+
+    UNION ALL
+
+    SELECT
+      CASE cr.record_kind
+        WHEN 'entity' THEN 'context-entity'
+        WHEN 'account' THEN 'context-account'
+        WHEN 'claim' THEN 'context-claim'
+        WHEN 'interpretation' THEN 'context-interpretation'
+        WHEN 'relationship' THEN 'context-relationship'
+      END::TEXT AS result_type,
+      cr.context_id AS id,
+      cr.bundle_id,
+      cr.label AS title,
+      cr.summary,
+      cr.domain,
+      COALESCE(
+        entity.entity_type,
+        relationship.relationship_type,
+        cr.record_kind
+      ) AS object_type,
+      cr.metadata
+        || JSONB_BUILD_OBJECT(
+          'recordKind', cr.record_kind,
+          'status', cr.status,
+          'entityType', entity.entity_type,
+          'relationshipType', relationship.relationship_type,
+          'fromId', relationship.from_context_id,
+          'toId', relationship.to_context_id
+        ) AS metadata,
+      cr.created_at,
+      cr.updated_at,
+      CONCAT_WS(
+        ' ',
+        cr.context_id,
+        cr.label,
+        cr.summary,
+        cr.domain,
+        cr.status,
+        entity.entity_type,
+        entity.canonical_name,
+        entity.description,
+        account.content,
+        claim.statement,
+        interpretation.interpretation_text,
+        relationship.relationship_type,
+        relationship.explanation,
+        cr.raw_data::TEXT
+      ) AS searchable_text
+    FROM context_records cr
+    LEFT JOIN context_entities entity
+      ON entity.context_id = cr.context_id
+    LEFT JOIN context_accounts account
+      ON account.context_id = cr.context_id
+    LEFT JOIN context_claims claim
+      ON claim.context_id = cr.context_id
+    LEFT JOIN context_interpretations interpretation
+      ON interpretation.context_id = cr.context_id
+    LEFT JOIN context_relationships relationship
+      ON relationship.context_id = cr.context_id
+    WHERE cr.record_kind IN (
+      'entity',
+      'account',
+      'claim',
+      'interpretation',
+      'relationship'
+    )
   )
 `;
 
@@ -475,4 +547,3 @@ export async function searchKnowledge(
     exactSensePolicy: "complete-lemma",
   };
 }
-

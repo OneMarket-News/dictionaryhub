@@ -12,6 +12,7 @@ import { adminRouter } from "./routes/admin.js";
 import { assertionsRouter } from "./routes/assertions.js";
 import { authRouter } from "./routes/auth.js";
 import { bundlesRouter } from "./routes/bundles.js";
+import { contextRouter } from "./routes/context.js";
 import { edgesRouter } from "./routes/edges.js";
 import { editorialRouter } from "./routes/editorial.js";
 import { healthRouter } from "./routes/health.js";
@@ -132,6 +133,7 @@ export function createApp(options: CreateAppOptions = {}) {
   app.use("/api/v1/dictionaryroot/editorial", editorialRouter);
   app.use("/api/v1/search", searchRouter);
   app.use("/api/v1/bundles", bundlesRouter);
+  app.use("/api/v1/context", contextRouter);
   app.use("/api/v1/nodes", nodesRouter);
   app.use("/api/v1/assertions", assertionsRouter);
   app.use("/api/v1/edges", edgesRouter);
