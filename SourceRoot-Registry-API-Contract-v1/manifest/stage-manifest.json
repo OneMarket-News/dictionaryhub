@@ -1,0 +1,253 @@
+{
+  "schemaVersion": "1.0",
+  "stageName": "SourceRoot-Registry-API-Contract",
+  "stageVersion": "v1",
+  "createdDate": "2026-07-24",
+  "targetRepository": "dictionaryhub",
+  "requiredPreviousStage": "SourceRoot Chunk 0 — Codex Stage Contract and Baseline Harness v1",
+  "filesAdded": [
+    "backend/src/lib/api-contract.ts",
+    "backend/test/registry-api-contract.test.ts",
+    "docs/build/REGISTRY-API-CONTRACT.md",
+    "docs/build/registry-api-contract-stage.md",
+    "INSTALL-SOURCEROOT-REGISTRY-API-CONTRACT.ps1",
+    "VERIFY-SOURCEROOT-REGISTRY-API-CONTRACT.ps1"
+  ],
+  "filesReplaced": [
+    "backend/package.json",
+    "backend/src/app.ts",
+    "backend/src/lib/query-params.ts",
+    "backend/src/routes/assertions.ts",
+    "backend/src/routes/bundles.ts",
+    "backend/src/routes/context.ts",
+    "backend/src/routes/edges.ts",
+    "backend/src/routes/import.ts",
+    "backend/src/routes/nodes.ts",
+    "backend/src/routes/revisions.ts",
+    "backend/src/routes/search.ts",
+    "backend/src/routes/sources.ts",
+    "backend/src/services/assertion-store.ts",
+    "backend/src/services/context-store.ts",
+    "backend/src/services/edge-store.ts",
+    "backend/src/services/import-store.ts",
+    "backend/src/services/node-store.ts",
+    "backend/src/services/revision-store.ts",
+    "backend/src/services/source-store.ts",
+    "docs/build/CURRENT-SOURCEROOT-STATE.md"
+  ],
+  "filesIntentionallyUntouched": [
+    "All database migrations and schema files",
+    "backend/package-lock.json and all dependency versions",
+    "All frontend HTML, CSS, JavaScript, branding, navigation, URL-state, loading, empty, and offline behavior",
+    "Authentication, account, governance, moderation, editorial, and admin domain implementation",
+    "Source data, customer configuration, and prior installers and verifiers",
+    "The pre-existing untracked SourceRoot-Codex-Stage-Contract-v1.zip"
+  ],
+  "migrations": [],
+  "apisChanged": [
+    "GET /api/v1/nodes",
+    "GET /api/v1/assertions",
+    "GET /api/v1/edges",
+    "GET /api/v1/sources",
+    "GET /api/v1/revisions",
+    "GET /api/v1/import",
+    "GET /api/v1/search",
+    "GET /api/v1/context/{collection}",
+    "GET /api/v1/bundles/:bundleId/{nodes,assertions,edges,sources,revisions}",
+    "Integrated public-registry and central error responses"
+  ],
+  "frontendPagesChanged": [],
+  "documentationChanged": [
+    "docs/build/REGISTRY-API-CONTRACT.md",
+    "docs/build/registry-api-contract-stage.md",
+    "docs/build/CURRENT-SOURCEROOT-STATE.md"
+  ],
+  "installerFilename": "INSTALL-SOURCEROOT-REGISTRY-API-CONTRACT.ps1",
+  "verifierFilename": "VERIFY-SOURCEROOT-REGISTRY-API-CONTRACT.ps1",
+  "rollbackInstructions": [
+    "Open the timestamped backup installation-record.json.",
+    "Restore every replacedFiles path from the matching backup-relative path.",
+    "For addedFiles, remove only files not listed in addedFilesPreExisting; restore pre-existing added destinations from backup.",
+    "Rerun all three Chunk 0 baseline verifiers and the complete backend test suite against the explicitly test-scoped database.",
+    "Do not delete unrelated files or use an older ZIP as an implementation source."
+  ],
+  "knownLimitations": [
+    "Search explicit offset is deferred because DictionaryRoot complete-lemma enrichment has page-one semantics.",
+    "Specialized lexical, editorial, workflow, and admin collections retain their existing envelopes.",
+    "Unknown public-registry query names are reported and ignored for compatibility.",
+    "String equality filters remain case-sensitive.",
+    "Universal archive and deprecation state requires future schema and governance work.",
+    "No browser or independent live API verification is performed."
+  ],
+  "explicitExclusions": [
+    "Shared frontend API infrastructure and expanded operational observability",
+    "Correlation-ID expansion and Level 1 observers",
+    "New contextual schema or entities",
+    "Extraction agents, dataset adapters, synchronization, or large-scale imports",
+    "New trust, conflict, correction, authentication, organization, or permission features",
+    "Production deployment, billing, multi-tenancy, white labeling, or customer dashboards",
+    "Commercial or multi-agent operations"
+  ],
+  "acceptanceChecks": [
+    {
+      "id": "static-contract-files",
+      "description": "Required contract, implementation, test, installer, verifier, manifest, and package files exist.",
+      "required": true,
+      "kind": "static"
+    },
+    {
+      "id": "static-syntax",
+      "description": "TypeScript, relevant JavaScript, and PowerShell syntax checks pass.",
+      "required": true,
+      "kind": "static"
+    },
+    {
+      "id": "postgresql-scope",
+      "description": "The backend test database name is explicitly test-scoped.",
+      "required": true,
+      "kind": "PostgreSQL"
+    },
+    {
+      "id": "backend-focused",
+      "description": "Focused registry contract tests pass through in-process Supertest.",
+      "required": true,
+      "kind": "backend"
+    },
+    {
+      "id": "backend-regression",
+      "description": "The complete backend test suite passes.",
+      "required": true,
+      "kind": "backend"
+    },
+    {
+      "id": "static-baselines",
+      "description": "SourceRoot, DictionaryRoot, and Chunk 0 contract verifiers pass.",
+      "required": true,
+      "kind": "static"
+    },
+    {
+      "id": "static-package-hashes",
+      "description": "Package payload, installed files, manifest hashes, and ZIP structure agree.",
+      "required": true,
+      "kind": "static"
+    },
+    {
+      "id": "browser",
+      "description": "Browser verification is not performed because frontend runtime files are unchanged.",
+      "required": false,
+      "kind": "browser"
+    },
+    {
+      "id": "live-api",
+      "description": "Independent live API verification is not performed; API tests are in process.",
+      "required": false,
+      "kind": "live API"
+    }
+  ],
+  "payloadHashes": [
+    {
+      "path": "backend/package.json",
+      "sha256": "64e508ed6ec3ac30b8b63a6f8fd0df54c053fecc89c353006d416ba5c3fba63a"
+    },
+    {
+      "path": "backend/src/app.ts",
+      "sha256": "98d275a353d4e5904b2bdcafb3960a6f97ef62521ae4ce14b2a16b261e4ad794"
+    },
+    {
+      "path": "backend/src/lib/api-contract.ts",
+      "sha256": "e5c34aee76d9dc5c79a5682ea0392aba8d7853d85406ebf54701b22b66474507"
+    },
+    {
+      "path": "backend/src/lib/query-params.ts",
+      "sha256": "6c6d087065c5050d53d27290c8a189d93b3a77807e2ba47b90823936ddf2943b"
+    },
+    {
+      "path": "backend/src/routes/assertions.ts",
+      "sha256": "17bb548965f2157cb204cf910a92244657b3938eec05c95b73d16706db4da936"
+    },
+    {
+      "path": "backend/src/routes/bundles.ts",
+      "sha256": "6081cef87b90bfa463e190f71f5ecaada4b4d705ee71be673f8eafaa571e8ace"
+    },
+    {
+      "path": "backend/src/routes/context.ts",
+      "sha256": "2cacba700102959260fee55cf00e8360029796040e936edbb1f01a5dd979ef61"
+    },
+    {
+      "path": "backend/src/routes/edges.ts",
+      "sha256": "4f526e4d61637f8ef5ddc107871569674cd864125f46ea1b481dded51619119a"
+    },
+    {
+      "path": "backend/src/routes/import.ts",
+      "sha256": "34fa3cfa500400ffceff07245f95de0d4ab9bba3a63eedd77de34521525b11bb"
+    },
+    {
+      "path": "backend/src/routes/nodes.ts",
+      "sha256": "948d88222716d01d568cd3e5ba7cbee55a8eaa61901bb9845183256780e40d66"
+    },
+    {
+      "path": "backend/src/routes/revisions.ts",
+      "sha256": "158be4f27cf90deda2c40cf6481cff83c979f2a1112b336e39cb780fb44e74d9"
+    },
+    {
+      "path": "backend/src/routes/search.ts",
+      "sha256": "8483c15d8797cc605ff9d01ab63713838e8428b4cf03ef5353e529cf7a4982a1"
+    },
+    {
+      "path": "backend/src/routes/sources.ts",
+      "sha256": "dcd9977df020464c121d700cb66213b32bbd88a7e8441085582cf319b399166c"
+    },
+    {
+      "path": "backend/src/services/assertion-store.ts",
+      "sha256": "622c2a1202ba553948b3f24dd610c53fd601fe3c7a0d388eb89e91116c406e50"
+    },
+    {
+      "path": "backend/src/services/context-store.ts",
+      "sha256": "146d07520d8b6e9fa17c7288ef8cdf18acb018831ae1f762f08018609c1bc95e"
+    },
+    {
+      "path": "backend/src/services/edge-store.ts",
+      "sha256": "66018be4f3970394a6b53c59695c128c933e7bc6201946a402d6ce498b667e9a"
+    },
+    {
+      "path": "backend/src/services/import-store.ts",
+      "sha256": "a3a23c8cba9a75894048981174f98fd0733b475c8d61a647389a095b445a498c"
+    },
+    {
+      "path": "backend/src/services/node-store.ts",
+      "sha256": "725fab35ffad38b5157d35c5e16dd181b9aba072a729859f580d987d668a3753"
+    },
+    {
+      "path": "backend/src/services/revision-store.ts",
+      "sha256": "6f00c36d3e2beeec55846c24425ffc22d038fd7bfce36ce47e7ca528174fe82a"
+    },
+    {
+      "path": "backend/src/services/source-store.ts",
+      "sha256": "bbd6eaed0352691904cab08dc96e7f9aeda4b2591b560f90584c76e1a8040842"
+    },
+    {
+      "path": "backend/test/registry-api-contract.test.ts",
+      "sha256": "36870bdff64e8be19a9da31ca6c99210386b8e756fffe438067c2e8e2cc7c6dd"
+    },
+    {
+      "path": "docs/build/CURRENT-SOURCEROOT-STATE.md",
+      "sha256": "f8e7383d6519a3bf5f44edd0588f969ae6862a15254a50d0b4161662796133ca"
+    },
+    {
+      "path": "docs/build/REGISTRY-API-CONTRACT.md",
+      "sha256": "cb46f117b83b6e20d30c53769fee515c378fec40e86db658516f4562788d1501"
+    },
+    {
+      "path": "docs/build/registry-api-contract-stage.md",
+      "sha256": "d0903e9a1905f7f16025f5d6013d570faa1f6926c649ff729e510ab97bc9d198"
+    },
+    {
+      "path": "INSTALL-SOURCEROOT-REGISTRY-API-CONTRACT.ps1",
+      "sha256": "406c556aaf38d6179a12f6e707bfe9b9b63f3a2f3a478442d7ee6157653258fb"
+    },
+    {
+      "path": "VERIFY-SOURCEROOT-REGISTRY-API-CONTRACT.ps1",
+      "sha256": "ab385ec14f6b4c2a723d5cffc38390ff86b31693c9cce7bc828cb96e284a58c7"
+    }
+  ]
+}
