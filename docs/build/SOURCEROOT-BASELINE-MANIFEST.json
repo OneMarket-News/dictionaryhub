@@ -5,8 +5,9 @@
   "repositoryPath": "C:\\Users\\Josh\\Documents\\GitHub\\dictionaryhub",
   "git": {
     "branch": "release/historyroot-alpha-integration-v1",
-    "commit": "83d6eba225df1d0bfbd4c0a377a2ff3c9ac57fd8"
+    "commit": "f2a726f2c4edcb4d6b75c36fcd1cf8578285a00e"
   },
+  "currentInstalledStage": "SourceRoot Chunk 2 - Shared Frontend API Layer, Logging, and Observability v1",
   "backendEntryPoints": [
     "backend/src/server.ts",
     "backend/src/app.ts",
@@ -79,6 +80,7 @@
     }
   ],
   "sharedScripts": [
+    "assets/js/sourceroot-api.js",
     "assets/js/dictionaryroot-account.js",
     "assets/js/dictionaryroot-admin.js",
     "assets/js/dictionaryroot-api.js",
@@ -93,6 +95,7 @@
     "assets/js/dictionaryroot-navigation.js",
     "assets/js/dictionaryroot-sources.js",
     "assets/js/dictionaryroot-workflow.js",
+    "assets/js/historyroot-api.js",
     "engine/importValidator.js",
     "engine/packageLifecycle.js",
     "engine/sourceRootApi.js",
@@ -136,12 +139,17 @@
     "backend/test/lexical-store.test.ts",
     "backend/test/local-development-cors.test.ts",
     "backend/test/platform-stabilization.test.ts",
+    "backend/test/registry-api-contract.test.ts",
+    "backend/test/observability.test.ts",
+    "backend/test/observers.test.ts",
     "backend/test/schema.test.ts",
     "backend/test/validator.test.ts"
   ],
   "existingInstallers": [
     "INSTALL-DICTIONARYROOT-GOVERNED-PLATFORM-FOUNDATION.ps1",
-    "INSTALL-SOURCEROOT-CODEX-STAGE-CONTRACT.ps1"
+    "INSTALL-SOURCEROOT-CODEX-STAGE-CONTRACT.ps1",
+    "INSTALL-SOURCEROOT-REGISTRY-API-CONTRACT.ps1",
+    "INSTALL-SOURCEROOT-FRONTEND-API-OBSERVABILITY.ps1"
   ],
   "existingVerifiers": [
     "VERIFY-DICTIONARYROOT-ACCOUNTS-ROLES-PERMISSIONS.ps1",
@@ -180,7 +188,9 @@
     "VERIFY-HISTORYROOT-RESPONSIVE.mjs",
     "VERIFY-SOURCEROOT-BASELINE.ps1",
     "VERIFY-SOURCEROOT-CODEX-STAGE-CONTRACT.ps1",
-    "VERIFY-SOURCEROOT-CONTEXTUAL-KNOWLEDGE-FOUNDATION.ps1"
+    "VERIFY-SOURCEROOT-CONTEXTUAL-KNOWLEDGE-FOUNDATION.ps1",
+    "VERIFY-SOURCEROOT-REGISTRY-API-CONTRACT.ps1",
+    "VERIFY-SOURCEROOT-FRONTEND-API-OBSERVABILITY.ps1"
   ],
   "requiredRuntimeFiles": [
     "backend/.env.example",
@@ -190,6 +200,11 @@
     "backend/package-lock.json",
     "backend/tsconfig.json",
     "backend/src/lib/database.ts",
+    "backend/src/lib/diagnostics.ts",
+    "backend/src/lib/request-id.ts",
+    "backend/src/middleware/request-logging.ts",
+    "backend/src/observers/platform-operations-observer.ts",
+    "backend/src/observers/data-quality-provenance-observer.ts",
     "backend/src/lib/runtime-config.ts",
     "backend/src/scripts/migrate.ts",
     "config/customers/dictionaryroot.json",
@@ -208,6 +223,8 @@
     "sources-v2.html",
     "assets/brand/dictionaryroot-mark.svg",
     "assets/js/dictionaryroot-*.js",
+    "assets/js/historyroot-api.js",
+    "assets/js/sourceroot-api.js",
     "assets/css/dictionaryroot-*.css",
     "config/customers/dictionaryroot.json",
     "config/dictionaryroot-brand.json",
@@ -220,10 +237,10 @@
   "currentRoadmapPosition": {
     "corePhases": "Core Phases 1–9: completed according to the project roadmap",
     "phase10": "Phase 10: next implementation phase",
-    "currentCodexPackage": "Chunk 0",
+    "currentCodexPackage": "Chunk 2 - Shared Frontend API Layer, Logging, and Observability v1",
     "classificationNotice": "Roadmap status is a project-management classification, not an independent production-security audit."
   },
   "repositoryDiscrepancy": "The inspected repository already contains contextual knowledge, authentication/governance, and HistoryRoot implementation even though the Chunk 0 roadmap wording places Phase 10 next. Chunk 0 preserves and records that pre-existing state.",
-  "nextStageDependency": "SourceRoot Chunk 1 — Registry and API Contract Standardization",
+  "nextStageDependency": "SourceRoot Chunk 3 - Contextual Entity and Time Model",
   "secretHandling": "No secrets, passwords, tokens, connection strings, or private environment values are stored in this manifest."
 }

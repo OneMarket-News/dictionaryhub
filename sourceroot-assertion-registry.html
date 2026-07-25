@@ -529,6 +529,7 @@
     SourceRoot Assertion Registry. Live data supplied by the SourceRoot backend API.
   </footer>
 
+  <script src="./assets/js/sourceroot-api.js"></script>
   <script src="./engine/sourceRootApi.js"></script>
   <script type="module">
     const API = window.SourceRootApi;
@@ -562,28 +563,7 @@
     const closeDetailBtn = document.getElementById("closeDetailBtn");
 
     async function fetchJson(url) {
-      const response = await fetch(url, {
-        headers: {
-          Accept: "application/json",
-        },
-      });
-
-      let body;
-
-      try {
-        body = await response.json();
-      } catch {
-        body = {};
-      }
-
-      if (!response.ok) {
-        throw new Error(
-          body.message ||
-          `Request failed with HTTP ${response.status}.`,
-        );
-      }
-
-      return body;
+      return API.fetchJson(url);
     }
 
     function escapeHtml(value = "") {

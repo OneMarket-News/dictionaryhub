@@ -6,27 +6,30 @@
   const origin = configuredOrigin.replace(/\/$/, "");
 
   async function fetchJson(url, options = {}) {
-    const response = await fetch(url, {
-      ...options,
-      headers: {
-        Accept: "application/json",
-        ...(options.body ? { "Content-Type": "application/json" } : {}),
-        ...(options.headers || {}),
-      },
-    });
-
-    let body = {};
-    try { body = await response.json(); } catch {}
-
-    if (!response.ok) {
-      const error = new Error(body.message || `Request failed with HTTP ${response.status}.`);
-      error.status = response.status;
-      error.code = body.code;
-      error.body = body;
+    try {
+      if (!window.SourceRootApiLayer) {
+        throw new Error("The shared SourceRoot API layer is unavailable.");
+      }
+      const result = await window.SourceRootApiLayer.request(url, {
+        ...options,
+        headers: {
+          Accept: "application/json",
+          ...(options.body ? { "Content-Type": "application/json" } : {}),
+          ...(options.headers || {}),
+        },
+        allowTextResponse: true,
+      });
+      return result.data === null ? {} : result.data;
+    } catch (cause) {
+      const error = new Error(cause.message || "The SourceRoot API could not be reached.");
+      error.status = cause.status;
+      error.code = cause.code;
+      error.body = cause.payload;
+      error.category = cause.category;
+      error.requestId = cause.requestId;
+      error.responseRequestId = cause.responseRequestId;
       throw error;
     }
-
-    return body;
   }
 
   function getItems(response, legacyKey) {

@@ -3,13 +3,26 @@ import { randomUUID } from "node:crypto";
 
 const safeRequestId = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
 
+declare global {
+  namespace Express {
+    interface Request {
+      correlationId?: string;
+    }
+  }
+}
+
+export function isSafeRequestId(value: string): boolean {
+  return safeRequestId.test(value);
+}
+
 export function requestIdMiddleware(
   request: Request,
   response: Response,
   next: NextFunction
 ): void {
   const supplied = request.header("x-request-id")?.trim() || "";
-  const requestId = safeRequestId.test(supplied) ? supplied : randomUUID();
+  const requestId = isSafeRequestId(supplied) ? supplied : randomUUID();
+  request.correlationId = requestId;
   response.locals.requestId = requestId;
   response.setHeader("x-request-id", requestId);
   next();

@@ -3,13 +3,14 @@
 ## Record Identity
 
 - Baseline record: SourceRoot Chunk 0 — Codex Stage Contract and Baseline Harness v1
-- Current-state record: SourceRoot Chunk 1 — Registry and API Contract Standardization v1
+- Current-state record: SourceRoot Chunk 2 - Shared Frontend API Layer, Logging, and Observability v1
+- Previous installed stage: SourceRoot Chunk 1 - Registry and API Contract Standardization v1
 - Current-state update date: 2026-07-24
 - Repository inspected: `C:\Users\Josh\Documents\GitHub\dictionaryhub`
 - Branch at inspection: `release/historyroot-alpha-integration-v1`
-- Starting commit for the installed stage: `f4055edf5dcd945d8dcb696586e4a80cecba46c7`
+- Starting commit for the installed stage: `f2a726f2c4edcb4d6b75c36fcd1cf8578285a00e`
 
-The repository at the branch and starting commit above was inspected directly, then SourceRoot Chunk 1 was installed and verified from a complete-file package. This record does not use an older ZIP, backup, or remembered layout as its source.
+The repository at the branch and starting commit above was inspected directly, then SourceRoot Chunk 2 was installed and verified from complete repository files. This record does not use an older ZIP, backup, or remembered layout as its source.
 
 ## Repository Structure
 
@@ -61,7 +62,7 @@ The existing `backups/` directory contains timestamped DictionaryRoot stage back
 
 ### Frontend
 
-The customer frontend is static, multi-page HTML. It has no committed bundler step. Pages load shared CSS and browser-global JavaScript with ordered `defer` scripts. `dictionaryroot-api.js` reads the customer manifest and calls the live SourceRoot API with `fetch`.
+The customer frontend is static, multi-page HTML. It has no committed bundler step. Pages load shared CSS and browser-global JavaScript with ordered `defer` scripts. `assets/js/sourceroot-api.js` is the shared request transport used by the DictionaryRoot and HistoryRoot core clients and by the SourceRoot registry engine. Product wrappers preserve their existing public APIs, messages, caching, URL state, loading, empty, and offline behavior.
 
 ### Build and Runtime
 
@@ -184,6 +185,10 @@ There are two distinct migration filenames with numeric prefix `005`. The migrat
 
 Invalid imports return HTTP 422 with a validation result; validation-only requests return their result without persistence. Invalid pagination, dates, filters, sorts, and searches return stable 400 responses at their route. Integrated errors preserve the legacy `error` and `message` fields while adding `code`, HTTP `status`, a category, an optional field, safe details, and a request ID. Missing records retain route-specific 404 codes and messages. The application handles malformed JSON as 400, oversized bodies as 413, unknown routes as 404, and unexpected errors as 500 without returning stack traces.
 
+Every request receives a bounded safe correlation ID through `X-Request-ID`; unsafe or missing caller values receive non-sequential UUIDs. The ID is available in request and response context and is included in structured request, error, validation, and import diagnostics. Structured events are line-delimited JSON with an allow-listed schema. Authorization, cookies, passwords, tokens, sessions, CSRF values, request bodies, private source text, and client-facing stack traces are excluded.
+
+Two internal Level 1 observers are present under `backend/src/observers/`. The Platform Operations Observer groups approved diagnostic failures and preserves supporting correlation IDs. The Data Quality and Provenance Observer reports missing attribution and metadata, malformed identifiers, and broken source relationships in a supplied bundle snapshot. Both are deterministic, read-only functions without endpoints, persistence, network, shell, database, retry, restart, publishing, or record-mutation authority.
+
 ## Current Frontend Experiences
 
 ### DictionaryRoot Home
@@ -225,6 +230,8 @@ The current repository also contains customer pages for coverage (`coverage-v2.h
 ### Shared Components, API Client, and Branding
 
 - API client: `assets/js/dictionaryroot-api.js`
+- Shared request transport: `assets/js/sourceroot-api.js`
+- HistoryRoot API client: `assets/js/historyroot-api.js`
 - Authentication client: `assets/js/dictionaryroot-auth.js`
 - Customer branding: `assets/js/dictionaryroot-brand.js`, `assets/css/dictionaryroot-brand.css`, `assets/brand/dictionaryroot-mark.svg`, `config/dictionaryroot-brand.json`
 - Shared navigation and unified search: `assets/js/dictionaryroot-navigation.js`, `assets/css/dictionaryroot-navigation.css`
@@ -232,13 +239,13 @@ The current repository also contains customer pages for coverage (`coverage-v2.h
 
 The shared navigation includes Home, Concept, Knowledge Sphere, Sources, Coverage, Editorial, History, Accounts, Workflow, and Admin according to current script configuration. It preserves active-page state, responsive menu behavior, exact-meaning ranking helpers, live search, and cross-experience context.
 
-On the four core pages, scripts load in this order: API client, authentication, branding, shared navigation, and the page-specific experience. No core page or its core script contains the deprecated `data/nodes.json` fallback reference.
+On the four core pages, scripts load in this order: shared request transport, API client, authentication, branding, shared navigation, and the page-specific experience. No core page or its core script contains the deprecated `data/nodes.json` fallback reference.
 
 ## Current Verification Coverage
 
 ### Backend Tests
 
-The repository has 13 `backend/test/*.test.ts` files. The installed full suite contains 145 passing tests, including 11 focused Registry API Contract tests, covering:
+The repository has 15 `backend/test/*.test.ts` files. The installed full suite contains 155 passing tests, including 11 focused Registry API Contract tests and 10 focused correlation/logging/observer tests, covering:
 
 - HTTP health, validation, malformed JSON, and payload limits.
 - Bundle schema and validation.
@@ -251,12 +258,15 @@ The repository has 13 `backend/test/*.test.ts` files. The installed full suite c
 - Authentication/governance public surfaces.
 - Governed HistoryRoot proposal, review, publication, conflict, audit, and rollback behavior.
 - Registry contract pagination boundaries, offsets, exact totals, filter metadata, unknown filters, case behavior, sorting and stable ties, legacy collection keys, source associations, compatible not-found errors, and safe internal errors.
+- Safe and generated correlation IDs, response/error/log propagation, structured success and failure logs, redaction, validation diagnostics, deterministic observer grouping, data-quality findings, clean records, and input non-mutation.
+
+The frontend Node harness contains 10 passing cases for GET/query/JSON/empty responses, API and malformed-response errors, network/offline/timeout/abort classification, correlation propagation, DictionaryRoot and HistoryRoot return compatibility, legacy method presence, HTML load order, and SourceRoot registry wrapper delegation.
 
 Most persistence and governance integration tests require a configured PostgreSQL test database and reset it by truncating test tables. They must never be pointed at a non-test database.
 
 ### PowerShell and JavaScript Verifiers
 
-Before Chunk 0, the repository contained 34 root `VERIFY-*` scripts. They cover DictionaryRoot customer foundation, live connection, home, Concept, Sphere, Sources, navigation, coverage, editorial, history, governance, responsiveness, HistoryRoot, and contextual knowledge. The machine-readable baseline manifest lists every current verifier, including the three Chunk 0 verifiers.
+Before Chunk 0, the repository contained 34 root `VERIFY-*` scripts. They cover DictionaryRoot customer foundation, live connection, home, Concept, Sphere, Sources, navigation, coverage, editorial, history, governance, responsiveness, HistoryRoot, and contextual knowledge. The machine-readable baseline manifest now also lists the Chunk 0, Chunk 1, and Chunk 2 stage verifiers.
 
 Several PowerShell verifiers provide static file and marker checks plus optional or required live API calls. The `.mjs` responsive verifiers locate a Chromium-family browser, host pages locally, inspect responsive behavior, and can create screenshots. `VERIFY-DICTIONARYROOT-TYPESCRIPT-SYNTAX.mjs` performs TypeScript parse checks when TypeScript is installed.
 
@@ -285,6 +295,8 @@ The committed governed-platform installer validates package completeness, reject
 7. The repository contains legacy/prototype pages alongside current `*-v2.html` experiences; file presence alone does not identify the preferred customer route.
 8. No independent production security, privacy, accessibility, performance, disaster-recovery, or operational-readiness audit was performed for this baseline.
 9. Chunk 0 does not validate every pre-existing verifier's historical expectations; some stage verifiers may intentionally encode the state of the stage that created them.
+10. Structured diagnostics are log-derived and in-memory only; no production log shipping, tracing, alerting, retention service, or operations dashboard is installed.
+11. Specialized authentication/account transports and older SourceRoot pages with embedded request code are intentionally deferred.
 
 ## Prompt-to-Repository Discrepancy
 
@@ -295,12 +307,12 @@ The requested Chunk 0 exclusions prohibit implementing contextual entities, auth
 ```text
 Core Phases 1–9: completed according to the project roadmap
 Phase 10: next implementation phase
-Current Codex package: Chunk 1 — Registry and API Contract Standardization v1
-Next Codex package after acceptance: Chunk 2 — Shared Frontend API Layer, Logging, and Observability
+Current Codex package: Chunk 2 - Shared Frontend API Layer, Logging, and Observability v1
+Next Codex package after acceptance: Chunk 3 - Contextual Entity and Time Model
 ```
 
 This roadmap status is a project-management classification, not an independent production-security audit. It also does not erase the factual discrepancy that later-scope implementation files are already present in the current repository.
 
 ## Next Dependency
 
-SourceRoot Chunk 2 — Shared Frontend API Layer, Logging, and Observability
+SourceRoot Chunk 3 - Contextual Entity and Time Model

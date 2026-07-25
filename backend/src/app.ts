@@ -6,6 +6,7 @@ import express, {
 } from "express";
 
 import { createApiError } from "./lib/api-contract.js";
+import { emitDiagnosticEvent } from "./lib/diagnostics.js";
 import { requestIdMiddleware } from "./lib/request-id.js";
 import { authContextMiddleware } from "./middleware/auth.js";
 import { requestLoggingMiddleware } from "./middleware/request-logging.js";
@@ -224,6 +225,19 @@ export function createApp(options: CreateAppOptions = {}) {
         return;
       }
 
+      const errorCode = typeof error.code === "string" &&
+        /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(error.code)
+        ? error.code
+        : "INTERNAL_SERVER_ERROR";
+      const databaseFailure = /database|postgres|connection/i.test(errorCode);
+      emitDiagnosticEvent({
+        eventType: databaseFailure ? "database_failure" : "unexpected_server_failure",
+        level: "error",
+        correlationId: response.locals.requestId,
+        statusCode: 500,
+        responseCategory: "internal-error",
+        errorCode,
+      });
       response.status(500).json(
         createApiError(
           "INTERNAL_SERVER_ERROR",

@@ -26,6 +26,7 @@ import { validateBundle } from "../services/validator.js";
 import type { SourceRootBundle } from "../types.js";
 import { getAuth, requireCsrf } from "../middleware/auth.js";
 import { safeEqual } from "../lib/security.js";
+import { emitDiagnosticEvent } from "../lib/diagnostics.js";
 
 export const importRouter = Router();
 
@@ -92,11 +93,38 @@ function getIsoDateQuery(
 }
 
 importRouter.post("/", requireImportAuthorization, async (request, response, next) => {
+  const startedAt = performance.now();
+  const bundle = (
+    request.body && typeof request.body === "object" ? request.body : {}
+  ) as SourceRootBundle;
   try {
-    const bundle = request.body as SourceRootBundle;
     const validation = validateBundle(bundle);
 
     if (!validation.canImport) {
+      emitDiagnosticEvent({
+        eventType: "validation_failed",
+        level: "warning",
+        correlationId: response.locals.requestId,
+        bundleId: validation.bundleId,
+        recordCounts: {
+          nodes: validation.summary.nodes,
+          assertions: validation.summary.assertions,
+          edges: validation.summary.edges,
+          sources: validation.summary.sources,
+          revisions: validation.summary.revisions,
+          errors: validation.summary.errors,
+          warnings: validation.summary.warnings,
+          ...(validation.summary.contextualRecords !== undefined
+            ? { contextualRecords: validation.summary.contextualRecords }
+            : {}),
+        },
+        validationResult: validation.status,
+        failureCategory: "bundle-validation",
+        durationMs: performance.now() - startedAt,
+        ...(typeof bundle.version === "string"
+          ? { schemaVersion: bundle.version }
+          : {}),
+      });
       return response.status(422).json({
         imported: false,
         validation,
@@ -107,6 +135,29 @@ importRouter.post("/", requireImportAuthorization, async (request, response, nex
 
     const storedBundles = await getImportedBundleCount();
 
+    emitDiagnosticEvent({
+      eventType: "import_completed",
+      level: "info",
+      correlationId: response.locals.requestId,
+      bundleId: validation.bundleId,
+      recordCounts: {
+        nodes: validation.summary.nodes,
+        assertions: validation.summary.assertions,
+        edges: validation.summary.edges,
+        sources: validation.summary.sources,
+        revisions: validation.summary.revisions,
+        errors: validation.summary.errors,
+        warnings: validation.summary.warnings,
+        ...(validation.summary.contextualRecords !== undefined
+          ? { contextualRecords: validation.summary.contextualRecords }
+          : {}),
+      },
+      validationResult: validation.status,
+      durationMs: performance.now() - startedAt,
+      ...(typeof bundle.version === "string"
+        ? { schemaVersion: bundle.version }
+        : {}),
+    });
     return response.status(201).json({
       imported: true,
       bundleId: bundle.bundleId,
@@ -114,6 +165,32 @@ importRouter.post("/", requireImportAuthorization, async (request, response, nex
       validation,
     });
   } catch (error) {
+    const errorCode = error && typeof error === "object" && "code" in error &&
+      typeof error.code === "string"
+      ? error.code
+      : "IMPORT_FAILED";
+    emitDiagnosticEvent({
+      eventType: "import_failed",
+      level: "error",
+      correlationId: response.locals.requestId,
+      bundleId: typeof bundle.bundleId === "string" ? bundle.bundleId : null,
+      recordCounts: {
+        nodes: Array.isArray(bundle.nodes) ? bundle.nodes.length : 0,
+        assertions: Array.isArray(bundle.assertions) ? bundle.assertions.length : 0,
+        edges: Array.isArray(bundle.edges) ? bundle.edges.length : 0,
+        sources: Array.isArray(bundle.sources) ? bundle.sources.length : 0,
+        revisions: Array.isArray(bundle.revisions) ? bundle.revisions.length : 0,
+      },
+      validationResult: "failed",
+      failureCategory: /database|postgres|connection/i.test(errorCode)
+        ? "database"
+        : "import",
+      errorCode,
+      durationMs: performance.now() - startedAt,
+      ...(typeof bundle.version === "string"
+        ? { schemaVersion: bundle.version }
+        : {}),
+    });
     return next(error);
   }
 });

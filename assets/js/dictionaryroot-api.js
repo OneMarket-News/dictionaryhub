@@ -25,6 +25,10 @@
     return String(value || "").replace(/\/+$/, "");
   }
 
+  function fetch(url, options) {
+    return global.fetch(url, options);
+  }
+
   function resolveLocalApiBaseUrl(value) {
     const configured = trimSlash(value);
     try {
@@ -285,59 +289,74 @@
       this.baseUrl = trimSlash(this.manifest.apiBaseUrl);
       this.serviceOrigin = this.baseUrl.replace(/\/api\/v1$/i, "");
       this.timeoutMs = Number((options && options.timeoutMs) || 12000);
+      this.onDiagnostic = options && options.onDiagnostic;
     }
 
     async request(path, options) {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), this.timeoutMs);
-      const started = performance.now();
       const url = /^https?:\/\//i.test(path)
         ? path
         : `${this.baseUrl}${path.startsWith("/") ? path : `/${path}`}`;
-
+      const requestOptions = Object.assign({
+        method: "GET",
+        cache: "no-store",
+        credentials: "include"
+      }, options || {});
+      requestOptions.headers = Object.assign(
+        { Accept: "application/json" },
+        (options && options.headers) || {}
+      );
+      const method = String(requestOptions.method || "GET").toUpperCase();
+      if (!["GET", "HEAD", "OPTIONS"].includes(method) && global.DictionaryRootAuth && global.DictionaryRootAuth.csrfToken) {
+        requestOptions.headers["X-CSRF-Token"] = global.DictionaryRootAuth.csrfToken;
+      }
       try {
-        const requestOptions = Object.assign({
-          method: "GET",
-          cache: "no-store",
-          credentials: "include",
-          signal: controller.signal
-        }, options || {});
-        requestOptions.headers = Object.assign(
-          { Accept: "application/json" },
-          (options && options.headers) || {}
-        );
-        const method = String(requestOptions.method || "GET").toUpperCase();
-        if (!["GET", "HEAD", "OPTIONS"].includes(method) && global.DictionaryRootAuth && global.DictionaryRootAuth.csrfToken) {
-          requestOptions.headers["X-CSRF-Token"] = global.DictionaryRootAuth.csrfToken;
+        if (!global.SourceRootApiLayer) {
+          throw new Error("The shared SourceRoot API layer is unavailable.");
         }
-        const response = await fetch(url, requestOptions);
-
-        const text = await response.text();
-        let payload = null;
-        if (text) {
-          try { payload = JSON.parse(text); } catch (_) { payload = { message: text }; }
-        }
-
-        if (!response.ok) {
-          throw new DictionaryRootApiError(
-            payload && payload.message ? payload.message : `Request failed with HTTP ${response.status}`,
-            { status: response.status, url, payload }
-          );
-        }
-
+        const result = await global.SourceRootApiLayer.request(url, Object.assign({}, requestOptions, {
+          timeoutMs: this.timeoutMs,
+          allowTextResponse: true,
+          onDiagnostic: this.onDiagnostic
+        }));
         return {
-          data: payload,
-          response,
-          durationMs: Math.round((performance.now() - started) * 10) / 10
+          data: result.data,
+          response: result.response,
+          durationMs: result.durationMs
         };
       } catch (error) {
-        if (error && error.name === "AbortError") {
+        if (error && error.category === "timeout") {
           throw new DictionaryRootApiError("The knowledge service took too long to respond.", { url, timeoutMs: this.timeoutMs });
         }
+        if (error && error.category === "aborted") {
+          throw new DictionaryRootApiError("The knowledge service request was cancelled.", { url, category: error.category });
+        }
+        if (error && [
+          "api_error",
+          "unauthorized",
+          "forbidden",
+          "not_found",
+          "conflict",
+          "rate_limited",
+          "server_error",
+          "invalid_response"
+        ].includes(error.category)) {
+          throw new DictionaryRootApiError(error.message, {
+            status: error.status,
+            url,
+            payload: error.payload,
+            code: error.code,
+            category: error.category,
+            requestId: error.requestId,
+            responseRequestId: error.responseRequestId
+          });
+        }
         if (error instanceof DictionaryRootApiError) throw error;
-        throw new DictionaryRootApiError("DictionaryRoot could not reach its knowledge service.", { url, cause: error });
-      } finally {
-        clearTimeout(timer);
+        throw new DictionaryRootApiError("DictionaryRoot could not reach its knowledge service.", {
+          url,
+          category: error && error.category ? error.category : "network_error",
+          requestId: error && error.requestId,
+          responseRequestId: error && error.responseRequestId
+        });
       }
     }
 

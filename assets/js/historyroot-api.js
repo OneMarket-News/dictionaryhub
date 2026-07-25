@@ -173,6 +173,7 @@
       this.baseUrl = trimSlash(this.manifest.apiBaseUrl);
       this.serviceOrigin = this.baseUrl.replace(/\/api\/v1$/i, "");
       this.timeoutMs = Number((options && options.timeoutMs) || 12000);
+      this.onDiagnostic = options && options.onDiagnostic;
       this.cache = new Map();
     }
 
@@ -190,59 +191,81 @@
       }
 
       const requestPromise = (async () => {
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), settings.timeoutMs);
         try {
-          const response = await fetch(url, {
+          if (!global.SourceRootApiLayer) {
+            throw new Error("The shared SourceRoot API layer is unavailable.");
+          }
+          const sharedOptions = {
             method: settings.method,
             cache: "no-store",
             credentials: "include",
-            headers: { Accept: "application/json" },
-            signal: controller.signal
-          });
-          const text = await response.text();
-          let payload = null;
-          if (text) {
-            try {
-              payload = JSON.parse(text);
-            } catch (_) {
-              throw new HistoryRootApiError(
-                "The knowledge service returned a malformed response.",
-                { code: "MALFORMED_RESPONSE", status: response.status, url }
-              );
-            }
+            headers: Object.assign({ Accept: "application/json" }, settings.headers || {}),
+            body: settings.body,
+            signal: settings.signal,
+            timeoutMs: settings.timeoutMs,
+            onDiagnostic: this.onDiagnostic
+          };
+          if (Object.prototype.hasOwnProperty.call(settings, "json")) {
+            sharedOptions.json = settings.json;
           }
-          if (!response.ok) {
+          const result = await global.SourceRootApiLayer.request(url, sharedOptions);
+          return result.data;
+        } catch (error) {
+          if (error instanceof HistoryRootApiError) throw error;
+          if (error && error.category === "invalid_response") {
             throw new HistoryRootApiError(
-              payload && payload.message
-                ? payload.message
-                : `Request failed with HTTP ${response.status}.`,
+              "The knowledge service returned a malformed response.",
               {
-                code:
-                  payload && payload.error
-                    ? payload.error
-                    : "REQUEST_FAILED",
-                status: response.status,
-                payload,
+                code: "MALFORMED_RESPONSE",
+                status: error.status,
                 url
               }
             );
           }
-          return payload;
-        } catch (error) {
-          if (error instanceof HistoryRootApiError) throw error;
-          if (error && error.name === "AbortError") {
+          if (error && error.category === "timeout") {
             throw new HistoryRootApiError(
               "The knowledge service took too long to respond.",
               { code: "TIMEOUT", url }
             );
           }
+          if (error && error.category === "aborted") {
+            throw new HistoryRootApiError(
+              "The knowledge service request was cancelled.",
+              { code: "ABORTED", url }
+            );
+          }
+          if (error && [
+            "api_error",
+            "unauthorized",
+            "forbidden",
+            "not_found",
+            "conflict",
+            "rate_limited",
+            "server_error"
+          ].includes(error.category)) {
+            throw new HistoryRootApiError(
+              error.message,
+              {
+                code: error.code || "REQUEST_FAILED",
+                status: error.status,
+                payload: error.payload,
+                category: error.category,
+                requestId: error.requestId,
+                responseRequestId: error.responseRequestId,
+                url
+              }
+            );
+          }
           throw new HistoryRootApiError(
             "HistoryRoot could not reach the SourceRoot knowledge service.",
-            { code: "OFFLINE", url, cause: error }
+            {
+              code: "OFFLINE",
+              category: error && error.category ? error.category : "network_error",
+              requestId: error && error.requestId,
+              responseRequestId: error && error.responseRequestId,
+              url
+            }
           );
-        } finally {
-          clearTimeout(timer);
         }
       })();
 
