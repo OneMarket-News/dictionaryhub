@@ -1,0 +1,300 @@
+# Current SourceRoot State
+
+## Record Identity
+
+- Baseline record: SourceRoot Chunk 0 — Codex Stage Contract and Baseline Harness v1
+- Baseline creation date: 2026-07-24
+- Repository inspected: `C:\Users\Josh\Documents\GitHub\dictionaryhub`
+- Branch at inspection: `release/historyroot-alpha-integration-v1`
+- Commit at inspection: `83d6eba225df1d0bfbd4c0a377a2ff3c9ac57fd8`
+
+The repository at the branch and commit above was inspected directly. This record does not use an older ZIP, backup, or remembered layout as its source.
+
+## Repository Structure
+
+| Area | Actual location |
+|---|---|
+| Backend | `backend/` |
+| Backend entry points | `backend/src/server.ts`, `backend/src/app.ts` |
+| Backend routes | `backend/src/routes/` |
+| Backend services | `backend/src/services/` |
+| Database access and configuration | `backend/src/lib/database.ts`, `backend/src/lib/runtime-config.ts`, `backend/.env.example` |
+| Migrations | `backend/db/migrations/` |
+| Backend tests | `backend/test/` |
+| Frontend | Static HTML files at the repository root |
+| Shared frontend JavaScript | `assets/js/` |
+| Shared frontend CSS | `assets/css/` and legacy root `style.css` |
+| Shared brand assets | `assets/brand/` |
+| Customer configuration | `config/customers/` |
+| DictionaryRoot brand configuration | `config/dictionaryroot-brand.json` |
+| Source and demonstration data | `data/` |
+| Documentation | `docs/` and `backend/docs/` |
+| Installers and operational scripts | Root `*.ps1` files and `backend/scripts/` |
+| Verifiers | Root `VERIFY-*.ps1`, root `VERIFY-*.mjs`, and `verification/` output |
+| Backups | `backups/<stage-name>-<timestamp>/`, normally preserving repository-relative paths |
+
+The existing `backups/` directory contains timestamped DictionaryRoot stage backups. Current installer documentation and the governed-platform installer use backups for restoration; backups are not implementation sources.
+
+## Technical Stack
+
+### Languages and Formats
+
+- TypeScript for the backend and backend tests.
+- JavaScript for browser clients, shared UI behavior, legacy SourceRoot engines, and Node-based verifiers.
+- HTML and CSS for the static customer and registry experiences.
+- SQL for PostgreSQL migrations.
+- PowerShell for Windows installation, build, backup, restore, and verification.
+- Shell scripts for PostgreSQL backup and restore inside `backend/scripts/`.
+- JSON, YAML, and Markdown for configuration, data, API descriptions, and documentation.
+
+### Backend
+
+- Node.js `>=22.0.0`.
+- Express `5.2.1`.
+- PostgreSQL through `pg` `8.22.0`.
+- Zod `4.4.3` for structured validation used by current backend features.
+- CORS and dotenv packages.
+- TypeScript `7.0.2`, `tsx`, Node's built-in test runner, and Supertest.
+
+`backend/package-lock.json` is the committed npm lock file. npm is the package manager.
+
+### Frontend
+
+The customer frontend is static, multi-page HTML. It has no committed bundler step. Pages load shared CSS and browser-global JavaScript with ordered `defer` scripts. `dictionaryroot-api.js` reads the customer manifest and calls the live SourceRoot API with `fetch`.
+
+### Build and Runtime
+
+- `npm run typecheck` and `npm run build` compile/check the TypeScript backend.
+- `npm test` uses Node's test runner through `tsx`.
+- `docker-compose.local.yml` defines PostgreSQL 16 Alpine, Node 22 backend, and Python 3.12 static-file frontend services.
+- Direct local frontend hosting can use any static web server; the Docker composition uses `python -m http.server 8080`.
+- PowerShell 5.1-compatible scripts are used for the Windows workflows in the repository.
+
+## Current Backend Capabilities
+
+### Application Mounts and Health
+
+`backend/src/app.ts` mounts:
+
+- `GET /health`
+- `GET /api/v1/deployment-readiness`
+- `/api/v1/validate`
+- `/api/v1/import`
+- `/api/v1/search`
+- `/api/v1/bundles`
+- `/api/v1/nodes`
+- `/api/v1/assertions`
+- `/api/v1/edges`
+- `/api/v1/sources`
+- `/api/v1/revisions`
+- `/api/v1/context`
+- `/api/v1/dictionaryroot/lexicon`
+- `/api/v1/dictionaryroot/editorial`
+- `/api/v1/dictionaryroot/workflow`
+- `/api/v1/governance` as a second mount for the workflow router
+- `/api/v1/auth`
+- `/api/v1/account`
+- `/api/v1/admin`
+- `/api/v1/moderation`
+
+The health handler reports service, product-stage, version, database reachability, and deployment-readiness information. A configured but unreachable database produces degraded health. Staging and production startup fail closed when required configuration or database checks fail.
+
+### Registry and Import Routes
+
+- Nodes: list, retrieve, node assertions, and incoming/outgoing node edges.
+- Assertions: list and retrieve.
+- Edges: list and retrieve.
+- Sources: list and retrieve.
+- Revisions: list and retrieve.
+- Bundles: bundle-scoped nodes, assertions, edges, sources, and revisions.
+- Imports: validate and persist a bundle, list imported-bundle metadata, retrieve a bundle, and narrowly delete allow-listed integration-test bundles.
+- Validation: `POST /api/v1/validate` performs nondestructive bundle validation.
+
+Registry list endpoints use shared pagination and query parsing. Current stores support applicable bundle, domain, type, source association, record, and date filters; the exact accepted filter set varies by route.
+
+Production import is protected by an authenticated permission or a configured service token. A development-only unauthenticated option exists and is ignored in production.
+
+### Search and Context Routes
+
+`GET /api/v1/search` searches normalized nodes, assertions, edges, sources, revisions, and the contextual result types enumerated in `backend/src/routes/search.ts`.
+
+The current repository already contains contextual knowledge implementation:
+
+- Entities.
+- Temporal assertions.
+- Accounts.
+- Claims.
+- Evidence and counterevidence.
+- Interpretations.
+- Perspectives.
+- Causes and consequences.
+- Relationships.
+- Cultural memories.
+- Universal contextual record lookup.
+
+These are read through `/api/v1/context`. Their presence is an important discrepancy from the Chunk 0 prompt's exclusion of future contextual implementation. Chunk 0 does not add, remove, or redesign them.
+
+### DictionaryRoot, Identity, and Governance Routes
+
+The backend also currently contains:
+
+- DictionaryRoot lexical neighborhood, status, coverage, dashboard, and lemma routes.
+- DictionaryRoot editorial summary, queue, review, and promotion routes.
+- Authentication discovery, email, Google, Apple, development sign-in, session, sign-out, and linked-identity routes.
+- Account profile, session, invitation, export, and deletion-request routes.
+- Governance proposal, comment, transition, publication, and rollback routes.
+- Administrative user, role, organization, invitation, moderation, and audit routes.
+
+These working capabilities are preserved as current repository state. Chunk 0 makes no claim that they are production-ready.
+
+### Database Tables and Migrations
+
+There are 11 committed migration files:
+
+1. `001_create_imported_bundles.sql`
+2. `002_create_knowledge_tables.sql`
+3. `003_create_dictionaryroot_lexicon.sql`
+4. `004_create_dictionaryroot_editorial_reviews.sql`
+5. `005_create_auth_identity_governance.sql`
+6. `005_create_dictionaryroot_identity_access.sql`
+7. `006_create_governed_editorial_workflow.sql`
+8. `007_create_moderation_operations.sql`
+9. `008_strengthen_session_identity.sql`
+10. `009_create_contextual_knowledge_foundation.sql`
+11. `010_extend_contextual_governance.sql`
+
+The schema includes:
+
+- Core provenance tables: `imported_bundles`, `sources`, `nodes`, `assertions`, `edges`, `revisions`, `node_sources`, `assertion_sources`, and `edge_sources`.
+- DictionaryRoot lexical and editorial tables.
+- Two current identity/access table families: `dictionaryroot_*` and `dr_*`.
+- Governed workflow, publication, moderation, and audit tables.
+- Contextual record, entity, temporal, account, claim, evidence, interpretation, perspective, causal, relationship, cultural-memory, and source-link tables.
+
+There are two distinct migration filenames with numeric prefix `005`. The migration runner applies filename order and records filenames, so both are distinguishable, but the duplicated number is a maintenance limitation and must not be “fixed” by renaming an applied migration.
+
+### Validation and Error Behavior
+
+`backend/src/services/validator.ts` validates the SourceRoot bundle envelope and normalized nodes, assertions, edges, sources, revisions, references, trust values, allowed values, duplicates, and required fields. Current contextual schemas and import validation add contextual checks.
+
+Invalid imports return HTTP 422 with a validation result; validation-only requests return their result without persistence. Invalid pagination, dates, filters, and searches return stable 400 responses at their route. Missing records return route-specific 404 responses. The application adds a request ID to central errors, handles malformed JSON as 400, oversized bodies as 413, unknown routes as 404, and unexpected errors as 500 without returning stack traces.
+
+## Current Frontend Experiences
+
+### DictionaryRoot Home
+
+- Page: `index.html`
+- Page script: `assets/js/dictionaryroot-home.js`
+- Purpose: live exact-meaning search, service and coverage summary, experience entry points, live “value” demonstration, recent browser-local searches, and URL `?q=` state.
+- States present: loading, no-result/empty, and API-offline messaging without static knowledge fallback.
+
+### Knowledge Sphere
+
+- Page: `graph-v2.html`
+- Page script: `assets/js/dictionaryroot-graph.js`
+- Supporting styles: `dictionaryroot-live.css`, `dictionaryroot-hybrid-map.css`, `dictionaryroot-dynamic-sphere.css`, and product/governance styles.
+- Purpose: exact-sense selection, live node/assertion/source/edge retrieval, bounded and dynamic neighborhood exploration, map/readable modes, path context, and Concept/Source links.
+- URL and browser state: query/node/source context, `pushState`, `replaceState`, and `popstate`.
+- States present: loading, empty/no match, detail error, and API-offline behavior.
+
+### Concept Experience
+
+- Page: `concept-v2.html`
+- Page script: `assets/js/dictionaryroot-concept.js`
+- Purpose: exact-sense choice, definition-first concept details, assertions, relationships, connected meanings, provenance, advanced record disclosure, and Sphere/Source links.
+- URL and browser state: query/node/source context, `pushState`, `replaceState`, and `popstate`.
+- States present: loading, empty/no match, concept error, and API-offline behavior.
+
+### Source Experience
+
+- Page: `sources-v2.html`
+- Page script: `assets/js/dictionaryroot-sources.js`
+- Purpose: live source registry, filters and sorting, source detail, linked assertions/edges/nodes, and Concept/Sphere context links.
+- URL and browser state: `source`, `meaning`, `nodeId`, source filter `q`, type, sort, density, and `popstate`.
+- States present: explicit source loading, empty, detail-error, and API-offline elements.
+
+### Additional Current DictionaryRoot Pages
+
+The current repository also contains customer pages for coverage (`coverage-v2.html`), editorial review (`editorial-v2.html`), revision history (`history-v2.html`), workflow (`workflow-v1.html`), account (`account-v1.html` and redirect/compatibility page `accounts-v2.html`), and administration (`admin-v1.html`). Legacy or prototype pages such as `dictionaryroot.html`, `concept.html`, `graph.html`, `sources.html`, and `explore.html` remain present and are intentionally untouched.
+
+### Shared Components, API Client, and Branding
+
+- API client: `assets/js/dictionaryroot-api.js`
+- Authentication client: `assets/js/dictionaryroot-auth.js`
+- Customer branding: `assets/js/dictionaryroot-brand.js`, `assets/css/dictionaryroot-brand.css`, `assets/brand/dictionaryroot-mark.svg`, `config/dictionaryroot-brand.json`
+- Shared navigation and unified search: `assets/js/dictionaryroot-navigation.js`, `assets/css/dictionaryroot-navigation.css`
+- Primary customer manifest: `config/customers/dictionaryroot.json`
+
+The shared navigation includes Home, Concept, Knowledge Sphere, Sources, Coverage, Editorial, History, Accounts, Workflow, and Admin according to current script configuration. It preserves active-page state, responsive menu behavior, exact-meaning ranking helpers, live search, and cross-experience context.
+
+On the four core pages, scripts load in this order: API client, authentication, branding, shared navigation, and the page-specific experience. No core page or its core script contains the deprecated `data/nodes.json` fallback reference.
+
+## Current Verification Coverage
+
+### Backend Tests
+
+The repository has 12 `backend/test/*.test.ts` files covering:
+
+- HTTP health, validation, malformed JSON, and payload limits.
+- Bundle schema and validation.
+- Import persistence, replacement, rollback, registries, filtering, pagination, search, and restricted integration-test deletion.
+- DictionaryRoot OEWN parsing, deterministic pilot selection, and exact lemma coverage.
+- Lexical normalization.
+- Local development CORS and platform hardening.
+- Contextual knowledge validation, normalization, routes, filters, search, rollback, replacement, and deletion.
+- HistoryRoot Plymouth dataset quality and integration.
+- Authentication/governance public surfaces.
+- Governed HistoryRoot proposal, review, publication, conflict, audit, and rollback behavior.
+
+Most persistence and governance integration tests require a configured PostgreSQL test database and reset it by truncating test tables. They must never be pointed at a non-test database.
+
+### PowerShell and JavaScript Verifiers
+
+Before Chunk 0, the repository contained 34 root `VERIFY-*` scripts. They cover DictionaryRoot customer foundation, live connection, home, Concept, Sphere, Sources, navigation, coverage, editorial, history, governance, responsiveness, HistoryRoot, and contextual knowledge. The machine-readable baseline manifest lists every current verifier, including the three Chunk 0 verifiers.
+
+Several PowerShell verifiers provide static file and marker checks plus optional or required live API calls. The `.mjs` responsive verifiers locate a Chromium-family browser, host pages locally, inspect responsive behavior, and can create screenshots. `VERIFY-DICTIONARYROOT-TYPESCRIPT-SYNTAX.mjs` performs TypeScript parse checks when TypeScript is installed.
+
+### Installer Checks
+
+The committed governed-platform installer validates package completeness, rejects unsafe source/target placement, creates a timestamped path-preserving backup, hashes installed files, and runs its verifier. Chunk 0 adds an installer following the package standard.
+
+### Dependency Classification
+
+| Check type | Current examples | Dependency |
+|---|---|---|
+| Static | Required files, markers, JSON, PowerShell parse, `node --check`, TypeScript typecheck | Repository plus installed runtime for language checks |
+| Backend without PostgreSQL | Selected HTTP/validation and configuration tests | Node dependencies |
+| PostgreSQL | Schema, imports, registries, contextual/governance integration tests | Explicit test database and migrations |
+| Live API | Live-connection and customer endpoint checks | Running backend and normally PostgreSQL data |
+| Browser | Responsive `.mjs` verifiers and manual interaction | Chromium-family browser; some scenarios also need live API |
+
+## Current Known Limitations
+
+1. Roadmap wording and implementation state are not aligned: the prompt classifies Phase 10 as next, while the current repository already contains contextual, authentication, governance, moderation, and HistoryRoot implementation.
+2. The two migration files numbered `005` create ordering and maintenance ambiguity. Applied migration filenames must not be renamed.
+3. Static frontend pages have no committed bundler or component test framework; DOM behavior and layout require browser verification.
+4. Many meaningful backend checks require a separately configured PostgreSQL test database. Static verification does not prove persistence behavior.
+5. The customer manifest defaults to a localhost API base URL and a specific DictionaryRoot OEWN bundle. Deployment configuration is environment-specific.
+6. Current Source Experience documentation records that the backend accepts `sourceId` on assertion/edge registry requests but may require client-side source association verification for the described build.
+7. The repository contains legacy/prototype pages alongside current `*-v2.html` experiences; file presence alone does not identify the preferred customer route.
+8. No independent production security, privacy, accessibility, performance, disaster-recovery, or operational-readiness audit was performed for this baseline.
+9. Chunk 0 does not validate every pre-existing verifier's historical expectations; some stage verifiers may intentionally encode the state of the stage that created them.
+
+## Prompt-to-Repository Discrepancy
+
+The requested Chunk 0 exclusions prohibit implementing contextual entities, authentication, production deployment, BibleRoot, HistoryRoot, and operational AI agents. The repository already contains some contextual, authentication/governance, BibleRoot/HistoryRoot, and deployment-readiness material. These files predate Chunk 0 in the inspected commit. Chunk 0 preserves and records them; it does not claim they were newly implemented, accepted by this stage, or production-ready.
+
+## Current Roadmap Position
+
+```text
+Core Phases 1–9: completed according to the project roadmap
+Phase 10: next implementation phase
+Current Codex package: Chunk 0
+Next Codex package after acceptance: Chunk 1 — Registry and API Contract Standardization
+```
+
+This roadmap status is a project-management classification, not an independent production-security audit. It also does not erase the factual discrepancy that later-scope implementation files are already present in the current repository.
+
+## Next Dependency
+
+SourceRoot Chunk 1 — Registry and API Contract Standardization

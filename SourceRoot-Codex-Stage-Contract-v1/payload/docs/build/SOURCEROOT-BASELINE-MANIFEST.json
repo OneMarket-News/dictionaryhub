@@ -1,0 +1,229 @@
+{
+  "schemaVersion": "1.0",
+  "baselineName": "SourceRoot Chunk 0 — Codex Stage Contract and Baseline Harness v1",
+  "baselineCreationDate": "2026-07-24",
+  "repositoryPath": "C:\\Users\\Josh\\Documents\\GitHub\\dictionaryhub",
+  "git": {
+    "branch": "release/historyroot-alpha-integration-v1",
+    "commit": "83d6eba225df1d0bfbd4c0a377a2ff3c9ac57fd8"
+  },
+  "backendEntryPoints": [
+    "backend/src/server.ts",
+    "backend/src/app.ts",
+    "backend/src/scripts/migrate.ts",
+    "backend/Dockerfile"
+  ],
+  "frontendEntryPoints": [
+    "index.html",
+    "concept-v2.html",
+    "graph-v2.html",
+    "sources-v2.html",
+    "coverage-v2.html",
+    "editorial-v2.html",
+    "history-v2.html",
+    "account-v1.html",
+    "accounts-v2.html",
+    "workflow-v1.html",
+    "admin-v1.html"
+  ],
+  "dictionaryRootPages": [
+    {
+      "experience": "DictionaryRoot Home",
+      "path": "index.html",
+      "script": "assets/js/dictionaryroot-home.js"
+    },
+    {
+      "experience": "Knowledge Sphere",
+      "path": "graph-v2.html",
+      "script": "assets/js/dictionaryroot-graph.js"
+    },
+    {
+      "experience": "Concept Experience",
+      "path": "concept-v2.html",
+      "script": "assets/js/dictionaryroot-concept.js"
+    },
+    {
+      "experience": "Source Experience",
+      "path": "sources-v2.html",
+      "script": "assets/js/dictionaryroot-sources.js"
+    },
+    {
+      "experience": "Coverage",
+      "path": "coverage-v2.html",
+      "script": "assets/js/dictionaryroot-coverage.js"
+    },
+    {
+      "experience": "Editorial Review",
+      "path": "editorial-v2.html",
+      "script": "assets/js/dictionaryroot-editorial.js"
+    },
+    {
+      "experience": "Revision History",
+      "path": "history-v2.html",
+      "script": "assets/js/dictionaryroot-history.js"
+    },
+    {
+      "experience": "Governed Workflow",
+      "path": "workflow-v1.html",
+      "script": "assets/js/dictionaryroot-workflow.js"
+    },
+    {
+      "experience": "Account",
+      "path": "account-v1.html",
+      "script": "assets/js/dictionaryroot-account.js"
+    },
+    {
+      "experience": "Administration",
+      "path": "admin-v1.html",
+      "script": "assets/js/dictionaryroot-admin.js"
+    }
+  ],
+  "sharedScripts": [
+    "assets/js/dictionaryroot-account.js",
+    "assets/js/dictionaryroot-admin.js",
+    "assets/js/dictionaryroot-api.js",
+    "assets/js/dictionaryroot-auth.js",
+    "assets/js/dictionaryroot-brand.js",
+    "assets/js/dictionaryroot-concept.js",
+    "assets/js/dictionaryroot-coverage.js",
+    "assets/js/dictionaryroot-editorial.js",
+    "assets/js/dictionaryroot-graph.js",
+    "assets/js/dictionaryroot-history.js",
+    "assets/js/dictionaryroot-home.js",
+    "assets/js/dictionaryroot-navigation.js",
+    "assets/js/dictionaryroot-sources.js",
+    "assets/js/dictionaryroot-workflow.js",
+    "engine/importValidator.js",
+    "engine/packageLifecycle.js",
+    "engine/sourceRootApi.js",
+    "engine/sourceRootEngine.js"
+  ],
+  "sharedStyles": [
+    "assets/css/dictionaryroot-brand.css",
+    "assets/css/dictionaryroot-coverage.css",
+    "assets/css/dictionaryroot-dynamic-sphere.css",
+    "assets/css/dictionaryroot-editorial.css",
+    "assets/css/dictionaryroot-governance.css",
+    "assets/css/dictionaryroot-history.css",
+    "assets/css/dictionaryroot-home.css",
+    "assets/css/dictionaryroot-hybrid-map.css",
+    "assets/css/dictionaryroot-live.css",
+    "assets/css/dictionaryroot-navigation.css",
+    "assets/css/dictionaryroot-product-refinement.css",
+    "style.css"
+  ],
+  "migrationFiles": [
+    "backend/db/migrations/001_create_imported_bundles.sql",
+    "backend/db/migrations/002_create_knowledge_tables.sql",
+    "backend/db/migrations/003_create_dictionaryroot_lexicon.sql",
+    "backend/db/migrations/004_create_dictionaryroot_editorial_reviews.sql",
+    "backend/db/migrations/005_create_auth_identity_governance.sql",
+    "backend/db/migrations/005_create_dictionaryroot_identity_access.sql",
+    "backend/db/migrations/006_create_governed_editorial_workflow.sql",
+    "backend/db/migrations/007_create_moderation_operations.sql",
+    "backend/db/migrations/008_strengthen_session_identity.sql",
+    "backend/db/migrations/009_create_contextual_knowledge_foundation.sql",
+    "backend/db/migrations/010_extend_contextual_governance.sql"
+  ],
+  "existingTests": [
+    "backend/test/api.test.ts",
+    "backend/test/contextual-knowledge.test.ts",
+    "backend/test/dictionaryroot-oewn.test.ts",
+    "backend/test/governance-surface.test.ts",
+    "backend/test/governed-historyroot.test.ts",
+    "backend/test/historyroot-plymouth.test.ts",
+    "backend/test/import.test.ts",
+    "backend/test/lexical-store.test.ts",
+    "backend/test/local-development-cors.test.ts",
+    "backend/test/platform-stabilization.test.ts",
+    "backend/test/schema.test.ts",
+    "backend/test/validator.test.ts"
+  ],
+  "existingInstallers": [
+    "INSTALL-DICTIONARYROOT-GOVERNED-PLATFORM-FOUNDATION.ps1",
+    "INSTALL-SOURCEROOT-CODEX-STAGE-CONTRACT.ps1"
+  ],
+  "existingVerifiers": [
+    "VERIFY-DICTIONARYROOT-ACCOUNTS-ROLES-PERMISSIONS.ps1",
+    "VERIFY-DICTIONARYROOT-API-MEANING-RANKING-FIX.ps1",
+    "VERIFY-DICTIONARYROOT-BASELINE.ps1",
+    "VERIFY-DICTIONARYROOT-COMPLETE-SENSE-COVERAGE.ps1",
+    "VERIFY-DICTIONARYROOT-CONCEPT-EXPERIENCE.ps1",
+    "VERIFY-DICTIONARYROOT-COVERAGE-DATA-QUALITY.ps1",
+    "VERIFY-DICTIONARYROOT-CROSS-EXPERIENCE-PRODUCT-REFINEMENT.ps1",
+    "VERIFY-DICTIONARYROOT-CUSTOMER-FOUNDATION.ps1",
+    "VERIFY-DICTIONARYROOT-DYNAMIC-SPHERE-EXPANSION.ps1",
+    "VERIFY-DICTIONARYROOT-EDITORIAL-REVIEW.ps1",
+    "VERIFY-DICTIONARYROOT-GOVERNANCE-RESPONSIVE.mjs",
+    "VERIFY-DICTIONARYROOT-GOVERNED-PLATFORM-FOUNDATION.ps1",
+    "VERIFY-DICTIONARYROOT-GRAPH-READABILITY-FIX.ps1",
+    "VERIFY-DICTIONARYROOT-HOME-DISCOVERY.ps1",
+    "VERIFY-DICTIONARYROOT-HYBRID-MAP-UNIFIED-NAVIGATION-RECOVERY.ps1",
+    "VERIFY-DICTIONARYROOT-HYBRID-MAP.ps1",
+    "VERIFY-DICTIONARYROOT-KNOWLEDGE-SPHERE-FULL-WIDTH.ps1",
+    "VERIFY-DICTIONARYROOT-KNOWLEDGE-SPHERE.ps1",
+    "VERIFY-DICTIONARYROOT-LIVE-CONNECTION.ps1",
+    "VERIFY-DICTIONARYROOT-LOCAL-CONNECTION-FIX.mjs",
+    "VERIFY-DICTIONARYROOT-LOCAL-CONNECTION-FIX.ps1",
+    "VERIFY-DICTIONARYROOT-NAVIGATION-OVERLAP-FIX.ps1",
+    "VERIFY-DICTIONARYROOT-PILOT.ps1",
+    "VERIFY-DICTIONARYROOT-PRODUCT-HEADER-FOOTER.ps1",
+    "VERIFY-DICTIONARYROOT-RESPONSIVE.mjs",
+    "VERIFY-DICTIONARYROOT-REVISION-HISTORY.ps1",
+    "VERIFY-DICTIONARYROOT-SOURCE-EXPERIENCE.ps1",
+    "VERIFY-DICTIONARYROOT-TYPESCRIPT-SYNTAX.mjs",
+    "VERIFY-DICTIONARYROOT-UNIFIED-NAVIGATION-SEARCH.ps1",
+    "VERIFY-GOVERNED-HISTORYROOT-ALPHA-V1.ps1",
+    "VERIFY-HISTORYROOT-ALPHA-INTEGRATION-V1.ps1",
+    "VERIFY-HISTORYROOT-CUSTOMER-EXPERIENCE-V1.ps1",
+    "VERIFY-HISTORYROOT-PLYMOUTH-KNOWLEDGE-DATASET-V1.ps1",
+    "VERIFY-HISTORYROOT-RESPONSIVE.mjs",
+    "VERIFY-SOURCEROOT-BASELINE.ps1",
+    "VERIFY-SOURCEROOT-CODEX-STAGE-CONTRACT.ps1",
+    "VERIFY-SOURCEROOT-CONTEXTUAL-KNOWLEDGE-FOUNDATION.ps1"
+  ],
+  "requiredRuntimeFiles": [
+    "backend/.env.example",
+    "backend/config/production.env.example",
+    "backend/config/staging.env.example",
+    "backend/package.json",
+    "backend/package-lock.json",
+    "backend/tsconfig.json",
+    "backend/src/lib/database.ts",
+    "backend/src/lib/runtime-config.ts",
+    "backend/src/scripts/migrate.ts",
+    "config/customers/dictionaryroot.json",
+    "config/dictionaryroot-brand.json",
+    "docker-compose.local.yml"
+  ],
+  "filesFutureStagesMustPreserve": [
+    "backend/src/**",
+    "backend/db/migrations/*.sql",
+    "backend/test/**",
+    "backend/package.json",
+    "backend/package-lock.json",
+    "index.html",
+    "concept-v2.html",
+    "graph-v2.html",
+    "sources-v2.html",
+    "assets/brand/dictionaryroot-mark.svg",
+    "assets/js/dictionaryroot-*.js",
+    "assets/css/dictionaryroot-*.css",
+    "config/customers/dictionaryroot.json",
+    "config/dictionaryroot-brand.json",
+    "data/**",
+    "docs/customers/dictionaryroot/**",
+    "docs/platform/**",
+    "INSTALL-*.ps1",
+    "VERIFY-*"
+  ],
+  "currentRoadmapPosition": {
+    "corePhases": "Core Phases 1–9: completed according to the project roadmap",
+    "phase10": "Phase 10: next implementation phase",
+    "currentCodexPackage": "Chunk 0",
+    "classificationNotice": "Roadmap status is a project-management classification, not an independent production-security audit."
+  },
+  "repositoryDiscrepancy": "The inspected repository already contains contextual knowledge, authentication/governance, and HistoryRoot implementation even though the Chunk 0 roadmap wording places Phase 10 next. Chunk 0 preserves and records that pre-existing state.",
+  "nextStageDependency": "SourceRoot Chunk 1 — Registry and API Contract Standardization",
+  "secretHandling": "No secrets, passwords, tokens, connection strings, or private environment values are stored in this manifest."
+}

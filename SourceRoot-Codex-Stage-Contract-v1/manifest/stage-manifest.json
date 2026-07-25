@@ -1,0 +1,129 @@
+{
+  "schemaVersion": "1.0",
+  "stageName": "SourceRoot-Codex-Stage-Contract",
+  "stageVersion": "v1",
+  "createdDate": "2026-07-24",
+  "targetRepository": "C:\\Users\\Josh\\Documents\\GitHub\\dictionaryhub",
+  "requiredPreviousStage": "Current committed dictionaryhub repository at the start of Chunk 0",
+  "filesAdded": [
+    "docs/build/CODEX-STAGE-CONTRACT.md",
+    "docs/build/CURRENT-SOURCEROOT-STATE.md",
+    "docs/build/STAGE-PACKAGE-STANDARD.md",
+    "docs/build/AGENT-SAFETY-BASELINE.md",
+    "docs/build/SOURCEROOT-BASELINE-MANIFEST.json",
+    "VERIFY-SOURCEROOT-BASELINE.ps1",
+    "VERIFY-DICTIONARYROOT-BASELINE.ps1",
+    "VERIFY-SOURCEROOT-CODEX-STAGE-CONTRACT.ps1",
+    "INSTALL-SOURCEROOT-CODEX-STAGE-CONTRACT.ps1",
+    "docs/build/codex-stage-contract-stage.md"
+  ],
+  "filesReplaced": [],
+  "filesIntentionallyUntouched": [
+    "backend/src/**",
+    "backend/db/migrations/**",
+    "backend/test/**",
+    "All customer HTML pages",
+    "assets/**",
+    "config/**",
+    "data/**",
+    "All pre-existing installers and verifiers"
+  ],
+  "migrations": [],
+  "apisChanged": [],
+  "frontendPagesChanged": [],
+  "documentationChanged": [
+    "docs/build/CODEX-STAGE-CONTRACT.md",
+    "docs/build/CURRENT-SOURCEROOT-STATE.md",
+    "docs/build/STAGE-PACKAGE-STANDARD.md",
+    "docs/build/AGENT-SAFETY-BASELINE.md",
+    "docs/build/codex-stage-contract-stage.md"
+  ],
+  "installerFilename": "INSTALL-SOURCEROOT-CODEX-STAGE-CONTRACT.ps1",
+  "verifierFilename": "VERIFY-SOURCEROOT-CODEX-STAGE-CONTRACT.ps1",
+  "rollbackInstructions": [
+    "Open the installer-created timestamped backup and read installation-record.json.",
+    "Restore every replaced file from its repository-relative path in the backup.",
+    "Remove only files recorded in addedFiles when a complete rollback is required.",
+    "Run the verification appropriate to the restored repository."
+  ],
+  "knownLimitations": [
+    "Static verification does not establish browser behavior.",
+    "The baseline verifiers do not call a live API or PostgreSQL.",
+    "The prompt roadmap classification differs from the later-scope files already present in the inspected repository.",
+    "Basic secret-pattern scanning is not a substitute for a dedicated credential audit."
+  ],
+  "explicitExclusions": [
+    "Phase 10 API standardization",
+    "New pagination or error response contracts",
+    "Contextual knowledge implementation",
+    "Proposal database implementation",
+    "Operational AI agents",
+    "Dataset research, adapters, or synchronization",
+    "BibleRoot or HistoryRoot implementation",
+    "Trust, conflict, or corrections engines",
+    "Authentication, organizations, permissions, or multi-tenancy",
+    "Production hosting, billing, white labeling, dashboards, or commercial automation"
+  ],
+  "acceptanceChecks": [
+    {
+      "id": "chunk0-files",
+      "description": "All ten Chunk 0 repository files exist.",
+      "required": true,
+      "kind": "static"
+    },
+    {
+      "id": "contract-content",
+      "description": "Permanent documents contain required headings and rules.",
+      "required": true,
+      "kind": "static"
+    },
+    {
+      "id": "manifest-json",
+      "description": "The baseline manifest parses and contains no obvious secret assignment.",
+      "required": true,
+      "kind": "static"
+    },
+    {
+      "id": "powershell-parse",
+      "description": "Chunk 0 PowerShell scripts parse without errors.",
+      "required": true,
+      "kind": "static"
+    },
+    {
+      "id": "sourceroot-baseline",
+      "description": "The SourceRoot baseline verifier passes required static checks.",
+      "required": true,
+      "kind": "static"
+    },
+    {
+      "id": "dictionaryroot-baseline",
+      "description": "The DictionaryRoot baseline verifier passes required static checks.",
+      "required": true,
+      "kind": "static"
+    },
+    {
+      "id": "backend-regression",
+      "description": "The full backend test suite passes against an explicitly test-scoped PostgreSQL database.",
+      "required": true,
+      "kind": "PostgreSQL"
+    },
+    {
+      "id": "package-allowlist",
+      "description": "The package payload contains only the ten approved Chunk 0 files.",
+      "required": true,
+      "kind": "static"
+    },
+    {
+      "id": "browser-manual",
+      "description": "Browser layout and interaction remain outside this runtime-neutral documentation stage.",
+      "required": false,
+      "kind": "browser"
+    },
+    {
+      "id": "live-api",
+      "description": "Live customer API checks are not required because no runtime application file changed.",
+      "required": false,
+      "kind": "live API"
+    }
+  ]
+}
