@@ -30,6 +30,42 @@ import { emitDiagnosticEvent } from "../lib/diagnostics.js";
 
 export const importRouter = Router();
 
+function validationFailureCategory(
+  result: ReturnType<typeof validateBundle>,
+): string {
+  return result.errors.some((issue) =>
+    [
+      "context",
+      "alias",
+      "externalIdentifier",
+      "fieldProvenance",
+      "temporalAssertion",
+      "relationship",
+    ].includes(issue.objectType)
+    || issue.code.startsWith("CONTEXT_")
+  )
+    ? "context-refinement-validation"
+    : "bundle-validation";
+}
+
+function persistenceFailureCategory(errorCode: string): string {
+  if (/alias/i.test(errorCode)) {
+    return "context-alias-persistence";
+  }
+  if (/identifier/i.test(errorCode)) {
+    return "context-identifier-persistence";
+  }
+  if (/temporal|chronology|structured_date/i.test(errorCode)) {
+    return "context-temporal-refinement";
+  }
+  if (/provenance/i.test(errorCode)) {
+    return "context-provenance-link";
+  }
+  return /database|postgres|connection/i.test(errorCode)
+    ? "database"
+    : "import";
+}
+
 const importedBundleSorts = new Set([
   "createdAt",
   "updatedAt",
@@ -119,7 +155,7 @@ importRouter.post("/", requireImportAuthorization, async (request, response, nex
             : {}),
         },
         validationResult: validation.status,
-        failureCategory: "bundle-validation",
+        failureCategory: validationFailureCategory(validation),
         durationMs: performance.now() - startedAt,
         ...(typeof bundle.version === "string"
           ? { schemaVersion: bundle.version }
@@ -169,6 +205,13 @@ importRouter.post("/", requireImportAuthorization, async (request, response, nex
       typeof error.code === "string"
       ? error.code
       : "IMPORT_FAILED";
+    const errorConstraint =
+      error
+      && typeof error === "object"
+      && "constraint" in error
+      && typeof error.constraint === "string"
+        ? error.constraint
+        : "";
     emitDiagnosticEvent({
       eventType: "import_failed",
       level: "error",
@@ -182,9 +225,9 @@ importRouter.post("/", requireImportAuthorization, async (request, response, nex
         revisions: Array.isArray(bundle.revisions) ? bundle.revisions.length : 0,
       },
       validationResult: "failed",
-      failureCategory: /database|postgres|connection/i.test(errorCode)
-        ? "database"
-        : "import",
+      failureCategory: persistenceFailureCategory(
+        `${errorCode}:${errorConstraint}`,
+      ),
       errorCode,
       durationMs: performance.now() - startedAt,
       ...(typeof bundle.version === "string"

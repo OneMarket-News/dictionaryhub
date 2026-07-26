@@ -6,8 +6,10 @@ import {
 } from "express";
 
 import {
+  contextAliasTypes,
   contextEntityTypes,
   temporalKinds,
+  temporalRoles,
   type ContextRecordKind,
 } from "../contextual-types.js";
 import {
@@ -26,6 +28,8 @@ import {
 } from "../lib/query-params.js";
 import {
   getContextRecordById,
+  listEntityAliases,
+  listEntityIdentifiers,
   listContextRecords,
   type ListContextRecordsOptions,
 } from "../services/context-store.js";
@@ -93,6 +97,8 @@ const collections: ContextCollection[] = [
 
 const entityTypeSet = new Set<string>(contextEntityTypes);
 const temporalKindSet = new Set<string>(temporalKinds);
+const temporalRoleSet = new Set<string>(temporalRoles);
+const aliasTypeSet = new Set<string>(contextAliasTypes);
 const evidenceTypeSet = new Set(["evidence", "counterevidence"]);
 const causalKindSet = new Set(["cause", "consequence"]);
 const contextSorts = new Set([
@@ -114,8 +120,12 @@ const contextQueryParameters = new Set([
   "entityType",
   "relationshipType",
   "temporalKind",
+  "timeRole",
   "dateFrom",
   "dateTo",
+  "validAt",
+  "validFrom",
+  "validTo",
   "subjectId",
   "accountId",
   "claimId",
@@ -201,16 +211,35 @@ async function listCollection(
 
     const dateFrom = parseDateFilter(request.query.dateFrom);
     const dateTo = parseDateFilter(request.query.dateTo);
+    const validAt = parseDateFilter(request.query.validAt);
+    const validFrom = parseDateFilter(request.query.validFrom);
+    const validTo = parseDateFilter(request.query.validTo);
 
-    if (dateFrom === null || dateTo === null) {
+    if (
+      dateFrom === null
+      || dateTo === null
+      || validAt === null
+      || validFrom === null
+      || validTo === null
+    ) {
+      const invalidField =
+        dateFrom === null
+          ? "dateFrom"
+          : dateTo === null
+            ? "dateTo"
+            : validAt === null
+              ? "validAt"
+              : validFrom === null
+                ? "validFrom"
+                : "validTo";
       return response.status(400).json(
         createApiError(
           "INVALID_DATE_FILTER",
-          "dateFrom and dateTo must use valid YYYY-MM-DD dates.",
+          "Date filters must use valid YYYY-MM-DD dates.",
           400,
           {
             category: "invalid-filter",
-            field: dateFrom === null ? "dateFrom" : "dateTo",
+            field: invalidField,
             requestId: response.locals.requestId,
           },
         ),
@@ -219,6 +248,7 @@ async function listCollection(
 
     const entityType = getQueryString(request.query.entityType);
     const temporalKind = getQueryString(request.query.temporalKind);
+    const timeRole = getQueryString(request.query.timeRole);
     const evidenceType = getQueryString(request.query.evidenceType);
     const causalKind = getQueryString(request.query.causalKind);
 
@@ -235,6 +265,14 @@ async function listCollection(
         response,
         "temporalKind",
         temporalKindSet,
+      );
+    }
+
+    if (timeRole && !temporalRoleSet.has(timeRole)) {
+      return invalidEnumResponse(
+        response,
+        "timeRole",
+        temporalRoleSet,
       );
     }
 
@@ -264,8 +302,12 @@ async function listCollection(
         request.query.relationshipType,
       ),
       temporalKind,
+      timeRole,
       dateFrom,
       dateTo,
+      validAt,
+      validFrom,
+      validTo,
       subjectId: getQueryString(request.query.subjectId),
       accountId: getQueryString(request.query.accountId),
       claimId: getQueryString(request.query.claimId),
@@ -382,6 +424,265 @@ for (const collection of collections) {
       getCollectionRecord(collection, request, response, next),
   );
 }
+
+const aliasSorts = new Set([
+  "text",
+  "createdAt",
+  "updatedAt",
+  "aliasId",
+] as const);
+const identifierSorts = new Set([
+  "scheme",
+  "value",
+  "createdAt",
+  "updatedAt",
+  "identifierId",
+] as const);
+const aliasQueryParameters = new Set([
+  "page",
+  "limit",
+  "offset",
+  "sort",
+  "direction",
+  "aliasType",
+  "languageTag",
+  "status",
+  "sourceId",
+]);
+const identifierQueryParameters = new Set([
+  "page",
+  "limit",
+  "offset",
+  "sort",
+  "direction",
+  "scheme",
+  "status",
+  "sourceId",
+]);
+
+contextRouter.get(
+  "/entities/:contextId/aliases",
+  async (request, response, next) => {
+    try {
+      const contextId = getRouteParam(request.params.contextId);
+      if (!contextId) {
+        return response.status(400).json(
+          createApiError(
+            "INVALID_CONTEXT_ID",
+            "A contextual entity ID is required.",
+            400,
+            {
+              category: "invalid-query",
+              field: "contextId",
+              requestId: response.locals.requestId,
+            },
+          ),
+        );
+      }
+
+      const entity = await getContextRecordById(contextId, "entity");
+      if (!entity) {
+        return response.status(404).json(
+          createApiError(
+            "CONTEXT_RECORD_NOT_FOUND",
+            `No entity contextual record found with ID ${contextId}.`,
+            404,
+            {
+              category: "not-found",
+              field: "contextId",
+              requestId: response.locals.requestId,
+            },
+          ),
+        );
+      }
+
+      const pagination = parsePagination(
+        request.query.page,
+        request.query.limit,
+        { offsetValue: request.query.offset },
+      );
+      if (isQueryParameterError(pagination)) {
+        return response.status(400).json(
+          withRequestId(pagination, response),
+        );
+      }
+      const sort = parseSort(
+        request.query.sort,
+        request.query.direction,
+        {
+          allowedSorts: aliasSorts,
+          defaultSort: "text",
+        },
+      );
+      if (isQueryParameterError(sort)) {
+        return response.status(400).json(
+          withRequestId(sort, response),
+        );
+      }
+
+      const aliasType = getQueryString(request.query.aliasType);
+      if (
+        aliasType
+        && !aliasTypeSet.has(aliasType)
+        && !/^custom:[a-z0-9][a-z0-9_-]{0,63}$/.test(aliasType)
+      ) {
+        return invalidEnumResponse(
+          response,
+          "aliasType",
+          aliasTypeSet,
+        );
+      }
+      const filters = {
+        aliasType,
+        languageTag: getQueryString(request.query.languageTag),
+        status: getQueryString(request.query.status),
+        sourceId: getQueryString(request.query.sourceId),
+      };
+      const result = await listEntityAliases({
+        entityId: contextId,
+        page: pagination.page,
+        limit: pagination.limit,
+        offset: pagination.offset,
+        sort: sort.sort,
+        direction: sort.direction,
+        ...Object.fromEntries(
+          Object.entries(filters).filter(
+            ([, value]) => value !== undefined,
+          ),
+        ),
+      });
+      return response.status(200).json(
+        withCollectionContract(
+          {
+            ...result,
+            aliases: result.items,
+          },
+          {
+            resource: "context-entity-aliases",
+            pagination,
+            filters: normalizeFilters(filters),
+            sort,
+            tieBreaker: "aliasId:asc",
+            legacyKeys: ["aliases"],
+            ignoredQueryParameters:
+              getUnsupportedQueryParameters(
+                request.query,
+                aliasQueryParameters,
+              ),
+            metadata: { entityId: contextId },
+          },
+        ),
+      );
+    } catch (error) {
+      return next(error);
+    }
+  },
+);
+
+contextRouter.get(
+  "/entities/:contextId/identifiers",
+  async (request, response, next) => {
+    try {
+      const contextId = getRouteParam(request.params.contextId);
+      if (!contextId) {
+        return response.status(400).json(
+          createApiError(
+            "INVALID_CONTEXT_ID",
+            "A contextual entity ID is required.",
+            400,
+            {
+              category: "invalid-query",
+              field: "contextId",
+              requestId: response.locals.requestId,
+            },
+          ),
+        );
+      }
+
+      const entity = await getContextRecordById(contextId, "entity");
+      if (!entity) {
+        return response.status(404).json(
+          createApiError(
+            "CONTEXT_RECORD_NOT_FOUND",
+            `No entity contextual record found with ID ${contextId}.`,
+            404,
+            {
+              category: "not-found",
+              field: "contextId",
+              requestId: response.locals.requestId,
+            },
+          ),
+        );
+      }
+
+      const pagination = parsePagination(
+        request.query.page,
+        request.query.limit,
+        { offsetValue: request.query.offset },
+      );
+      if (isQueryParameterError(pagination)) {
+        return response.status(400).json(
+          withRequestId(pagination, response),
+        );
+      }
+      const sort = parseSort(
+        request.query.sort,
+        request.query.direction,
+        {
+          allowedSorts: identifierSorts,
+          defaultSort: "scheme",
+        },
+      );
+      if (isQueryParameterError(sort)) {
+        return response.status(400).json(
+          withRequestId(sort, response),
+        );
+      }
+      const filters = {
+        scheme: getQueryString(request.query.scheme),
+        status: getQueryString(request.query.status),
+        sourceId: getQueryString(request.query.sourceId),
+      };
+      const result = await listEntityIdentifiers({
+        entityId: contextId,
+        page: pagination.page,
+        limit: pagination.limit,
+        offset: pagination.offset,
+        sort: sort.sort,
+        direction: sort.direction,
+        ...Object.fromEntries(
+          Object.entries(filters).filter(
+            ([, value]) => value !== undefined,
+          ),
+        ),
+      });
+      return response.status(200).json(
+        withCollectionContract(
+          {
+            ...result,
+            externalIdentifiers: result.items,
+          },
+          {
+            resource: "context-entity-identifiers",
+            pagination,
+            filters: normalizeFilters(filters),
+            sort,
+            tieBreaker: "identifierId:asc",
+            legacyKeys: ["externalIdentifiers"],
+            ignoredQueryParameters:
+              getUnsupportedQueryParameters(
+                request.query,
+                identifierQueryParameters,
+              ),
+            metadata: { entityId: contextId },
+          },
+        ),
+      );
+    } catch (error) {
+      return next(error);
+    }
+  },
+);
 
 contextRouter.get(
   "/records/:contextId",

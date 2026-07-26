@@ -27,6 +27,148 @@ export const temporalKinds = [
 export type TemporalKind =
   (typeof temporalKinds)[number];
 
+export const temporalRoles = [
+  "event_time",
+  "validity_time",
+  "publication_time",
+  "observation_time",
+  "recording_time",
+  "relationship_validity",
+  "identity_name_validity",
+  "source_creation_time",
+  "unspecified",
+] as const;
+
+export type TemporalRole =
+  (typeof temporalRoles)[number];
+
+export const historicalDatePrecisions = [
+  "day",
+  "month",
+  "year",
+  "decade",
+  "century",
+  "named_period",
+  "unknown",
+] as const;
+
+export type HistoricalDatePrecision =
+  (typeof historicalDatePrecisions)[number];
+
+export const historicalDateEras = ["BCE", "CE"] as const;
+
+export type HistoricalDateEra =
+  (typeof historicalDateEras)[number];
+
+export interface StructuredHistoricalDate {
+  originalLabel: string;
+  precision: HistoricalDatePrecision;
+  era?: HistoricalDateEra;
+  year?: number;
+  month?: number;
+  day?: number;
+  namedPeriod?: string;
+  calendarSystem?: string;
+  conversionStatus?: "not_required" | "unconverted";
+  approximate?: boolean;
+  uncertainty?: string;
+}
+
+export const contextAliasTypes = [
+  "alternate",
+  "historical",
+  "abbreviation",
+  "acronym",
+  "title",
+  "transliteration",
+  "translation",
+  "endonym",
+  "exonym",
+  "former_name",
+  "disputed",
+] as const;
+
+export type ContextAliasType =
+  | (typeof contextAliasTypes)[number]
+  | `custom:${string}`;
+
+export interface ContextEntityAlias {
+  id: string;
+  entityId: string;
+  text: string;
+  aliasType: ContextAliasType;
+  languageTag?: string;
+  scriptIdentifier?: string;
+  notes?: string;
+  uncertainty?: string;
+  status?: string;
+  temporalAssertionId?: string;
+  sourceIds?: string[];
+}
+
+export interface ContextExternalIdentifier {
+  id: string;
+  entityId: string;
+  scheme: string;
+  value: string;
+  normalizedValue?: string;
+  uri?: string;
+  label?: string;
+  status?: string;
+  notes?: string;
+  uncertainty?: string;
+  sourceIds?: string[];
+}
+
+export interface ContextFieldProvenance {
+  id: string;
+  targetId: string;
+  fieldPath: string;
+  subrecordType?: "alias" | "external_identifier" | "proposed_date" | "relationship_validity" | "identity_link";
+  subrecordId?: string;
+  sourceId: string;
+  supportType?: string;
+  note?: string;
+  confidence?: string;
+  uncertainty?: string;
+}
+
+export const identityRelationTypes = [
+  "possible_same_as",
+  "asserted_same_as",
+  "distinct_from",
+  "derived_from",
+  "successor_of",
+  "predecessor_of",
+] as const;
+
+export type IdentityRelationType =
+  (typeof identityRelationTypes)[number];
+
+export const relationshipTemporalLinkTypes = [
+  "valid_from",
+  "valid_until",
+  "valid_during",
+  "proposed_period",
+] as const;
+
+export type RelationshipTemporalLinkType =
+  (typeof relationshipTemporalLinkTypes)[number];
+
+export interface ContextRelationshipTemporalLink {
+  temporalAssertionId: string;
+  linkType: RelationshipTemporalLinkType;
+  sourceIds?: string[];
+  note?: string;
+}
+
+export interface ContextRelationshipValidity {
+  status?: string;
+  temporalLinks?: ContextRelationshipTemporalLink[];
+  sourceIds?: string[];
+  note?: string;
+}
+
 export const contextRecordKinds = [
   "entity",
   "temporal_assertion",
@@ -62,16 +204,21 @@ export interface ContextEntity
 }
 
 export interface ProposedContextDate {
+  id?: string;
   date?: string;
   label?: string;
+  structuredDate?: StructuredHistoricalDate;
   precision?: string;
   uncertainty?: string;
+  sourceIds?: string[];
+  note?: string;
 }
 
 export interface TemporalAssertion
   extends ContextRecordBase {
   subjectId: string;
   temporalKind: TemporalKind;
+  timeRole?: TemporalRole;
   exactDate?: string;
   startDate?: string;
   endDate?: string;
@@ -84,6 +231,7 @@ export interface TemporalAssertion
   startUncertainty?: string;
   endUncertainty?: string;
   dateNotes?: string;
+  structuredDate?: StructuredHistoricalDate;
 }
 
 export interface HistoricalAccount
@@ -170,6 +318,8 @@ export interface ContextRelationship
   explanation?: string;
   confidence?: string;
   uncertainty?: string;
+  reviewStatus?: string;
+  validity?: ContextRelationshipValidity;
 }
 
 export interface ContextCulturalMemory
@@ -184,6 +334,8 @@ export interface ContextCulturalMemory
 
 export interface ContextualBundle {
   entities?: ContextEntity[];
+  aliases?: ContextEntityAlias[];
+  externalIdentifiers?: ContextExternalIdentifier[];
   temporalAssertions?: TemporalAssertion[];
   accounts?: HistoricalAccount[];
   claims?: ContextClaim[];
@@ -194,6 +346,7 @@ export interface ContextualBundle {
   causalLinks?: ContextCausalLink[];
   relationships?: ContextRelationship[];
   culturalMemories?: ContextCulturalMemory[];
+  fieldProvenance?: ContextFieldProvenance[];
 }
 
 export interface NormalizedContextRecord {

@@ -5,9 +5,9 @@
   "repositoryPath": "C:\\Users\\Josh\\Documents\\GitHub\\dictionaryhub",
   "git": {
     "branch": "release/historyroot-alpha-integration-v1",
-    "commit": "f2a726f2c4edcb4d6b75c36fcd1cf8578285a00e"
+    "commit": "ef8cd09f6ef97458f1751612a86c2f4314885775"
   },
-  "currentInstalledStage": "SourceRoot Chunk 2 - Shared Frontend API Layer, Logging, and Observability v1",
+  "currentInstalledStage": "SourceRoot Chunk 3 - Contextual Identity and Time Refinement v1",
   "backendEntryPoints": [
     "backend/src/server.ts",
     "backend/src/app.ts",
@@ -126,11 +126,13 @@
     "backend/db/migrations/007_create_moderation_operations.sql",
     "backend/db/migrations/008_strengthen_session_identity.sql",
     "backend/db/migrations/009_create_contextual_knowledge_foundation.sql",
-    "backend/db/migrations/010_extend_contextual_governance.sql"
+    "backend/db/migrations/010_extend_contextual_governance.sql",
+    "backend/db/migrations/011_refine_contextual_identity_time.sql"
   ],
   "existingTests": [
     "backend/test/api.test.ts",
     "backend/test/contextual-knowledge.test.ts",
+    "backend/test/contextual-identity-time.test.ts",
     "backend/test/dictionaryroot-oewn.test.ts",
     "backend/test/governance-surface.test.ts",
     "backend/test/governed-historyroot.test.ts",
@@ -149,7 +151,8 @@
     "INSTALL-DICTIONARYROOT-GOVERNED-PLATFORM-FOUNDATION.ps1",
     "INSTALL-SOURCEROOT-CODEX-STAGE-CONTRACT.ps1",
     "INSTALL-SOURCEROOT-REGISTRY-API-CONTRACT.ps1",
-    "INSTALL-SOURCEROOT-FRONTEND-API-OBSERVABILITY.ps1"
+    "INSTALL-SOURCEROOT-FRONTEND-API-OBSERVABILITY.ps1",
+    "INSTALL-SOURCEROOT-CONTEXTUAL-IDENTITY-TIME.ps1"
   ],
   "existingVerifiers": [
     "VERIFY-DICTIONARYROOT-ACCOUNTS-ROLES-PERMISSIONS.ps1",
@@ -190,7 +193,8 @@
     "VERIFY-SOURCEROOT-CODEX-STAGE-CONTRACT.ps1",
     "VERIFY-SOURCEROOT-CONTEXTUAL-KNOWLEDGE-FOUNDATION.ps1",
     "VERIFY-SOURCEROOT-REGISTRY-API-CONTRACT.ps1",
-    "VERIFY-SOURCEROOT-FRONTEND-API-OBSERVABILITY.ps1"
+    "VERIFY-SOURCEROOT-FRONTEND-API-OBSERVABILITY.ps1",
+    "VERIFY-SOURCEROOT-CONTEXTUAL-IDENTITY-TIME.ps1"
   ],
   "requiredRuntimeFiles": [
     "backend/.env.example",
@@ -205,6 +209,7 @@
     "backend/src/middleware/request-logging.ts",
     "backend/src/observers/platform-operations-observer.ts",
     "backend/src/observers/data-quality-provenance-observer.ts",
+    "backend/src/services/contextual-time.ts",
     "backend/src/lib/runtime-config.ts",
     "backend/src/scripts/migrate.ts",
     "config/customers/dictionaryroot.json",
@@ -237,10 +242,23 @@
   "currentRoadmapPosition": {
     "corePhases": "Core Phases 1–9: completed according to the project roadmap",
     "phase10": "Phase 10: next implementation phase",
-    "currentCodexPackage": "Chunk 2 - Shared Frontend API Layer, Logging, and Observability v1",
+    "currentCodexPackage": "Chunk 3 - Contextual Identity and Time Refinement v1",
     "classificationNotice": "Roadmap status is a project-management classification, not an independent production-security audit."
   },
   "repositoryDiscrepancy": "The inspected repository already contains contextual knowledge, authentication/governance, and HistoryRoot implementation even though the Chunk 0 roadmap wording places Phase 10 next. Chunk 0 preserves and records that pre-existing state.",
-  "nextStageDependency": "SourceRoot Chunk 3 - Contextual Entity and Time Model",
+  "contextualIdentityTimeRefinement": {
+    "migration": "backend/db/migrations/011_refine_contextual_identity_time.sql",
+    "legacyAlternateNamesPreserved": true,
+    "automaticEntityMerge": false,
+    "calendarConversion": false,
+    "newFrontendFiles": [],
+    "focusedTests": 13,
+    "completeBackendTests": 168,
+    "testDatabase": "sourceroot_test",
+    "browserChecksPerformed": false,
+    "independentLiveApiChecksPerformed": false,
+    "successfulInstallerBackup": "backups/sourceroot-contextual-identity-time-refinement-v1-20260726-095336-578"
+  },
+  "nextStageDependency": "SourceRoot Chunk 4 — Contextual Assertions, Evidence, and Versioning",
   "secretHandling": "No secrets, passwords, tokens, connection strings, or private environment values are stored in this manifest."
 }

@@ -89,6 +89,9 @@ function investigationArea(failure: OperationalFailure): string {
     return "database connectivity and transaction diagnostics";
   }
   if (failure.eventType === "import_failed" || failure.eventType === "validation_failed") {
+    if (failure.failureCategory?.startsWith("context-")) {
+      return "contextual identity, time, provenance, and transactional import diagnostics";
+    }
     return "import validation, schema compatibility, and source bundle diagnostics";
   }
   if (failure.statusCode === 401 || failure.statusCode === 403) {
@@ -205,4 +208,3 @@ export function serializePlatformOperationsReport(
 ): string {
   return JSON.stringify(report, null, 2);
 }
-

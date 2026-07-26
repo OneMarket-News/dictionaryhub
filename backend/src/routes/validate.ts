@@ -28,7 +28,19 @@ validateRouter.post("/validate", (request, response) => {
           : {}),
       },
       validationResult: result.status,
-      failureCategory: "bundle-validation",
+      failureCategory: result.errors.some((issue) =>
+        [
+          "context",
+          "alias",
+          "externalIdentifier",
+          "fieldProvenance",
+          "temporalAssertion",
+          "relationship",
+        ].includes(issue.objectType)
+        || issue.code.startsWith("CONTEXT_")
+      )
+        ? "context-refinement-validation"
+        : "bundle-validation",
       durationMs: performance.now() - startedAt,
       ...(typeof bundle?.version === "string"
         ? { schemaVersion: bundle.version }

@@ -319,6 +319,29 @@ const searchRecordsCte = `
           'alternateNames',
             TO_JSONB(
               COALESCE(entity.alternate_names, ARRAY[]::TEXT[])
+            )
+            || COALESCE(
+              (
+                SELECT JSONB_AGG(alias.alias_text ORDER BY alias.alias_text, alias.alias_id)
+                FROM context_entity_aliases alias
+                WHERE alias.entity_context_id = cr.context_id
+              ),
+              '[]'::JSONB
+            ),
+          'externalIdentifiers',
+            COALESCE(
+              (
+                SELECT JSONB_AGG(
+                  JSONB_BUILD_OBJECT(
+                    'scheme', identifier.identifier_scheme,
+                    'value', identifier.identifier_value
+                  )
+                  ORDER BY identifier.identifier_scheme, identifier.identifier_value, identifier.identifier_id
+                )
+                FROM context_entity_identifiers identifier
+                WHERE identifier.entity_context_id = cr.context_id
+              ),
+              '[]'::JSONB
             ),
           'relationshipType', relationship.relationship_type,
           'fromId', relationship.from_context_id,
@@ -336,6 +359,20 @@ const searchRecordsCte = `
         entity.entity_type,
         entity.canonical_name,
         entity.description,
+        (
+          SELECT STRING_AGG(alias.alias_text, ' ' ORDER BY alias.alias_text, alias.alias_id)
+          FROM context_entity_aliases alias
+          WHERE alias.entity_context_id = cr.context_id
+        ),
+        (
+          SELECT STRING_AGG(
+            CONCAT_WS(' ', identifier.identifier_scheme, identifier.identifier_value),
+            ' '
+            ORDER BY identifier.identifier_scheme, identifier.identifier_value, identifier.identifier_id
+          )
+          FROM context_entity_identifiers identifier
+          WHERE identifier.entity_context_id = cr.context_id
+        ),
         account.content,
         claim.statement,
         interpretation.interpretation_text,
@@ -462,6 +499,19 @@ async function searchRegistryKnowledge(
                     END
                   ) AS alternate_name(value)
                   WHERE LOWER(alternate_name.value) = LOWER($5)
+                )
+                THEN 1
+              WHEN result_type = 'context-entity'
+                AND EXISTS (
+                  SELECT 1
+                  FROM JSONB_ARRAY_ELEMENTS(
+                    CASE
+                      WHEN JSONB_TYPEOF(metadata -> 'externalIdentifiers') = 'array'
+                        THEN metadata -> 'externalIdentifiers'
+                      ELSE '[]'::JSONB
+                    END
+                  ) AS identifier(value)
+                  WHERE LOWER(identifier.value ->> 'value') = LOWER($5)
                 )
                 THEN 1
               WHEN title ILIKE $6

@@ -4,20 +4,27 @@ import { z } from "zod";
 import {
   contextRecordKinds,
   type ContextRecordKind,
+  type StructuredHistoricalDate,
 } from "../contextual-types.js";
 import { sha256 } from "../lib/security.js";
 import {
   contextCausalLinkSchema,
   contextClaimSchema,
   contextCulturalMemorySchema,
+  contextEntityAliasSchema,
   contextEntitySchema,
+  contextExternalIdentifierSchema,
   contextEvidenceSchema,
+  contextFieldProvenanceSchema,
   contextInterpretationSchema,
   contextPerspectiveSchema,
   contextRelationshipSchema,
   historicalAccountSchema,
   temporalAssertionSchema,
 } from "./contextual-schemas.js";
+import {
+  chronologyBoundsForStructuredDate,
+} from "./contextual-time.js";
 
 export interface GovernanceValidationIssue {
   code: string;
@@ -220,6 +227,9 @@ export async function loadGovernedTarget(
       stance: string | null;
       notes: string | null;
     }>;
+    aliases: Array<Record<string, unknown>>;
+    external_identifiers: Array<Record<string, unknown>>;
+    field_provenance: Array<Record<string, unknown>>;
   }>(
     `SELECT cr.context_id, cr.bundle_id, cr.record_kind, cr.raw_data,
             cr.label, cr.summary, cr.domain, cr.status, cr.metadata,
@@ -241,7 +251,81 @@ export async function loadGovernedTarget(
                FROM context_record_perspectives link
                WHERE link.record_context_id = cr.context_id),
               '[]'::JSONB
-            ) AS perspective_links
+            ) AS perspective_links,
+            COALESCE(
+              (SELECT JSONB_AGG(
+                 JSONB_STRIP_NULLS(JSONB_BUILD_OBJECT(
+                   'id', alias.alias_id,
+                   'entityId', alias.entity_context_id,
+                   'text', alias.alias_text,
+                   'aliasType', alias.alias_type,
+                   'languageTag', alias.language_tag,
+                   'scriptIdentifier', alias.script_identifier,
+                   'notes', alias.notes,
+                   'uncertainty', alias.uncertainty,
+                   'status', alias.status,
+                   'temporalAssertionId', alias.temporal_context_id,
+                   'sourceIds',
+                     COALESCE(
+                       (SELECT JSONB_AGG(source.source_id ORDER BY source.source_id)
+                        FROM context_entity_alias_sources source
+                        WHERE source.alias_id = alias.alias_id),
+                       '[]'::JSONB
+                     )
+                 ))
+                 ORDER BY alias.alias_text, alias.alias_id
+               )
+               FROM context_entity_aliases alias
+               WHERE alias.entity_context_id = cr.context_id),
+              '[]'::JSONB
+            ) AS aliases,
+            COALESCE(
+              (SELECT JSONB_AGG(
+                 JSONB_STRIP_NULLS(JSONB_BUILD_OBJECT(
+                   'id', identifier.identifier_id,
+                   'entityId', identifier.entity_context_id,
+                   'scheme', identifier.identifier_scheme,
+                   'value', identifier.identifier_value,
+                   'normalizedValue', identifier.normalized_value,
+                   'uri', identifier.identifier_uri,
+                   'label', identifier.label,
+                   'status', identifier.status,
+                   'notes', identifier.notes,
+                   'uncertainty', identifier.uncertainty,
+                   'sourceIds',
+                     COALESCE(
+                       (SELECT JSONB_AGG(source.source_id ORDER BY source.source_id)
+                        FROM context_entity_identifier_sources source
+                        WHERE source.identifier_id = identifier.identifier_id),
+                       '[]'::JSONB
+                     )
+                 ))
+                 ORDER BY identifier.identifier_scheme, identifier.identifier_value, identifier.identifier_id
+               )
+               FROM context_entity_identifiers identifier
+               WHERE identifier.entity_context_id = cr.context_id),
+              '[]'::JSONB
+            ) AS external_identifiers,
+            COALESCE(
+              (SELECT JSONB_AGG(
+                 JSONB_STRIP_NULLS(JSONB_BUILD_OBJECT(
+                   'id', provenance.provenance_id,
+                   'targetId', provenance.context_id,
+                   'fieldPath', provenance.field_path,
+                   'subrecordType', provenance.subrecord_type,
+                   'subrecordId', provenance.subrecord_id,
+                   'sourceId', provenance.source_id,
+                   'supportType', provenance.support_type,
+                   'note', provenance.note,
+                   'confidence', provenance.confidence,
+                   'uncertainty', provenance.uncertainty
+                 ))
+                 ORDER BY provenance.field_path, provenance.provenance_id
+               )
+               FROM context_field_provenance provenance
+               WHERE provenance.context_id = cr.context_id),
+              '[]'::JSONB
+            ) AS field_provenance
      FROM context_records cr
      WHERE cr.context_id = $1 AND cr.record_kind = $2`,
     [targetId, targetType],
@@ -266,6 +350,9 @@ export async function loadGovernedTarget(
     metadata: row.metadata || {},
     sourceIds: row.source_ids || [],
     perspectiveLinks: row.perspective_links || [],
+    aliases: row.aliases || [],
+    externalIdentifiers: row.external_identifiers || [],
+    fieldProvenance: row.field_provenance || [],
   });
   return {
     exists: true,
@@ -348,13 +435,23 @@ function stringArray(value: unknown): string[] {
     : [];
 }
 
-function perspectiveLinks(value: unknown): Array<Record<string, unknown>> {
+function recordArray(value: unknown): Array<Record<string, unknown>> {
   return Array.isArray(value)
     ? value.filter(
         (item): item is Record<string, unknown> =>
           Boolean(item) && typeof item === "object" && !Array.isArray(item),
       )
     : [];
+}
+
+function recordValue(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {};
+}
+
+function perspectiveLinks(value: unknown): Array<Record<string, unknown>> {
+  return recordArray(value);
 }
 
 async function requireSameBundleReference(
@@ -431,6 +528,42 @@ async function validateReferences(
         "GOVERNANCE_PERSPECTIVE_NOT_FOUND",
         "Perspective attribution must reference an existing perspective in the dataset.",
         { field: "perspectiveLinks" },
+      );
+    }
+  }
+
+  for (const alias of recordArray(record.aliases)) {
+    if (
+      alias.temporalAssertionId !== undefined
+      && !(await requireSameBundleReference(
+        client,
+        alias.temporalAssertionId,
+        bundleId,
+      ))
+    ) {
+      addIssue(
+        issues,
+        "GOVERNANCE_ALIAS_TEMPORAL_NOT_FOUND",
+        "Alias validity must reference a temporal assertion in the proposal dataset.",
+        { field: "aliases.temporalAssertionId" },
+      );
+    }
+  }
+
+  const validity = recordValue(record.validity);
+  for (const link of recordArray(validity.temporalLinks)) {
+    if (
+      !(await requireSameBundleReference(
+        client,
+        link.temporalAssertionId,
+        bundleId,
+      ))
+    ) {
+      addIssue(
+        issues,
+        "GOVERNANCE_VALIDITY_TEMPORAL_NOT_FOUND",
+        "Relationship validity must reference a temporal assertion in the proposal dataset.",
+        { field: "validity.temporalLinks" },
       );
     }
   }
@@ -599,7 +732,19 @@ export async function validateGovernedChange(
         `Target type ${input.targetType} is not a governed contextual type.`,
       );
     } else {
-      const { perspectiveLinks: _links, ...schemaRecord } = record;
+      const {
+        perspectiveLinks: _links,
+        aliases,
+        externalIdentifiers,
+        fieldProvenance,
+        identityLinks: _identityLinks,
+        temporalContext: _temporalContext,
+        proposedDateDetails: _proposedDateDetails,
+        temporalLinks: _temporalLinks,
+        validitySources: _validitySources,
+        chronology: _chronology,
+        ...schemaRecord
+      } = record;
       const parsed = schema.safeParse(schemaRecord);
       if (!parsed.success) {
         for (const issue of parsed.error.issues) {
@@ -608,6 +753,93 @@ export async function validateGovernedChange(
             "INVALID_CONTEXTUAL_STRUCTURE",
             issue.message,
             { field: issue.path.join(".") },
+          );
+        }
+      }
+
+      if (input.targetType === "entity") {
+        for (const [index, alias] of recordArray(aliases).entries()) {
+          const parsedAlias = contextEntityAliasSchema.safeParse(alias);
+          if (!parsedAlias.success) {
+            for (const issue of parsedAlias.error.issues) {
+              addIssue(
+                errors,
+                "INVALID_CONTEXT_ALIAS",
+                issue.message,
+                { field: `aliases.${index}.${issue.path.join(".")}` },
+              );
+            }
+          } else if (parsedAlias.data.entityId !== input.targetId) {
+            addIssue(
+              errors,
+              "CONTEXT_ALIAS_ENTITY_MISMATCH",
+              "A governed alias must remain owned by the target entity.",
+              { field: `aliases.${index}.entityId` },
+            );
+          }
+        }
+
+        for (
+          const [index, identifier]
+          of recordArray(externalIdentifiers).entries()
+        ) {
+          const parsedIdentifier =
+            contextExternalIdentifierSchema.safeParse(identifier);
+          if (!parsedIdentifier.success) {
+            for (const issue of parsedIdentifier.error.issues) {
+              addIssue(
+                errors,
+                "INVALID_CONTEXT_IDENTIFIER",
+                issue.message,
+                {
+                  field:
+                    `externalIdentifiers.${index}.${issue.path.join(".")}`,
+                },
+              );
+            }
+          } else if (
+            parsedIdentifier.data.entityId !== input.targetId
+          ) {
+            addIssue(
+              errors,
+              "CONTEXT_IDENTIFIER_ENTITY_MISMATCH",
+              "A governed identifier must remain owned by the target entity.",
+              {
+                field: `externalIdentifiers.${index}.entityId`,
+              },
+            );
+          }
+        }
+      }
+
+      for (
+        const [index, provenance]
+        of recordArray(fieldProvenance).entries()
+      ) {
+        const parsedProvenance =
+          contextFieldProvenanceSchema.safeParse(provenance);
+        if (!parsedProvenance.success) {
+          for (const issue of parsedProvenance.error.issues) {
+            addIssue(
+              errors,
+              "INVALID_CONTEXT_FIELD_PROVENANCE",
+              issue.message,
+              {
+                field:
+                  `fieldProvenance.${index}.${issue.path.join(".")}`,
+              },
+            );
+          }
+        } else if (
+          parsedProvenance.data.targetId !== input.targetId
+        ) {
+          addIssue(
+            errors,
+            "CONTEXT_PROVENANCE_TARGET_MISMATCH",
+            "Field provenance must remain owned by the governed target.",
+            {
+              field: `fieldProvenance.${index}.targetId`,
+            },
           );
         }
       }
@@ -620,6 +852,22 @@ export async function validateGovernedChange(
       ...input.evidenceSourceIds,
       ...stringArray(record.sourceIds),
       ...(text(record.sourceId) ? [text(record.sourceId)] : []),
+      ...recordArray(record.aliases).flatMap(
+        (alias) => stringArray(alias.sourceIds),
+      ),
+      ...recordArray(record.externalIdentifiers).flatMap(
+        (identifier) => stringArray(identifier.sourceIds),
+      ),
+      ...recordArray(record.fieldProvenance)
+        .map((provenance) => text(provenance.sourceId))
+        .filter(Boolean),
+      ...recordArray(record.proposedDates).flatMap(
+        (proposal) => stringArray(proposal.sourceIds),
+      ),
+      ...stringArray(recordValue(record.validity).sourceIds),
+      ...recordArray(
+        recordValue(record.validity).temporalLinks,
+      ).flatMap((link) => stringArray(link.sourceIds)),
     ]),
   ];
   await validateEvidenceSources(
@@ -862,6 +1110,235 @@ async function replaceContextLinks(
   }
 }
 
+async function replaceEntityRefinements(
+  client: PoolClient,
+  bundleId: string,
+  targetId: string,
+  record: Record<string, unknown>,
+): Promise<void> {
+  await client.query(
+    "DELETE FROM context_entity_aliases WHERE entity_context_id = $1",
+    [targetId],
+  );
+  await client.query(
+    "DELETE FROM context_entity_identifiers WHERE entity_context_id = $1",
+    [targetId],
+  );
+
+  for (const alias of recordArray(record.aliases)) {
+    await client.query(
+      `INSERT INTO context_entity_aliases(
+         alias_id, entity_context_id, bundle_id, alias_text, alias_type,
+         language_tag, script_identifier, notes, uncertainty, status,
+         temporal_context_id, legacy_derived
+       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,FALSE)`,
+      [
+        alias.id,
+        targetId,
+        bundleId,
+        alias.text,
+        alias.aliasType,
+        text(alias.languageTag) || null,
+        text(alias.scriptIdentifier) || null,
+        text(alias.notes) || null,
+        text(alias.uncertainty) || null,
+        text(alias.status) || null,
+        text(alias.temporalAssertionId) || null,
+      ],
+    );
+    for (const sourceId of new Set(stringArray(alias.sourceIds))) {
+      await client.query(
+        `INSERT INTO context_entity_alias_sources(
+           alias_id, source_id, bundle_id
+         ) VALUES ($1,$2,$3)`,
+        [alias.id, sourceId, bundleId],
+      );
+    }
+  }
+
+  for (
+    const identifier
+    of recordArray(record.externalIdentifiers)
+  ) {
+    await client.query(
+      `INSERT INTO context_entity_identifiers(
+         identifier_id, entity_context_id, bundle_id, identifier_scheme,
+         identifier_value, normalized_value, identifier_uri, label,
+         status, notes, uncertainty
+       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+      [
+        identifier.id,
+        targetId,
+        bundleId,
+        identifier.scheme,
+        identifier.value,
+        text(identifier.normalizedValue) || null,
+        text(identifier.uri) || null,
+        text(identifier.label) || null,
+        text(identifier.status) || null,
+        text(identifier.notes) || null,
+        text(identifier.uncertainty) || null,
+      ],
+    );
+    for (
+      const sourceId
+      of new Set(stringArray(identifier.sourceIds))
+    ) {
+      await client.query(
+        `INSERT INTO context_entity_identifier_sources(
+           identifier_id, source_id, bundle_id
+         ) VALUES ($1,$2,$3)`,
+        [identifier.id, sourceId, bundleId],
+      );
+    }
+  }
+}
+
+async function replaceTemporalProposals(
+  client: PoolClient,
+  bundleId: string,
+  targetId: string,
+  record: Record<string, unknown>,
+): Promise<void> {
+  await client.query(
+    "DELETE FROM context_temporal_proposals WHERE temporal_context_id = $1",
+    [targetId],
+  );
+  for (const proposal of recordArray(record.proposedDates)) {
+    if (!text(proposal.id)) continue;
+    const structuredDate =
+      recordValue(proposal.structuredDate);
+    const chronology = chronologyBoundsForStructuredDate(
+      Object.keys(structuredDate).length
+        ? structuredDate as unknown as StructuredHistoricalDate
+        : undefined,
+    );
+    await client.query(
+      `INSERT INTO context_temporal_proposals(
+         proposal_id, temporal_context_id, bundle_id, proposed_date,
+         date_label, structured_date, precision, uncertainty, note,
+         chronology_start_year, chronology_end_year
+       ) VALUES ($1,$2,$3,$4,$5,$6::JSONB,$7,$8,$9,$10,$11)`,
+      [
+        proposal.id,
+        targetId,
+        bundleId,
+        text(proposal.date) || null,
+        text(proposal.label) || null,
+        Object.keys(structuredDate).length
+          ? JSON.stringify(structuredDate)
+          : null,
+        text(proposal.precision) || null,
+        text(proposal.uncertainty) || null,
+        text(proposal.note) || null,
+        chronology?.startYear ?? null,
+        chronology?.endYear ?? null,
+      ],
+    );
+    for (
+      const sourceId
+      of new Set(stringArray(proposal.sourceIds))
+    ) {
+      await client.query(
+        `INSERT INTO context_temporal_proposal_sources(
+           proposal_id, source_id, bundle_id
+         ) VALUES ($1,$2,$3)`,
+        [proposal.id, sourceId, bundleId],
+      );
+    }
+  }
+}
+
+async function replaceRelationshipValidity(
+  client: PoolClient,
+  bundleId: string,
+  targetId: string,
+  record: Record<string, unknown>,
+): Promise<void> {
+  await client.query(
+    `DELETE FROM context_relationship_temporal_links
+     WHERE relationship_context_id = $1`,
+    [targetId],
+  );
+  await client.query(
+    `DELETE FROM context_relationship_validity_sources
+     WHERE relationship_context_id = $1`,
+    [targetId],
+  );
+
+  const validity = recordValue(record.validity);
+  for (const link of recordArray(validity.temporalLinks)) {
+    await client.query(
+      `INSERT INTO context_relationship_temporal_links(
+         relationship_context_id, temporal_context_id, link_type, note
+       ) VALUES ($1,$2,$3,$4)`,
+      [
+        targetId,
+        link.temporalAssertionId,
+        link.linkType,
+        text(link.note) || null,
+      ],
+    );
+    for (const sourceId of new Set(stringArray(link.sourceIds))) {
+      await client.query(
+        `INSERT INTO context_relationship_temporal_sources(
+           relationship_context_id, temporal_context_id, link_type,
+           source_id, bundle_id
+         ) VALUES ($1,$2,$3,$4,$5)`,
+        [
+          targetId,
+          link.temporalAssertionId,
+          link.linkType,
+          sourceId,
+          bundleId,
+        ],
+      );
+    }
+  }
+  for (const sourceId of new Set(stringArray(validity.sourceIds))) {
+    await client.query(
+      `INSERT INTO context_relationship_validity_sources(
+         relationship_context_id, source_id, bundle_id
+       ) VALUES ($1,$2,$3)`,
+      [targetId, sourceId, bundleId],
+    );
+  }
+}
+
+async function replaceFieldProvenance(
+  client: PoolClient,
+  bundleId: string,
+  targetId: string,
+  record: Record<string, unknown>,
+): Promise<void> {
+  await client.query(
+    "DELETE FROM context_field_provenance WHERE context_id = $1",
+    [targetId],
+  );
+  for (const provenance of recordArray(record.fieldProvenance)) {
+    await client.query(
+      `INSERT INTO context_field_provenance(
+         provenance_id, context_id, bundle_id, field_path,
+         subrecord_type, subrecord_id, source_id, support_type, note,
+         confidence, uncertainty
+       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+      [
+        provenance.id,
+        targetId,
+        bundleId,
+        provenance.fieldPath,
+        text(provenance.subrecordType) || null,
+        text(provenance.subrecordId) || null,
+        provenance.sourceId,
+        text(provenance.supportType) || null,
+        text(provenance.note) || null,
+        text(provenance.confidence) || null,
+        text(provenance.uncertainty) || null,
+      ],
+    );
+  }
+}
+
 async function upsertSubtype(
   client: PoolClient,
   kind: ContextRecordKind,
@@ -888,13 +1365,21 @@ async function upsertSubtype(
       );
       break;
     case "temporal_assertion":
+      {
+        const structuredDate = recordValue(record.structuredDate);
+        const chronology = chronologyBoundsForStructuredDate(
+          Object.keys(structuredDate).length
+            ? structuredDate as unknown as StructuredHistoricalDate
+            : undefined,
+        );
       await client.query(
         `INSERT INTO context_temporal_assertions(
            context_id, subject_context_id, temporal_kind, exact_date,
            start_date, end_date, before_date, after_date, proposed_dates,
            date_label, calendar_system, date_precision, start_uncertainty,
-           end_uncertainty, date_notes
-         ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9::JSONB,$10,$11,$12,$13,$14,$15)
+           end_uncertainty, date_notes, time_role, structured_date,
+           chronology_start_year, chronology_end_year
+         ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9::JSONB,$10,$11,$12,$13,$14,$15,$16,$17::JSONB,$18,$19)
          ON CONFLICT (context_id) DO UPDATE SET
            subject_context_id=EXCLUDED.subject_context_id,
            temporal_kind=EXCLUDED.temporal_kind,
@@ -909,7 +1394,11 @@ async function upsertSubtype(
            date_precision=EXCLUDED.date_precision,
            start_uncertainty=EXCLUDED.start_uncertainty,
            end_uncertainty=EXCLUDED.end_uncertainty,
-           date_notes=EXCLUDED.date_notes`,
+           date_notes=EXCLUDED.date_notes,
+           time_role=EXCLUDED.time_role,
+           structured_date=EXCLUDED.structured_date,
+           chronology_start_year=EXCLUDED.chronology_start_year,
+           chronology_end_year=EXCLUDED.chronology_end_year`,
         [
           id, record.subjectId, record.temporalKind,
           text(record.exactDate) || null, text(record.startDate) || null,
@@ -921,9 +1410,16 @@ async function upsertSubtype(
           text(record.startUncertainty) || null,
           text(record.endUncertainty) || null,
           text(record.dateNotes) || null,
+          text(record.timeRole) || "unspecified",
+          Object.keys(structuredDate).length
+            ? JSON.stringify(structuredDate)
+            : null,
+          chronology?.startYear ?? null,
+          chronology?.endYear ?? null,
         ],
       );
       break;
+      }
     case "account":
       await client.query(
         `INSERT INTO context_accounts(context_id, subject_context_id, author_context_id, source_id, account_type, content, publication_label)
@@ -1032,8 +1528,8 @@ async function upsertSubtype(
       break;
     case "relationship":
       await client.query(
-        `INSERT INTO context_relationships(context_id, from_context_id, to_context_id, relationship_type, relationship_role, explanation, confidence, uncertainty)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+        `INSERT INTO context_relationships(context_id, from_context_id, to_context_id, relationship_type, relationship_role, explanation, confidence, uncertainty, review_status)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
          ON CONFLICT (context_id) DO UPDATE SET
            from_context_id=EXCLUDED.from_context_id,
            to_context_id=EXCLUDED.to_context_id,
@@ -1041,11 +1537,13 @@ async function upsertSubtype(
            relationship_role=EXCLUDED.relationship_role,
            explanation=EXCLUDED.explanation,
            confidence=EXCLUDED.confidence,
-           uncertainty=EXCLUDED.uncertainty`,
+           uncertainty=EXCLUDED.uncertainty,
+           review_status=EXCLUDED.review_status`,
         [
           id, record.fromId, record.toId, record.relationshipType,
           text(record.relationshipRole) || null, text(record.explanation) || null,
           text(record.confidence) || "unknown", text(record.uncertainty) || null,
+          text(record.reviewStatus) || null,
         ],
       );
       break;
@@ -1150,6 +1648,36 @@ export async function materializeGovernedSnapshot(
   );
   await upsertSubtype(client, kind, snapshot);
   await replaceContextLinks(client, bundleId, targetId, snapshot);
+  if (kind === "entity") {
+    await replaceEntityRefinements(
+      client,
+      bundleId,
+      targetId,
+      snapshot,
+    );
+  }
+  if (kind === "temporal_assertion") {
+    await replaceTemporalProposals(
+      client,
+      bundleId,
+      targetId,
+      snapshot,
+    );
+  }
+  if (kind === "relationship") {
+    await replaceRelationshipValidity(
+      client,
+      bundleId,
+      targetId,
+      snapshot,
+    );
+  }
+  await replaceFieldProvenance(
+    client,
+    bundleId,
+    targetId,
+    snapshot,
+  );
 }
 
 export async function hideNewGovernedTarget(

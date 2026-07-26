@@ -5,6 +5,9 @@ import type {
   ContextRecordKind,
   ContextualBundle,
 } from "../contextual-types.js";
+import {
+  chronologyBoundsForStructuredDate,
+} from "./contextual-time.js";
 
 type ContextRecordWithKind = {
   kind: ContextRecordKind;
@@ -145,6 +148,119 @@ async function insertEntities(
   }
 }
 
+async function insertEntityAliases(
+  client: PoolClient,
+  bundleId: string,
+  context: ContextualBundle,
+): Promise<void> {
+  for (const alias of context.aliases ?? []) {
+    await client.query(
+      `
+        INSERT INTO context_entity_aliases (
+          alias_id,
+          entity_context_id,
+          bundle_id,
+          alias_text,
+          alias_type,
+          language_tag,
+          script_identifier,
+          notes,
+          uncertainty,
+          status,
+          temporal_context_id,
+          legacy_derived
+        )
+        VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, FALSE
+        );
+      `,
+      [
+        alias.id,
+        alias.entityId,
+        bundleId,
+        alias.text,
+        alias.aliasType,
+        alias.languageTag ?? null,
+        alias.scriptIdentifier ?? null,
+        alias.notes ?? null,
+        alias.uncertainty ?? null,
+        alias.status ?? null,
+        alias.temporalAssertionId ?? null,
+      ],
+    );
+
+    for (const sourceId of new Set(alias.sourceIds ?? [])) {
+      await client.query(
+        `
+          INSERT INTO context_entity_alias_sources (
+            alias_id,
+            source_id,
+            bundle_id
+          )
+          VALUES ($1, $2, $3);
+        `,
+        [alias.id, sourceId, bundleId],
+      );
+    }
+  }
+}
+
+async function insertEntityIdentifiers(
+  client: PoolClient,
+  bundleId: string,
+  context: ContextualBundle,
+): Promise<void> {
+  for (const identifier of context.externalIdentifiers ?? []) {
+    await client.query(
+      `
+        INSERT INTO context_entity_identifiers (
+          identifier_id,
+          entity_context_id,
+          bundle_id,
+          identifier_scheme,
+          identifier_value,
+          normalized_value,
+          identifier_uri,
+          label,
+          status,
+          notes,
+          uncertainty
+        )
+        VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
+        );
+      `,
+      [
+        identifier.id,
+        identifier.entityId,
+        bundleId,
+        identifier.scheme,
+        identifier.value,
+        identifier.normalizedValue ?? null,
+        identifier.uri ?? null,
+        identifier.label ?? null,
+        identifier.status ?? null,
+        identifier.notes ?? null,
+        identifier.uncertainty ?? null,
+      ],
+    );
+
+    for (const sourceId of new Set(identifier.sourceIds ?? [])) {
+      await client.query(
+        `
+          INSERT INTO context_entity_identifier_sources (
+            identifier_id,
+            source_id,
+            bundle_id
+          )
+          VALUES ($1, $2, $3);
+        `,
+        [identifier.id, sourceId, bundleId],
+      );
+    }
+  }
+}
+
 async function insertPerspectives(
   client: PoolClient,
   context: ContextualBundle,
@@ -173,6 +289,9 @@ async function insertTemporalAssertions(
   context: ContextualBundle,
 ): Promise<void> {
   for (const temporal of context.temporalAssertions ?? []) {
+    const chronology = chronologyBoundsForStructuredDate(
+      temporal.structuredDate,
+    );
     await client.query(
       `
         INSERT INTO context_temporal_assertions (
@@ -190,7 +309,11 @@ async function insertTemporalAssertions(
           date_precision,
           start_uncertainty,
           end_uncertainty,
-          date_notes
+          date_notes,
+          time_role,
+          structured_date,
+          chronology_start_year,
+          chronology_end_year
         )
         VALUES (
           $1,
@@ -207,7 +330,11 @@ async function insertTemporalAssertions(
           $12,
           $13,
           $14,
-          $15
+          $15,
+          $16,
+          $17::JSONB,
+          $18,
+          $19
         );
       `,
       [
@@ -226,8 +353,81 @@ async function insertTemporalAssertions(
         temporal.startUncertainty ?? null,
         temporal.endUncertainty ?? null,
         temporal.dateNotes ?? null,
+        temporal.timeRole ?? "unspecified",
+        temporal.structuredDate
+          ? JSON.stringify(temporal.structuredDate)
+          : null,
+        chronology?.startYear ?? null,
+        chronology?.endYear ?? null,
       ],
     );
+  }
+}
+
+async function insertTemporalProposals(
+  client: PoolClient,
+  bundleId: string,
+  context: ContextualBundle,
+): Promise<void> {
+  for (const temporal of context.temporalAssertions ?? []) {
+    for (const proposal of temporal.proposedDates ?? []) {
+      if (!proposal.id) {
+        continue;
+      }
+
+      const chronology = chronologyBoundsForStructuredDate(
+        proposal.structuredDate,
+      );
+      await client.query(
+        `
+          INSERT INTO context_temporal_proposals (
+            proposal_id,
+            temporal_context_id,
+            bundle_id,
+            proposed_date,
+            date_label,
+            structured_date,
+            precision,
+            uncertainty,
+            note,
+            chronology_start_year,
+            chronology_end_year
+          )
+          VALUES (
+            $1, $2, $3, $4, $5, $6::JSONB, $7, $8, $9, $10, $11
+          );
+        `,
+        [
+          proposal.id,
+          temporal.id,
+          bundleId,
+          proposal.date ?? null,
+          proposal.label ?? null,
+          proposal.structuredDate
+            ? JSON.stringify(proposal.structuredDate)
+            : null,
+          proposal.precision ?? null,
+          proposal.uncertainty ?? null,
+          proposal.note ?? null,
+          chronology?.startYear ?? null,
+          chronology?.endYear ?? null,
+        ],
+      );
+
+      for (const sourceId of new Set(proposal.sourceIds ?? [])) {
+        await client.query(
+          `
+            INSERT INTO context_temporal_proposal_sources (
+              proposal_id,
+              source_id,
+              bundle_id
+            )
+            VALUES ($1, $2, $3);
+          `,
+          [proposal.id, sourceId, bundleId],
+        );
+      }
+    }
   }
 }
 
@@ -409,9 +609,10 @@ async function insertRelationships(
           relationship_role,
           explanation,
           confidence,
-          uncertainty
+          uncertainty,
+          review_status
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);
       `,
       [
         relationship.id,
@@ -422,6 +623,116 @@ async function insertRelationships(
         relationship.explanation ?? null,
         relationship.confidence ?? "unknown",
         relationship.uncertainty ?? null,
+        relationship.reviewStatus ?? null,
+      ],
+    );
+  }
+}
+
+async function insertRelationshipValidity(
+  client: PoolClient,
+  bundleId: string,
+  context: ContextualBundle,
+): Promise<void> {
+  for (const relationship of context.relationships ?? []) {
+    for (const link of relationship.validity?.temporalLinks ?? []) {
+      await client.query(
+        `
+          INSERT INTO context_relationship_temporal_links (
+            relationship_context_id,
+            temporal_context_id,
+            link_type,
+            note
+          )
+          VALUES ($1, $2, $3, $4);
+        `,
+        [
+          relationship.id,
+          link.temporalAssertionId,
+          link.linkType,
+          link.note ?? null,
+        ],
+      );
+
+      for (const sourceId of new Set(link.sourceIds ?? [])) {
+        await client.query(
+          `
+            INSERT INTO context_relationship_temporal_sources (
+              relationship_context_id,
+              temporal_context_id,
+              link_type,
+              source_id,
+              bundle_id
+            )
+            VALUES ($1, $2, $3, $4, $5);
+          `,
+          [
+            relationship.id,
+            link.temporalAssertionId,
+            link.linkType,
+            sourceId,
+            bundleId,
+          ],
+        );
+      }
+    }
+
+    for (
+      const sourceId
+      of new Set(relationship.validity?.sourceIds ?? [])
+    ) {
+      await client.query(
+        `
+          INSERT INTO context_relationship_validity_sources (
+            relationship_context_id,
+            source_id,
+            bundle_id
+          )
+          VALUES ($1, $2, $3);
+        `,
+        [relationship.id, sourceId, bundleId],
+      );
+    }
+  }
+}
+
+async function insertFieldProvenance(
+  client: PoolClient,
+  bundleId: string,
+  context: ContextualBundle,
+): Promise<void> {
+  for (const provenance of context.fieldProvenance ?? []) {
+    await client.query(
+      `
+        INSERT INTO context_field_provenance (
+          provenance_id,
+          context_id,
+          bundle_id,
+          field_path,
+          subrecord_type,
+          subrecord_id,
+          source_id,
+          support_type,
+          note,
+          confidence,
+          uncertainty
+        )
+        VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
+        );
+      `,
+      [
+        provenance.id,
+        provenance.targetId,
+        bundleId,
+        provenance.fieldPath,
+        provenance.subrecordType ?? null,
+        provenance.subrecordId ?? null,
+        provenance.sourceId,
+        provenance.supportType ?? null,
+        provenance.note ?? null,
+        provenance.confidence ?? null,
+        provenance.uncertainty ?? null,
       ],
     );
   }
@@ -536,13 +847,18 @@ export async function insertContextualBundle(
   await insertEntities(client, context);
   await insertPerspectives(client, context);
   await insertTemporalAssertions(client, context);
+  await insertEntityAliases(client, bundleId, context);
+  await insertEntityIdentifiers(client, bundleId, context);
+  await insertTemporalProposals(client, bundleId, context);
   await insertAccounts(client, context);
   await insertClaims(client, context);
   await insertEvidence(client, context);
   await insertInterpretations(client, context);
   await insertCausalLinks(client, context);
   await insertRelationships(client, context);
+  await insertRelationshipValidity(client, bundleId, context);
   await insertCulturalMemories(client, context);
   await insertRecordPerspectives(client, bundleId, context);
+  await insertFieldProvenance(client, bundleId, context);
   await insertRecordSources(client, bundleId, context);
 }

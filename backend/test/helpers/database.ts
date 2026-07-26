@@ -11,6 +11,16 @@ export async function resetTestDatabase(): Promise<void> {
 
   await pool.query(`
     TRUNCATE TABLE
+      context_field_provenance,
+      context_relationship_validity_sources,
+      context_relationship_temporal_sources,
+      context_relationship_temporal_links,
+      context_temporal_proposal_sources,
+      context_temporal_proposals,
+      context_entity_identifier_sources,
+      context_entity_identifiers,
+      context_entity_alias_sources,
+      context_entity_aliases,
       context_record_sources,
       context_cultural_memories,
       context_relationships,

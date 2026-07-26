@@ -13,7 +13,17 @@ export type DataQualityFindingCategory =
   | "duplicate_external_identifier"
   | "incomplete_bundle_metadata"
   | "invalid_status"
-  | "malformed_source_reference";
+  | "malformed_source_reference"
+  | "alias_without_source"
+  | "identifier_without_source"
+  | "identifier_reuse_across_entities"
+  | "duplicate_alias"
+  | "incomplete_temporal_precision"
+  | "invalid_relationship_validity"
+  | "missing_field_provenance_target"
+  | "identity_evidence_missing"
+  | "contradictory_identity_relationship"
+  | "unsupported_calendar_conversion";
 
 export interface DataQualityFinding {
   category: DataQualityFindingCategory;
@@ -335,6 +345,390 @@ function inspectProvenanceRecord(
   inspectStatuses(record, type, id, findings);
 }
 
+function contextualCollections(bundle: SourceRootBundle) {
+  const context = asRecord(bundle.context);
+  return {
+    context,
+    entities: Array.isArray(context.entities)
+      ? context.entities.map(asRecord)
+      : [],
+    aliases: Array.isArray(context.aliases)
+      ? context.aliases.map(asRecord)
+      : [],
+    identifiers: Array.isArray(context.externalIdentifiers)
+      ? context.externalIdentifiers.map(asRecord)
+      : [],
+    temporal: Array.isArray(context.temporalAssertions)
+      ? context.temporalAssertions.map(asRecord)
+      : [],
+    relationships: Array.isArray(context.relationships)
+      ? context.relationships.map(asRecord)
+      : [],
+    provenance: Array.isArray(context.fieldProvenance)
+      ? context.fieldProvenance.map(asRecord)
+      : [],
+  };
+}
+
+function inspectContextualRefinements(
+  bundle: SourceRootBundle,
+  knownSourceIds: ReadonlySet<string>,
+  findings: DataQualityFinding[],
+): number {
+  const {
+    entities,
+    aliases,
+    identifiers,
+    temporal,
+    relationships,
+    provenance,
+  } = contextualCollections(bundle);
+  const allRecords = [
+    ...entities,
+    ...temporal,
+    ...relationships,
+    ...(
+      Array.isArray(asRecord(bundle.context).accounts)
+        ? (asRecord(bundle.context).accounts as unknown[]).map(asRecord)
+        : []
+    ),
+    ...(
+      Array.isArray(asRecord(bundle.context).claims)
+        ? (asRecord(bundle.context).claims as unknown[]).map(asRecord)
+        : []
+    ),
+  ];
+  const recordsById = new Map(
+    allRecords
+      .map((record) => [stringValue(record.id), record] as const)
+      .filter(([id]) => Boolean(id)),
+  );
+  const temporalIds = new Set(
+    temporal.map((record) => stringValue(record.id)).filter(Boolean),
+  );
+
+  const aliasKeys = new Map<string, string[]>();
+  aliases.forEach((alias, index) => {
+    const id = recordId(alias, `alias-${index}`);
+    const sourceIds = sourceReferences(alias)
+      .map(stringValue)
+      .filter(Boolean);
+    if (sourceIds.length === 0) {
+      addFinding(findings, {
+        category: "alias_without_source",
+        severity: "moderate",
+        recordType: "context-alias",
+        recordId: id,
+        field: "sourceIds",
+        evidence: {
+          entityId: stringValue(alias.entityId) || "unknown",
+          aliasText: stringValue(alias.text) || "unknown",
+        },
+        suggestedHumanReviewAction:
+          "Review the alias and add source support only when evidence exists.",
+        diagnosticEventType: "missing_attribution_detected",
+      });
+    }
+    for (const sourceId of sourceIds) {
+      if (!knownSourceIds.has(sourceId)) {
+        addFinding(findings, {
+          category: "broken_source_relationship",
+          severity: "high",
+          recordType: "context-alias",
+          recordId: id,
+          field: "sourceIds",
+          evidence: { missingSourceId: sourceId },
+          suggestedHumanReviewAction:
+            "Review the missing alias source without fabricating attribution.",
+          diagnosticEventType: "broken_source_reference_detected",
+        });
+      }
+    }
+    const key = [
+      stringValue(alias.entityId),
+      stringValue(alias.text),
+      stringValue(alias.aliasType),
+      stringValue(alias.languageTag),
+      stringValue(alias.scriptIdentifier),
+    ].join("\u0000");
+    const owners = aliasKeys.get(key) ?? [];
+    owners.push(id);
+    aliasKeys.set(key, owners);
+  });
+  for (const [key, ids] of aliasKeys) {
+    if (ids.length < 2) continue;
+    for (const id of ids.slice().sort()) {
+      addFinding(findings, {
+        category: "duplicate_alias",
+        severity: "moderate",
+        recordType: "context-alias",
+        recordId: id,
+        field: "text",
+        evidence: {
+          duplicateKey: key.replaceAll("\u0000", "|"),
+          recordIds: ids.slice().sort(),
+        },
+        suggestedHumanReviewAction:
+          "Review the exact duplicate aliases without deleting evidence automatically.",
+        diagnosticEventType: "malformed_registry_record_detected",
+      });
+    }
+  }
+
+  const identifierOwners = new Map<string, Array<{
+    id: string;
+    entityId: string;
+  }>>();
+  identifiers.forEach((identifier, index) => {
+    const id = recordId(identifier, `identifier-${index}`);
+    const entityId = stringValue(identifier.entityId);
+    const sourceIds = sourceReferences(identifier)
+      .map(stringValue)
+      .filter(Boolean);
+    if (sourceIds.length === 0) {
+      addFinding(findings, {
+        category: "identifier_without_source",
+        severity: "moderate",
+        recordType: "context-external-identifier",
+        recordId: id,
+        field: "sourceIds",
+        evidence: {
+          entityId: entityId || "unknown",
+          scheme: stringValue(identifier.scheme) || "unknown",
+        },
+        suggestedHumanReviewAction:
+          "Review the identifier and add source support only when evidence exists.",
+        diagnosticEventType: "missing_attribution_detected",
+      });
+    }
+    const key = [
+      stringValue(identifier.scheme).toLocaleLowerCase(),
+      stringValue(identifier.value),
+    ].join("\u0000");
+    const owners = identifierOwners.get(key) ?? [];
+    owners.push({ id, entityId });
+    identifierOwners.set(key, owners);
+  });
+  for (const [key, owners] of identifierOwners) {
+    const entityIds = new Set(owners.map((owner) => owner.entityId));
+    if (entityIds.size < 2) continue;
+    for (const owner of owners.slice().sort((left, right) =>
+      left.id.localeCompare(right.id)
+    )) {
+      addFinding(findings, {
+        category: "identifier_reuse_across_entities",
+        severity: "high",
+        recordType: "context-external-identifier",
+        recordId: owner.id,
+        field: "value",
+        evidence: {
+          schemeAndValue: key.replace("\u0000", ":"),
+          entityIds: [...entityIds].sort(),
+        },
+        suggestedHumanReviewAction:
+          "Review the identifier collision as a possible identity conflict; do not merge entities automatically.",
+        diagnosticEventType: "malformed_registry_record_detected",
+      });
+    }
+  }
+
+  temporal.forEach((record, index) => {
+    const id = recordId(record, `temporal-${index}`);
+    const structured = asRecord(record.structuredDate);
+    const precision = stringValue(structured.precision);
+    if (
+      structured.originalLabel !== undefined
+      && (
+        !precision
+        || (
+          ["day", "month", "year", "decade", "century"].includes(precision)
+          && (
+            !Number.isInteger(structured.year)
+            || !["BCE", "CE"].includes(stringValue(structured.era))
+          )
+        )
+      )
+    ) {
+      addFinding(findings, {
+        category: "incomplete_temporal_precision",
+        severity: "high",
+        recordType: "context-temporal-assertion",
+        recordId: id,
+        field: "structuredDate",
+        evidence: { precision: precision || "missing" },
+        suggestedHumanReviewAction:
+          "Review the stated precision, era, and year without inventing a chronology.",
+        diagnosticEventType: "malformed_registry_record_detected",
+      });
+    }
+    const calendar =
+      stringValue(structured.calendarSystem).toLocaleLowerCase();
+    if (
+      calendar
+      && !["gregorian", "proleptic_gregorian", "iso-8601", "unspecified"].includes(calendar)
+      && stringValue(structured.conversionStatus) !== "unconverted"
+    ) {
+      addFinding(findings, {
+        category: "unsupported_calendar_conversion",
+        severity: "high",
+        recordType: "context-temporal-assertion",
+        recordId: id,
+        field: "structuredDate.conversionStatus",
+        evidence: { calendarSystem: calendar },
+        suggestedHumanReviewAction:
+          "Review the calendar claim and mark it unconverted unless an evidenced conversion exists.",
+        diagnosticEventType: "malformed_registry_record_detected",
+      });
+    }
+  });
+
+  const identityByPair = new Map<string, Set<string>>();
+  relationships.forEach((relationship, index) => {
+    const id = recordId(relationship, `relationship-${index}`);
+    const type = stringValue(relationship.relationshipType);
+    const fromId = stringValue(relationship.fromId);
+    const toId = stringValue(relationship.toId);
+    const validity = asRecord(relationship.validity);
+    for (const link of (
+      Array.isArray(validity.temporalLinks)
+        ? validity.temporalLinks.map(asRecord)
+        : []
+    )) {
+      const temporalId = stringValue(link.temporalAssertionId);
+      if (!temporalId || !temporalIds.has(temporalId)) {
+        addFinding(findings, {
+          category: "invalid_relationship_validity",
+          severity: "high",
+          recordType: "context-relationship",
+          recordId: id,
+          field: "validity.temporalLinks",
+          evidence: {
+            missingTemporalAssertionId: temporalId || "missing",
+          },
+          suggestedHumanReviewAction:
+            "Review the relationship validity link without rewriting its dates.",
+          diagnosticEventType: "broken_source_reference_detected",
+        });
+      }
+    }
+
+    if (
+      type === "possible_same_as"
+      && sourceReferences(relationship).length === 0
+    ) {
+      addFinding(findings, {
+        category: "identity_evidence_missing",
+        severity: "high",
+        recordType: "context-relationship",
+        recordId: id,
+        field: "sourceIds",
+        evidence: { relationshipType: type },
+        suggestedHumanReviewAction:
+          "Review the possible identity match and add evidence only through human-governed work.",
+        diagnosticEventType: "missing_attribution_detected",
+      });
+    }
+    if (
+      ["possible_same_as", "asserted_same_as", "distinct_from"].includes(type)
+    ) {
+      const pair = [fromId, toId].sort().join("\u0000");
+      const types = identityByPair.get(pair) ?? new Set<string>();
+      types.add(type);
+      identityByPair.set(pair, types);
+    }
+  });
+  for (const [pair, types] of identityByPair) {
+    if (
+      !types.has("distinct_from")
+      || (
+        !types.has("possible_same_as")
+        && !types.has("asserted_same_as")
+      )
+    ) {
+      continue;
+    }
+    const entityIds = pair.split("\u0000");
+    for (const relationship of relationships) {
+      const endpoints = [
+        stringValue(relationship.fromId),
+        stringValue(relationship.toId),
+      ].sort();
+      if (endpoints.join("\u0000") !== pair) continue;
+      addFinding(findings, {
+        category: "contradictory_identity_relationship",
+        severity: "high",
+        recordType: "context-relationship",
+        recordId: stringValue(relationship.id) || "unknown",
+        field: "relationshipType",
+        evidence: {
+          entityIds,
+          relationshipTypes: [...types].sort(),
+        },
+        suggestedHumanReviewAction:
+          "Review the conflicting identity assertions without merging, redirecting, or deleting either entity.",
+        diagnosticEventType: "malformed_registry_record_detected",
+      });
+    }
+  }
+
+  provenance.forEach((link, index) => {
+    const id = recordId(link, `field-provenance-${index}`);
+    const targetId = stringValue(link.targetId);
+    const target = recordsById.get(targetId);
+    const root = stringValue(link.fieldPath).split(".")[0] ?? "";
+    const derivedRootExists =
+      (
+        root === "aliases"
+        && aliases.some(
+          (alias) => stringValue(alias.entityId) === targetId,
+        )
+      )
+      || (
+        root === "externalIdentifiers"
+        && identifiers.some(
+          (identifier) =>
+            stringValue(identifier.entityId) === targetId,
+        )
+      )
+      || (
+        root === "identityLinks"
+        && relationships.some(
+          (relationship) =>
+            stringValue(relationship.fromId) === targetId
+            || stringValue(relationship.toId) === targetId,
+        )
+      );
+    if (
+      !target
+      || (
+        !Object.prototype.hasOwnProperty.call(target, root)
+        && !derivedRootExists
+      )
+    ) {
+      addFinding(findings, {
+        category: "missing_field_provenance_target",
+        severity: "high",
+        recordType: "context-field-provenance",
+        recordId: id,
+        field: "fieldPath",
+        evidence: {
+          targetId: targetId || "missing",
+          fieldPath: stringValue(link.fieldPath) || "missing",
+        },
+        suggestedHumanReviewAction:
+          "Review the field-level source link and repair it through the governed workflow.",
+        diagnosticEventType: "broken_source_reference_detected",
+      });
+    }
+  });
+
+  return aliases.length
+    + identifiers.length
+    + temporal.length
+    + relationships.length
+    + provenance.length;
+}
+
 export function observeDataQualityAndProvenance(
   bundle: Readonly<SourceRootBundle>,
 ): DataQualityProvenanceReport {
@@ -345,6 +739,11 @@ export function observeDataQualityAndProvenance(
   const knownSourceIds = new Set(
     sources.map((source) => stringValue(source.id)).filter(Boolean)
   );
+  const contextualRecordCount = inspectContextualRefinements(
+    bundle,
+    knownSourceIds,
+    findings,
+  );
   const collections = [
     ["node", bundle.nodes],
     ["assertion", bundle.assertions],
@@ -352,7 +751,8 @@ export function observeDataQualityAndProvenance(
     ["revision", bundle.revisions],
   ] as const;
 
-  let inspectedRecordCount = sources.length + 1;
+  let inspectedRecordCount =
+    sources.length + 1 + contextualRecordCount;
   for (const [type, values] of collections) {
     const records = Array.isArray(values) ? values.map(asRecord) : [];
     inspectedRecordCount += records.length;
@@ -393,4 +793,3 @@ export function serializeDataQualityProvenanceReport(
 ): string {
   return JSON.stringify(report, null, 2);
 }
-
