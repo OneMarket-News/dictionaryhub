@@ -49,6 +49,9 @@ function validationFailureCategory(
 }
 
 function persistenceFailureCategory(errorCode: string): string {
+  if (/context_version|version.*conflict/i.test(errorCode)) {
+    return "context-version-conflict";
+  }
   if (/alias/i.test(errorCode)) {
     return "context-alias-persistence";
   }

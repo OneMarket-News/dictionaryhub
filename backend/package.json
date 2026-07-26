@@ -15,6 +15,7 @@
     "test": "node --env-file=.env.test --import ./scripts/register-tsx.mjs --test --test-concurrency=1 test/**/*.test.ts",
     "test:context": "node --env-file=.env.test --import ./scripts/register-tsx.mjs --test --test-concurrency=1 test/contextual-knowledge.test.ts",
     "test:context-refinement": "node --env-file=.env.test --import ./scripts/register-tsx.mjs --test --test-concurrency=1 test/contextual-identity-time.test.ts",
+    "test:context-assertions-versioning": "node --env-file=.env.test --import ./scripts/register-tsx.mjs --test --test-concurrency=1 test/contextual-assertions-evidence-versioning.test.ts",
     "test:registry-contract": "node --env-file=.env.test --import ./scripts/register-tsx.mjs --test --test-concurrency=1 test/registry-api-contract.test.ts",
     "test:observability": "node --env-file=.env.test --import ./scripts/register-tsx.mjs --test --test-concurrency=1 test/observability.test.ts test/observers.test.ts",
     "test:frontend-observability": "node --test ../verification/frontend-api-observability.test.cjs",

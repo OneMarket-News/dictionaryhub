@@ -4,6 +4,9 @@ import {
 } from "../contextual-types.js";
 import { getPool } from "../lib/database.js";
 import type { SortDirection } from "../lib/query-params.js";
+import {
+  getContextExtensionDetail,
+} from "./context-version-store.js";
 
 export interface ListContextRecordsOptions {
   page: number;
@@ -495,7 +498,17 @@ export async function getContextRecordById(
     [contextId, recordKind ?? null],
   );
   const row = result.rows[0];
-  return row ? mapContextRecord(row) : undefined;
+  if (!row) {
+    return undefined;
+  }
+  const record = mapContextRecord(row);
+  if (row.record_kind === "claim" || row.record_kind === "evidence") {
+    Object.assign(
+      record,
+      await getContextExtensionDetail(row.record_kind, contextId),
+    );
+  }
+  return record;
 }
 
 export async function listContextRecords(

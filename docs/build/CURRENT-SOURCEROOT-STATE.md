@@ -3,16 +3,16 @@
 ## Record Identity
 
 - Baseline record: SourceRoot Chunk 0 — Codex Stage Contract and Baseline Harness v1
-- Current-state record: SourceRoot Chunk 3 - Contextual Identity and Time Refinement v1
-- Previous installed stage: SourceRoot Chunk 2 - Shared Frontend API Layer, Logging, and Observability v1
-- Earlier installed stage: SourceRoot Chunk 1 - Registry and API Contract Standardization v1
+- Current-state record: SourceRoot Chunk 4 - Contextual Assertions, Evidence, and Versioning v1
+- Previous installed stage: SourceRoot Chunk 3 - Contextual Identity and Time Refinement v1
+- Earlier installed stages: SourceRoot Chunk 2 - Shared Frontend API Layer, Logging, and Observability v1; SourceRoot Chunk 1 - Registry and API Contract Standardization v1
 - Current-state update date: 2026-07-26
 - Repository inspected: `C:\Users\Josh\Documents\GitHub\dictionaryhub`
 - Branch at inspection: `release/historyroot-alpha-integration-v1`
-- Starting commit for the installed stage: `ef8cd09f6ef97458f1751612a86c2f4314885775`
-- Starting tag for the installed stage: `sourceroot-frontend-api-observability-v1`
+- Starting commit for the installed stage: `dfa306c46cdd5ec03f929b84b5ad6042de7d79e7`
+- Starting tag for the installed stage: `sourceroot-contextual-identity-time-refinement-v1`
 
-The repository at the branch and starting commit above was inspected directly, then SourceRoot Chunk 3 was installed and verified from complete repository files. Immutable Chunk 0-2 checks used the exact ZIP bytes in `C:\Users\Josh\Documents\SourceRoot-Releases`; no immutable package hash was reconstructed from Git.
+The repository at the branch and starting commit above was inspected directly, then SourceRoot Chunk 4 was installed and verified from complete repository files. Immutable Chunk 0-3 checks use the exact ZIP bytes in `C:\Users\Josh\Documents\SourceRoot-Releases`; no immutable package hash is reconstructed from Git.
 
 ## Repository Structure
 
@@ -155,6 +155,18 @@ SourceRoot Chunk 3 refines this foundation additively:
 
 Entity detail now includes `aliases`, `externalIdentifiers`, `identityLinks`, and `fieldProvenance`. Read-only alias and identifier collections are available below `/api/v1/context/entities/:contextId/`. Temporal and relationship detail responses expose the additive semantic and validity fields while retaining every legacy response key.
 
+SourceRoot Chunk 4 further refines the contextual foundation without changing legacy claim/evidence meaning:
+
+- normalized claim attributions, explicit claim relationships, evidence-to-claim/version links, and bounded source locators;
+- immutable, content-hashed claim and evidence versions with same-parent lineage constraints and explicit current pointers;
+- replacement-safe history retention, idempotent reimport, conflict rejection, and test-scoped cleanup;
+- governed publication and rollback that append contextual versions while preserving generic revisions;
+- five read-only Registry API Contract 1.0 collections for attributions, relationships, evidence links, and claim/evidence versions;
+- historical claim-version and current evidence search results that remain distinct from logical claims; and
+- deterministic Level 1 diagnostics for provenance, evidence basis, lineage cycles, current-pointer conflicts, content hashes, and unsourced contradictions.
+
+Claim and evidence detail responses expose normalized extensions while retaining legacy fields. Attribution and evidentiary support are never inferred, contradiction is never resolved automatically, and neither version history nor a current pointer is fabricated for legacy records.
+
 ### DictionaryRoot, Identity, and Governance Routes
 
 The backend also currently contains:
@@ -170,7 +182,7 @@ These working capabilities are preserved as current repository state. Chunk 0 ma
 
 ### Database Tables and Migrations
 
-There are 12 migration files in the installed stage:
+There are 13 migration files in the installed stage:
 
 1. `001_create_imported_bundles.sql`
 2. `002_create_knowledge_tables.sql`
@@ -184,6 +196,7 @@ There are 12 migration files in the installed stage:
 10. `009_create_contextual_knowledge_foundation.sql`
 11. `010_extend_contextual_governance.sql`
 12. `011_refine_contextual_identity_time.sql`
+13. `012_refine_contextual_assertions_evidence_versioning.sql`
 
 The schema includes:
 
@@ -193,6 +206,7 @@ The schema includes:
 - Governed workflow, publication, moderation, and audit tables.
 - Contextual record, entity, temporal, account, claim, evidence, interpretation, perspective, causal, relationship, cultural-memory, and source-link tables.
 - Contextual alias and alias-source, external-identifier and identifier-source, temporal-proposal and proposal-source, relationship-temporal and validity-source, and field-provenance tables added by migration 011.
+- Contextual attribution, relationship, evidence-link, locator, immutable version, version-source, and current-pointer tables added by migration 012.
 
 There are two distinct migration filenames with numeric prefix `005`. The migration runner applies filename order and records filenames, so both are distinguishable, but the duplicated number is a maintenance limitation and must not be “fixed” by renaming an applied migration.
 
@@ -204,7 +218,7 @@ Invalid imports return HTTP 422 with a validation result; validation-only reques
 
 Every request receives a bounded safe correlation ID through `X-Request-ID`; unsafe or missing caller values receive non-sequential UUIDs. The ID is available in request and response context and is included in structured request, error, validation, and import diagnostics. Structured events are line-delimited JSON with an allow-listed schema. Authorization, cookies, passwords, tokens, sessions, CSRF values, request bodies, private source text, and client-facing stack traces are excluded.
 
-Two internal Level 1 observers are present under `backend/src/observers/`. The Platform Operations Observer groups approved diagnostic failures and preserves supporting correlation IDs, including narrow contextual-refinement failure categories. The Data Quality and Provenance Observer reports missing attribution and metadata, malformed identifiers, broken source relationships, unsourced aliases or identifiers, cross-entity identifier reuse, incomplete temporal precision, relationship-validity issues, missing field provenance targets, identity-evidence gaps, contradictory identity assertions, and unsupported calendar conversion. Both remain deterministic, read-only functions without endpoints, persistence, network, shell, database, retry, restart, publishing, or record-mutation authority.
+Two internal Level 1 observers are present under `backend/src/observers/`. The Platform Operations Observer groups approved diagnostic failures and preserves supporting correlation IDs, including narrow contextual-refinement and immutable-version conflict categories. The Data Quality and Provenance Observer reports existing identity/time findings plus claim-provenance gaps, missing evidence basis, version predecessor cycles, multiple current versions, content-hash mismatches, and contradictions without provenance. Both remain deterministic, read-only functions without endpoints, persistence, network, shell, database, retry, restart, publishing, or record-mutation authority.
 
 ## Current Frontend Experiences
 
@@ -262,7 +276,7 @@ On the four core pages, scripts load in this order: shared request transport, AP
 
 ### Backend Tests
 
-The repository has 16 `backend/test/*.test.ts` files. The installed full suite contains 168 passing tests: all original 155 tests plus 13 focused Chunk 3 tests. It includes 11 focused Registry API Contract tests and 10 focused correlation/logging/observer tests, covering:
+The repository has 17 `backend/test/*.test.ts` files. The installed full suite contains 187 passing tests: the 168-test Chunk 3 baseline plus 19 focused Chunk 4 tests. It includes 11 focused Registry API Contract tests and 10 focused correlation/logging/observer tests, covering:
 
 - HTTP health, validation, malformed JSON, and payload limits.
 - Bundle schema and validation.
@@ -277,6 +291,7 @@ The repository has 16 `backend/test/*.test.ts` files. The installed full suite c
 - Registry contract pagination boundaries, offsets, exact totals, filter metadata, unknown filters, case behavior, sorting and stable ties, legacy collection keys, source associations, compatible not-found errors, and safe internal errors.
 - Safe and generated correlation IDs, response/error/log propagation, structured success and failure logs, redaction, validation diagnostics, deterministic observer grouping, data-quality findings, clean records, and input non-mutation.
 - Contextual alias and external-identifier persistence, semantic and historical time including BCE/CE and unconverted calendars, proposal provenance, relationship validity, field provenance, identity ambiguity without merge, search compatibility, transaction rollback, governed snapshots, and observer refinement.
+- Contextual claim attribution, explicit competing and contradictory claims, evidence links, exact locators, immutable claim/evidence versions, deterministic hashes, current pointers, retained history, governed append/rollback, historical search, transactional conflicts, and explicit test-only cleanup.
 
 The frontend Node harness contains 10 passing cases for GET/query/JSON/empty responses, API and malformed-response errors, network/offline/timeout/abort classification, correlation propagation, DictionaryRoot and HistoryRoot return compatibility, legacy method presence, HTML load order, and SourceRoot registry wrapper delegation.
 
@@ -284,13 +299,13 @@ Most persistence and governance integration tests require a configured PostgreSQ
 
 ### PowerShell and JavaScript Verifiers
 
-Before Chunk 0, the repository contained 34 root `VERIFY-*` scripts. They cover DictionaryRoot customer foundation, live connection, home, Concept, Sphere, Sources, navigation, coverage, editorial, history, governance, responsiveness, HistoryRoot, and contextual knowledge. The machine-readable baseline manifest now also lists the Chunk 0, Chunk 1, Chunk 2, and Chunk 3 stage verifiers.
+Before Chunk 0, the repository contained 34 root `VERIFY-*` scripts. They cover DictionaryRoot customer foundation, live connection, home, Concept, Sphere, Sources, navigation, coverage, editorial, history, governance, responsiveness, HistoryRoot, and contextual knowledge. The machine-readable baseline manifest now also lists the Chunk 0, Chunk 1, Chunk 2, Chunk 3, and Chunk 4 stage verifiers.
 
 Several PowerShell verifiers provide static file and marker checks plus optional or required live API calls. The `.mjs` responsive verifiers locate a Chromium-family browser, host pages locally, inspect responsive behavior, and can create screenshots. `VERIFY-DICTIONARYROOT-TYPESCRIPT-SYNTAX.mjs` performs TypeScript parse checks when TypeScript is installed.
 
 ### Installer Checks
 
-The Chunk 3 installer validates repository and prior-contract markers, proves the database name is exactly `sourceroot_test`, validates package identity and every payload hash, creates a timestamped path-preserving backup, records pre-existing added destinations, copies complete files, verifies installed hashes, writes rollback data, and runs the complete stage verifier. Its successful installer-test backup is `backups/sourceroot-contextual-identity-time-refinement-v1-20260726-095336-578/`.
+The Chunk 4 installer validates repository and Chunk 0-3 markers, proves the database name is exactly `sourceroot_test`, validates package identity, safe payload paths, physical completeness, and every payload hash, creates a timestamped path-preserving backup, records pre-existing added destinations, copies complete files, verifies installed hashes, writes rollback data, and runs the complete stage verifier. Its successful installer-test backup is `backups/sourceroot-contextual-assertions-evidence-versioning-v1-20260726-123751-553/`.
 
 ### Dependency Classification
 
@@ -318,6 +333,9 @@ The Chunk 3 installer validates repository and prior-contract markers, proves th
 12. Label-only named periods, BCE partial values, proposed-only values, and unconverted calendars are not eligible for deterministic active-at filtering.
 13. Identity relations preserve evidence and conflict but do not establish canonical or legal identity, and no automatic merge path exists.
 14. Calendar conversion, authority dereferencing, and external identifier validation are not performed.
+15. Contextual detail projections are bounded at 10,000 child/history rows; paginated collections provide the complete public history path.
+16. Import predecessor/version references resolve inside the supplied bundle, while governed append uses persisted current state.
+17. No truth engine, semantic inference, automatic contradiction resolution, or canonical-claim selection is present.
 
 ## Prompt-to-Repository Discrepancy
 
@@ -328,12 +346,12 @@ The requested Chunk 0 exclusions prohibit implementing contextual entities, auth
 ```text
 Core Phases 1–9: completed according to the project roadmap
 Phase 10: next implementation phase
-Current Codex package: Chunk 3 - Contextual Identity and Time Refinement v1
-Next Codex package after acceptance: SourceRoot Chunk 4 — Contextual Assertions, Evidence, and Versioning
+Current Codex package: Chunk 4 - Contextual Assertions, Evidence, and Versioning v1
+Next Codex package after acceptance: SourceRoot Chunk 5 - Context API and Review Experience
 ```
 
 This roadmap status is a project-management classification, not an independent production-security audit. It also does not erase the factual discrepancy that later-scope implementation files are already present in the current repository.
 
 ## Next Dependency
 
-SourceRoot Chunk 4 — Contextual Assertions, Evidence, and Versioning
+SourceRoot Chunk 5 - Context API and Review Experience

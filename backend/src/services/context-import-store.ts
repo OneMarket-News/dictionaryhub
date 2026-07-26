@@ -8,6 +8,9 @@ import type {
 import {
   chronologyBoundsForStructuredDate,
 } from "./contextual-time.js";
+import {
+  insertContextualExtensions,
+} from "./context-version-store.js";
 
 type ContextRecordWithKind = {
   kind: ContextRecordKind;
@@ -511,9 +514,10 @@ async function insertEvidence(
           evidence_context_id,
           explanation,
           strength,
-          confidence
+          confidence,
+          uncertainty
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
       `,
       [
         evidence.id,
@@ -525,6 +529,7 @@ async function insertEvidence(
         evidence.explanation,
         evidence.strength ?? "unknown",
         evidence.confidence ?? "unknown",
+        evidence.uncertainty ?? null,
       ],
     );
   }
@@ -859,6 +864,7 @@ export async function insertContextualBundle(
   await insertRelationshipValidity(client, bundleId, context);
   await insertCulturalMemories(client, context);
   await insertRecordPerspectives(client, bundleId, context);
+  await insertContextualExtensions(client, bundleId, context);
   await insertFieldProvenance(client, bundleId, context);
   await insertRecordSources(client, bundleId, context);
 }

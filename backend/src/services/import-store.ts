@@ -7,6 +7,9 @@ import {
   deleteContextRecords,
   insertContextualBundle,
 } from "./context-import-store.js";
+import {
+  deleteContextVersionsForIntegrationTest,
+} from "./context-version-store.js";
 
 export interface ImportedBundleMetadata {
   bundleId: string;
@@ -733,6 +736,7 @@ export async function listImportedBundles(
 
 async function deleteImportedBundleTransaction(
   bundleId: string,
+  deleteImmutableContextVersions = false,
 ): Promise<DetailedDeletedImportedBundleCounts> {
   const database = requireDatabase();
   const client = await database.connect();
@@ -855,6 +859,10 @@ async function deleteImportedBundleTransaction(
 
     const row = countResult.rows[0];
 
+    if (deleteImmutableContextVersions) {
+      await deleteContextVersionsForIntegrationTest(client, bundleId);
+    }
+
     /*
      * This helper removes revisions, nodes, assertions, edges, sources,
      * and source-link rows through the schema's cascade relationships.
@@ -933,7 +941,7 @@ export async function deleteImportedTestBundle(
     contextPerspectiveLinks: _contextPerspectiveLinks,
     contextSourceLinks: _contextSourceLinks,
     ...publicCounts
-  } = await deleteImportedBundleTransaction(bundleId);
+  } = await deleteImportedBundleTransaction(bundleId, true);
 
   return publicCounts;
 }

@@ -6,8 +6,10 @@ import {
 } from "express";
 
 import {
+  claimRelationTypes,
   contextAliasTypes,
   contextEntityTypes,
+  evidenceSupportRoles,
   temporalKinds,
   temporalRoles,
   type ContextRecordKind,
@@ -26,6 +28,10 @@ import {
   parsePagination,
   parseSort,
 } from "../lib/query-params.js";
+import {
+  listContextExtensions,
+  type ContextExtensionCollection,
+} from "../services/context-version-store.js";
 import {
   getContextRecordById,
   listEntityAliases,
@@ -459,6 +465,221 @@ const identifierQueryParameters = new Set([
   "status",
   "sourceId",
 ]);
+
+interface ContextExtensionRoute {
+  path: string;
+  collection: ContextExtensionCollection;
+  responseKey: string;
+  filters: ReadonlySet<string>;
+  sorts: ReadonlySet<
+    "createdAt" | "updatedAt" | "id" | "ordinal"
+  >;
+}
+
+const contextExtensionRoutes: ContextExtensionRoute[] = [
+  {
+    path: "/claim-versions",
+    collection: "claimVersions",
+    responseKey: "claimVersions",
+    filters: new Set([
+      "claimId",
+      "versionId",
+      "status",
+      "sourceId",
+      "current",
+    ]),
+    sorts: new Set(["createdAt", "id", "ordinal"]),
+  },
+  {
+    path: "/evidence-versions",
+    collection: "evidenceVersions",
+    responseKey: "evidenceVersions",
+    filters: new Set([
+      "evidenceId",
+      "versionId",
+      "status",
+      "supportRole",
+      "sourceId",
+      "current",
+    ]),
+    sorts: new Set(["createdAt", "id", "ordinal"]),
+  },
+  {
+    path: "/claim-evidence-links",
+    collection: "evidenceClaimLinks",
+    responseKey: "claimEvidenceLinks",
+    filters: new Set([
+      "claimId",
+      "evidenceId",
+      "versionId",
+      "supportRole",
+      "sourceId",
+    ]),
+    sorts: new Set(["createdAt", "updatedAt", "id"]),
+  },
+  {
+    path: "/claim-relationships",
+    collection: "claimRelations",
+    responseKey: "claimRelationships",
+    filters: new Set(["claimId", "relationType", "sourceId"]),
+    sorts: new Set(["createdAt", "updatedAt", "id"]),
+  },
+  {
+    path: "/claim-attributions",
+    collection: "claimAttributions",
+    responseKey: "claimAttributions",
+    filters: new Set(["claimId", "actorEntityId", "sourceId"]),
+    sorts: new Set(["createdAt", "updatedAt", "id"]),
+  },
+];
+
+const relationTypeSet = new Set<string>(claimRelationTypes);
+const supportRoleSet = new Set<string>(evidenceSupportRoles);
+
+for (const route of contextExtensionRoutes) {
+  contextRouter.get(
+    route.path,
+    async (request, response, next) => {
+      try {
+        const pagination = parsePagination(
+          request.query.page,
+          request.query.limit,
+          { offsetValue: request.query.offset },
+        );
+        if (isQueryParameterError(pagination)) {
+          return response.status(400).json(
+            withRequestId(pagination, response),
+          );
+        }
+        const sort = parseSort(
+          request.query.sort,
+          request.query.direction,
+          {
+            allowedSorts: route.sorts,
+            defaultSort:
+              route.sorts.has("ordinal")
+                ? "ordinal"
+                : "createdAt",
+          },
+        );
+        if (isQueryParameterError(sort)) {
+          return response.status(400).json(
+            withRequestId(sort, response),
+          );
+        }
+        const relationType = route.filters.has("relationType")
+          ? getQueryString(request.query.relationType)
+          : undefined;
+        if (
+          relationType
+          && !relationTypeSet.has(relationType)
+          && !/^custom:[a-z0-9][a-z0-9_-]{0,63}$/.test(relationType)
+        ) {
+          return invalidEnumResponse(
+            response,
+            "relationType",
+            relationTypeSet,
+          );
+        }
+        const supportRole = route.filters.has("supportRole")
+          ? getQueryString(request.query.supportRole)
+          : undefined;
+        if (
+          supportRole
+          && !supportRoleSet.has(supportRole)
+          && !/^custom:[a-z0-9][a-z0-9_-]{0,63}$/.test(supportRole)
+        ) {
+          return invalidEnumResponse(
+            response,
+            "supportRole",
+            supportRoleSet,
+          );
+        }
+        const current = route.filters.has("current")
+          ? getQueryString(request.query.current)
+          : undefined;
+        if (
+          current
+          && !["true", "false"].includes(current.toLowerCase())
+        ) {
+          return response.status(400).json(
+            createApiError(
+              "INVALID_CONTEXT_FILTER",
+              "current must be true or false.",
+              400,
+              {
+                category: "invalid-filter",
+                field: "current",
+                requestId: response.locals.requestId,
+              },
+            ),
+          );
+        }
+        const filters = {
+          claimId: getQueryString(request.query.claimId),
+          evidenceId: getQueryString(request.query.evidenceId),
+          versionId: getQueryString(request.query.versionId),
+          relationType,
+          supportRole,
+          status: getQueryString(request.query.status),
+          sourceId: getQueryString(request.query.sourceId),
+          current: current?.toLowerCase(),
+          actorEntityId: getQueryString(
+            request.query.actorEntityId,
+          ),
+        };
+        const applicableFilters = Object.fromEntries(
+          Object.entries(filters).filter(
+            ([key, value]) =>
+              value !== undefined && route.filters.has(key),
+          ),
+        );
+        const result = await listContextExtensions(
+          route.collection,
+          {
+            page: pagination.page,
+            limit: pagination.limit,
+            offset: pagination.offset,
+            sort: sort.sort,
+            direction: sort.direction,
+            ...applicableFilters,
+          },
+        );
+        const supportedQueryParameters = new Set([
+          "page",
+          "limit",
+          "offset",
+          "sort",
+          "direction",
+          ...route.filters,
+        ]);
+        return response.status(200).json(
+          withCollectionContract(
+            {
+              ...result,
+              [route.responseKey]: result.items,
+            },
+            {
+              resource: `context-${route.collection}`,
+              pagination,
+              filters: normalizeFilters(applicableFilters),
+              sort,
+              tieBreaker: "id:asc",
+              legacyKeys: [route.responseKey],
+              ignoredQueryParameters:
+                getUnsupportedQueryParameters(
+                  request.query,
+                  supportedQueryParameters,
+                ),
+            },
+          ),
+        );
+      } catch (error) {
+        return next(error);
+      }
+    },
+  );
+}
 
 contextRouter.get(
   "/entities/:contextId/aliases",

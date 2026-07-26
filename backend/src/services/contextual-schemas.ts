@@ -1,18 +1,30 @@
 import { z } from "zod";
 
 import {
+  claimAttributionRoles,
+  claimRelationTypes,
   contextAliasTypes,
   contextEntityTypes,
+  contextualVersionOrigins,
+  contextualVersionStatuses,
+  evidenceSupportRoles,
   historicalDateEras,
   historicalDatePrecisions,
   identityRelationTypes,
   relationshipTemporalLinkTypes,
+  sourceLocatorTypes,
   temporalKinds,
   temporalRoles,
+  type ContextClaimVersion,
+  type ContextEvidenceVersion,
 } from "../contextual-types.js";
 import {
   chronologyBoundsForStructuredDate,
 } from "./contextual-time.js";
+import {
+  claimVersionContentHash,
+  evidenceVersionContentHash,
+} from "./context-version-store.js";
 
 const nonEmptyString = z.string().trim().min(1);
 const isoDate = z
@@ -44,6 +56,50 @@ const aliasTypeSchema = z.union([
   z.enum(contextAliasTypes),
   z.string().regex(/^custom:[a-z0-9][a-z0-9_-]{0,63}$/),
 ]);
+const controlledExtension = (
+  values: readonly [string, ...string[]],
+) => z.union([
+  z.enum(values),
+  z.string().regex(/^custom:[a-z0-9][a-z0-9_-]{0,63}$/),
+]);
+const claimAttributionRoleSchema = controlledExtension(
+  claimAttributionRoles,
+);
+const claimRelationTypeSchema = controlledExtension(
+  claimRelationTypes,
+);
+const evidenceSupportRoleSchema = controlledExtension(
+  evidenceSupportRoles,
+);
+const locatorTypeSchema = controlledExtension(sourceLocatorTypes);
+const versionOriginSchema = controlledExtension(
+  contextualVersionOrigins,
+);
+const contentHashSchema = z
+  .string()
+  .regex(/^sha256:[a-f0-9]{64}$/);
+const boundedLocatorDataSchema = z
+  .record(
+    z.string().min(1).max(64),
+    z.union([
+      z.string().max(1024),
+      z.number().finite(),
+      z.boolean(),
+    ]),
+  )
+  .refine(
+    (value) => Object.keys(value).length <= 24,
+    "Locator data may contain at most 24 fields.",
+  );
+const boundedSnapshotSchema = z.record(
+  z.string().min(1).max(64),
+  z.union([
+    z.string().max(2048),
+    z.number().finite(),
+    z.boolean(),
+    z.null(),
+  ]),
+);
 
 export const structuredHistoricalDateSchema = z
   .object({
@@ -384,6 +440,83 @@ export const contextClaimSchema = z
   })
   .strict();
 
+export const contextClaimAttributionSchema = z
+  .object({
+    id: nonEmptyString,
+    claimId: nonEmptyString,
+    actorEntityId: nonEmptyString.optional(),
+    accountId: nonEmptyString.optional(),
+    temporalAssertionId: nonEmptyString.optional(),
+    attributionRole: claimAttributionRoleSchema,
+    sourceIds: z.array(nonEmptyString).max(100).optional(),
+    note: z.string().trim().min(1).max(4000).optional(),
+    confidence: z.string().trim().min(1).max(256).optional(),
+    uncertainty: z.string().trim().min(1).max(2000).optional(),
+  })
+  .strict()
+  .refine(
+    (value) =>
+      value.actorEntityId !== undefined
+      || value.accountId !== undefined,
+    {
+      message:
+        "A claim attribution requires actorEntityId or accountId.",
+      path: ["actorEntityId"],
+    },
+  );
+
+export const contextClaimRelationSchema = z
+  .object({
+    id: nonEmptyString,
+    fromClaimId: nonEmptyString,
+    toClaimId: nonEmptyString,
+    relationType: claimRelationTypeSchema,
+    explanation: z.string().trim().min(1).max(4000).optional(),
+    sourceIds: z.array(nonEmptyString).max(100).optional(),
+    confidence: z.string().trim().min(1).max(256).optional(),
+    uncertainty: z.string().trim().min(1).max(2000).optional(),
+    reviewStatus: z.string().trim().min(1).max(256).optional(),
+    temporalAssertionId: nonEmptyString.optional(),
+  })
+  .strict()
+  .refine((value) => value.fromClaimId !== value.toClaimId, {
+    message: "A claim relationship must connect distinct claims.",
+    path: ["toClaimId"],
+  });
+
+export const contextClaimVersionSchema = z
+  .object({
+    id: nonEmptyString,
+    claimId: nonEmptyString,
+    ordinal: z.number().int().positive().optional(),
+    priorVersionId: nonEmptyString.optional(),
+    statement: nonEmptyString,
+    claimType: nonEmptyString,
+    subjectId: nonEmptyString,
+    objectId: nonEmptyString.optional(),
+    confidence: z.string().trim().min(1).max(256).optional(),
+    uncertainty: z.string().trim().min(1).max(2000).optional(),
+    status: z.enum(contextualVersionStatuses).optional(),
+    changeType: z.string().trim().min(1).max(256),
+    changeReason: z.string().trim().min(1).max(4000).optional(),
+    attributionSnapshot: z
+      .array(boundedSnapshotSchema)
+      .max(100)
+      .optional(),
+    attributionIds: z.array(nonEmptyString).max(100).optional(),
+    sourceIds: z.array(nonEmptyString).max(100).optional(),
+    assertedTemporalAssertionId: nonEmptyString.optional(),
+    contentHash: contentHashSchema.optional(),
+    origin: versionOriginSchema,
+    createdAt: z.iso.datetime({ offset: true }).optional(),
+    current: z.boolean().optional(),
+  })
+  .strict()
+  .refine((value) => value.priorVersionId !== value.id, {
+    message: "A claim version cannot be its own predecessor.",
+    path: ["priorVersionId"],
+  });
+
 export const contextEvidenceSchema = z
   .object({
     ...contextRecordBaseShape,
@@ -395,6 +528,7 @@ export const contextEvidenceSchema = z
     explanation: nonEmptyString,
     strength: nonEmptyString.optional(),
     confidence: nonEmptyString.optional(),
+    uncertainty: nonEmptyString.optional(),
   })
   .strict()
   .refine(
@@ -517,6 +651,12 @@ export const contextFieldProvenanceSchema = z
         "proposed_date",
         "relationship_validity",
         "identity_link",
+        "claim_attribution",
+        "claim_relation",
+        "claim_version",
+        "evidence_claim_link",
+        "source_locator",
+        "evidence_version",
       ])
       .optional(),
     subrecordId: nonEmptyString.optional(),
@@ -538,6 +678,95 @@ export const contextFieldProvenanceSchema = z
     },
   );
 
+export const contextSourceLocatorSchema = z
+  .object({
+    id: nonEmptyString,
+    evidenceId: nonEmptyString,
+    sourceId: nonEmptyString,
+    locatorType: locatorTypeSchema,
+    locatorLabel: z.string().min(1).max(1024),
+    locator: boundedLocatorDataSchema.optional(),
+    excerpt: z.string().min(1).max(4000).optional(),
+    note: z.string().trim().min(1).max(4000).optional(),
+  })
+  .strict();
+
+export const contextEvidenceClaimLinkSchema = z
+  .object({
+    id: nonEmptyString,
+    evidenceId: nonEmptyString,
+    claimId: nonEmptyString,
+    claimVersionId: nonEmptyString.optional(),
+    supportRole: evidenceSupportRoleSchema,
+    scopePath: safeFieldPath.optional(),
+    explanation: z.string().trim().min(1).max(4000).optional(),
+    relevance: z.string().trim().min(1).max(256).optional(),
+    confidence: z.string().trim().min(1).max(256).optional(),
+    uncertainty: z.string().trim().min(1).max(2000).optional(),
+    sourceIds: z.array(nonEmptyString).max(100).optional(),
+  })
+  .strict();
+
+const evidenceVersionLocatorSchema = z
+  .object({
+    sourceId: nonEmptyString,
+    locatorType: locatorTypeSchema,
+    locatorLabel: z.string().min(1).max(1024),
+    locator: boundedLocatorDataSchema.optional(),
+    excerpt: z.string().min(1).max(4000).optional(),
+    note: z.string().trim().min(1).max(4000).optional(),
+  })
+  .strict();
+
+const evidentiaryBasisSchema = z
+  .object({
+    sourceId: nonEmptyString.optional(),
+    accountId: nonEmptyString.optional(),
+    evidenceRecordId: nonEmptyString.optional(),
+    description: z.string().trim().min(1).max(4000).optional(),
+  })
+  .strict()
+  .refine(
+    (value) =>
+      value.sourceId !== undefined
+      || value.accountId !== undefined
+      || value.evidenceRecordId !== undefined
+      || value.description !== undefined,
+    "An evidentiary basis object cannot be empty.",
+  );
+
+export const contextEvidenceVersionSchema = z
+  .object({
+    id: nonEmptyString,
+    evidenceId: nonEmptyString,
+    ordinal: z.number().int().positive().optional(),
+    priorVersionId: nonEmptyString.optional(),
+    evidenceType: z.enum(["evidence", "counterevidence"]),
+    explanation: nonEmptyString,
+    strength: z.string().trim().min(1).max(256).optional(),
+    confidence: z.string().trim().min(1).max(256).optional(),
+    uncertainty: z.string().trim().min(1).max(2000).optional(),
+    sourceId: nonEmptyString.optional(),
+    accountId: nonEmptyString.optional(),
+    evidenceRecordId: nonEmptyString.optional(),
+    evidentiaryBasis: evidentiaryBasisSchema.optional(),
+    sourceLocator: evidenceVersionLocatorSchema.optional(),
+    sourceIds: z.array(nonEmptyString).max(100).optional(),
+    supportRole: evidenceSupportRoleSchema.optional(),
+    status: z.enum(contextualVersionStatuses).optional(),
+    changeType: z.string().trim().min(1).max(256),
+    changeReason: z.string().trim().min(1).max(4000).optional(),
+    contentHash: contentHashSchema.optional(),
+    origin: versionOriginSchema,
+    createdAt: z.iso.datetime({ offset: true }).optional(),
+    current: z.boolean().optional(),
+  })
+  .strict()
+  .refine((value) => value.priorVersionId !== value.id, {
+    message: "An evidence version cannot be its own predecessor.",
+    path: ["priorVersionId"],
+  });
+
 export const contextualBundleSchema = z
   .object({
     entities: z.array(contextEntitySchema).optional(),
@@ -548,7 +777,19 @@ export const contextualBundleSchema = z
     temporalAssertions: z.array(temporalAssertionSchema).optional(),
     accounts: z.array(historicalAccountSchema).optional(),
     claims: z.array(contextClaimSchema).optional(),
+    claimAttributions: z
+      .array(contextClaimAttributionSchema)
+      .optional(),
+    claimRelations: z.array(contextClaimRelationSchema).optional(),
+    claimVersions: z.array(contextClaimVersionSchema).optional(),
     evidence: z.array(contextEvidenceSchema).optional(),
+    evidenceClaimLinks: z
+      .array(contextEvidenceClaimLinkSchema)
+      .optional(),
+    evidenceVersions: z
+      .array(contextEvidenceVersionSchema)
+      .optional(),
+    sourceLocators: z.array(contextSourceLocatorSchema).optional(),
     interpretations: z.array(contextInterpretationSchema).optional(),
     perspectives: z.array(contextPerspectiveSchema).optional(),
     recordPerspectives: z.array(contextRecordPerspectiveSchema).optional(),
@@ -640,10 +881,23 @@ export function validateContextualBundle(
   const claimIds = new Set(
     (context.claims ?? []).map((record) => record.id),
   );
+  const evidenceIds = new Set(
+    (context.evidence ?? []).map((record) => record.id),
+  );
+  const claimVersionIds = new Set(
+    (context.claimVersions ?? []).map((version) => version.id),
+  );
+  const evidenceVersionIds = new Set(
+    (context.evidenceVersions ?? []).map((version) => version.id),
+  );
   const aliasIds = new Set<string>();
   const identifierIds = new Set<string>();
   const proposalIds = new Set<string>();
   const provenanceIds = new Set<string>();
+  const attributionIds = new Set<string>();
+  const claimRelationIds = new Set<string>();
+  const evidenceLinkIds = new Set<string>();
+  const sourceLocatorIds = new Set<string>();
 
   for (const [objectType, records] of collections) {
     for (const record of records) {
@@ -903,6 +1157,304 @@ export function validateContextualBundle(
     );
   }
 
+  for (const attribution of context.claimAttributions ?? []) {
+    if (attributionIds.has(attribution.id)) {
+      issues.push({
+        code: "DUPLICATE_CLAIM_ATTRIBUTION_ID",
+        objectType: "claimAttribution",
+        objectId: attribution.id,
+        field: "id",
+        message:
+          `Claim attribution ID ${attribution.id} is duplicated.`,
+      });
+    }
+    attributionIds.add(attribution.id);
+    requireReference(
+      "claimAttribution",
+      attribution.id,
+      "claimId",
+      attribution.claimId,
+      claimIds,
+      "CONTEXT_CLAIM_NOT_FOUND",
+    );
+    requireReference(
+      "claimAttribution",
+      attribution.id,
+      "actorEntityId",
+      attribution.actorEntityId,
+      entityIds,
+      "CONTEXT_ATTRIBUTION_ACTOR_NOT_FOUND",
+    );
+    requireReference(
+      "claimAttribution",
+      attribution.id,
+      "accountId",
+      attribution.accountId,
+      accountIds,
+      "CONTEXT_ATTRIBUTION_ACCOUNT_NOT_FOUND",
+    );
+    requireReference(
+      "claimAttribution",
+      attribution.id,
+      "temporalAssertionId",
+      attribution.temporalAssertionId,
+      temporalIds,
+      "CONTEXT_ATTRIBUTION_TIME_NOT_FOUND",
+    );
+    for (const sourceId of attribution.sourceIds ?? []) {
+      requireSource(
+        "claimAttribution",
+        attribution.id,
+        "sourceIds",
+        sourceId,
+      );
+    }
+  }
+
+  const contradictionPairs = new Set<string>();
+  for (const relation of context.claimRelations ?? []) {
+    if (claimRelationIds.has(relation.id)) {
+      issues.push({
+        code: "DUPLICATE_CLAIM_RELATION_ID",
+        objectType: "claimRelation",
+        objectId: relation.id,
+        field: "id",
+        message: `Claim relation ID ${relation.id} is duplicated.`,
+      });
+    }
+    claimRelationIds.add(relation.id);
+    requireReference(
+      "claimRelation",
+      relation.id,
+      "fromClaimId",
+      relation.fromClaimId,
+      claimIds,
+      "CONTEXT_CLAIM_NOT_FOUND",
+    );
+    requireReference(
+      "claimRelation",
+      relation.id,
+      "toClaimId",
+      relation.toClaimId,
+      claimIds,
+      "CONTEXT_CLAIM_NOT_FOUND",
+    );
+    requireReference(
+      "claimRelation",
+      relation.id,
+      "temporalAssertionId",
+      relation.temporalAssertionId,
+      temporalIds,
+      "CONTEXT_CLAIM_RELATION_TIME_NOT_FOUND",
+    );
+    for (const sourceId of relation.sourceIds ?? []) {
+      requireSource(
+        "claimRelation",
+        relation.id,
+        "sourceIds",
+        sourceId,
+      );
+    }
+    if (relation.relationType === "contradicts") {
+      const pair = [
+        relation.fromClaimId,
+        relation.toClaimId,
+      ].sort().join("\u0000");
+      if (contradictionPairs.has(pair)) {
+        issues.push({
+          code: "DUPLICATE_SYMMETRIC_CLAIM_CONTRADICTION",
+          objectType: "claimRelation",
+          objectId: relation.id,
+          field: "relationType",
+          message:
+            "A contradiction for this claim pair is duplicated in the same or reverse direction.",
+        });
+      }
+      contradictionPairs.add(pair);
+    }
+  }
+
+  const validateVersionCollection = (
+    kind: "claimVersion" | "evidenceVersion",
+    versions: Array<{
+      id: string;
+      priorVersionId?: string | undefined;
+      ordinal?: number | undefined;
+      current?: boolean | undefined;
+      contentHash?: string | undefined;
+      sourceIds?: string[] | undefined;
+    }>,
+    parentId: (version: typeof versions[number]) => string,
+    expectedHash: (version: typeof versions[number]) => string,
+  ) => {
+    const versionIds = new Set<string>();
+    const versionsById = new Map(
+      versions.map((version) => [version.id, version]),
+    );
+    const ordinalKeys = new Set<string>();
+    const currentCounts = new Map<string, number>();
+    for (const version of versions) {
+      const ownerId = parentId(version);
+      if (versionIds.has(version.id)) {
+        issues.push({
+          code: "DUPLICATE_CONTEXT_VERSION_ID",
+          objectType: kind,
+          objectId: version.id,
+          field: "id",
+          message: `${kind} ID ${version.id} is duplicated.`,
+        });
+      }
+      versionIds.add(version.id);
+      if (version.ordinal !== undefined) {
+        const ordinalKey = `${ownerId}\u0000${version.ordinal}`;
+        if (ordinalKeys.has(ordinalKey)) {
+          issues.push({
+            code: "DUPLICATE_CONTEXT_VERSION_ORDINAL",
+            objectType: kind,
+            objectId: version.id,
+            field: "ordinal",
+            message:
+              `Ordinal ${version.ordinal} is duplicated for ${ownerId}.`,
+          });
+        }
+        ordinalKeys.add(ordinalKey);
+      }
+      if (version.current === true) {
+        currentCounts.set(
+          ownerId,
+          (currentCounts.get(ownerId) ?? 0) + 1,
+        );
+      }
+      if (
+        version.contentHash
+        && version.contentHash !== expectedHash(version)
+      ) {
+        issues.push({
+          code: "CONTEXT_VERSION_HASH_MISMATCH",
+          objectType: kind,
+          objectId: version.id,
+          field: "contentHash",
+          message:
+            `The supplied content hash does not match normalized ${kind} content.`,
+        });
+      }
+      for (const sourceId of version.sourceIds ?? []) {
+        requireSource(kind, version.id, "sourceIds", sourceId);
+      }
+    }
+
+    for (const ownerId of new Set(versions.map(parentId))) {
+      if ((currentCounts.get(ownerId) ?? 0) !== 1) {
+        issues.push({
+          code: "INVALID_CONTEXT_CURRENT_VERSION_COUNT",
+          objectType: kind,
+          objectId: ownerId,
+          field: "current",
+          message:
+            `Exactly one current ${kind} is required for ${ownerId}.`,
+        });
+      }
+    }
+
+    for (const version of versions) {
+      const seen = new Set<string>([version.id]);
+      let predecessorId = version.priorVersionId;
+      while (predecessorId) {
+        if (seen.has(predecessorId)) {
+          issues.push({
+            code: "CONTEXT_VERSION_PREDECESSOR_CYCLE",
+            objectType: kind,
+            objectId: version.id,
+            field: "priorVersionId",
+            message:
+              `Version predecessor chain for ${version.id} contains a cycle.`,
+          });
+          break;
+        }
+        seen.add(predecessorId);
+        const predecessor = versionsById.get(predecessorId);
+        if (!predecessor) {
+          issues.push({
+            code: "CONTEXT_VERSION_PREDECESSOR_NOT_FOUND",
+            objectType: kind,
+            objectId: version.id,
+            field: "priorVersionId",
+            message:
+              `priorVersionId references missing version ${predecessorId}.`,
+          });
+          break;
+        }
+        if (parentId(predecessor) !== parentId(version)) {
+          issues.push({
+            code: "CONTEXT_VERSION_PARENT_MISMATCH",
+            objectType: kind,
+            objectId: version.id,
+            field: "priorVersionId",
+            message:
+              "A version predecessor must belong to the same logical parent.",
+          });
+          break;
+        }
+        predecessorId = predecessor.priorVersionId;
+      }
+    }
+  };
+
+  for (const version of context.claimVersions ?? []) {
+    requireReference(
+      "claimVersion",
+      version.id,
+      "claimId",
+      version.claimId,
+      claimIds,
+      "CONTEXT_CLAIM_NOT_FOUND",
+    );
+    requireReference(
+      "claimVersion",
+      version.id,
+      "subjectId",
+      version.subjectId,
+      allIds,
+      "CONTEXT_SUBJECT_NOT_FOUND",
+    );
+    requireReference(
+      "claimVersion",
+      version.id,
+      "objectId",
+      version.objectId,
+      allIds,
+      "CONTEXT_OBJECT_NOT_FOUND",
+    );
+    requireReference(
+      "claimVersion",
+      version.id,
+      "assertedTemporalAssertionId",
+      version.assertedTemporalAssertionId,
+      temporalIds,
+      "CONTEXT_VERSION_TIME_NOT_FOUND",
+    );
+    for (const attributionId of version.attributionIds ?? []) {
+      requireReference(
+        "claimVersion",
+        version.id,
+        "attributionIds",
+        attributionId,
+        attributionIds,
+        "CONTEXT_ATTRIBUTION_NOT_FOUND",
+      );
+    }
+  }
+  validateVersionCollection(
+    "claimVersion",
+    context.claimVersions ?? [],
+    (version) => (
+      version as typeof version & { claimId: string }
+    ).claimId,
+    (version) => claimVersionContentHash(
+      version as ContextClaimVersion,
+    ),
+  );
+
   for (const record of context.evidence ?? []) {
     requireReference(
       "evidence",
@@ -929,6 +1481,165 @@ export function validateContextualBundle(
       "CONTEXT_EVIDENCE_RECORD_NOT_FOUND",
     );
     requireSource("evidence", record.id, "sourceId", record.sourceId);
+  }
+
+  for (const locator of context.sourceLocators ?? []) {
+    if (sourceLocatorIds.has(locator.id)) {
+      issues.push({
+        code: "DUPLICATE_CONTEXT_SOURCE_LOCATOR_ID",
+        objectType: "sourceLocator",
+        objectId: locator.id,
+        field: "id",
+        message: `Source locator ID ${locator.id} is duplicated.`,
+      });
+    }
+    sourceLocatorIds.add(locator.id);
+    requireReference(
+      "sourceLocator",
+      locator.id,
+      "evidenceId",
+      locator.evidenceId,
+      evidenceIds,
+      "CONTEXT_EVIDENCE_NOT_FOUND",
+    );
+    requireSource(
+      "sourceLocator",
+      locator.id,
+      "sourceId",
+      locator.sourceId,
+    );
+  }
+
+  for (const version of context.evidenceVersions ?? []) {
+    requireReference(
+      "evidenceVersion",
+      version.id,
+      "evidenceId",
+      version.evidenceId,
+      evidenceIds,
+      "CONTEXT_EVIDENCE_NOT_FOUND",
+    );
+    requireReference(
+      "evidenceVersion",
+      version.id,
+      "accountId",
+      version.accountId,
+      accountIds,
+      "CONTEXT_ACCOUNT_NOT_FOUND",
+    );
+    requireReference(
+      "evidenceVersion",
+      version.id,
+      "evidenceRecordId",
+      version.evidenceRecordId,
+      allIds,
+      "CONTEXT_EVIDENCE_RECORD_NOT_FOUND",
+    );
+    requireSource(
+      "evidenceVersion",
+      version.id,
+      "sourceId",
+      version.sourceId,
+    );
+    const basis = version.evidentiaryBasis;
+    requireSource(
+      "evidenceVersion",
+      version.id,
+      "evidentiaryBasis.sourceId",
+      basis?.sourceId,
+    );
+    requireReference(
+      "evidenceVersion",
+      version.id,
+      "evidentiaryBasis.accountId",
+      basis?.accountId,
+      accountIds,
+      "CONTEXT_ACCOUNT_NOT_FOUND",
+    );
+    requireReference(
+      "evidenceVersion",
+      version.id,
+      "evidentiaryBasis.evidenceRecordId",
+      basis?.evidenceRecordId,
+      allIds,
+      "CONTEXT_EVIDENCE_RECORD_NOT_FOUND",
+    );
+    requireSource(
+      "evidenceVersion",
+      version.id,
+      "sourceLocator.sourceId",
+      version.sourceLocator?.sourceId,
+    );
+  }
+  validateVersionCollection(
+    "evidenceVersion",
+    context.evidenceVersions ?? [],
+    (version) => (
+      version as typeof version & { evidenceId: string }
+    ).evidenceId,
+    (version) => evidenceVersionContentHash(
+      version as ContextEvidenceVersion,
+    ),
+  );
+
+  for (const link of context.evidenceClaimLinks ?? []) {
+    if (evidenceLinkIds.has(link.id)) {
+      issues.push({
+        code: "DUPLICATE_CONTEXT_EVIDENCE_LINK_ID",
+        objectType: "evidenceClaimLink",
+        objectId: link.id,
+        field: "id",
+        message: `Evidence link ID ${link.id} is duplicated.`,
+      });
+    }
+    evidenceLinkIds.add(link.id);
+    requireReference(
+      "evidenceClaimLink",
+      link.id,
+      "evidenceId",
+      link.evidenceId,
+      evidenceIds,
+      "CONTEXT_EVIDENCE_NOT_FOUND",
+    );
+    requireReference(
+      "evidenceClaimLink",
+      link.id,
+      "claimId",
+      link.claimId,
+      claimIds,
+      "CONTEXT_CLAIM_NOT_FOUND",
+    );
+    requireReference(
+      "evidenceClaimLink",
+      link.id,
+      "claimVersionId",
+      link.claimVersionId,
+      claimVersionIds,
+      "CONTEXT_CLAIM_VERSION_NOT_FOUND",
+    );
+    if (link.claimVersionId) {
+      const targetVersion = (context.claimVersions ?? []).find(
+        (version) => version.id === link.claimVersionId,
+      );
+      if (targetVersion && targetVersion.claimId !== link.claimId) {
+        issues.push({
+          code: "CONTEXT_EVIDENCE_LINK_VERSION_MISMATCH",
+          objectType: "evidenceClaimLink",
+          objectId: link.id,
+          field: "claimVersionId",
+          message:
+            "The targeted claim version does not belong to the linked claim.",
+        });
+      }
+    }
+    for (const sourceId of link.sourceIds ?? []) {
+      requireSource(
+        "evidenceClaimLink",
+        link.id,
+        "sourceIds",
+        sourceId,
+      );
+    }
   }
 
   for (const record of context.interpretations ?? []) {
@@ -1113,6 +1824,17 @@ export function validateContextualBundle(
     "proposedDates",
     "validity",
     "identityLinks",
+    "statement",
+    "attributions",
+    "claimRelations",
+    "versions",
+    "evidenceLinks",
+    "explanation",
+    "evidentiaryBasis",
+    "supportRole",
+    "sourceLocators",
+    "changeReason",
+    "versionStatus",
   ]);
   for (const link of context.fieldProvenance ?? []) {
     if (provenanceIds.has(link.id)) {
@@ -1179,6 +1901,30 @@ export function validateContextualBundle(
             record.id === link.subrecordId
             && identityTypes.has(record.relationshipType),
         )
+      )
+      || (
+        link.subrecordType === "claim_attribution"
+        && attributionIds.has(link.subrecordId ?? "")
+      )
+      || (
+        link.subrecordType === "claim_relation"
+        && claimRelationIds.has(link.subrecordId ?? "")
+      )
+      || (
+        link.subrecordType === "claim_version"
+        && claimVersionIds.has(link.subrecordId ?? "")
+      )
+      || (
+        link.subrecordType === "evidence_claim_link"
+        && evidenceLinkIds.has(link.subrecordId ?? "")
+      )
+      || (
+        link.subrecordType === "source_locator"
+        && sourceLocatorIds.has(link.subrecordId ?? "")
+      )
+      || (
+        link.subrecordType === "evidence_version"
+        && evidenceVersionIds.has(link.subrecordId ?? "")
       );
 
     if (!subrecordExists) {

@@ -13,6 +13,8 @@ export type SearchResultType =
   | "context-entity"
   | "context-account"
   | "context-claim"
+  | "context-claim-version"
+  | "context-evidence"
   | "context-interpretation"
   | "context-relationship";
 
@@ -298,6 +300,7 @@ const searchRecordsCte = `
         WHEN 'entity' THEN 'context-entity'
         WHEN 'account' THEN 'context-account'
         WHEN 'claim' THEN 'context-claim'
+        WHEN 'evidence' THEN 'context-evidence'
         WHEN 'interpretation' THEN 'context-interpretation'
         WHEN 'relationship' THEN 'context-relationship'
       END::TEXT AS result_type,
@@ -375,6 +378,39 @@ const searchRecordsCte = `
         ),
         account.content,
         claim.statement,
+        evidence.explanation,
+        (
+          SELECT STRING_AGG(
+            CONCAT_WS(
+              ' ',
+              attribution.attribution_role,
+              actor.canonical_name
+            ),
+            ' '
+            ORDER BY attribution.attribution_role,
+              attribution.attribution_id
+          )
+          FROM context_claim_attributions attribution
+          LEFT JOIN context_entities actor
+            ON actor.context_id = attribution.actor_entity_context_id
+          WHERE attribution.claim_context_id = cr.context_id
+        ),
+        (
+          SELECT STRING_AGG(
+            CONCAT_WS(
+              ' ',
+              relation.relation_type,
+              relation.explanation,
+              relation.from_claim_context_id,
+              relation.to_claim_context_id
+            ),
+            ' '
+            ORDER BY relation.relation_type, relation.relation_id
+          )
+          FROM context_claim_relations relation
+          WHERE relation.from_claim_context_id = cr.context_id
+            OR relation.to_claim_context_id = cr.context_id
+        ),
         interpretation.interpretation_text,
         relationship.relationship_type,
         relationship.explanation,
@@ -387,6 +423,8 @@ const searchRecordsCte = `
       ON account.context_id = cr.context_id
     LEFT JOIN context_claims claim
       ON claim.context_id = cr.context_id
+    LEFT JOIN context_evidence evidence
+      ON evidence.context_id = cr.context_id
     LEFT JOIN context_interpretations interpretation
       ON interpretation.context_id = cr.context_id
     LEFT JOIN context_relationships relationship
@@ -395,10 +433,51 @@ const searchRecordsCte = `
       'entity',
       'account',
       'claim',
+      'evidence',
       'interpretation',
       'relationship'
     )
       AND cr.status <> 'governance-withdrawn'
+
+    UNION ALL
+
+    SELECT
+      'context-claim-version'::TEXT AS result_type,
+      version.version_id AS id,
+      version.bundle_id,
+      version.statement AS title,
+      version.change_reason AS summary,
+      COALESCE(record.domain, bundle.domain) AS domain,
+      'claim_version'::TEXT AS object_type,
+      JSONB_BUILD_OBJECT(
+        'claimId', version.claim_context_id,
+        'versionId', version.version_id,
+        'ordinal', version.version_ordinal,
+        'status', version.version_status,
+        'origin', version.origin,
+        'contentHash', version.content_hash,
+        'current', current_version.version_id IS NOT NULL
+      ) AS metadata,
+      version.created_at,
+      version.created_at AS updated_at,
+      CONCAT_WS(
+        ' ',
+        version.version_id,
+        version.claim_context_id,
+        version.statement,
+        version.claim_type,
+        version.change_type,
+        version.change_reason,
+        version.version_status,
+        version.source_ids::TEXT
+      ) AS searchable_text
+    FROM context_claim_versions version
+    LEFT JOIN context_claim_current_versions current_version
+      ON current_version.version_id = version.version_id
+    LEFT JOIN context_records record
+      ON record.context_id = version.claim_context_id
+    LEFT JOIN imported_bundles bundle
+      ON bundle.bundle_id = version.bundle_id
   )
 `;
 

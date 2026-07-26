@@ -11,6 +11,9 @@ import {
   validateGovernedChange,
   type GovernanceValidationResult,
 } from "./contextual-governance.js";
+import {
+  appendGovernedContextVersion,
+} from "./context-version-store.js";
 
 export type ProposalStatus =
   | "draft" | "submitted" | "under_review" | "changes_requested"
@@ -891,6 +894,7 @@ export async function publishProposal(input: {
       proposal.proposed_patch || {};
     let bundleId = proposal.bundle_id;
     let validation: GovernanceValidationResult | null = null;
+    let contextualVersionId: string | null = null;
 
     if (contextualPublication && bundleId) {
       await client.query(
@@ -963,6 +967,22 @@ export async function publishProposal(input: {
           proposal.target_id,
         )
       ).snapshot;
+      contextualVersionId = await appendGovernedContextVersion(
+        client,
+        {
+          targetType: proposal.target_type,
+          targetId: proposal.target_id,
+          bundleId,
+          snapshot: publishedSnapshot,
+          origin: "governed_publication",
+          changeType: proposal.change_type,
+          changeReason:
+            input.note || proposal.editorial_rationale,
+          proposalId: input.proposalId,
+          publicationId,
+          revisionId,
+        },
+      );
     } else {
       bundleId = await resolveBundleId(
         client,
@@ -1036,6 +1056,7 @@ export async function publishProposal(input: {
         revisionId,
         bundleRevisionWritten: Boolean(bundleId),
         materialized: contextualPublication,
+        contextualVersionId,
         validation,
       },
     });
@@ -1172,6 +1193,25 @@ export async function rollbackPublication(input: {
           }),
         ],
       );
+      if (
+        Object.keys(publication.prior_snapshot || {}).length > 0
+      ) {
+        await appendGovernedContextVersion(
+          client,
+          {
+            targetType: publication.target_type,
+            targetId: publication.target_id,
+            bundleId: publication.bundle_id,
+            snapshot: publication.prior_snapshot,
+            origin: "rollback",
+            changeType: "governed_rollback",
+            changeReason: input.reason,
+            proposalId: publication.proposal_id,
+            publicationId: input.publicationId,
+            revisionId: rollbackRevisionId,
+          },
+        );
+      }
     }
     await client.query(
       `UPDATE dr_publications SET rolled_back_at=CURRENT_TIMESTAMP, rolled_back_by_user_id=$1,

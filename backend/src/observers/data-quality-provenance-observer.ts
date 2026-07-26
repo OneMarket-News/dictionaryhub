@@ -1,4 +1,12 @@
 import type { SourceRootBundle } from "../types.js";
+import type {
+  ContextClaimVersion,
+  ContextEvidenceVersion,
+} from "../contextual-types.js";
+import {
+  claimVersionContentHash,
+  evidenceVersionContentHash,
+} from "../services/context-version-store.js";
 
 type RegistryRecord = Record<string, unknown>;
 
@@ -23,7 +31,23 @@ export type DataQualityFindingCategory =
   | "missing_field_provenance_target"
   | "identity_evidence_missing"
   | "contradictory_identity_relationship"
-  | "unsupported_calendar_conversion";
+  | "unsupported_calendar_conversion"
+  | "claim_without_provenance"
+  | "claim_attribution_without_source"
+  | "broken_claim_attribution_reference"
+  | "evidence_basis_missing"
+  | "broken_evidence_link"
+  | "evidence_locator_missing"
+  | "contradictory_evidence_roles"
+  | "claim_relation_without_source"
+  | "status_without_lineage"
+  | "duplicate_version_identifier"
+  | "version_predecessor_cycle"
+  | "multiple_current_versions"
+  | "content_hash_mismatch"
+  | "broken_version_provenance"
+  | "missing_current_version"
+  | "contradiction_without_provenance";
 
 export interface DataQualityFinding {
   category: DataQualityFindingCategory;
@@ -367,6 +391,30 @@ function contextualCollections(bundle: SourceRootBundle) {
     provenance: Array.isArray(context.fieldProvenance)
       ? context.fieldProvenance.map(asRecord)
       : [],
+    claims: Array.isArray(context.claims)
+      ? context.claims.map(asRecord)
+      : [],
+    evidence: Array.isArray(context.evidence)
+      ? context.evidence.map(asRecord)
+      : [],
+    attributions: Array.isArray(context.claimAttributions)
+      ? context.claimAttributions.map(asRecord)
+      : [],
+    claimRelations: Array.isArray(context.claimRelations)
+      ? context.claimRelations.map(asRecord)
+      : [],
+    evidenceLinks: Array.isArray(context.evidenceClaimLinks)
+      ? context.evidenceClaimLinks.map(asRecord)
+      : [],
+    sourceLocators: Array.isArray(context.sourceLocators)
+      ? context.sourceLocators.map(asRecord)
+      : [],
+    claimVersions: Array.isArray(context.claimVersions)
+      ? context.claimVersions.map(asRecord)
+      : [],
+    evidenceVersions: Array.isArray(context.evidenceVersions)
+      ? context.evidenceVersions.map(asRecord)
+      : [],
   };
 }
 
@@ -382,6 +430,14 @@ function inspectContextualRefinements(
     temporal,
     relationships,
     provenance,
+    claims,
+    evidence,
+    attributions,
+    claimRelations,
+    evidenceLinks,
+    sourceLocators,
+    claimVersions,
+    evidenceVersions,
   } = contextualCollections(bundle);
   const allRecords = [
     ...entities,
@@ -393,9 +449,7 @@ function inspectContextualRefinements(
         : []
     ),
     ...(
-      Array.isArray(asRecord(bundle.context).claims)
-        ? (asRecord(bundle.context).claims as unknown[]).map(asRecord)
-        : []
+      claims
     ),
   ];
   const recordsById = new Map(
@@ -405,6 +459,25 @@ function inspectContextualRefinements(
   );
   const temporalIds = new Set(
     temporal.map((record) => stringValue(record.id)).filter(Boolean),
+  );
+  const entityIds = new Set(
+    entities.map((record) => stringValue(record.id)).filter(Boolean),
+  );
+  const accountRecords = Array.isArray(
+    asRecord(bundle.context).accounts,
+  )
+    ? (asRecord(bundle.context).accounts as unknown[]).map(asRecord)
+    : [];
+  const accountIds = new Set(
+    accountRecords
+      .map((record) => stringValue(record.id))
+      .filter(Boolean),
+  );
+  const claimIds = new Set(
+    claims.map((record) => stringValue(record.id)).filter(Boolean),
+  );
+  const evidenceIds = new Set(
+    evidence.map((record) => stringValue(record.id)).filter(Boolean),
   );
 
   const aliasKeys = new Map<string, string[]>();
@@ -671,6 +744,373 @@ function inspectContextualRefinements(
     }
   }
 
+  const attributionByClaim = new Map<string, RegistryRecord[]>();
+  attributions.forEach((attribution, index) => {
+    const id = recordId(attribution, `claim-attribution-${index}`);
+    const claimId = stringValue(attribution.claimId);
+    const items = attributionByClaim.get(claimId) ?? [];
+    items.push(attribution);
+    attributionByClaim.set(claimId, items);
+    if (sourceReferences(attribution).length === 0) {
+      addFinding(findings, {
+        category: "claim_attribution_without_source",
+        severity: "moderate",
+        recordType: "context-claim-attribution",
+        recordId: id,
+        field: "sourceIds",
+        evidence: { claimId: claimId || "missing" },
+        suggestedHumanReviewAction:
+          "Review the attribution and add source support only when an explicit source establishes that attribution.",
+        diagnosticEventType: "missing_attribution_detected",
+      });
+    }
+    const brokenReferences = [
+      ["actorEntityId", stringValue(attribution.actorEntityId), entityIds],
+      ["accountId", stringValue(attribution.accountId), accountIds],
+      [
+        "temporalAssertionId",
+        stringValue(attribution.temporalAssertionId),
+        temporalIds,
+      ],
+    ] as const;
+    for (const [field, value, ids] of brokenReferences) {
+      if (value && !ids.has(value)) {
+        addFinding(findings, {
+          category: "broken_claim_attribution_reference",
+          severity: "high",
+          recordType: "context-claim-attribution",
+          recordId: id,
+          field,
+          evidence: { missingReferenceId: value },
+          suggestedHumanReviewAction:
+            "Review the broken attribution reference without inferring an actor, account, or time.",
+          diagnosticEventType: "broken_source_reference_detected",
+        });
+      }
+    }
+  });
+
+  claims.forEach((claim, index) => {
+    const id = recordId(claim, `claim-${index}`);
+    const claimAttributions = attributionByClaim.get(id) ?? [];
+    const hasAttributionSource = claimAttributions.some(
+      (attribution) => sourceReferences(attribution).length > 0,
+    );
+    if (
+      sourceReferences(claim).length === 0
+      && !hasAttributionSource
+    ) {
+      addFinding(findings, {
+        category: "claim_without_provenance",
+        severity: "high",
+        recordType: "context-claim",
+        recordId: id,
+        field: "sourceIds",
+        evidence: {
+          recordSourceCount: 0,
+          sourcedAttributionCount: 0,
+        },
+        suggestedHumanReviewAction:
+          "Review the claim and identify a source proving the claim was made; do not treat that source as evidentiary proof.",
+        diagnosticEventType: "missing_attribution_detected",
+      });
+    }
+  });
+
+  const relationsByClaim = new Map<string, RegistryRecord[]>();
+  claimRelations.forEach((relation, index) => {
+    const id = recordId(relation, `claim-relation-${index}`);
+    for (const claimId of [
+      stringValue(relation.fromClaimId),
+      stringValue(relation.toClaimId),
+    ]) {
+      const items = relationsByClaim.get(claimId) ?? [];
+      items.push(relation);
+      relationsByClaim.set(claimId, items);
+    }
+    if (sourceReferences(relation).length === 0) {
+      addFinding(findings, {
+        category:
+          stringValue(relation.relationType) === "contradicts"
+            ? "contradiction_without_provenance"
+            : "claim_relation_without_source",
+        severity: "high",
+        recordType: "context-claim-relation",
+        recordId: id,
+        field: "sourceIds",
+        evidence: {
+          relationType:
+            stringValue(relation.relationType) || "missing",
+        },
+        suggestedHumanReviewAction:
+          "Review the explicit claim relationship and add provenance without inferring a relationship from text.",
+        diagnosticEventType: "missing_attribution_detected",
+      });
+    }
+  });
+
+  const claimVersionIds = new Set(
+    claimVersions
+      .map((version) => stringValue(version.id))
+      .filter(Boolean),
+  );
+  evidence.forEach((record, index) => {
+    const id = recordId(record, `evidence-${index}`);
+    if (
+      !stringValue(record.sourceId)
+      && !stringValue(record.accountId)
+      && !stringValue(record.evidenceRecordId)
+    ) {
+      addFinding(findings, {
+        category: "evidence_basis_missing",
+        severity: "high",
+        recordType: "context-evidence",
+        recordId: id,
+        field: "sourceId",
+        evidence: { basisReferenceCount: 0 },
+        suggestedHumanReviewAction:
+          "Review the evidence record and supply an explicit source, account, or evidence-record basis.",
+        diagnosticEventType: "broken_source_reference_detected",
+      });
+    }
+    const metadata = asRecord(record.metadata);
+    if (
+      metadata.locatorRequired === true
+      && !sourceLocators.some(
+        (locator) => stringValue(locator.evidenceId) === id,
+      )
+    ) {
+      addFinding(findings, {
+        category: "evidence_locator_missing",
+        severity: "moderate",
+        recordType: "context-evidence",
+        recordId: id,
+        field: "sourceLocators",
+        evidence: { locatorRequired: true },
+        suggestedHumanReviewAction:
+          "Review the explicitly locator-required evidence and supply the exact user-verified locator.",
+        diagnosticEventType: "missing_attribution_detected",
+      });
+    }
+  });
+
+  const rolesByPair = new Map<string, Set<string>>();
+  evidenceLinks.forEach((link, index) => {
+    const id = recordId(link, `evidence-link-${index}`);
+    const evidenceId = stringValue(link.evidenceId);
+    const claimId = stringValue(link.claimId);
+    const versionId = stringValue(link.claimVersionId);
+    if (
+      !evidenceIds.has(evidenceId)
+      || !claimIds.has(claimId)
+      || (versionId && !claimVersionIds.has(versionId))
+    ) {
+      addFinding(findings, {
+        category: "broken_evidence_link",
+        severity: "high",
+        recordType: "context-evidence-claim-link",
+        recordId: id,
+        field: versionId ? "claimVersionId" : "claimId",
+        evidence: {
+          evidenceId: evidenceId || "missing",
+          claimId: claimId || "missing",
+          claimVersionId: versionId || "not-targeted",
+        },
+        suggestedHumanReviewAction:
+          "Review the broken evidence link without changing its support meaning automatically.",
+        diagnosticEventType: "broken_source_reference_detected",
+      });
+    }
+    const pair = `${evidenceId}\u0000${claimId}`;
+    const roles = rolesByPair.get(pair) ?? new Set<string>();
+    roles.add(stringValue(link.supportRole));
+    rolesByPair.set(pair, roles);
+  });
+  for (const [pair, roles] of rolesByPair) {
+    const hasPositive = [...roles].some((role) =>
+      ["supports", "corroborates"].includes(role)
+    );
+    const hasNegative = [...roles].some((role) =>
+      ["disputes", "contradicts"].includes(role)
+    );
+    if (!hasPositive || !hasNegative) {
+      continue;
+    }
+    const [evidenceId = "", claimId = ""] = pair.split("\u0000");
+    addFinding(findings, {
+      category: "contradictory_evidence_roles",
+      severity: "high",
+      recordType: "context-evidence-claim-link",
+      recordId: `${evidenceId}:${claimId}`,
+      field: "supportRole",
+      evidence: {
+        evidenceId,
+        claimId,
+        supportRoles: [...roles].sort(),
+      },
+      suggestedHumanReviewAction:
+        "Review the explicitly conflicting support roles; do not calculate a winner or truth score.",
+      diagnosticEventType: "malformed_registry_record_detected",
+    });
+  }
+
+  const inspectVersions = (
+    kind: "claim" | "evidence",
+    versions: RegistryRecord[],
+  ) => {
+    const versionsById = new Map<string, RegistryRecord>();
+    const duplicates = new Set<string>();
+    const currents = new Map<string, number>();
+    const parentField = kind === "claim" ? "claimId" : "evidenceId";
+    for (const version of versions) {
+      const id = stringValue(version.id);
+      const parentId = stringValue(version[parentField]);
+      if (versionsById.has(id)) {
+        duplicates.add(id);
+      }
+      versionsById.set(id, version);
+      if (version.current === true) {
+        currents.set(parentId, (currents.get(parentId) ?? 0) + 1);
+      }
+      const suppliedHash = stringValue(version.contentHash);
+      if (suppliedHash) {
+        const actualHash = kind === "claim"
+          ? claimVersionContentHash(
+              version as unknown as ContextClaimVersion,
+            )
+          : evidenceVersionContentHash(
+              version as unknown as ContextEvidenceVersion,
+            );
+        if (suppliedHash !== actualHash) {
+          addFinding(findings, {
+            category: "content_hash_mismatch",
+            severity: "high",
+            recordType: `context-${kind}-version`,
+            recordId: id || "unknown",
+            field: "contentHash",
+            evidence: {
+              suppliedHash,
+              normalizedHash: actualHash,
+            },
+            suggestedHumanReviewAction:
+              "Review the immutable version bytes and reject the mismatched content.",
+            diagnosticEventType: "malformed_registry_record_detected",
+          });
+        }
+      }
+      for (const sourceId of sourceReferences(version)
+        .map(stringValue)
+        .filter(Boolean)) {
+        if (!knownSourceIds.has(sourceId)) {
+          addFinding(findings, {
+            category: "broken_version_provenance",
+            severity: "high",
+            recordType: `context-${kind}-version`,
+            recordId: id || "unknown",
+            field: "sourceIds",
+            evidence: { missingSourceId: sourceId },
+            suggestedHumanReviewAction:
+              "Review the immutable version provenance and restore only a verified source reference.",
+            diagnosticEventType: "broken_source_reference_detected",
+          });
+        }
+      }
+    }
+    for (const id of [...duplicates].sort()) {
+      addFinding(findings, {
+        category: "duplicate_version_identifier",
+        severity: "high",
+        recordType: `context-${kind}-version`,
+        recordId: id,
+        field: "id",
+        evidence: { duplicateVersionId: id },
+        suggestedHumanReviewAction:
+          "Review the conflicting version identifiers and preserve both histories under stable unique IDs.",
+        diagnosticEventType: "malformed_registry_record_detected",
+      });
+    }
+    for (const version of versions) {
+      const id = stringValue(version.id);
+      const seen = new Set<string>([id]);
+      let prior = stringValue(version.priorVersionId);
+      while (prior) {
+        if (seen.has(prior)) {
+          addFinding(findings, {
+            category: "version_predecessor_cycle",
+            severity: "high",
+            recordType: `context-${kind}-version`,
+            recordId: id || "unknown",
+            field: "priorVersionId",
+            evidence: { repeatedVersionId: prior },
+            suggestedHumanReviewAction:
+              "Review and repair the predecessor chain without deleting historical versions.",
+            diagnosticEventType: "malformed_registry_record_detected",
+          });
+          break;
+        }
+        seen.add(prior);
+        prior = stringValue(
+          versionsById.get(prior)?.priorVersionId,
+        );
+      }
+    }
+    for (
+      const parentId
+      of new Set(
+        versions.map((version) => stringValue(version[parentField])),
+      )
+    ) {
+      const count = currents.get(parentId) ?? 0;
+      if (count !== 1) {
+        addFinding(findings, {
+          category:
+            count === 0
+              ? "missing_current_version"
+              : "multiple_current_versions",
+          severity: "high",
+          recordType: `context-${kind}-version`,
+          recordId: parentId || "unknown",
+          field: "current",
+          evidence: { currentVersionCount: count },
+          suggestedHumanReviewAction:
+            "Review the explicit current-version pointer without overwriting or deleting history.",
+          diagnosticEventType: "malformed_registry_record_detected",
+        });
+      }
+    }
+  };
+  inspectVersions("claim", claimVersions);
+  inspectVersions("evidence", evidenceVersions);
+
+  for (const record of [...claims, ...claimVersions]) {
+    const status = stringValue(record.status);
+    if (!["superseded", "retracted", "corrected"].includes(status)) {
+      continue;
+    }
+    const claimId =
+      stringValue(record.claimId) || stringValue(record.id);
+    const relations = relationsByClaim.get(claimId) ?? [];
+    if (
+      !relations.some((relation) =>
+        ["supersedes", "retracts", "corrects"].includes(
+          stringValue(relation.relationType),
+        )
+      )
+    ) {
+      addFinding(findings, {
+        category: "status_without_lineage",
+        severity: "high",
+        recordType: "context-claim",
+        recordId: claimId || "unknown",
+        field: "status",
+        evidence: { status },
+        suggestedHumanReviewAction:
+          "Review the lifecycle status and add an explicit lineage relation without deleting earlier wording.",
+        diagnosticEventType: "missing_attribution_detected",
+      });
+    }
+  }
+
   provenance.forEach((link, index) => {
     const id = recordId(link, `field-provenance-${index}`);
     const targetId = stringValue(link.targetId);
@@ -726,7 +1166,15 @@ function inspectContextualRefinements(
     + identifiers.length
     + temporal.length
     + relationships.length
-    + provenance.length;
+    + provenance.length
+    + claims.length
+    + evidence.length
+    + attributions.length
+    + claimRelations.length
+    + evidenceLinks.length
+    + sourceLocators.length
+    + claimVersions.length
+    + evidenceVersions.length;
 }
 
 export function observeDataQualityAndProvenance(

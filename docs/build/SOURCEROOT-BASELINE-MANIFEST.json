@@ -5,9 +5,9 @@
   "repositoryPath": "C:\\Users\\Josh\\Documents\\GitHub\\dictionaryhub",
   "git": {
     "branch": "release/historyroot-alpha-integration-v1",
-    "commit": "ef8cd09f6ef97458f1751612a86c2f4314885775"
+    "commit": "dfa306c46cdd5ec03f929b84b5ad6042de7d79e7"
   },
-  "currentInstalledStage": "SourceRoot Chunk 3 - Contextual Identity and Time Refinement v1",
+  "currentInstalledStage": "SourceRoot Chunk 4 - Contextual Assertions, Evidence, and Versioning v1",
   "backendEntryPoints": [
     "backend/src/server.ts",
     "backend/src/app.ts",
@@ -127,10 +127,12 @@
     "backend/db/migrations/008_strengthen_session_identity.sql",
     "backend/db/migrations/009_create_contextual_knowledge_foundation.sql",
     "backend/db/migrations/010_extend_contextual_governance.sql",
-    "backend/db/migrations/011_refine_contextual_identity_time.sql"
+    "backend/db/migrations/011_refine_contextual_identity_time.sql",
+    "backend/db/migrations/012_refine_contextual_assertions_evidence_versioning.sql"
   ],
   "existingTests": [
     "backend/test/api.test.ts",
+    "backend/test/contextual-assertions-evidence-versioning.test.ts",
     "backend/test/contextual-knowledge.test.ts",
     "backend/test/contextual-identity-time.test.ts",
     "backend/test/dictionaryroot-oewn.test.ts",
@@ -152,7 +154,8 @@
     "INSTALL-SOURCEROOT-CODEX-STAGE-CONTRACT.ps1",
     "INSTALL-SOURCEROOT-REGISTRY-API-CONTRACT.ps1",
     "INSTALL-SOURCEROOT-FRONTEND-API-OBSERVABILITY.ps1",
-    "INSTALL-SOURCEROOT-CONTEXTUAL-IDENTITY-TIME.ps1"
+    "INSTALL-SOURCEROOT-CONTEXTUAL-IDENTITY-TIME.ps1",
+    "INSTALL-SOURCEROOT-CONTEXTUAL-ASSERTIONS-EVIDENCE-VERSIONING.ps1"
   ],
   "existingVerifiers": [
     "VERIFY-DICTIONARYROOT-ACCOUNTS-ROLES-PERMISSIONS.ps1",
@@ -194,7 +197,8 @@
     "VERIFY-SOURCEROOT-CONTEXTUAL-KNOWLEDGE-FOUNDATION.ps1",
     "VERIFY-SOURCEROOT-REGISTRY-API-CONTRACT.ps1",
     "VERIFY-SOURCEROOT-FRONTEND-API-OBSERVABILITY.ps1",
-    "VERIFY-SOURCEROOT-CONTEXTUAL-IDENTITY-TIME.ps1"
+    "VERIFY-SOURCEROOT-CONTEXTUAL-IDENTITY-TIME.ps1",
+    "VERIFY-SOURCEROOT-CONTEXTUAL-ASSERTIONS-EVIDENCE-VERSIONING.ps1"
   ],
   "requiredRuntimeFiles": [
     "backend/.env.example",
@@ -210,6 +214,7 @@
     "backend/src/observers/platform-operations-observer.ts",
     "backend/src/observers/data-quality-provenance-observer.ts",
     "backend/src/services/contextual-time.ts",
+    "backend/src/services/context-version-store.ts",
     "backend/src/lib/runtime-config.ts",
     "backend/src/scripts/migrate.ts",
     "config/customers/dictionaryroot.json",
@@ -242,7 +247,7 @@
   "currentRoadmapPosition": {
     "corePhases": "Core Phases 1–9: completed according to the project roadmap",
     "phase10": "Phase 10: next implementation phase",
-    "currentCodexPackage": "Chunk 3 - Contextual Identity and Time Refinement v1",
+    "currentCodexPackage": "Chunk 4 - Contextual Assertions, Evidence, and Versioning v1",
     "classificationNotice": "Roadmap status is a project-management classification, not an independent production-security audit."
   },
   "repositoryDiscrepancy": "The inspected repository already contains contextual knowledge, authentication/governance, and HistoryRoot implementation even though the Chunk 0 roadmap wording places Phase 10 next. Chunk 0 preserves and records that pre-existing state.",
@@ -259,6 +264,19 @@
     "independentLiveApiChecksPerformed": false,
     "successfulInstallerBackup": "backups/sourceroot-contextual-identity-time-refinement-v1-20260726-095336-578"
   },
-  "nextStageDependency": "SourceRoot Chunk 4 — Contextual Assertions, Evidence, and Versioning",
+  "contextualAssertionsEvidenceVersioning": {
+    "migration": "backend/db/migrations/012_refine_contextual_assertions_evidence_versioning.sql",
+    "legacyClaimEvidenceSemanticsPreserved": true,
+    "automaticTruthResolution": false,
+    "semanticInference": false,
+    "newFrontendFiles": [],
+    "focusedTests": 19,
+    "completeBackendTests": 187,
+    "testDatabase": "sourceroot_test",
+    "browserChecksPerformed": false,
+    "independentLiveApiChecksPerformed": false,
+    "successfulInstallerBackup": "backups/sourceroot-contextual-assertions-evidence-versioning-v1-20260726-123751-553"
+  },
+  "nextStageDependency": "SourceRoot Chunk 5 - Context API and Review Experience",
   "secretHandling": "No secrets, passwords, tokens, connection strings, or private environment values are stored in this manifest."
 }

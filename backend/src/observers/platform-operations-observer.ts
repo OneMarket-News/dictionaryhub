@@ -89,10 +89,22 @@ function investigationArea(failure: OperationalFailure): string {
     return "database connectivity and transaction diagnostics";
   }
   if (failure.eventType === "import_failed" || failure.eventType === "validation_failed") {
+    if (
+      failure.failureCategory?.startsWith("context-version")
+      || failure.errorCode === "CONTEXT_VERSION_ID_CONFLICT"
+    ) {
+      return "contextual immutable-version conflict and current-pointer diagnostics";
+    }
     if (failure.failureCategory?.startsWith("context-")) {
-      return "contextual identity, time, provenance, and transactional import diagnostics";
+      return "contextual identity, time, provenance, assertion, evidence, and transactional import diagnostics";
     }
     return "import validation, schema compatibility, and source bundle diagnostics";
+  }
+  if (
+    failure.eventType === "governance_version_failed"
+    || failure.failureCategory === "governance-version"
+  ) {
+    return "governed contextual version publication and rollback diagnostics";
   }
   if (failure.statusCode === 401 || failure.statusCode === 403) {
     return "authentication and authorization policy";

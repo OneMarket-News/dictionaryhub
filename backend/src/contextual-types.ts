@@ -124,7 +124,18 @@ export interface ContextFieldProvenance {
   id: string;
   targetId: string;
   fieldPath: string;
-  subrecordType?: "alias" | "external_identifier" | "proposed_date" | "relationship_validity" | "identity_link";
+  subrecordType?:
+    | "alias"
+    | "external_identifier"
+    | "proposed_date"
+    | "relationship_validity"
+    | "identity_link"
+    | "claim_attribution"
+    | "claim_relation"
+    | "claim_version"
+    | "evidence_claim_link"
+    | "source_locator"
+    | "evidence_version";
   subrecordId?: string;
   sourceId: string;
   supportType?: string;
@@ -255,6 +266,110 @@ export interface ContextClaim
   uncertainty?: string;
 }
 
+export const claimAttributionRoles = [
+  "asserted_by",
+  "attributed_to",
+  "reported_by",
+  "recorded_by",
+  "issued_by",
+] as const;
+
+export type ClaimAttributionRole =
+  | (typeof claimAttributionRoles)[number]
+  | `custom:${string}`;
+
+export interface ContextClaimAttribution {
+  id: string;
+  claimId: string;
+  actorEntityId?: string;
+  accountId?: string;
+  temporalAssertionId?: string;
+  attributionRole: ClaimAttributionRole;
+  sourceIds?: string[];
+  note?: string;
+  confidence?: string;
+  uncertainty?: string;
+}
+
+export const claimRelationTypes = [
+  "contradicts",
+  "qualifies",
+  "refines",
+  "restates",
+  "supersedes",
+  "corrects",
+  "retracts",
+  "derived_from",
+] as const;
+
+export type ClaimRelationType =
+  | (typeof claimRelationTypes)[number]
+  | `custom:${string}`;
+
+export interface ContextClaimRelation {
+  id: string;
+  fromClaimId: string;
+  toClaimId: string;
+  relationType: ClaimRelationType;
+  explanation?: string;
+  sourceIds?: string[];
+  confidence?: string;
+  uncertainty?: string;
+  reviewStatus?: string;
+  temporalAssertionId?: string;
+}
+
+export const contextualVersionStatuses = [
+  "active",
+  "accepted",
+  "corrected",
+  "retracted",
+  "superseded",
+  "archived",
+  "draft",
+  "unknown",
+] as const;
+
+export type ContextualVersionStatus =
+  (typeof contextualVersionStatuses)[number];
+
+export const contextualVersionOrigins = [
+  "import",
+  "governed_publication",
+  "correction",
+  "retraction",
+  "rollback",
+  "migration",
+] as const;
+
+export type ContextualVersionOrigin =
+  | (typeof contextualVersionOrigins)[number]
+  | `custom:${string}`;
+
+export interface ContextClaimVersion {
+  id: string;
+  claimId: string;
+  ordinal?: number;
+  priorVersionId?: string;
+  statement: string;
+  claimType: string;
+  subjectId: string;
+  objectId?: string;
+  confidence?: string;
+  uncertainty?: string;
+  status?: ContextualVersionStatus;
+  changeType: string;
+  changeReason?: string;
+  attributionSnapshot?: Array<Record<string, unknown>>;
+  attributionIds?: string[];
+  sourceIds?: string[];
+  assertedTemporalAssertionId?: string;
+  contentHash?: string;
+  origin: ContextualVersionOrigin;
+  createdAt?: string;
+  current?: boolean;
+}
+
 export type ContextEvidenceType =
   | "evidence"
   | "counterevidence";
@@ -269,6 +384,92 @@ export interface ContextEvidence
   explanation: string;
   strength?: string;
   confidence?: string;
+  uncertainty?: string;
+}
+
+export const evidenceSupportRoles = [
+  "supports",
+  "disputes",
+  "qualifies",
+  "contextualizes",
+  "corroborates",
+  "contradicts",
+  "neutral_or_background",
+] as const;
+
+export type EvidenceSupportRole =
+  | (typeof evidenceSupportRoles)[number]
+  | `custom:${string}`;
+
+export const sourceLocatorTypes = [
+  "page",
+  "volume",
+  "chapter",
+  "section",
+  "paragraph",
+  "passage",
+  "archive",
+  "document_identifier",
+  "url_fragment",
+  "timestamp",
+  "time_range",
+  "database_record",
+  "citation",
+] as const;
+
+export type SourceLocatorType =
+  | (typeof sourceLocatorTypes)[number]
+  | `custom:${string}`;
+
+export interface ContextSourceLocator {
+  id: string;
+  evidenceId: string;
+  sourceId: string;
+  locatorType: SourceLocatorType;
+  locatorLabel: string;
+  locator?: Record<string, string | number | boolean>;
+  excerpt?: string;
+  note?: string;
+}
+
+export interface ContextEvidenceClaimLink {
+  id: string;
+  evidenceId: string;
+  claimId: string;
+  claimVersionId?: string;
+  supportRole: EvidenceSupportRole;
+  scopePath?: string;
+  explanation?: string;
+  relevance?: string;
+  confidence?: string;
+  uncertainty?: string;
+  sourceIds?: string[];
+}
+
+export interface ContextEvidenceVersion {
+  id: string;
+  evidenceId: string;
+  ordinal?: number;
+  priorVersionId?: string;
+  evidenceType: ContextEvidenceType;
+  explanation: string;
+  strength?: string;
+  confidence?: string;
+  uncertainty?: string;
+  sourceId?: string;
+  accountId?: string;
+  evidenceRecordId?: string;
+  evidentiaryBasis?: Record<string, unknown>;
+  sourceLocator?: Record<string, unknown>;
+  sourceIds?: string[];
+  supportRole?: EvidenceSupportRole;
+  status?: ContextualVersionStatus;
+  changeType: string;
+  changeReason?: string;
+  contentHash?: string;
+  origin: ContextualVersionOrigin;
+  createdAt?: string;
+  current?: boolean;
 }
 
 export interface ContextInterpretation
@@ -339,7 +540,13 @@ export interface ContextualBundle {
   temporalAssertions?: TemporalAssertion[];
   accounts?: HistoricalAccount[];
   claims?: ContextClaim[];
+  claimAttributions?: ContextClaimAttribution[];
+  claimRelations?: ContextClaimRelation[];
+  claimVersions?: ContextClaimVersion[];
   evidence?: ContextEvidence[];
+  evidenceClaimLinks?: ContextEvidenceClaimLink[];
+  evidenceVersions?: ContextEvidenceVersion[];
+  sourceLocators?: ContextSourceLocator[];
   interpretations?: ContextInterpretation[];
   perspectives?: ContextPerspective[];
   recordPerspectives?: ContextRecordPerspective[];

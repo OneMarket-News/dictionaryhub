@@ -32,6 +32,8 @@ const validSearchTypes =
     "context-entity",
     "context-account",
     "context-claim",
+    "context-claim-version",
+    "context-evidence",
     "context-interpretation",
     "context-relationship",
   ]);

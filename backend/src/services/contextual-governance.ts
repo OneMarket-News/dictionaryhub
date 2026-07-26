@@ -4,24 +4,32 @@ import { z } from "zod";
 import {
   contextRecordKinds,
   type ContextRecordKind,
+  type ContextualBundle,
   type StructuredHistoricalDate,
 } from "../contextual-types.js";
 import { sha256 } from "../lib/security.js";
 import {
   contextCausalLinkSchema,
+  contextClaimAttributionSchema,
+  contextClaimRelationSchema,
   contextClaimSchema,
   contextCulturalMemorySchema,
   contextEntityAliasSchema,
   contextEntitySchema,
   contextExternalIdentifierSchema,
   contextEvidenceSchema,
+  contextEvidenceClaimLinkSchema,
   contextFieldProvenanceSchema,
   contextInterpretationSchema,
   contextPerspectiveSchema,
   contextRelationshipSchema,
+  contextSourceLocatorSchema,
   historicalAccountSchema,
   temporalAssertionSchema,
 } from "./contextual-schemas.js";
+import {
+  insertContextualExtensions,
+} from "./context-version-store.js";
 import {
   chronologyBoundsForStructuredDate,
 } from "./contextual-time.js";
@@ -78,6 +86,9 @@ const protectedPatchFields = new Set([
   "bundleId",
   "createdAt",
   "updatedAt",
+  "versions",
+  "currentVersion",
+  "versionSummary",
 ]);
 
 function stableValue(value: unknown): unknown {
@@ -124,6 +135,171 @@ function cleanSnapshot(
   delete snapshot.bundleId;
   delete snapshot.governanceVisibility;
   return snapshot;
+}
+
+async function loadGovernedContextExtensions(
+  client: PoolClient,
+  targetType: string,
+  targetId: string,
+): Promise<Record<string, unknown>> {
+  if (targetType === "claim") {
+    const attributions = await client.query<{
+      item: Record<string, unknown>;
+    }>(
+      `
+        SELECT JSONB_STRIP_NULLS(JSONB_BUILD_OBJECT(
+          'id', attribution.attribution_id,
+          'claimId', attribution.claim_context_id,
+          'actorEntityId', attribution.actor_entity_context_id,
+          'accountId', attribution.account_context_id,
+          'temporalAssertionId', attribution.temporal_context_id,
+          'attributionRole', attribution.attribution_role,
+          'note', attribution.note,
+          'confidence', attribution.confidence,
+          'uncertainty', attribution.uncertainty,
+          'sourceIds',
+            COALESCE(
+              (
+                SELECT JSONB_AGG(source.source_id ORDER BY source.source_id)
+                FROM context_claim_attribution_sources source
+                WHERE source.attribution_id = attribution.attribution_id
+              ),
+              '[]'::JSONB
+            )
+        )) AS item
+        FROM context_claim_attributions attribution
+        WHERE attribution.claim_context_id = $1
+        ORDER BY attribution.attribution_role,
+          attribution.attribution_id;
+      `,
+      [targetId],
+    );
+    const relations = await client.query<{
+      item: Record<string, unknown>;
+    }>(
+      `
+        SELECT JSONB_STRIP_NULLS(JSONB_BUILD_OBJECT(
+          'id', relation.relation_id,
+          'fromClaimId', relation.from_claim_context_id,
+          'toClaimId', relation.to_claim_context_id,
+          'relationType', relation.relation_type,
+          'explanation', relation.explanation,
+          'confidence', relation.confidence,
+          'uncertainty', relation.uncertainty,
+          'reviewStatus', relation.review_status,
+          'temporalAssertionId', relation.temporal_context_id,
+          'sourceIds',
+            COALESCE(
+              (
+                SELECT JSONB_AGG(source.source_id ORDER BY source.source_id)
+                FROM context_claim_relation_sources source
+                WHERE source.relation_id = relation.relation_id
+              ),
+              '[]'::JSONB
+            )
+        )) AS item
+        FROM context_claim_relations relation
+        WHERE relation.from_claim_context_id = $1
+          OR relation.to_claim_context_id = $1
+        ORDER BY relation.relation_type, relation.relation_id;
+      `,
+      [targetId],
+    );
+    const evidenceLinks = await client.query<{
+      item: Record<string, unknown>;
+    }>(
+      `
+        SELECT JSONB_STRIP_NULLS(JSONB_BUILD_OBJECT(
+          'id', link.link_id,
+          'evidenceId', link.evidence_context_id,
+          'claimId', link.claim_context_id,
+          'claimVersionId', link.claim_version_id,
+          'supportRole', link.support_role,
+          'scopePath', link.scope_path,
+          'explanation', link.explanation,
+          'relevance', link.relevance,
+          'confidence', link.confidence,
+          'uncertainty', link.uncertainty,
+          'sourceIds',
+            COALESCE(
+              (
+                SELECT JSONB_AGG(source.source_id ORDER BY source.source_id)
+                FROM context_evidence_claim_link_sources source
+                WHERE source.link_id = link.link_id
+              ),
+              '[]'::JSONB
+            )
+        )) AS item
+        FROM context_evidence_claim_links link
+        WHERE link.claim_context_id = $1
+        ORDER BY link.support_role, link.link_id;
+      `,
+      [targetId],
+    );
+    return {
+      attributions: attributions.rows.map((row) => row.item),
+      claimRelations: relations.rows.map((row) => row.item),
+      evidenceLinks: evidenceLinks.rows.map((row) => row.item),
+    };
+  }
+  if (targetType === "evidence") {
+    const claimLinks = await client.query<{
+      item: Record<string, unknown>;
+    }>(
+      `
+        SELECT JSONB_STRIP_NULLS(JSONB_BUILD_OBJECT(
+          'id', link.link_id,
+          'evidenceId', link.evidence_context_id,
+          'claimId', link.claim_context_id,
+          'claimVersionId', link.claim_version_id,
+          'supportRole', link.support_role,
+          'scopePath', link.scope_path,
+          'explanation', link.explanation,
+          'relevance', link.relevance,
+          'confidence', link.confidence,
+          'uncertainty', link.uncertainty,
+          'sourceIds',
+            COALESCE(
+              (
+                SELECT JSONB_AGG(source.source_id ORDER BY source.source_id)
+                FROM context_evidence_claim_link_sources source
+                WHERE source.link_id = link.link_id
+              ),
+              '[]'::JSONB
+            )
+        )) AS item
+        FROM context_evidence_claim_links link
+        WHERE link.evidence_context_id = $1
+        ORDER BY link.support_role, link.link_id;
+      `,
+      [targetId],
+    );
+    const locators = await client.query<{
+      item: Record<string, unknown>;
+    }>(
+      `
+        SELECT JSONB_STRIP_NULLS(JSONB_BUILD_OBJECT(
+          'id', locator.locator_id,
+          'evidenceId', locator.evidence_context_id,
+          'sourceId', locator.source_id,
+          'locatorType', locator.locator_type,
+          'locatorLabel', locator.locator_label,
+          'locator', locator.locator_data,
+          'excerpt', locator.excerpt,
+          'note', locator.note
+        )) AS item
+        FROM context_source_locators locator
+        WHERE locator.evidence_context_id = $1
+        ORDER BY locator.locator_type, locator.locator_id;
+      `,
+      [targetId],
+    );
+    return {
+      claimLinks: claimLinks.rows.map((row) => row.item),
+      sourceLocators: locators.rows.map((row) => row.item),
+    };
+  }
+  return {};
 }
 
 export async function loadGovernedTarget(
@@ -341,7 +517,13 @@ export async function loadGovernedTarget(
       versionToken: absentVersionToken(targetType, targetId),
     };
   }
-  const snapshot = cleanSnapshot(row.raw_data || {}, {
+  const extensions = await loadGovernedContextExtensions(
+    client,
+    targetType,
+    targetId,
+  );
+  const snapshot = {
+    ...cleanSnapshot(row.raw_data || {}, {
     id: row.context_id,
     label: row.label,
     summary: row.summary,
@@ -353,7 +535,9 @@ export async function loadGovernedTarget(
     aliases: row.aliases || [],
     externalIdentifiers: row.external_identifiers || [],
     fieldProvenance: row.field_provenance || [],
-  });
+    }),
+    ...extensions,
+  };
   return {
     exists: true,
     targetType,
@@ -737,6 +921,14 @@ export async function validateGovernedChange(
         aliases,
         externalIdentifiers,
         fieldProvenance,
+        attributions,
+        claimRelations,
+        evidenceLinks,
+        claimLinks,
+        sourceLocators,
+        versions: _versions,
+        currentVersion: _currentVersion,
+        versionSummary: _versionSummary,
         identityLinks: _identityLinks,
         temporalContext: _temporalContext,
         proposedDateDetails: _proposedDateDetails,
@@ -812,6 +1004,139 @@ export async function validateGovernedChange(
         }
       }
 
+      if (input.targetType === "claim") {
+        for (
+          const [index, attribution]
+          of recordArray(attributions).entries()
+        ) {
+          const parsedAttribution =
+            contextClaimAttributionSchema.safeParse(attribution);
+          if (!parsedAttribution.success) {
+            for (const issue of parsedAttribution.error.issues) {
+              addIssue(
+                errors,
+                "INVALID_CLAIM_ATTRIBUTION",
+                issue.message,
+                {
+                  field:
+                    `attributions.${index}.${issue.path.join(".")}`,
+                },
+              );
+            }
+          } else if (
+            parsedAttribution.data.claimId !== input.targetId
+          ) {
+            addIssue(
+              errors,
+              "CLAIM_ATTRIBUTION_TARGET_MISMATCH",
+              "A governed attribution must remain owned by the target claim.",
+              { field: `attributions.${index}.claimId` },
+            );
+          }
+        }
+        for (
+          const [index, relation]
+          of recordArray(claimRelations).entries()
+        ) {
+          const parsedRelation =
+            contextClaimRelationSchema.safeParse(relation);
+          if (!parsedRelation.success) {
+            for (const issue of parsedRelation.error.issues) {
+              addIssue(
+                errors,
+                "INVALID_CLAIM_RELATION",
+                issue.message,
+                {
+                  field:
+                    `claimRelations.${index}.${issue.path.join(".")}`,
+                },
+              );
+            }
+          } else if (
+            parsedRelation.data.fromClaimId !== input.targetId
+            && parsedRelation.data.toClaimId !== input.targetId
+          ) {
+            addIssue(
+              errors,
+              "CLAIM_RELATION_TARGET_MISMATCH",
+              "A governed claim relation must include the target claim.",
+              { field: `claimRelations.${index}.fromClaimId` },
+            );
+          }
+        }
+      }
+
+      const governedEvidenceLinks =
+        input.targetType === "claim" ? evidenceLinks : claimLinks;
+      if (
+        input.targetType === "claim"
+        || input.targetType === "evidence"
+      ) {
+        for (
+          const [index, link]
+          of recordArray(governedEvidenceLinks).entries()
+        ) {
+          const parsedLink =
+            contextEvidenceClaimLinkSchema.safeParse(link);
+          if (!parsedLink.success) {
+            for (const issue of parsedLink.error.issues) {
+              addIssue(
+                errors,
+                "INVALID_EVIDENCE_CLAIM_LINK",
+                issue.message,
+                {
+                  field:
+                    `evidenceLinks.${index}.${issue.path.join(".")}`,
+                },
+              );
+            }
+          } else if (
+            input.targetType === "claim"
+              ? parsedLink.data.claimId !== input.targetId
+              : parsedLink.data.evidenceId !== input.targetId
+          ) {
+            addIssue(
+              errors,
+              "EVIDENCE_LINK_TARGET_MISMATCH",
+              "A governed evidence link must remain owned by the target record.",
+              { field: `evidenceLinks.${index}` },
+            );
+          }
+        }
+      }
+
+      if (input.targetType === "evidence") {
+        for (
+          const [index, locator]
+          of recordArray(sourceLocators).entries()
+        ) {
+          const parsedLocator =
+            contextSourceLocatorSchema.safeParse(locator);
+          if (!parsedLocator.success) {
+            for (const issue of parsedLocator.error.issues) {
+              addIssue(
+                errors,
+                "INVALID_SOURCE_LOCATOR",
+                issue.message,
+                {
+                  field:
+                    `sourceLocators.${index}.${issue.path.join(".")}`,
+                },
+              );
+            }
+          } else if (
+            parsedLocator.data.evidenceId !== input.targetId
+          ) {
+            addIssue(
+              errors,
+              "SOURCE_LOCATOR_TARGET_MISMATCH",
+              "A governed source locator must remain owned by the target evidence.",
+              { field: `sourceLocators.${index}.evidenceId` },
+            );
+          }
+        }
+      }
+
       for (
         const [index, provenance]
         of recordArray(fieldProvenance).entries()
@@ -860,6 +1185,21 @@ export async function validateGovernedChange(
       ),
       ...recordArray(record.fieldProvenance)
         .map((provenance) => text(provenance.sourceId))
+        .filter(Boolean),
+      ...recordArray(record.attributions).flatMap(
+        (attribution) => stringArray(attribution.sourceIds),
+      ),
+      ...recordArray(record.claimRelations).flatMap(
+        (relation) => stringArray(relation.sourceIds),
+      ),
+      ...recordArray(record.evidenceLinks).flatMap(
+        (link) => stringArray(link.sourceIds),
+      ),
+      ...recordArray(record.claimLinks).flatMap(
+        (link) => stringArray(link.sourceIds),
+      ),
+      ...recordArray(record.sourceLocators)
+        .map((locator) => text(locator.sourceId))
         .filter(Boolean),
       ...recordArray(record.proposedDates).flatMap(
         (proposal) => stringArray(proposal.sourceIds),
@@ -1339,6 +1679,65 @@ async function replaceFieldProvenance(
   }
 }
 
+async function replaceAssertionEvidenceExtensions(
+  client: PoolClient,
+  bundleId: string,
+  kind: ContextRecordKind,
+  targetId: string,
+  record: Record<string, unknown>,
+): Promise<void> {
+  if (kind === "claim") {
+    await client.query(
+      "DELETE FROM context_claim_attributions WHERE claim_context_id = $1",
+      [targetId],
+    );
+    await client.query(
+      `
+        DELETE FROM context_claim_relations
+        WHERE from_claim_context_id = $1
+          OR to_claim_context_id = $1
+      `,
+      [targetId],
+    );
+    await client.query(
+      "DELETE FROM context_evidence_claim_links WHERE claim_context_id = $1",
+      [targetId],
+    );
+    await insertContextualExtensions(
+      client,
+      bundleId,
+      {
+        claimAttributions:
+          recordArray(record.attributions),
+        claimRelations:
+          recordArray(record.claimRelations),
+        evidenceClaimLinks:
+          recordArray(record.evidenceLinks),
+      } as unknown as ContextualBundle,
+    );
+  }
+  if (kind === "evidence") {
+    await client.query(
+      "DELETE FROM context_source_locators WHERE evidence_context_id = $1",
+      [targetId],
+    );
+    await client.query(
+      "DELETE FROM context_evidence_claim_links WHERE evidence_context_id = $1",
+      [targetId],
+    );
+    await insertContextualExtensions(
+      client,
+      bundleId,
+      {
+        evidenceClaimLinks:
+          recordArray(record.claimLinks),
+        sourceLocators:
+          recordArray(record.sourceLocators),
+      } as unknown as ContextualBundle,
+    );
+  }
+}
+
 async function upsertSubtype(
   client: PoolClient,
   kind: ContextRecordKind,
@@ -1459,8 +1858,8 @@ async function upsertSubtype(
       break;
     case "evidence":
       await client.query(
-        `INSERT INTO context_evidence(context_id, claim_context_id, evidence_type, source_id, account_context_id, evidence_context_id, explanation, strength, confidence)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+        `INSERT INTO context_evidence(context_id, claim_context_id, evidence_type, source_id, account_context_id, evidence_context_id, explanation, strength, confidence, uncertainty)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
          ON CONFLICT (context_id) DO UPDATE SET
            claim_context_id=EXCLUDED.claim_context_id,
            evidence_type=EXCLUDED.evidence_type,
@@ -1469,12 +1868,14 @@ async function upsertSubtype(
            evidence_context_id=EXCLUDED.evidence_context_id,
            explanation=EXCLUDED.explanation,
            strength=EXCLUDED.strength,
-           confidence=EXCLUDED.confidence`,
+           confidence=EXCLUDED.confidence,
+           uncertainty=EXCLUDED.uncertainty`,
         [
           id, record.claimId, record.evidenceType, text(record.sourceId) || null,
           text(record.accountId) || null, text(record.evidenceRecordId) || null,
           record.explanation, text(record.strength) || "unknown",
           text(record.confidence) || "unknown",
+          text(record.uncertainty) || null,
         ],
       );
       break;
@@ -1648,6 +2049,13 @@ export async function materializeGovernedSnapshot(
   );
   await upsertSubtype(client, kind, snapshot);
   await replaceContextLinks(client, bundleId, targetId, snapshot);
+  await replaceAssertionEvidenceExtensions(
+    client,
+    bundleId,
+    kind,
+    targetId,
+    snapshot,
+  );
   if (kind === "entity") {
     await replaceEntityRefinements(
       client,
