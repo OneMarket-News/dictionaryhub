@@ -603,18 +603,22 @@ if ($ForbiddenFindings.Count -eq 0) {
 }
 
 $ChangedTool = Join-Path $script:RepositoryRoot "tools\GET-ROOT-CHANGED-FILES.ps1"
-try {
-    $PowerShell = (Get-Command powershell.exe -ErrorAction Stop).Source
-    $ChangedOutput = @(& $PowerShell -NoProfile -ExecutionPolicy Bypass -File $ChangedTool -AsJson -CheckAllowedFiles -AllowUntracked 2>$null)
-    $ChangedExitCode = $LASTEXITCODE
-    $ChangedResult = ($ChangedOutput -join "`n") | ConvertFrom-Json
-    if ($ChangedExitCode -eq 0 -and [int]$ChangedResult.unauthorized_count -eq 0) {
-        Write-VerificationPass "Active-stage changed-file scope" "$($ChangedResult.change_count) changed files; 0 unauthorized."
-    } else {
-        Write-VerificationFail "Active-stage changed-file scope" "Exit $ChangedExitCode; unauthorized: $(@($ChangedResult.unauthorized_files) -join ', ')"
+if ($IsActiveStage) {
+    try {
+        $PowerShell = (Get-Command powershell.exe -ErrorAction Stop).Source
+        $ChangedOutput = @(& $PowerShell -NoProfile -ExecutionPolicy Bypass -File $ChangedTool -AsJson -CheckAllowedFiles -AllowUntracked 2>$null)
+        $ChangedExitCode = $LASTEXITCODE
+        $ChangedResult = ($ChangedOutput -join "`n") | ConvertFrom-Json
+        if ($ChangedExitCode -eq 0 -and [int]$ChangedResult.unauthorized_count -eq 0) {
+            Write-VerificationPass "Active-stage changed-file scope" "$($ChangedResult.change_count) changed files; 0 unauthorized."
+        } else {
+            Write-VerificationFail "Active-stage changed-file scope" "Exit $ChangedExitCode; unauthorized: $(@($ChangedResult.unauthorized_files) -join ', ')"
+        }
+    } catch {
+        Write-VerificationFail "Active-stage changed-file scope" $_.Exception.Message
     }
-} catch {
-    Write-VerificationFail "Active-stage changed-file scope" $_.Exception.Message
+} else {
+    Write-VerificationPass "Inactive-stage changed-file scope" "No active stage; allowed-file enforcement skipped."
 }
 
 $DiscoveredVerifiers = @(
