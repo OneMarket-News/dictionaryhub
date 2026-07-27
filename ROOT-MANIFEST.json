@@ -1,0 +1,202 @@
+{
+    "schema_version":  "1.0.0",
+    "project":  {
+                    "name":  "DictionaryRoot",
+                    "platform":  "SourceRoot",
+                    "repository_type":  "customer-experience",
+                    "status":  "active-development"
+                },
+    "canonical_experiences":  {
+                                  "home":  {
+                                               "name":  "DictionaryRoot Home",
+                                               "file":  "index.html",
+                                               "page_script":  "assets/js/dictionaryroot-home.js",
+                                               "initialization_order":  [
+                                                                            "assets/js/sourceroot-api.js",
+                                                                            "assets/js/dictionaryroot-api.js",
+                                                                            "assets/js/dictionaryroot-auth.js",
+                                                                            "assets/js/dictionaryroot-brand.js",
+                                                                            "assets/js/dictionaryroot-navigation.js",
+                                                                            "assets/js/dictionaryroot-home.js"
+                                                                        ]
+                                           },
+                                  "knowledge_sphere":  {
+                                                           "name":  "DictionaryRoot Knowledge Sphere",
+                                                           "file":  "graph-v2.html",
+                                                           "page_script":  "assets/js/dictionaryroot-graph.js",
+                                                           "initialization_order":  [
+                                                                                        "assets/js/sourceroot-api.js",
+                                                                                        "assets/js/dictionaryroot-api.js",
+                                                                                        "assets/js/dictionaryroot-auth.js",
+                                                                                        "assets/js/dictionaryroot-brand.js",
+                                                                                        "assets/js/dictionaryroot-navigation.js",
+                                                                                        "assets/js/dictionaryroot-graph.js"
+                                                                                    ]
+                                                       },
+                                  "concept":  {
+                                                  "name":  "DictionaryRoot Concept Experience",
+                                                  "file":  "concept-v2.html",
+                                                  "page_script":  "assets/js/dictionaryroot-concept.js",
+                                                  "initialization_order":  [
+                                                                               "assets/js/sourceroot-api.js",
+                                                                               "assets/js/dictionaryroot-api.js",
+                                                                               "assets/js/dictionaryroot-auth.js",
+                                                                               "assets/js/dictionaryroot-brand.js",
+                                                                               "assets/js/dictionaryroot-navigation.js",
+                                                                               "assets/js/dictionaryroot-concept.js"
+                                                                           ]
+                                              },
+                                  "sources":  {
+                                                  "name":  "DictionaryRoot Source Experience",
+                                                  "file":  "sources-v2.html",
+                                                  "page_script":  "assets/js/dictionaryroot-sources.js",
+                                                  "initialization_order":  [
+                                                                               "assets/js/sourceroot-api.js",
+                                                                               "assets/js/dictionaryroot-api.js",
+                                                                               "assets/js/dictionaryroot-auth.js",
+                                                                               "assets/js/dictionaryroot-brand.js",
+                                                                               "assets/js/dictionaryroot-navigation.js",
+                                                                               "assets/js/dictionaryroot-sources.js"
+                                                                           ]
+                                              }
+                              },
+    "shared_assets":  {
+                          "navigation":  [
+                                             "assets/js/dictionaryroot-navigation.js",
+                                             "assets/css/dictionaryroot-navigation.css"
+                                         ],
+                          "branding":  [
+                                           "config/dictionaryroot-brand.json",
+                                           "config/customers/dictionaryroot.json",
+                                           "assets/brand/dictionaryroot-mark.svg",
+                                           "assets/js/dictionaryroot-brand.js",
+                                           "assets/css/dictionaryroot-brand.css"
+                                       ],
+                          "api_clients":  [
+                                              "assets/js/sourceroot-api.js",
+                                              "assets/js/dictionaryroot-api.js"
+                                          ],
+                          "styles":  [
+                                         "assets/css/dictionaryroot-brand.css",
+                                         "assets/css/dictionaryroot-navigation.css",
+                                         "assets/css/dictionaryroot-live.css",
+                                         "assets/css/dictionaryroot-home.css",
+                                         "assets/css/dictionaryroot-hybrid-map.css",
+                                         "assets/css/dictionaryroot-dynamic-sphere.css",
+                                         "assets/css/dictionaryroot-product-refinement.css",
+                                         "assets/css/dictionaryroot-governance.css"
+                                     ],
+                          "utilities":  [
+                                            "assets/js/dictionaryroot-auth.js"
+                                        ]
+                      },
+    "protected_capabilities":  [
+                                   "DictionaryRoot home experience",
+                                   "Knowledge Sphere",
+                                   "Concept Experience",
+                                   "Source Experience",
+                                   "customer branding and logo",
+                                   "shared responsive navigation",
+                                   "global exact-meaning search",
+                                   "live SourceRoot API integration",
+                                   "exact-meaning compatibility",
+                                   "meaning-ranking compatibility",
+                                   "source attribution and provenance",
+                                   "cross-page context links",
+                                   "URL and browser-history state",
+                                   "loading states",
+                                   "empty states",
+                                   "API-offline and retry states",
+                                   "responsive behavior",
+                                   "accessibility behavior",
+                                   "unique HTML IDs",
+                                   "JavaScript initialization order",
+                                   "installer backup and rollback behavior",
+                                   "PowerShell verifier coverage and exit codes",
+                                   "no static fallback knowledge data"
+                               ],
+    "repository_rules":  {
+                             "source_of_truth":  "checked-out repository",
+                             "allow_static_fallback_data":  false,
+                             "require_stage_specification":  true,
+                             "require_verification":  true,
+                             "powershell_compatibility":  "Windows PowerShell 5.1"
+                         },
+    "excluded_paths":  [
+                           ".git/",
+                           ".root-context/",
+                           "backups/",
+                           "backend/node_modules/",
+                           "backend/dist/",
+                           "verification/responsive/",
+                           "SourceRoot-Codex-Stage-Contract-v1/",
+                           "SourceRoot-Registry-API-Contract-v1/",
+                           "backend/.env",
+                           "backend/.env.test"
+                       ],
+    "known_verifiers":  [
+                            "VERIFY-DICTIONARYROOT-ACCOUNTS-ROLES-PERMISSIONS.ps1",
+                            "VERIFY-DICTIONARYROOT-API-MEANING-RANKING-FIX.ps1",
+                            "VERIFY-DICTIONARYROOT-BASELINE.ps1",
+                            "VERIFY-DICTIONARYROOT-COMPLETE-SENSE-COVERAGE.ps1",
+                            "VERIFY-DICTIONARYROOT-CONCEPT-EXPERIENCE.ps1",
+                            "VERIFY-DICTIONARYROOT-COVERAGE-DATA-QUALITY.ps1",
+                            "VERIFY-DICTIONARYROOT-CROSS-EXPERIENCE-PRODUCT-REFINEMENT.ps1",
+                            "VERIFY-DICTIONARYROOT-CUSTOMER-FOUNDATION.ps1",
+                            "VERIFY-DICTIONARYROOT-DYNAMIC-SPHERE-EXPANSION.ps1",
+                            "VERIFY-DICTIONARYROOT-EDITORIAL-REVIEW.ps1",
+                            "VERIFY-DICTIONARYROOT-GOVERNED-PLATFORM-FOUNDATION.ps1",
+                            "VERIFY-DICTIONARYROOT-GRAPH-READABILITY-FIX.ps1",
+                            "VERIFY-DICTIONARYROOT-HOME-DISCOVERY.ps1",
+                            "VERIFY-DICTIONARYROOT-HYBRID-MAP.ps1",
+                            "VERIFY-DICTIONARYROOT-HYBRID-MAP-UNIFIED-NAVIGATION-RECOVERY.ps1",
+                            "VERIFY-DICTIONARYROOT-KNOWLEDGE-SPHERE.ps1",
+                            "VERIFY-DICTIONARYROOT-KNOWLEDGE-SPHERE-FULL-WIDTH.ps1",
+                            "VERIFY-DICTIONARYROOT-LIVE-CONNECTION.ps1",
+                            "VERIFY-DICTIONARYROOT-LOCAL-CONNECTION-FIX.ps1",
+                            "VERIFY-DICTIONARYROOT-NAVIGATION-OVERLAP-FIX.ps1",
+                            "VERIFY-DICTIONARYROOT-PILOT.ps1",
+                            "VERIFY-DICTIONARYROOT-PRODUCT-HEADER-FOOTER.ps1",
+                            "VERIFY-DICTIONARYROOT-REVISION-HISTORY.ps1",
+                            "VERIFY-DICTIONARYROOT-SOURCE-EXPERIENCE.ps1",
+                            "VERIFY-DICTIONARYROOT-UNIFIED-NAVIGATION-SEARCH.ps1",
+                            "VERIFY-GOVERNED-HISTORYROOT-ALPHA-V1.ps1",
+                            "VERIFY-HISTORYROOT-ALPHA-INTEGRATION-V1.ps1",
+                            "VERIFY-HISTORYROOT-CUSTOMER-EXPERIENCE-V1.ps1",
+                            "VERIFY-HISTORYROOT-PLYMOUTH-KNOWLEDGE-DATASET-V1.ps1",
+                            "VERIFY-SOURCEROOT-BASELINE.ps1",
+                            "VERIFY-SOURCEROOT-CODEX-STAGE-CONTRACT.ps1",
+                            "VERIFY-SOURCEROOT-CONTEXT-API-REVIEW-EXPERIENCE.ps1",
+                            "VERIFY-SOURCEROOT-CONTEXTUAL-ASSERTIONS-EVIDENCE-VERSIONING.ps1",
+                            "VERIFY-SOURCEROOT-CONTEXTUAL-IDENTITY-TIME.ps1",
+                            "VERIFY-SOURCEROOT-CONTEXTUAL-KNOWLEDGE-FOUNDATION.ps1",
+                            "VERIFY-SOURCEROOT-FRONTEND-API-OBSERVABILITY.ps1",
+                            "VERIFY-SOURCEROOT-HISTORYROOT-FOUNDATIONAL-CORPUS.ps1",
+                            "VERIFY-SOURCEROOT-REGISTRY-API-CONTRACT.ps1"
+                        ],
+    "known_installers":  [
+                             "INSTALL-DICTIONARYROOT-GOVERNED-PLATFORM-FOUNDATION.ps1",
+                             "INSTALL-SOURCEROOT-CODEX-STAGE-CONTRACT.ps1",
+                             "INSTALL-SOURCEROOT-CONTEXT-API-REVIEW-EXPERIENCE.ps1",
+                             "INSTALL-SOURCEROOT-CONTEXTUAL-ASSERTIONS-EVIDENCE-VERSIONING.ps1",
+                             "INSTALL-SOURCEROOT-CONTEXTUAL-IDENTITY-TIME.ps1",
+                             "INSTALL-SOURCEROOT-FRONTEND-API-OBSERVABILITY.ps1",
+                             "INSTALL-SOURCEROOT-HISTORYROOT-FOUNDATIONAL-CORPUS.ps1",
+                             "INSTALL-SOURCEROOT-REGISTRY-API-CONTRACT.ps1"
+                         ],
+    "active_stage":  {
+                         "name":  "",
+                         "slug":  "",
+                         "specification":  "",
+                         "allowed_files":  [
+
+                                           ],
+                         "required_verifiers":  [
+
+                                                ],
+                         "preflight_changed_files":  [
+
+                                                     ],
+                         "status":  "inactive"
+                     }
+}

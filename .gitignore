@@ -9,5 +9,6 @@ backups/
 backend/node_modules/
 backend/dist/
 verification/
+.root-context/
 *.sql.gz
 *.dump
