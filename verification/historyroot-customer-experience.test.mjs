@@ -219,6 +219,13 @@ test("shared helper behavior is deterministic and safely encodes links", () => {
     ),
     "Squanto",
   );
+  assert.deepEqual(
+    Array.from(helpers.aliasesOf({
+      alternateNames: ["Pahtuksut"],
+      aliases: [{ text: "Pahtuksut" }, { text: "Patuxet" }],
+    })),
+    ["Pahtuksut", "Patuxet"],
+  );
   assert.equal(
     helpers.dedupeRecords([{ id: "one" }, { id: "one" }, { id: "two" }]).length,
     2,

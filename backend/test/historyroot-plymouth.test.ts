@@ -88,7 +88,7 @@ test("generic validation accepts the dataset without warnings", async () => {
 
   assert.equal(result.status, "ready");
   assert.equal(result.canImport, true);
-  assert.equal(result.summary.contextualRecords, 393);
+  assert.equal(result.summary.contextualRecords, 397);
   assert.equal(result.summary.errors, 0);
   assert.equal(result.summary.warnings, 0);
 });
@@ -139,7 +139,7 @@ test("dataset counts meet every target range", async () => {
 test("required canonical names and aliases resolve to stable IDs", async () => {
   const entities = requireContext(await loadPlymouthBundle()).entities ?? [];
   const expected = new Map([
-    ["Plymouth", "historyroot-plymouth-place-patuxet-plymouth"],
+    ["Plymouth", "ctx-place-plymouth-settlement"],
     ["Patuxet", "historyroot-plymouth-group-patuxet"],
     ["Wampanoag", "historyroot-plymouth-group-wampanoag"],
     ["Massasoit", "historyroot-plymouth-person-ousamequin"],
@@ -342,16 +342,16 @@ test("import populates all Plymouth contextual tables", async () => {
   assert.ok(row);
   assert.equal(Number(row.bundles), 1);
   assert.equal(Number(row.sources), 20);
-  assert.equal(Number(row.records), 393);
-  assert.equal(Number(row.entities), 115);
-  assert.equal(Number(row.temporal), 45);
+  assert.equal(Number(row.records), 397);
+  assert.equal(Number(row.entities), 116);
+  assert.equal(Number(row.temporal), 46);
   assert.equal(Number(row.claims), 49);
   assert.equal(Number(row.evidence), 49);
   assert.equal(Number(row.interpretations), 12);
   assert.equal(Number(row.perspectives), 10);
   assert.equal(Number(row.perspective_links), 18);
   assert.equal(Number(row.causal_links), 18);
-  assert.equal(Number(row.relationships), 71);
+  assert.equal(Number(row.relationships), 73);
   assert.equal(Number(row.memories), 6);
 });
 
@@ -384,7 +384,7 @@ test("stable IDs resolve through contextual APIs", async () => {
 test("SourceRoot search resolves required Plymouth names and aliases", async () => {
   await saveImportedBundle(await loadPlymouthBundle());
   const expected = new Map([
-    ["Plymouth", "historyroot-plymouth-place-patuxet-plymouth"],
+    ["Plymouth", "ctx-place-plymouth-settlement"],
     ["Patuxet", "historyroot-plymouth-place-patuxet-plymouth"],
     ["Wampanoag", "historyroot-plymouth-group-wampanoag"],
     ["Massasoit", "historyroot-plymouth-person-ousamequin"],
@@ -453,7 +453,7 @@ test("re-import replaces only records owned by the Plymouth bundle", async () =>
   const row = result.rows[0];
 
   assert.ok(row);
-  assert.equal(Number(row.records), 392);
+  assert.equal(Number(row.records), 396);
   assert.equal(Number(row.memories), 5);
   assert.equal(row.label, "Ousamequin (replacement test)");
 });
@@ -500,7 +500,7 @@ test("a conflicting import rolls back its bundle and sources", async () => {
   assert.equal(Number(row.bundles), 1);
   assert.equal(Number(row.rollback_bundles), 0);
   assert.equal(Number(row.rollback_sources), 0);
-  assert.equal(Number(row.records), 393);
+  assert.equal(Number(row.records), 397);
 });
 
 test("allow-listed removal deletes Plymouth and preserves an unrelated bundle", async () => {
@@ -517,7 +517,7 @@ test("allow-listed removal deletes Plymouth and preserves an unrelated bundle", 
 
   assert.equal(deleted.importedBundles, 1);
   assert.equal(deleted.sources, 20);
-  assert.equal(deleted.contextualRecords, 393);
+  assert.equal(deleted.contextualRecords, 397);
   assert.equal(deleted.contextPerspectiveLinks, 18);
   assert.ok(deleted.contextSourceLinks > 0);
   assert.equal(await getImportedBundle(PLYMOUTH_BUNDLE_ID), undefined);

@@ -3,16 +3,20 @@
 ## Record Identity
 
 - Baseline record: SourceRoot Chunk 0 — Codex Stage Contract and Baseline Harness v1
-- Current-state record: SourceRoot Chunk 5 - Context API and Review Experience v1
-- Previous installed stage: SourceRoot Chunk 4 - Contextual Assertions, Evidence, and Versioning v1
-- Earlier installed stages: SourceRoot Chunk 3 - Contextual Identity and Time Refinement v1; SourceRoot Chunk 2 - Shared Frontend API Layer, Logging, and Observability v1; SourceRoot Chunk 1 - Registry and API Contract Standardization v1
+- Current-state record: SourceRoot Chunk 6 - HistoryRoot Foundational Corpus v1
+- Previous installed stage: SourceRoot Chunk 5 - Context API and Review Experience v1
+- Earlier installed stages: SourceRoot Chunk 4 - Contextual Assertions, Evidence, and Versioning v1; SourceRoot Chunk 3 - Contextual Identity and Time Refinement v1; SourceRoot Chunk 2 - Shared Frontend API Layer, Logging, and Observability v1; SourceRoot Chunk 1 - Registry and API Contract Standardization v1
 - Current-state update date: 2026-07-26
 - Repository inspected: `C:\Users\Josh\Documents\GitHub\dictionaryhub`
 - Branch at inspection: `release/historyroot-alpha-integration-v1`
-- Starting commit for the installed stage: `d4d7f7f49afe808fb9bf554c579800e254a67b99`
-- Starting tag for the installed stage: `sourceroot-contextual-assertions-evidence-versioning-v1`
+- Starting commit for the installed stage: `5549dff82fca447d8267d31b111bdca2cb4eeebd`
+- Starting tag for the installed stage: `sourceroot-context-api-review-experience-v1`
 
-The repository at the branch and starting commit above was inspected directly, then SourceRoot Chunk 5 was installed and verified from complete repository files. Immutable Chunk 0-4 checks use the exact ZIP bytes in `C:\Users\Josh\Documents\SourceRoot-Releases`; no immutable package hash is reconstructed from Git.
+The repository at the branch and starting commit above was inspected directly,
+then SourceRoot Chunk 6 was built and verified from complete repository files.
+Immutable Chunk 0-5 checks use the exact ZIP bytes in
+`C:\Users\Josh\Documents\SourceRoot-Releases`; no immutable package hash is
+reconstructed from Git.
 
 ## Repository Structure
 
@@ -286,7 +290,10 @@ On the four core pages, scripts load in this order: shared request transport, AP
 
 ### Backend Tests
 
-The repository has 18 `backend/test/*.test.ts` files. The installed full suite contains 211 passing tests: the accepted 187-test Chunk 4 baseline plus 24 focused Chunk 5 tests. It includes 11 focused Registry API Contract tests and 10 focused correlation/logging/observer tests, covering:
+The repository has 19 `backend/test/*.test.ts` files. Chunk 6 adds a 30-case
+database-backed HistoryRoot foundational-corpus suite to the accepted
+211-test Chunk 5 baseline. The verified complete backend total is 241/241.
+Coverage includes:
 
 - HTTP health, validation, malformed JSON, and payload limits.
 - Bundle schema and validation.
@@ -303,6 +310,12 @@ The repository has 18 `backend/test/*.test.ts` files. The installed full suite c
 - Contextual alias and external-identifier persistence, semantic and historical time including BCE/CE and unconverted calendars, proposal provenance, relationship validity, field provenance, identity ambiguity without merge, search compatibility, transaction rollback, governed snapshots, and observer refinement.
 - Contextual claim attribution, explicit competing and contradictory claims, evidence links, exact locators, immutable claim/evidence versions, deterministic hashes, current pointers, retained history, governed append/rollback, historical search, transactional conflicts, and explicit test-only cleanup.
 - Composed record/claim review, current and historical identity, legacy projections, explicit attribution/evidence/relationship grouping, version-targeted evidence, locators, correction/retraction/supersession lineage, field provenance, historical search deep links, bounded pagination, accepted errors/request IDs, read-only GET behavior, visibility, partial child failure, and existing endpoint/search compatibility.
+- The eight-record Patuxet–Plymouth–Pokanoket principal network, 25 selected
+  claims, 10 selected sources, 25 selected relationships, normalized
+  historical names, bounded and unconverted dates, exact locators, explicit
+  attribution and evidence roles, deterministic replacement-safe reimport,
+  live search, Context Review, Plymouth compatibility, and absence of
+  customer-side fallback corpus data.
 
 Frontend Node verification contains the accepted 10-case observability harness plus 15 focused review cases. It covers shared API use, absence of fallback data, record/claim/version URL state, current/historical distinctions, provenance versus evidence, explicit evidence grouping, retained retraction/supersession lineage, legacy empty states, loading/empty/offline/not-found/malformed states, safe external protocols, safe DOM rendering, stale-request protection, accessible responsive landmarks, HistoryRoot integration, and preserved navigation/branding.
 
@@ -316,7 +329,12 @@ Several PowerShell verifiers provide static file and marker checks plus optional
 
 ### Installer Checks
 
-The Chunk 5 installer validates repository and Chunk 0-4 markers, proves the database name is exactly `sourceroot_test`, validates package identity, source/destination separation, safe payload paths, physical completeness, and every payload hash, creates a timestamped path-preserving backup, records pre-existing added destinations, copies only complete manifest-declared files, verifies installed hashes, writes rollback data, and runs the complete stage verifier. A controlled package-copy test created `backups/sourceroot-context-api-review-experience-v1-20260726-145703-231` and its path-preserving `installation-record.json`; the successful final installer-launched verifier and its later backup are reported externally so package bytes can remain immutable.
+The Chunk 6 installer validates the accepted Chunk 5 ZIP and checkpoint,
+proves the database name is exactly `sourceroot_test`, validates package
+identity, safe paths, physical completeness, and every payload hash, backs up
+each replacement, installs every declared file, verifies installed-byte
+equality, writes a path-preserving installation record, and launches the
+complete fail-closed Chunk 6 verifier.
 
 ### Dependency Classification
 
@@ -349,6 +367,14 @@ The Chunk 5 installer validates repository and Chunk 0-4 markers, proves the dat
 17. No truth engine, semantic inference, automatic contradiction resolution, or canonical-claim selection is present.
 18. The composed review payload is deliberately bounded: section pagination is capped at 50, public sources at 200, and per-evidence locator/provenance previews at 20.
 19. A missing or hidden requested historical version falls back to the visible current projection only after showing an explicit missing-version state.
+20. The accepted Plymouth bundle uses global contextual IDs. Chunk 6 avoids
+    duplicate identities by explicitly replacing that bundle under its
+    existing bundle ID; it does not introduce cross-bundle contextual
+    references.
+21. The foundational subset contains 10 sources and 25 claims, while the
+    complete compatibility bundle retains 20 sources and 49 claims.
+22. The former combined Patuxet/Plymouth place ID is preserved but narrowed to
+    Patuxet; `ctx-place-plymouth-settlement` is the distinct settlement record.
 
 ## Prompt-to-Repository Discrepancy
 
@@ -359,12 +385,12 @@ The requested Chunk 0 exclusions prohibit implementing contextual entities, auth
 ```text
 Core Phases 1–9: completed according to the project roadmap
 Phase 10: next implementation phase
-Current Codex package: Chunk 5 - Context API and Review Experience v1
-Next Codex package after acceptance: not precisely named in the accepted roadmap
+Current Codex package: Chunk 6 - HistoryRoot Foundational Corpus v1
+Next dependency: Corpus expansion and repeatable source-preparation workflow
 ```
 
 This roadmap status is a project-management classification, not an independent production-security audit. It also does not erase the factual discrepancy that later-scope implementation files are already present in the current repository.
 
 ## Next Dependency
 
-The accepted roadmap inspected for Chunk 5 does not precisely name or scope the following dependency. The next dependency remains to be named.
+Corpus expansion and repeatable source-preparation workflow.

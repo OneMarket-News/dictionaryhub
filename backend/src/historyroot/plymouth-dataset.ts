@@ -9,6 +9,7 @@ import type {
 } from "../contextual-types.js";
 import type { SourceRootBundle } from "../types.js";
 import { validateBundle } from "../services/validator.js";
+import { FOUNDATIONAL_CORPUS_BUNDLE_PATH } from "./foundational-corpus.js";
 
 export const PLYMOUTH_BUNDLE_ID =
   "historyroot-plymouth-knowledge-dataset-v1";
@@ -21,8 +22,7 @@ export const PLYMOUTH_DATASET_DIRECTORY = path.resolve(
   "../../../data/historyroot/plymouth-v1",
 );
 export const PLYMOUTH_BUNDLE_PATH = path.join(
-  PLYMOUTH_DATASET_DIRECTORY,
-  "historyroot-plymouth-v1.bundle.json",
+  FOUNDATIONAL_CORPUS_BUNDLE_PATH,
 );
 
 const manifestPath = path.join(

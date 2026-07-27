@@ -1,0 +1,291 @@
+{
+  "corpusId": "historyroot-foundational-corpus-v1",
+  "bundleId": "historyroot-plymouth-knowledge-dataset-v1",
+  "version": "1.0.0",
+  "generatedOn": "2026-07-26",
+  "boundary": {
+    "subject": "Patuxet-Plymouth-Pokanoket Contact Network",
+    "primaryPeriod": "1602-1625",
+    "expansionRule": "Earlier or later material appears only for identity, source lineage, chronology, retrospective authorship, interpretation, or correction."
+  },
+  "stableIdPolicy": {
+    "requestedIdsArePlanningAliases": true,
+    "canonicalIdsPreserveAcceptedPlymouthIdentities": true,
+    "combinedPlaceCorrection": "The accepted Patuxet/Plymouth place ID is preserved for Patuxet and narrowed; a distinct Plymouth settlement record is added."
+  },
+  "requiredRecords": [
+    {
+      "requestedId": "ctx-place-patuxet",
+      "canonicalId": "historyroot-plymouth-place-patuxet-plymouth",
+      "entityType": "place",
+      "identityDecision": "Preserved the accepted Plymouth ID and narrowed the formerly combined place to Patuxet."
+    },
+    {
+      "requestedId": "ctx-place-plymouth-settlement",
+      "canonicalId": "ctx-place-plymouth-settlement",
+      "entityType": "place",
+      "identityDecision": "Added because the accepted data had collapsed the settlement into Patuxet."
+    },
+    {
+      "requestedId": "ctx-community-patuxet",
+      "canonicalId": "historyroot-plymouth-group-patuxet",
+      "entityType": "group",
+      "identityDecision": "Preserved the accepted Plymouth ID."
+    },
+    {
+      "requestedId": "ctx-community-pokanoket",
+      "canonicalId": "historyroot-plymouth-group-pokanoket",
+      "entityType": "group",
+      "identityDecision": "Preserved the accepted Plymouth ID."
+    },
+    {
+      "requestedId": "ctx-community-plymouth-colonists",
+      "canonicalId": "historyroot-plymouth-group-plymouth-colonists",
+      "entityType": "group",
+      "identityDecision": "Preserved the accepted Plymouth ID."
+    },
+    {
+      "requestedId": "ctx-person-ousamequin",
+      "canonicalId": "historyroot-plymouth-person-ousamequin",
+      "entityType": "person",
+      "identityDecision": "Preserved the accepted Plymouth ID."
+    },
+    {
+      "requestedId": "ctx-person-tisquantum",
+      "canonicalId": "historyroot-plymouth-person-tisquantum",
+      "entityType": "person",
+      "identityDecision": "Preserved the accepted Plymouth ID."
+    },
+    {
+      "requestedId": "ctx-event-plymouth-pokanoket-agreement-1621",
+      "canonicalId": "historyroot-plymouth-event-peace-agreement",
+      "entityType": "event",
+      "identityDecision": "Preserved the accepted Plymouth ID."
+    }
+  ],
+  "optionalRecords": [
+    {
+      "requestedId": "ctx-person-samoset",
+      "status": "omitted",
+      "reason": "The accepted Samoset record remains compatible, but optional promotion was unnecessary for the required eight-record network."
+    },
+    {
+      "requestedId": "ctx-event-samoset-arrival-plymouth-1621",
+      "status": "omitted",
+      "reason": "The accepted event remains available and sourced; it was not promoted as an optional principal record."
+    },
+    {
+      "requestedId": "ctx-event-southern-new-england-epidemic-1616-1619",
+      "status": "omitted",
+      "reason": "The accepted epidemic event remains available with explicit diagnostic uncertainty; it was not promoted as an optional principal record."
+    },
+    {
+      "requestedId": "ctx-event-english-settlement-at-patuxet-1620",
+      "status": "omitted",
+      "reason": "The accepted settlement event remains available; the required distinct settlement place resolved the identity need without another optional principal record."
+    }
+  ],
+  "sourceIds": [
+    "historyroot-plymouth-source-mourts-relation-loc",
+    "historyroot-plymouth-source-bradford-eada",
+    "historyroot-plymouth-source-good-newes-gutenberg",
+    "historyroot-plymouth-source-compact-loc-exhibit",
+    "historyroot-plymouth-source-compact-loc-law-blog",
+    "historyroot-plymouth-source-nmai-timeline",
+    "historyroot-plymouth-source-nmai-treaty-harvest",
+    "historyroot-plymouth-source-mashpee-culture",
+    "historyroot-plymouth-source-cdc-epidemic-study",
+    "historyroot-plymouth-source-plimoth-thanksgiving-unit"
+  ],
+  "accountIds": [
+    "historyroot-plymouth-account-nmai-timeline",
+    "historyroot-plymouth-account-cdc",
+    "historyroot-plymouth-account-compact-exhibit",
+    "historyroot-plymouth-account-compact-law",
+    "historyroot-plymouth-account-bradford",
+    "historyroot-plymouth-account-nmai-treaty",
+    "historyroot-plymouth-account-good-newes",
+    "historyroot-plymouth-account-thanksgiving"
+  ],
+  "claimIds": [
+    "historyroot-plymouth-claim-wampanoag-deep-history",
+    "historyroot-plymouth-claim-hunt-kidnappings",
+    "historyroot-plymouth-claim-epidemic-depopulation",
+    "historyroot-plymouth-claim-epidemic-diagnosis-uncertain",
+    "historyroot-plymouth-claim-tisquantum-travels-return",
+    "historyroot-plymouth-claim-settlement-at-patuxet",
+    "historyroot-plymouth-claim-compact-original-lost",
+    "historyroot-plymouth-claim-mourts-earliest-witness",
+    "historyroot-plymouth-claim-compact-three-witnesses",
+    "historyroot-plymouth-claim-compact-immediate-function",
+    "historyroot-plymouth-claim-compact-signers-scope",
+    "historyroot-plymouth-claim-first-winter-mortality",
+    "historyroot-plymouth-claim-samoset-contact",
+    "historyroot-plymouth-claim-agreement-terms",
+    "historyroot-plymouth-claim-ousamequin-strategy",
+    "historyroot-plymouth-claim-tisquantum-mediator",
+    "historyroot-plymouth-claim-tisquantum-political-agency",
+    "historyroot-plymouth-claim-harvest-three-days",
+    "historyroot-plymouth-claim-harvest-evidence-limits",
+    "historyroot-plymouth-claim-harvest-diplomatic-context",
+    "historyroot-plymouth-claim-wessagusset-corn-theft",
+    "historyroot-plymouth-claim-wessagusset-killings",
+    "historyroot-plymouth-claim-wessagusset-head-display",
+    "historyroot-plymouth-claim-wessagusset-aftermath-attributed",
+    "historyroot-plymouth-claim-robinson-critique"
+  ],
+  "relationshipIds": [
+    "historyroot-plymouth-relationship-ousamequin-pokanoket",
+    "historyroot-plymouth-relationship-tisquantum-patuxet",
+    "historyroot-plymouth-relationship-wampanoag-pokanoket",
+    "historyroot-plymouth-relationship-wampanoag-patuxet",
+    "historyroot-plymouth-relationship-patuxet-place",
+    "historyroot-plymouth-relationship-pokanoket-sowams",
+    "historyroot-plymouth-relationship-hunt-kidnapped-tisquantum",
+    "historyroot-plymouth-relationship-dermer-return-tisquantum",
+    "historyroot-plymouth-relationship-samoset-introduced-tisquantum",
+    "historyroot-plymouth-relationship-ousamequin-agreement",
+    "historyroot-plymouth-relationship-carver-agreement",
+    "historyroot-plymouth-relationship-tisquantum-agreement",
+    "historyroot-plymouth-relationship-harvest-ousamequin",
+    "historyroot-plymouth-relationship-harvest-pokanoket",
+    "historyroot-plymouth-relationship-harvest-plymouth",
+    "historyroot-plymouth-relationship-settlement-place",
+    "historyroot-plymouth-relationship-compact-created-original",
+    "historyroot-plymouth-relationship-original-realizes-text",
+    "historyroot-plymouth-relationship-mourts-witness",
+    "historyroot-plymouth-relationship-purchas-witness",
+    "historyroot-plymouth-relationship-bradford-witness",
+    "historyroot-plymouth-relationship-bradford-mourts",
+    "historyroot-plymouth-relationship-winslow-mourts",
+    "ctx-relationship-plymouth-settlement-at-patuxet",
+    "ctx-relationship-colonists-at-plymouth-settlement"
+  ],
+  "historicalNameIds": [
+    "ctx-alias-place-patuxet-plymouth-pahtuksut",
+    "ctx-alias-ctx-place-plymouth-settlement-plymouth",
+    "ctx-alias-ctx-place-plymouth-settlement-plimoth",
+    "ctx-alias-ctx-place-plymouth-settlement-new-plymouth",
+    "ctx-alias-group-patuxet-pahtuksut",
+    "ctx-alias-group-pokanoket-puckanokick",
+    "ctx-alias-group-plymouth-colonists-new-plymouth-colonists",
+    "ctx-alias-group-plymouth-colonists-plimoth-colonists",
+    "ctx-alias-group-plymouth-colonists-mayflower-colonists",
+    "ctx-alias-person-ousamequin-massasoit",
+    "ctx-alias-person-ousamequin-massasoyt",
+    "ctx-alias-person-ousamequin-massassowat",
+    "ctx-alias-person-tisquantum-squanto",
+    "ctx-alias-event-peace-agreement-1621-treaty",
+    "ctx-alias-event-peace-agreement-ousamequin-agreement"
+  ],
+  "dateExpressionIds": [
+    "historyroot-plymouth-time-hunt-kidnappings",
+    "historyroot-plymouth-time-great-dying",
+    "historyroot-plymouth-time-mayflower-compact",
+    "historyroot-plymouth-time-plymouth-settlement",
+    "historyroot-plymouth-time-first-winter",
+    "historyroot-plymouth-time-samoset-arrival",
+    "historyroot-plymouth-time-peace-agreement",
+    "historyroot-plymouth-time-harvest-gathering",
+    "historyroot-plymouth-time-wessagusset-crisis",
+    "historyroot-plymouth-time-wessagusset-killings",
+    "historyroot-plymouth-time-robinson-response",
+    "ctx-time-plymouth-settlement-established"
+  ],
+  "locatorIds": [
+    "ctx-locator-wampanoag-deep-history",
+    "ctx-locator-hunt-kidnappings",
+    "ctx-locator-epidemic-depopulation",
+    "ctx-locator-epidemic-diagnosis-uncertain",
+    "ctx-locator-tisquantum-travels-return",
+    "ctx-locator-settlement-at-patuxet",
+    "ctx-locator-compact-original-lost",
+    "ctx-locator-mourts-earliest-witness",
+    "ctx-locator-compact-three-witnesses",
+    "ctx-locator-compact-immediate-function",
+    "ctx-locator-compact-signers-scope",
+    "ctx-locator-first-winter-mortality",
+    "ctx-locator-samoset-contact",
+    "ctx-locator-agreement-terms",
+    "ctx-locator-ousamequin-strategy",
+    "ctx-locator-tisquantum-mediator",
+    "ctx-locator-tisquantum-political-agency",
+    "ctx-locator-harvest-three-days",
+    "ctx-locator-harvest-evidence-limits",
+    "ctx-locator-harvest-diplomatic-context",
+    "ctx-locator-wessagusset-corn-theft",
+    "ctx-locator-wessagusset-killings",
+    "ctx-locator-wessagusset-head-display",
+    "ctx-locator-wessagusset-aftermath-attributed",
+    "ctx-locator-robinson-critique"
+  ],
+  "evidenceLinkIds": [
+    "ctx-evidence-link-wampanoag-deep-history",
+    "ctx-evidence-link-hunt-kidnappings",
+    "ctx-evidence-link-epidemic-depopulation",
+    "ctx-evidence-link-epidemic-diagnosis-uncertain",
+    "ctx-evidence-link-tisquantum-travels-return",
+    "ctx-evidence-link-settlement-at-patuxet",
+    "ctx-evidence-link-compact-original-lost",
+    "ctx-evidence-link-mourts-earliest-witness",
+    "ctx-evidence-link-compact-three-witnesses",
+    "ctx-evidence-link-compact-immediate-function",
+    "ctx-evidence-link-compact-signers-scope",
+    "ctx-evidence-link-first-winter-mortality",
+    "ctx-evidence-link-samoset-contact",
+    "ctx-evidence-link-agreement-terms",
+    "ctx-evidence-link-ousamequin-strategy",
+    "ctx-evidence-link-tisquantum-mediator",
+    "ctx-evidence-link-tisquantum-political-agency",
+    "ctx-evidence-link-harvest-three-days",
+    "ctx-evidence-link-harvest-evidence-limits",
+    "ctx-evidence-link-harvest-diplomatic-context",
+    "ctx-evidence-link-wessagusset-corn-theft",
+    "ctx-evidence-link-wessagusset-killings",
+    "ctx-evidence-link-wessagusset-head-display",
+    "ctx-evidence-link-wessagusset-aftermath-attributed",
+    "ctx-evidence-link-robinson-critique"
+  ],
+  "claimRelationIds": [
+    "ctx-claim-relation-epidemic-diagnosis-uncertain-epidemic-depopulation",
+    "ctx-claim-relation-compact-signers-scope-compact-immediate-function",
+    "ctx-claim-relation-tisquantum-political-agency-tisquantum-mediator",
+    "ctx-claim-relation-harvest-evidence-limits-harvest-three-days",
+    "ctx-claim-relation-harvest-diplomatic-context-harvest-three-days",
+    "ctx-claim-relation-wessagusset-aftermath-attributed-wessagusset-killings",
+    "ctx-claim-relation-robinson-critique-wessagusset-killings",
+    "ctx-claim-relation-wampanoag-deep-history-settlement-at-patuxet"
+  ],
+  "counts": {
+    "requiredRecords": 8,
+    "optionalRecords": 0,
+    "sources": 10,
+    "accounts": 8,
+    "claims": 25,
+    "relationships": 25,
+    "historicalNames": 15,
+    "dateExpressions": 12,
+    "locators": 25,
+    "evidenceLinks": 25,
+    "evidenceLinksByRole": {
+      "neutral_or_background": 1,
+      "supports": 16,
+      "qualifies": 6,
+      "contextualizes": 2
+    },
+    "fieldProvenance": 60,
+    "claimRelations": 8,
+    "claimVersions": 0,
+    "evidenceVersions": 0
+  },
+  "explicitExclusions": [
+    "No comprehensive history of New England",
+    "No new contextual record kind",
+    "No truth or reliability score",
+    "No automatic conflict resolution",
+    "No invented locator",
+    "No new Wôpanâak translation",
+    "No copied modern institutional prose",
+    "No artificial claim or evidence version history"
+  ]
+}

@@ -201,7 +201,12 @@
       .concat(Array.isArray(record && record.aliases) ? record.aliases : []);
     const seen = new Set();
     return values
-      .map(clean)
+      .map((value) => {
+        if (value && typeof value === "object" && !Array.isArray(value)) {
+          return clean(value.text || value.name || value.label);
+        }
+        return clean(value);
+      })
       .filter((value) => {
         const key = value.toLocaleLowerCase();
         if (!value || seen.has(key)) return false;

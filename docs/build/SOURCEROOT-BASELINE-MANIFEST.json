@@ -5,9 +5,9 @@
   "repositoryPath": "C:\\Users\\Josh\\Documents\\GitHub\\dictionaryhub",
   "git": {
     "branch": "release/historyroot-alpha-integration-v1",
-    "commit": "d4d7f7f49afe808fb9bf554c579800e254a67b99"
+    "commit": "5549dff82fca447d8267d31b111bdca2cb4eeebd"
   },
-  "currentInstalledStage": "SourceRoot Chunk 5 - Context API and Review Experience v1",
+  "currentInstalledStage": "SourceRoot Chunk 6 - HistoryRoot Foundational Corpus v1",
   "backendEntryPoints": [
     "backend/src/server.ts",
     "backend/src/app.ts",
@@ -142,6 +142,7 @@
     "backend/test/dictionaryroot-oewn.test.ts",
     "backend/test/governance-surface.test.ts",
     "backend/test/governed-historyroot.test.ts",
+    "backend/test/historyroot-foundational-corpus.test.ts",
     "backend/test/historyroot-plymouth.test.ts",
     "backend/test/import.test.ts",
     "backend/test/lexical-store.test.ts",
@@ -160,7 +161,8 @@
     "INSTALL-SOURCEROOT-FRONTEND-API-OBSERVABILITY.ps1",
     "INSTALL-SOURCEROOT-CONTEXTUAL-IDENTITY-TIME.ps1",
     "INSTALL-SOURCEROOT-CONTEXTUAL-ASSERTIONS-EVIDENCE-VERSIONING.ps1",
-    "INSTALL-SOURCEROOT-CONTEXT-API-REVIEW-EXPERIENCE.ps1"
+    "INSTALL-SOURCEROOT-CONTEXT-API-REVIEW-EXPERIENCE.ps1",
+    "INSTALL-SOURCEROOT-HISTORYROOT-FOUNDATIONAL-CORPUS.ps1"
   ],
   "existingVerifiers": [
     "VERIFY-DICTIONARYROOT-ACCOUNTS-ROLES-PERMISSIONS.ps1",
@@ -204,7 +206,8 @@
     "VERIFY-SOURCEROOT-FRONTEND-API-OBSERVABILITY.ps1",
     "VERIFY-SOURCEROOT-CONTEXTUAL-IDENTITY-TIME.ps1",
     "VERIFY-SOURCEROOT-CONTEXTUAL-ASSERTIONS-EVIDENCE-VERSIONING.ps1",
-    "VERIFY-SOURCEROOT-CONTEXT-API-REVIEW-EXPERIENCE.ps1"
+    "VERIFY-SOURCEROOT-CONTEXT-API-REVIEW-EXPERIENCE.ps1",
+    "VERIFY-SOURCEROOT-HISTORYROOT-FOUNDATIONAL-CORPUS.ps1"
   ],
   "requiredRuntimeFiles": [
     "backend/.env.example",
@@ -221,6 +224,8 @@
     "backend/src/observers/data-quality-provenance-observer.ts",
     "backend/src/services/contextual-time.ts",
     "backend/src/services/context-version-store.ts",
+    "backend/src/historyroot/foundational-corpus.ts",
+    "backend/src/scripts/import-historyroot-foundational-corpus.ts",
     "backend/src/lib/runtime-config.ts",
     "backend/src/scripts/migrate.ts",
     "config/customers/dictionaryroot.json",
@@ -253,7 +258,7 @@
   "currentRoadmapPosition": {
     "corePhases": "Core Phases 1–9: completed according to the project roadmap",
     "phase10": "Phase 10: next implementation phase",
-    "currentCodexPackage": "Chunk 5 - Context API and Review Experience v1",
+    "currentCodexPackage": "Chunk 6 - HistoryRoot Foundational Corpus v1",
     "classificationNotice": "Roadmap status is a project-management classification, not an independent production-security audit."
   },
   "repositoryDiscrepancy": "The inspected repository already contains contextual knowledge, authentication/governance, and HistoryRoot implementation even though the Chunk 0 roadmap wording places Phase 10 next. Chunk 0 preserves and records that pre-existing state.",
@@ -299,6 +304,30 @@
     "independentLiveApiChecksPerformed": true,
     "successfulInstallerBackup": null
   },
-  "nextStageDependency": "Not precisely named in the accepted roadmap; remains to be named.",
+  "historyrootFoundationalCorpus": {
+    "migration": null,
+    "corpusId": "historyroot-foundational-corpus-v1",
+    "replacementBundleId": "historyroot-plymouth-knowledge-dataset-v1",
+    "requiredRecords": 8,
+    "optionalRecords": 0,
+    "selectedSources": 10,
+    "selectedAccounts": 8,
+    "selectedClaims": 25,
+    "selectedRelationships": 25,
+    "historicalNames": 15,
+    "dateExpressions": 12,
+    "sourceLocators": 25,
+    "evidenceLinks": 25,
+    "fieldProvenance": 60,
+    "claimVersions": 0,
+    "evidenceVersions": 0,
+    "focusedTests": 30,
+    "completeBackendTests": 241,
+    "testDatabase": "sourceroot_test",
+    "browserChecksPerformed": true,
+    "independentLiveApiChecksPerformed": true,
+    "successfulInstallerBackup": "backups/sourceroot-historyroot-foundational-corpus-v1-20260727-final"
+  },
+  "nextStageDependency": "Corpus expansion and repeatable source-preparation workflow.",
   "secretHandling": "No secrets, passwords, tokens, connection strings, or private environment values are stored in this manifest."
 }
