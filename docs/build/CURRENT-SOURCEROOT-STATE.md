@@ -336,6 +336,21 @@ each replacement, installs every declared file, verifies installed-byte
 equality, writes a path-preserving installation record, and launches the
 complete fail-closed Chunk 6 verifier.
 
+### Repeatable Source Preparation
+
+Chunk 7 adds a local, deterministic, review-first preparation layer over the
+accepted SourceRoot bundle model. Its versioned `1.0.0` workspace wraps
+accepted objects with bounded preparation status, rights, content-use,
+source-identity, omission, and approval metadata. Validate and preview modes
+never emit an importable bundle. Generate emits the unchanged accepted bundle
+shape only after status, approval, rights, reference, locator, evidence,
+provenance, and accepted-schema checks pass.
+
+The workflow performs no research, network access, OCR, extraction, factual or
+legal determination, corpus expansion, public editing, database workflow, or
+automatic import. Controlled importer tests use only `sourceroot_test` and
+restore the accepted Chunk 6 state.
+
 ### Dependency Classification
 
 | Check type | Current examples | Dependency |
@@ -385,12 +400,12 @@ The requested Chunk 0 exclusions prohibit implementing contextual entities, auth
 ```text
 Core Phases 1–9: completed according to the project roadmap
 Phase 10: next implementation phase
-Current Codex package: Chunk 6 - HistoryRoot Foundational Corpus v1
-Next dependency: Corpus expansion and repeatable source-preparation workflow
+Current Codex package: Chunk 7 - Repeatable Source Preparation Workflow v1
+Next dependency: Corpus expansion and preparation-workflow adoption
 ```
 
 This roadmap status is a project-management classification, not an independent production-security audit. It also does not erase the factual discrepancy that later-scope implementation files are already present in the current repository.
 
 ## Next Dependency
 
-Corpus expansion and repeatable source-preparation workflow.
+Corpus expansion and preparation-workflow adoption.

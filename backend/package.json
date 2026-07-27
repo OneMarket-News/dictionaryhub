@@ -36,6 +36,8 @@
     "historyroot:foundational:generate": "tsx src/scripts/generate-historyroot-foundational-corpus.ts",
     "historyroot:foundational:import": "node --env-file=.env.test --import ./scripts/register-tsx.mjs src/scripts/import-historyroot-foundational-corpus.ts",
     "test:historyroot:foundational": "node --env-file=.env.test --import ./scripts/register-tsx.mjs --test --test-concurrency=1 test/historyroot-foundational-corpus.test.ts",
+    "prepare:source-workspace": "node --import ./scripts/register-tsx.mjs src/scripts/prepare-sourceroot-workspace.ts",
+    "test:source-preparation": "node --env-file=.env.test --import ./scripts/register-tsx.mjs --test --test-concurrency=1 test/source-preparation-workflow.test.ts",
     "verify:fresh-install": "node scripts/verify-fresh-install.mjs"
   },
   "dependencies": {

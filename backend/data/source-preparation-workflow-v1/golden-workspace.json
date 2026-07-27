@@ -1,0 +1,656 @@
+{
+  "schemaVersion": "1.0.0",
+  "workspaceId": "sourceroot-source-preparation-golden-v1",
+  "title": "Accepted Mayflower Compact textual-history preparation sample",
+  "description": "A small review-first workspace copied from accepted Chunk 6 objects without new research or historical conclusions.",
+  "domain": "HistoryRoot",
+  "preparationStatus": "approved",
+  "sourceSet": [
+    {
+      "preparationStatus": "approved",
+      "approvalRecord": {
+        "approvedBy": "Chunk 6 accepted corpus review",
+        "approvedAt": "2026-07-26T12:00:00.000Z"
+      },
+      "rightsReview": {
+        "classification": "public_domain",
+        "basis": "The accepted Chunk 6 source record identifies the digitized book as public domain.",
+        "attributionRequirements": "Retain the accepted citation, publisher, URL, edition identity, and limitations."
+      },
+      "contentUse": {
+        "mode": "public_domain_excerpt",
+        "containsCopiedExcerpt": false
+      },
+      "sourceIdentityReview": {
+        "identityKind": "later_transcription",
+        "originalWorkId": "mourts-relation-1622",
+        "editionId": "mourts-relation-dexter-1865",
+        "digitalObjectId": "loc-lccn-03008746",
+        "limitations": "The inspected object is an 1865 edition of the 1622 printing, not the lost manuscripts behind it."
+      },
+      "object": {
+        "id": "historyroot-plymouth-source-mourts-relation-loc",
+        "name": "Mourt's Relation or Journal of the Plantation at Plymouth",
+        "type": "digitized-primary-source-edition",
+        "domain": "HistoryRoot",
+        "publisher": "Library of Congress",
+        "qualityTier": "curated-pilot",
+        "credibilityTier": "high",
+        "verificationStatus": "source-backed",
+        "sourceClass": "primary-account-later-edition",
+        "license": "Public domain digitized book",
+        "licenseStatus": "public-domain",
+        "reviewStatus": "needs-review",
+        "lastReviewed": "2026-07-23",
+        "url": "https://www.loc.gov/item/03008746/",
+        "citation": "William Bradford and Edward Winslow, Mourt's Relation, 1622; Henry Martyn Dexter ed., Boston: J. K. Wiggin, 1865, Library of Congress LCCN 03008746.",
+        "limitations": "English colonial account published partly to report and promote the plantation; the inspected object is an 1865 edition of the 1622 printing, not the lost manuscripts behind it."
+      }
+    },
+    {
+      "preparationStatus": "approved",
+      "approvalRecord": {
+        "approvedBy": "Chunk 6 accepted corpus review",
+        "approvedAt": "2026-07-26T12:00:00.000Z"
+      },
+      "rightsReview": {
+        "classification": "metadata_and_link_only",
+        "basis": "Accepted Chunk 6 treatment permits metadata, linking, and original paraphrase only.",
+        "attributionRequirements": "Retain the accepted institutional citation, URL, and limitations."
+      },
+      "contentUse": {
+        "mode": "paraphrase_only",
+        "containsCopiedExcerpt": false
+      },
+      "sourceIdentityReview": {
+        "identityKind": "government_institutional_account",
+        "digitalObjectId": "loc-mayflower-compact-exhibit",
+        "limitations": "Concise exhibit interpretation intended for a broad audience."
+      },
+      "object": {
+        "id": "historyroot-plymouth-source-compact-loc-exhibit",
+        "name": "The Mayflower Compact: A Toolkit for Associations",
+        "type": "institutional-exhibit",
+        "domain": "HistoryRoot",
+        "publisher": "Library of Congress",
+        "qualityTier": "curated-pilot",
+        "credibilityTier": "high",
+        "verificationStatus": "source-backed",
+        "sourceClass": "government-institutional-synthesis",
+        "license": "U.S. government institutional webpage; linked and paraphrased",
+        "licenseStatus": "repository-link-and-paraphrase",
+        "reviewStatus": "needs-review",
+        "lastReviewed": "2026-07-23",
+        "url": "https://www.loc.gov/exhibitions/join-in-voluntary-associations-in-america/about-this-exhibition/a-toolkit-for-associations/the-mayflower-compact/",
+        "citation": "Library of Congress, The Mayflower Compact, Join In exhibition.",
+        "limitations": "Concise exhibit interpretation intended for a broad audience; it should be paired with the surviving textual witnesses."
+      }
+    },
+    {
+      "preparationStatus": "approved",
+      "approvalRecord": {
+        "approvedBy": "Chunk 6 accepted corpus review",
+        "approvedAt": "2026-07-26T12:00:00.000Z"
+      },
+      "rightsReview": {
+        "classification": "metadata_and_link_only",
+        "basis": "Accepted Chunk 6 treatment permits metadata, linking, and original paraphrase only.",
+        "attributionRequirements": "Retain the accepted author, institutional citation, URL, and limitations."
+      },
+      "contentUse": {
+        "mode": "paraphrase_only",
+        "containsCopiedExcerpt": false
+      },
+      "sourceIdentityReview": {
+        "identityKind": "government_institutional_account",
+        "digitalObjectId": "loc-law-blog-mayflower-compact-2020",
+        "limitations": "Modern legal-historical interpretation; cited secondary scholarship was not independently inspected."
+      },
+      "object": {
+        "id": "historyroot-plymouth-source-compact-loc-law-blog",
+        "name": "The 400th Anniversary of the Mayflower Compact",
+        "type": "government-library-scholarly-blog",
+        "domain": "HistoryRoot",
+        "publisher": "Law Library of Congress",
+        "qualityTier": "curated-pilot",
+        "credibilityTier": "high",
+        "verificationStatus": "source-backed",
+        "sourceClass": "government-institutional-analysis",
+        "license": "U.S. government institutional webpage; linked and paraphrased",
+        "licenseStatus": "repository-link-and-paraphrase",
+        "reviewStatus": "needs-review",
+        "lastReviewed": "2026-07-23",
+        "url": "https://blogs.loc.gov/law/2020/11/the-400th-anniversary-of-the-mayflower-compact/",
+        "citation": "Robert Brammer, The 400th Anniversary of the Mayflower Compact, In Custodia Legis, Library of Congress, 2020.",
+        "limitations": "Modern legal-historical interpretation on an institutional blog; cited secondary scholarship was not independently inspected for this pilot."
+      }
+    },
+    {
+      "preparationStatus": "approved",
+      "approvalRecord": {
+        "approvedBy": "Chunk 6 accepted corpus review",
+        "approvedAt": "2026-07-26T12:00:00.000Z"
+      },
+      "rightsReview": {
+        "classification": "public_domain",
+        "basis": "The accepted Chunk 6 source record identifies the electronic historical edition as public domain.",
+        "attributionRequirements": "Retain the accepted edition citation, repository URL, and limitations."
+      },
+      "contentUse": {
+        "mode": "public_domain_excerpt",
+        "containsCopiedExcerpt": false
+      },
+      "sourceIdentityReview": {
+        "identityKind": "scholarly_edition",
+        "originalWorkId": "of-plymouth-plantation",
+        "editionId": "eada-electronic-edition",
+        "limitations": "Retrospective English colonial narrative with period terminology and no Indigenous account."
+      },
+      "object": {
+        "id": "historyroot-plymouth-source-bradford-eada",
+        "name": "Of Plymouth Plantation, electronic edition",
+        "type": "scholarly-electronic-edition",
+        "domain": "HistoryRoot",
+        "publisher": "Electronic Archive of Early American Fiction",
+        "qualityTier": "curated-pilot",
+        "credibilityTier": "high",
+        "verificationStatus": "source-backed",
+        "sourceClass": "primary-account-scholarly-edition",
+        "license": "Public-domain historical work; scholarly electronic edition",
+        "licenseStatus": "public-domain",
+        "reviewStatus": "needs-review",
+        "url": "https://docsouth.unc.edu/neh/bradford/bradford.html",
+        "citation": "William Bradford, Of Plymouth Plantation, electronic edition.",
+        "limitations": "Retrospective English colonial narrative written over years, with providential interpretation and hostile period terminology; it does not supply an Indigenous account."
+      }
+    }
+  ],
+  "accounts": [
+    {
+      "preparationStatus": "approved",
+      "approvalRecord": {
+        "approvedBy": "Chunk 6 accepted corpus review",
+        "approvedAt": "2026-07-26T12:00:00.000Z"
+      },
+      "object": {
+        "id": "historyroot-plymouth-account-compact-exhibit",
+        "label": "Library of Congress Compact exhibit account",
+        "subjectId": "historyroot-plymouth-work-mayflower-compact-text",
+        "sourceId": "historyroot-plymouth-source-compact-loc-exhibit",
+        "accountType": "institutional-interpretive-account",
+        "content": "The Library of Congress explains the patent problem, immediate association, and loss of the original Compact.",
+        "publicationLabel": "Library of Congress exhibition",
+        "domain": "HistoryRoot",
+        "sourceIds": ["historyroot-plymouth-source-compact-loc-exhibit"],
+        "status": "pilot-review-required"
+      }
+    },
+    {
+      "preparationStatus": "approved",
+      "approvalRecord": {
+        "approvedBy": "Chunk 6 accepted corpus review",
+        "approvedAt": "2026-07-26T12:00:00.000Z"
+      },
+      "object": {
+        "id": "historyroot-plymouth-account-compact-law",
+        "label": "Law Library Compact textual-history account",
+        "subjectId": "historyroot-plymouth-work-mayflower-compact-text",
+        "sourceId": "historyroot-plymouth-source-compact-loc-law-blog",
+        "accountType": "institutional-legal-history-account",
+        "content": "The Law Library of Congress identifies three early surviving textual witnesses and the Compact's later memory.",
+        "publicationLabel": "In Custodia Legis",
+        "domain": "HistoryRoot",
+        "sourceIds": ["historyroot-plymouth-source-compact-loc-law-blog"],
+        "status": "pilot-review-required"
+      }
+    }
+  ],
+  "records": [
+    {
+      "preparationStatus": "approved",
+      "approvalRecord": {"approvedBy": "Chunk 6 accepted corpus review", "approvedAt": "2026-07-26T12:00:00.000Z"},
+      "object": {
+        "id": "historyroot-plymouth-group-plymouth-colonists",
+        "label": "Plymouth colonists",
+        "entityType": "group",
+        "name": "Plymouth colonists",
+        "alternateNames": ["New Plymouth colonists", "Plimoth colonists", "Mayflower colonists"],
+        "description": "The heterogeneous English settler community established at Patuxet in 1620.",
+        "domain": "HistoryRoot",
+        "sourceIds": ["historyroot-plymouth-source-mourts-relation-loc", "historyroot-plymouth-source-bradford-eada"],
+        "status": "corpus-review-ready"
+      }
+    },
+    {
+      "preparationStatus": "approved",
+      "approvalRecord": {"approvedBy": "Chunk 6 accepted corpus review", "approvedAt": "2026-07-26T12:00:00.000Z"},
+      "object": {
+        "id": "historyroot-plymouth-event-mayflower-compact",
+        "label": "Mayflower Compact agreement",
+        "entityType": "event",
+        "name": "Mayflower Compact agreement",
+        "alternateNames": ["Mayflower Compact", "Agreement Between the Settlers at New Plymouth"],
+        "description": "Adult male passengers signed a combination establishing a civil body politic before settlement.",
+        "domain": "HistoryRoot",
+        "sourceIds": ["historyroot-plymouth-source-mourts-relation-loc", "historyroot-plymouth-source-compact-loc-exhibit", "historyroot-plymouth-source-compact-loc-law-blog"],
+        "status": "pilot-review-required"
+      }
+    },
+    {
+      "preparationStatus": "approved",
+      "approvalRecord": {"approvedBy": "Chunk 6 accepted corpus review", "approvedAt": "2026-07-26T12:00:00.000Z"},
+      "object": {
+        "id": "historyroot-plymouth-work-mayflower-compact-text",
+        "label": "Mayflower Compact text",
+        "entityType": "work",
+        "name": "Mayflower Compact text",
+        "alternateNames": ["Compact text"],
+        "description": "The textual work known through surviving early witnesses.",
+        "domain": "HistoryRoot",
+        "sourceIds": ["historyroot-plymouth-source-mourts-relation-loc", "historyroot-plymouth-source-compact-loc-law-blog"],
+        "status": "pilot-review-required"
+      }
+    },
+    {
+      "preparationStatus": "approved",
+      "approvalRecord": {"approvedBy": "Chunk 6 accepted corpus review", "approvedAt": "2026-07-26T12:00:00.000Z"},
+      "object": {
+        "id": "historyroot-plymouth-document-mayflower-compact-original",
+        "label": "Original signed Mayflower Compact",
+        "entityType": "document",
+        "name": "Original signed Mayflower Compact",
+        "alternateNames": ["Original Compact"],
+        "description": "The signed 1620 document, now lost.",
+        "domain": "HistoryRoot",
+        "sourceIds": ["historyroot-plymouth-source-compact-loc-exhibit", "historyroot-plymouth-source-compact-loc-law-blog"],
+        "status": "pilot-review-required"
+      }
+    },
+    {
+      "preparationStatus": "approved",
+      "approvalRecord": {"approvedBy": "Chunk 6 accepted corpus review", "approvedAt": "2026-07-26T12:00:00.000Z"},
+      "object": {
+        "id": "historyroot-plymouth-document-mourts-1622",
+        "label": "Mourt's Relation, 1622 edition",
+        "entityType": "document",
+        "name": "Mourt's Relation, 1622 edition",
+        "alternateNames": ["1622 Mourt's Relation"],
+        "description": "Earliest surviving printed witness containing the Compact text.",
+        "domain": "HistoryRoot",
+        "sourceIds": ["historyroot-plymouth-source-mourts-relation-loc"],
+        "status": "pilot-review-required"
+      }
+    }
+  ],
+  "claims": [
+    {
+      "preparationStatus": "approved",
+      "approvalRecord": {"approvedBy": "Chunk 6 accepted corpus review", "approvedAt": "2026-07-26T12:00:00.000Z"},
+      "object": {
+        "id": "historyroot-plymouth-claim-compact-original-lost",
+        "label": "The original Mayflower Compact is lost",
+        "accountId": "historyroot-plymouth-account-compact-exhibit",
+        "subjectId": "historyroot-plymouth-document-mayflower-compact-original",
+        "objectId": "historyroot-plymouth-work-mayflower-compact-text",
+        "claimType": "document-survival",
+        "statement": "The signed original Mayflower Compact has not survived.",
+        "confidence": "strong",
+        "domain": "HistoryRoot",
+        "sourceIds": ["historyroot-plymouth-source-compact-loc-exhibit", "historyroot-plymouth-source-compact-loc-law-blog"],
+        "status": "pilot-review-required"
+      }
+    },
+    {
+      "preparationStatus": "approved",
+      "approvalRecord": {"approvedBy": "Chunk 6 accepted corpus review", "approvedAt": "2026-07-26T12:00:00.000Z"},
+      "object": {
+        "id": "historyroot-plymouth-claim-mourts-earliest-witness",
+        "label": "Mourt's Relation is the earliest surviving Compact witness",
+        "accountId": "historyroot-plymouth-account-compact-law",
+        "subjectId": "historyroot-plymouth-document-mourts-1622",
+        "objectId": "historyroot-plymouth-work-mayflower-compact-text",
+        "claimType": "textual-witness",
+        "statement": "The 1622 Mourt's Relation is the earliest surviving document containing the Compact text.",
+        "confidence": "strong",
+        "domain": "HistoryRoot",
+        "sourceIds": ["historyroot-plymouth-source-compact-loc-exhibit", "historyroot-plymouth-source-compact-loc-law-blog", "historyroot-plymouth-source-mourts-relation-loc"],
+        "status": "pilot-review-required"
+      }
+    },
+    {
+      "preparationStatus": "approved",
+      "approvalRecord": {"approvedBy": "Chunk 6 accepted corpus review", "approvedAt": "2026-07-26T12:00:00.000Z"},
+      "object": {
+        "id": "historyroot-plymouth-claim-compact-three-witnesses",
+        "label": "Three early Compact witnesses survive",
+        "accountId": "historyroot-plymouth-account-compact-law",
+        "subjectId": "historyroot-plymouth-work-mayflower-compact-text",
+        "claimType": "textual-transmission",
+        "statement": "Mourt's Relation, William Bradford's history, and Nathaniel Morton's New-Englands Memorial provide three early surviving witnesses to the Compact text.",
+        "confidence": "strong",
+        "domain": "HistoryRoot",
+        "sourceIds": ["historyroot-plymouth-source-compact-loc-law-blog"],
+        "status": "pilot-review-required"
+      }
+    },
+    {
+      "preparationStatus": "approved",
+      "approvalRecord": {"approvedBy": "Chunk 6 accepted corpus review", "approvedAt": "2026-07-26T12:00:00.000Z"},
+      "object": {
+        "id": "historyroot-plymouth-claim-compact-signers-scope",
+        "label": "Compact participation was restricted",
+        "accountId": "historyroot-plymouth-account-compact-law",
+        "subjectId": "historyroot-plymouth-event-mayflower-compact",
+        "objectId": "historyroot-plymouth-group-plymouth-colonists",
+        "claimType": "participation-scope",
+        "statement": "The Compact was signed by adult men; women, children, servants, and Indigenous people were not formal signers.",
+        "confidence": "strong",
+        "domain": "HistoryRoot",
+        "sourceIds": ["historyroot-plymouth-source-compact-loc-law-blog"],
+        "status": "pilot-review-required"
+      }
+    },
+    {
+      "preparationStatus": "approved",
+      "approvalRecord": {"approvedBy": "Chunk 6 accepted corpus review", "approvedAt": "2026-07-26T12:00:00.000Z"},
+      "object": {
+        "id": "historyroot-plymouth-claim-compact-memory-development",
+        "label": "The Compact acquired later national political meanings",
+        "accountId": "historyroot-plymouth-account-compact-law",
+        "subjectId": "historyroot-plymouth-work-mayflower-compact-text",
+        "claimType": "cultural-memory-development",
+        "statement": "The Compact was later invoked as part of American constitutional and self-government memory.",
+        "confidence": "moderate",
+        "domain": "HistoryRoot",
+        "sourceIds": ["historyroot-plymouth-source-compact-loc-law-blog"],
+        "status": "pilot-review-required"
+      }
+    }
+  ],
+  "historicalNames": [
+    {
+      "preparationStatus": "approved",
+      "approvalRecord": {"approvedBy": "Chunk 6 accepted corpus review", "approvedAt": "2026-07-26T12:00:00.000Z"},
+      "object": {
+        "id": "ctx-alias-group-plymouth-colonists-new-plymouth-colonists",
+        "entityId": "historyroot-plymouth-group-plymouth-colonists",
+        "text": "New Plymouth colonists",
+        "aliasType": "historical",
+        "sourceIds": ["historyroot-plymouth-source-mourts-relation-loc", "historyroot-plymouth-source-bradford-eada"],
+        "notes": "Descriptive historical name for the settler community."
+      }
+    }
+  ],
+  "dateExpressions": [
+    {
+      "preparationStatus": "approved",
+      "approvalRecord": {"approvedBy": "Chunk 6 accepted corpus review", "approvedAt": "2026-07-26T12:00:00.000Z"},
+      "object": {
+        "id": "historyroot-plymouth-time-mayflower-compact",
+        "label": "Mayflower Compact date",
+        "subjectId": "historyroot-plymouth-event-mayflower-compact",
+        "temporalKind": "exact",
+        "timeRole": "event_time",
+        "exactDate": "1620-11-11",
+        "dateLabel": "11 November 1620 (English Old Style)",
+        "calendarSystem": "English Old Style (Julian)",
+        "datePrecision": "day",
+        "domain": "HistoryRoot",
+        "sourceIds": ["historyroot-plymouth-source-mourts-relation-loc", "historyroot-plymouth-source-compact-loc-exhibit", "historyroot-plymouth-source-compact-loc-law-blog"],
+        "status": "pilot-review-required",
+        "structuredDate": {
+          "originalLabel": "11 November 1620 (English Old Style)",
+          "precision": "day",
+          "era": "CE",
+          "year": 1620,
+          "month": 11,
+          "day": 11,
+          "calendarSystem": "English Old Style (Julian)",
+          "conversionStatus": "unconverted",
+          "uncertainty": "The original calendar label is retained and not silently converted."
+        }
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "preparationStatus": "approved",
+      "approvalRecord": {"approvedBy": "Chunk 6 accepted corpus review", "approvedAt": "2026-07-26T12:00:00.000Z"},
+      "object": {
+        "id": "historyroot-plymouth-relationship-original-realizes-text",
+        "label": "The lost signed document embodied the Compact text.",
+        "fromId": "historyroot-plymouth-document-mayflower-compact-original",
+        "toId": "historyroot-plymouth-work-mayflower-compact-text",
+        "relationshipType": "embodied_work",
+        "explanation": "The lost signed document embodied the Compact text.",
+        "confidence": "moderate",
+        "uncertainty": "Relationship is source-grounded but remains subject to historical and tribal review.",
+        "domain": "HistoryRoot",
+        "sourceIds": ["historyroot-plymouth-source-compact-loc-law-blog"],
+        "status": "pilot-review-required"
+      }
+    }
+  ],
+  "sourceLocators": [
+    {
+      "preparationStatus": "approved",
+      "approvalRecord": {"approvedBy": "Chunk 6 accepted corpus review", "approvedAt": "2026-07-26T12:00:00.000Z"},
+      "object": {
+        "id": "ctx-locator-compact-original-lost",
+        "evidenceId": "historyroot-plymouth-evidence-compact-original-lost",
+        "sourceId": "historyroot-plymouth-source-compact-loc-exhibit",
+        "locatorType": "section",
+        "locatorLabel": "The Mayflower Compact exhibit section",
+        "locator": {"section": "The Mayflower Compact"},
+        "note": "Locator was retained only where the accepted source inspection identified a bounded passage, section, line range, or page range."
+      }
+    },
+    {
+      "preparationStatus": "approved",
+      "approvalRecord": {"approvedBy": "Chunk 6 accepted corpus review", "approvedAt": "2026-07-26T12:00:00.000Z"},
+      "object": {
+        "id": "ctx-locator-mourts-earliest-witness",
+        "evidenceId": "historyroot-plymouth-evidence-mourts-earliest-witness",
+        "sourceId": "historyroot-plymouth-source-compact-loc-exhibit",
+        "locatorType": "paragraph",
+        "locatorLabel": "The Mayflower Compact exhibit, paragraph 66",
+        "locator": {"section": "The Mayflower Compact", "paragraph": 66},
+        "note": "Locator was retained only where the accepted source inspection identified a bounded passage, section, line range, or page range."
+      }
+    },
+    {
+      "preparationStatus": "approved",
+      "approvalRecord": {"approvedBy": "Chunk 6 accepted corpus review", "approvedAt": "2026-07-26T12:00:00.000Z"},
+      "object": {
+        "id": "ctx-locator-compact-three-witnesses",
+        "evidenceId": "historyroot-plymouth-evidence-compact-three-witnesses",
+        "sourceId": "historyroot-plymouth-source-compact-loc-law-blog",
+        "locatorType": "passage",
+        "locatorLabel": "Passages beginning with the accepted earliest-text and notebook passages",
+        "locator": {"firstPassage": "The earliest surviving text", "secondPassage": "The manuscript of his notebook"},
+        "note": "Locator was retained only where the accepted source inspection identified a bounded passage, section, line range, or page range."
+      }
+    },
+    {
+      "preparationStatus": "approved",
+      "approvalRecord": {"approvedBy": "Chunk 6 accepted corpus review", "approvedAt": "2026-07-26T12:00:00.000Z"},
+      "object": {
+        "id": "ctx-locator-compact-signers-scope",
+        "evidenceId": "historyroot-plymouth-evidence-compact-signers-scope",
+        "sourceId": "historyroot-plymouth-source-compact-loc-law-blog",
+        "locatorType": "passage",
+        "locatorLabel": "Passage beginning with the accepted immediate-political-purpose text",
+        "locator": {"passage": "The compact served the immediate political purpose"},
+        "note": "Locator was retained only where the accepted source inspection identified a bounded passage, section, line range, or page range."
+      }
+    }
+  ],
+  "evidence": [
+    {
+      "preparationStatus": "approved",
+      "approvalRecord": {"approvedBy": "Chunk 6 accepted corpus review", "approvedAt": "2026-07-26T12:00:00.000Z"},
+      "object": {
+        "id": "historyroot-plymouth-evidence-compact-original-lost",
+        "label": "Evidence for: The original Mayflower Compact is lost",
+        "claimId": "historyroot-plymouth-claim-compact-original-lost",
+        "evidenceType": "evidence",
+        "sourceId": "historyroot-plymouth-source-compact-loc-exhibit",
+        "accountId": "historyroot-plymouth-account-compact-exhibit",
+        "explanation": "LOC exhibit, The Mayflower Compact; LOC Law blog paragraphs 298-299. Evidence limit: Surviving texts are witnesses, not the original signed sheet.",
+        "strength": "strong",
+        "confidence": "strong",
+        "domain": "HistoryRoot",
+        "sourceIds": ["historyroot-plymouth-source-compact-loc-exhibit", "historyroot-plymouth-source-compact-loc-law-blog"],
+        "status": "pilot-review-required"
+      }
+    },
+    {
+      "preparationStatus": "approved",
+      "approvalRecord": {"approvedBy": "Chunk 6 accepted corpus review", "approvedAt": "2026-07-26T12:00:00.000Z"},
+      "object": {
+        "id": "historyroot-plymouth-evidence-mourts-earliest-witness",
+        "label": "Evidence for: Mourt's Relation is the earliest surviving Compact witness",
+        "claimId": "historyroot-plymouth-claim-mourts-earliest-witness",
+        "evidenceType": "evidence",
+        "sourceId": "historyroot-plymouth-source-compact-loc-exhibit",
+        "accountId": "historyroot-plymouth-account-compact-law",
+        "explanation": "LOC exhibit paragraph 66; LOC Law blog paragraph 298; Mourt's Relation pp. 5-6. Evidence limit: Earliest surviving witness does not mean original manuscript.",
+        "strength": "strong",
+        "confidence": "strong",
+        "domain": "HistoryRoot",
+        "sourceIds": ["historyroot-plymouth-source-compact-loc-exhibit", "historyroot-plymouth-source-compact-loc-law-blog", "historyroot-plymouth-source-mourts-relation-loc"],
+        "status": "pilot-review-required"
+      }
+    },
+    {
+      "preparationStatus": "approved",
+      "approvalRecord": {"approvedBy": "Chunk 6 accepted corpus review", "approvedAt": "2026-07-26T12:00:00.000Z"},
+      "object": {
+        "id": "historyroot-plymouth-evidence-compact-three-witnesses",
+        "label": "Evidence for: Three early Compact witnesses survive",
+        "claimId": "historyroot-plymouth-claim-compact-three-witnesses",
+        "evidenceType": "evidence",
+        "sourceId": "historyroot-plymouth-source-compact-loc-law-blog",
+        "accountId": "historyroot-plymouth-account-compact-law",
+        "explanation": "LOC Law blog paragraphs 298-299. Evidence limit: This pilot records witness relationships but does not collate textual variants.",
+        "strength": "strong",
+        "confidence": "strong",
+        "domain": "HistoryRoot",
+        "sourceIds": ["historyroot-plymouth-source-compact-loc-law-blog"],
+        "status": "pilot-review-required"
+      }
+    },
+    {
+      "preparationStatus": "approved",
+      "approvalRecord": {"approvedBy": "Chunk 6 accepted corpus review", "approvedAt": "2026-07-26T12:00:00.000Z"},
+      "object": {
+        "id": "historyroot-plymouth-evidence-compact-signers-scope",
+        "label": "Evidence for: Compact participation was restricted",
+        "claimId": "historyroot-plymouth-claim-compact-signers-scope",
+        "evidenceType": "evidence",
+        "sourceId": "historyroot-plymouth-source-compact-loc-law-blog",
+        "accountId": "historyroot-plymouth-account-compact-law",
+        "explanation": "LOC Law blog paragraph 289. Evidence limit: The familiar phrase 'the colonists agreed' can obscure exclusions from formal signature.",
+        "strength": "strong",
+        "confidence": "strong",
+        "domain": "HistoryRoot",
+        "sourceIds": ["historyroot-plymouth-source-compact-loc-law-blog"],
+        "status": "pilot-review-required"
+      }
+    }
+  ],
+  "evidenceLinks": [
+    {
+      "preparationStatus": "approved",
+      "approvalRecord": {"approvedBy": "Chunk 6 accepted corpus review", "approvedAt": "2026-07-26T12:00:00.000Z"},
+      "object": {
+        "id": "ctx-evidence-link-compact-original-lost",
+        "evidenceId": "historyroot-plymouth-evidence-compact-original-lost",
+        "claimId": "historyroot-plymouth-claim-compact-original-lost",
+        "supportRole": "supports",
+        "scopePath": "statement",
+        "explanation": "The exhibit is linked only for the scoped supports role; source provenance remains separately recorded.",
+        "sourceIds": ["historyroot-plymouth-source-compact-loc-exhibit"]
+      }
+    },
+    {
+      "preparationStatus": "approved",
+      "approvalRecord": {"approvedBy": "Chunk 6 accepted corpus review", "approvedAt": "2026-07-26T12:00:00.000Z"},
+      "object": {
+        "id": "ctx-evidence-link-mourts-earliest-witness",
+        "evidenceId": "historyroot-plymouth-evidence-mourts-earliest-witness",
+        "claimId": "historyroot-plymouth-claim-mourts-earliest-witness",
+        "supportRole": "supports",
+        "scopePath": "statement",
+        "explanation": "The exhibit is linked only for the scoped supports role; source provenance remains separately recorded.",
+        "sourceIds": ["historyroot-plymouth-source-compact-loc-exhibit"]
+      }
+    },
+    {
+      "preparationStatus": "approved",
+      "approvalRecord": {"approvedBy": "Chunk 6 accepted corpus review", "approvedAt": "2026-07-26T12:00:00.000Z"},
+      "object": {
+        "id": "ctx-evidence-link-compact-three-witnesses",
+        "evidenceId": "historyroot-plymouth-evidence-compact-three-witnesses",
+        "claimId": "historyroot-plymouth-claim-compact-three-witnesses",
+        "supportRole": "supports",
+        "scopePath": "statement",
+        "explanation": "The Law Library account is linked only for the scoped supports role; source provenance remains separately recorded.",
+        "sourceIds": ["historyroot-plymouth-source-compact-loc-law-blog"]
+      }
+    },
+    {
+      "preparationStatus": "approved",
+      "approvalRecord": {"approvedBy": "Chunk 6 accepted corpus review", "approvedAt": "2026-07-26T12:00:00.000Z"},
+      "object": {
+        "id": "ctx-evidence-link-compact-signers-scope",
+        "evidenceId": "historyroot-plymouth-evidence-compact-signers-scope",
+        "claimId": "historyroot-plymouth-claim-compact-signers-scope",
+        "supportRole": "qualifies",
+        "scopePath": "statement",
+        "explanation": "The Law Library account is linked only for the scoped qualifies role; source provenance remains separately recorded.",
+        "sourceIds": ["historyroot-plymouth-source-compact-loc-law-blog"]
+      }
+    }
+  ],
+  "claimRelations": [],
+  "fieldProvenance": [
+    {
+      "preparationStatus": "approved",
+      "approvalRecord": {"approvedBy": "Chunk 6 accepted corpus review", "approvedAt": "2026-07-26T12:00:00.000Z"},
+      "object": {
+        "id": "ctx-provenance-claim-compact-original-lost-statement",
+        "targetId": "historyroot-plymouth-claim-compact-original-lost",
+        "fieldPath": "statement",
+        "sourceId": "historyroot-plymouth-source-compact-loc-exhibit",
+        "supportType": "reporting-provenance",
+        "note": "This provenance records the statement's reporting path; evidence role is modeled separately."
+      }
+    },
+    {
+      "preparationStatus": "approved",
+      "approvalRecord": {"approvedBy": "Chunk 6 accepted corpus review", "approvedAt": "2026-07-26T12:00:00.000Z"},
+      "object": {
+        "id": "ctx-provenance-claim-mourts-earliest-witness-statement",
+        "targetId": "historyroot-plymouth-claim-mourts-earliest-witness",
+        "fieldPath": "statement",
+        "sourceId": "historyroot-plymouth-source-compact-loc-exhibit",
+        "supportType": "reporting-provenance",
+        "note": "This provenance records the statement's reporting path; evidence role is modeled separately."
+      }
+    }
+  ],
+  "reviewMetadata": {
+    "bundleId": "sourceroot-source-preparation-golden-v1",
+    "version": "1.0.0",
+    "createdAt": "2026-07-26T12:00:00.000Z",
+    "createdBy": "SourceRoot reviewed source preparation",
+    "description": "Deterministic bundle generated from the approved Chunk 7 golden preparation workspace."
+  },
+  "approvals": {
+    "approved": true,
+    "approvedBy": "Chunk 7 editorial fixture approval",
+    "approvedAt": "2026-07-26T12:00:00.000Z",
+    "note": "Fixture approval demonstrates the local workflow only and is not legal certification."
+  }
+}

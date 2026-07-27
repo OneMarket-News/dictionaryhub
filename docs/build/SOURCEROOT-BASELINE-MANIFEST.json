@@ -7,7 +7,7 @@
     "branch": "release/historyroot-alpha-integration-v1",
     "commit": "5549dff82fca447d8267d31b111bdca2cb4eeebd"
   },
-  "currentInstalledStage": "SourceRoot Chunk 6 - HistoryRoot Foundational Corpus v1",
+  "currentInstalledStage": "SourceRoot Chunk 7 - Repeatable Source Preparation Workflow v1",
   "backendEntryPoints": [
     "backend/src/server.ts",
     "backend/src/app.ts",
@@ -149,6 +149,7 @@
     "backend/test/local-development-cors.test.ts",
     "backend/test/platform-stabilization.test.ts",
     "backend/test/registry-api-contract.test.ts",
+    "backend/test/source-preparation-workflow.test.ts",
     "backend/test/observability.test.ts",
     "backend/test/observers.test.ts",
     "backend/test/schema.test.ts",
@@ -208,6 +209,7 @@
     "VERIFY-SOURCEROOT-CONTEXTUAL-ASSERTIONS-EVIDENCE-VERSIONING.ps1",
     "VERIFY-SOURCEROOT-CONTEXT-API-REVIEW-EXPERIENCE.ps1",
     "VERIFY-SOURCEROOT-HISTORYROOT-FOUNDATIONAL-CORPUS.ps1"
+    ,"VERIFY-SOURCEROOT-REPEATABLE-SOURCE-PREPARATION-WORKFLOW.ps1"
   ],
   "requiredRuntimeFiles": [
     "backend/.env.example",
@@ -226,6 +228,10 @@
     "backend/src/services/context-version-store.ts",
     "backend/src/historyroot/foundational-corpus.ts",
     "backend/src/scripts/import-historyroot-foundational-corpus.ts",
+    "backend/src/source-preparation/source-preparation-types.ts",
+    "backend/src/source-preparation/source-preparation-schema.ts",
+    "backend/src/source-preparation/source-preparation-engine.ts",
+    "backend/src/scripts/prepare-sourceroot-workspace.ts",
     "backend/src/lib/runtime-config.ts",
     "backend/src/scripts/migrate.ts",
     "config/customers/dictionaryroot.json",
@@ -302,7 +308,7 @@
     "testDatabase": "sourceroot_test",
     "browserChecksPerformed": true,
     "independentLiveApiChecksPerformed": true,
-    "successfulInstallerBackup": null
+    "successfulInstallerBackup": "backups/sourceroot-repeatable-source-preparation-workflow-v1-20260727-chunk7-sealed"
   },
   "historyrootFoundationalCorpus": {
     "migration": null,
@@ -328,6 +334,24 @@
     "independentLiveApiChecksPerformed": true,
     "successfulInstallerBackup": "backups/sourceroot-historyroot-foundational-corpus-v1-20260727-final"
   },
-  "nextStageDependency": "Corpus expansion and repeatable source-preparation workflow.",
+  "repeatableSourcePreparationWorkflow": {
+    "migration": null,
+    "workspaceSchemaVersion": "1.0.0",
+    "modes": ["validate", "preview", "generate"],
+    "goldenSources": 4,
+    "goldenAccounts": 2,
+    "goldenRecords": 5,
+    "goldenClaims": 5,
+    "goldenLocators": 4,
+    "goldenEvidenceLinks": 4,
+    "focusedTests": 40,
+    "generatedBundleSha256": "f47d4f1f5cbc123dcaec1b07d5a6b051d3c306f488dfa81dcc353c5e7dcc8428",
+    "testDatabase": "sourceroot_test",
+    "networkAccess": false,
+    "automaticImport": false,
+    "browserChecksPerformed": false,
+    "successfulInstallerBackup": null
+  },
+  "nextStageDependency": "Corpus expansion and preparation-workflow adoption.",
   "secretHandling": "No secrets, passwords, tokens, connection strings, or private environment values are stored in this manifest."
 }
