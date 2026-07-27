@@ -483,7 +483,7 @@ const contextRecordSelect = `
     ON memory.context_id = cr.context_id
 `;
 
-export async function getContextRecordById(
+export async function getContextRecordBaseById(
   contextId: string,
   recordKind?: ContextRecordKind,
 ): Promise<NormalizedContextRecord | undefined> {
@@ -501,11 +501,21 @@ export async function getContextRecordById(
   if (!row) {
     return undefined;
   }
-  const record = mapContextRecord(row);
-  if (row.record_kind === "claim" || row.record_kind === "evidence") {
+  return mapContextRecord(row);
+}
+
+export async function getContextRecordById(
+  contextId: string,
+  recordKind?: ContextRecordKind,
+): Promise<NormalizedContextRecord | undefined> {
+  const record = await getContextRecordBaseById(contextId, recordKind);
+  if (!record) {
+    return undefined;
+  }
+  if (record.recordKind === "claim" || record.recordKind === "evidence") {
     Object.assign(
       record,
-      await getContextExtensionDetail(row.record_kind, contextId),
+      await getContextExtensionDetail(record.recordKind, contextId),
     );
   }
   return record;

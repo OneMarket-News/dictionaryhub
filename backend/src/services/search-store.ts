@@ -79,6 +79,34 @@ function requireDatabase() {
 function mapSearchRow(
   row: SearchRow,
 ): SearchResult {
+  const metadata = { ...row.metadata };
+  if (row.result_type === "context-claim") {
+    const claimId =
+      typeof metadata.claimId === "string"
+        ? metadata.claimId
+        : row.id;
+    const recordId =
+      typeof metadata.parentRecordId === "string"
+        ? metadata.parentRecordId
+        : "";
+    metadata.reviewUrl =
+      `history-context-review-v1.html?record=${encodeURIComponent(recordId)}&claim=${encodeURIComponent(claimId)}`;
+  } else if (row.result_type === "context-claim-version") {
+    const claimId =
+      typeof metadata.claimId === "string"
+        ? metadata.claimId
+        : "";
+    const versionId =
+      typeof metadata.versionId === "string"
+        ? metadata.versionId
+        : row.id;
+    const recordId =
+      typeof metadata.parentRecordId === "string"
+        ? metadata.parentRecordId
+        : "";
+    metadata.reviewUrl =
+      `history-context-review-v1.html?record=${encodeURIComponent(recordId)}&claim=${encodeURIComponent(claimId)}&version=${encodeURIComponent(versionId)}`;
+  }
   return {
     resultType: row.result_type,
     id: row.id,
@@ -87,7 +115,7 @@ function mapSearchRow(
     summary: row.summary,
     domain: row.domain,
     objectType: row.object_type,
-    metadata: row.metadata,
+    metadata,
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString(),
   };
@@ -348,7 +376,18 @@ const searchRecordsCte = `
             ),
           'relationshipType', relationship.relationship_type,
           'fromId', relationship.from_context_id,
-          'toId', relationship.to_context_id
+          'toId', relationship.to_context_id,
+          'claimId', claim.context_id,
+          'parentRecordId', claim.subject_context_id,
+          'currentStatement', claim.statement,
+          'currentVersionId', claim_current.version_id,
+          'matchedVersionId', NULL,
+          'isHistorical', FALSE,
+          'matchState',
+            CASE
+              WHEN claim.context_id IS NOT NULL THEN 'current'
+              ELSE NULL
+            END
         ) AS metadata,
       cr.created_at,
       cr.updated_at,
@@ -423,6 +462,8 @@ const searchRecordsCte = `
       ON account.context_id = cr.context_id
     LEFT JOIN context_claims claim
       ON claim.context_id = cr.context_id
+    LEFT JOIN context_claim_current_versions claim_current
+      ON claim_current.claim_context_id = claim.context_id
     LEFT JOIN context_evidence evidence
       ON evidence.context_id = cr.context_id
     LEFT JOIN context_interpretations interpretation
@@ -456,7 +497,24 @@ const searchRecordsCte = `
         'status', version.version_status,
         'origin', version.origin,
         'contentHash', version.content_hash,
-        'current', current_version.version_id IS NOT NULL
+        'current', current_version.version_id IS NOT NULL,
+        'matchedVersionId', version.version_id,
+        'isHistorical', current_version.version_id IS NULL,
+        'matchState',
+          CASE
+            WHEN current_version.version_id IS NULL
+              THEN 'historical'
+            ELSE 'current'
+          END,
+        'parentRecordId', claim.subject_context_id,
+        'currentVersionId', claim_pointer.version_id,
+        'currentStatement', claim.statement,
+        'historicalMatchedStatement',
+          CASE
+            WHEN current_version.version_id IS NULL
+              THEN version.statement
+            ELSE NULL
+          END
       ) AS metadata,
       version.created_at,
       version.created_at AS updated_at,
@@ -474,10 +532,16 @@ const searchRecordsCte = `
     FROM context_claim_versions version
     LEFT JOIN context_claim_current_versions current_version
       ON current_version.version_id = version.version_id
-    LEFT JOIN context_records record
+    JOIN context_records record
       ON record.context_id = version.claim_context_id
+    JOIN context_claims claim
+      ON claim.context_id = record.context_id
+    LEFT JOIN context_claim_current_versions claim_pointer
+      ON claim_pointer.claim_context_id = claim.context_id
     LEFT JOIN imported_bundles bundle
       ON bundle.bundle_id = version.bundle_id
+    WHERE record.status <> 'governance-withdrawn'
+      AND version.version_status <> 'draft'
   )
 `;
 

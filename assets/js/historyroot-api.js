@@ -280,6 +280,10 @@
       this.cache.clear();
     }
 
+    createAbortController() {
+      return new AbortController();
+    }
+
     health() {
       return this.request(`${this.serviceOrigin}/health`, { cache: false });
     }
@@ -365,6 +369,24 @@
     record(recordId) {
       return this.request(
         `/context/records/${encodeURIComponent(recordId)}`
+      );
+    }
+
+    contextRecordReview(recordId, params, options) {
+      return this.request(
+        `/context/review/records/${encodeURIComponent(recordId)}${buildQuery(
+          params || {}
+        )}`,
+        Object.assign({ cache: false }, options || {})
+      );
+    }
+
+    contextClaimReview(claimId, params, options) {
+      return this.request(
+        `/context/review/claims/${encodeURIComponent(claimId)}${buildQuery(
+          params || {}
+        )}`,
+        Object.assign({ cache: false }, options || {})
       );
     }
 

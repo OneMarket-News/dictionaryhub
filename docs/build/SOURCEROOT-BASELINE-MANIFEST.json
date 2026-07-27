@@ -5,9 +5,9 @@
   "repositoryPath": "C:\\Users\\Josh\\Documents\\GitHub\\dictionaryhub",
   "git": {
     "branch": "release/historyroot-alpha-integration-v1",
-    "commit": "dfa306c46cdd5ec03f929b84b5ad6042de7d79e7"
+    "commit": "d4d7f7f49afe808fb9bf554c579800e254a67b99"
   },
-  "currentInstalledStage": "SourceRoot Chunk 4 - Contextual Assertions, Evidence, and Versioning v1",
+  "currentInstalledStage": "SourceRoot Chunk 5 - Context API and Review Experience v1",
   "backendEntryPoints": [
     "backend/src/server.ts",
     "backend/src/app.ts",
@@ -25,7 +25,8 @@
     "account-v1.html",
     "accounts-v2.html",
     "workflow-v1.html",
-    "admin-v1.html"
+    "admin-v1.html",
+    "history-context-review-v1.html"
   ],
   "dictionaryRootPages": [
     {
@@ -96,6 +97,7 @@
     "assets/js/dictionaryroot-sources.js",
     "assets/js/dictionaryroot-workflow.js",
     "assets/js/historyroot-api.js",
+    "assets/js/historyroot-context-review.js",
     "engine/importValidator.js",
     "engine/packageLifecycle.js",
     "engine/sourceRootApi.js",
@@ -112,6 +114,7 @@
     "assets/css/dictionaryroot-hybrid-map.css",
     "assets/css/dictionaryroot-live.css",
     "assets/css/dictionaryroot-navigation.css",
+    "assets/css/historyroot-context-review.css",
     "assets/css/dictionaryroot-product-refinement.css",
     "style.css"
   ],
@@ -135,6 +138,7 @@
     "backend/test/contextual-assertions-evidence-versioning.test.ts",
     "backend/test/contextual-knowledge.test.ts",
     "backend/test/contextual-identity-time.test.ts",
+    "backend/test/context-api-review-experience.test.ts",
     "backend/test/dictionaryroot-oewn.test.ts",
     "backend/test/governance-surface.test.ts",
     "backend/test/governed-historyroot.test.ts",
@@ -155,7 +159,8 @@
     "INSTALL-SOURCEROOT-REGISTRY-API-CONTRACT.ps1",
     "INSTALL-SOURCEROOT-FRONTEND-API-OBSERVABILITY.ps1",
     "INSTALL-SOURCEROOT-CONTEXTUAL-IDENTITY-TIME.ps1",
-    "INSTALL-SOURCEROOT-CONTEXTUAL-ASSERTIONS-EVIDENCE-VERSIONING.ps1"
+    "INSTALL-SOURCEROOT-CONTEXTUAL-ASSERTIONS-EVIDENCE-VERSIONING.ps1",
+    "INSTALL-SOURCEROOT-CONTEXT-API-REVIEW-EXPERIENCE.ps1"
   ],
   "existingVerifiers": [
     "VERIFY-DICTIONARYROOT-ACCOUNTS-ROLES-PERMISSIONS.ps1",
@@ -198,7 +203,8 @@
     "VERIFY-SOURCEROOT-REGISTRY-API-CONTRACT.ps1",
     "VERIFY-SOURCEROOT-FRONTEND-API-OBSERVABILITY.ps1",
     "VERIFY-SOURCEROOT-CONTEXTUAL-IDENTITY-TIME.ps1",
-    "VERIFY-SOURCEROOT-CONTEXTUAL-ASSERTIONS-EVIDENCE-VERSIONING.ps1"
+    "VERIFY-SOURCEROOT-CONTEXTUAL-ASSERTIONS-EVIDENCE-VERSIONING.ps1",
+    "VERIFY-SOURCEROOT-CONTEXT-API-REVIEW-EXPERIENCE.ps1"
   ],
   "requiredRuntimeFiles": [
     "backend/.env.example",
@@ -247,7 +253,7 @@
   "currentRoadmapPosition": {
     "corePhases": "Core Phases 1–9: completed according to the project roadmap",
     "phase10": "Phase 10: next implementation phase",
-    "currentCodexPackage": "Chunk 4 - Contextual Assertions, Evidence, and Versioning v1",
+    "currentCodexPackage": "Chunk 5 - Context API and Review Experience v1",
     "classificationNotice": "Roadmap status is a project-management classification, not an independent production-security audit."
   },
   "repositoryDiscrepancy": "The inspected repository already contains contextual knowledge, authentication/governance, and HistoryRoot implementation even though the Chunk 0 roadmap wording places Phase 10 next. Chunk 0 preserves and records that pre-existing state.",
@@ -277,6 +283,22 @@
     "independentLiveApiChecksPerformed": false,
     "successfulInstallerBackup": "backups/sourceroot-contextual-assertions-evidence-versioning-v1-20260726-123751-553"
   },
-  "nextStageDependency": "SourceRoot Chunk 5 - Context API and Review Experience",
+  "contextApiReviewExperience": {
+    "migration": null,
+    "recordReviewRoute": "/api/v1/context/review/records/:recordId",
+    "claimReviewRoute": "/api/v1/context/review/claims/:claimId",
+    "reviewPage": "history-context-review-v1.html",
+    "legacyHistoryFabricated": false,
+    "automaticEvidenceRoleInference": false,
+    "publicWriteRoutesAdded": false,
+    "focusedBackendTests": 24,
+    "frontendVerificationTests": 15,
+    "completeBackendTests": 211,
+    "testDatabase": "sourceroot_test",
+    "browserChecksPerformed": true,
+    "independentLiveApiChecksPerformed": true,
+    "successfulInstallerBackup": null
+  },
+  "nextStageDependency": "Not precisely named in the accepted roadmap; remains to be named.",
   "secretHandling": "No secrets, passwords, tokens, connection strings, or private environment values are stored in this manifest."
 }

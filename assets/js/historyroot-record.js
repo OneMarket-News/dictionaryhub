@@ -394,6 +394,9 @@
     const sections = document.querySelector("#historyrootRecordSections");
     const graphLink = document.querySelector("#historyrootRecordGraphLink");
     const timelineLink = document.querySelector("#historyrootRecordTimelineLink");
+    const contextReviewLink = document.querySelector(
+      "#historyrootRecordContextReviewLink"
+    );
     const metadataPanel = document.querySelector("#historyrootRecordMetadataPanel");
     const metadataList = document.querySelector("#historyrootRecordMetadata");
     const recordId = ui.clean(new URLSearchParams(global.location.search).get("id"));
@@ -579,6 +582,15 @@
         namingNote.hidden = !note;
         graphLink.href = ui.graphHref(record.id);
         timelineLink.href = ui.timelineHref(record.id);
+        contextReviewLink.hidden = claims.length === 0;
+        if (claims.length) {
+          contextReviewLink.href = ui.contextReviewHref(
+            subjectId,
+            claims[0].id,
+            "",
+            "record"
+          );
+        }
 
         ui.clear(sections);
         if (temporals.length) {

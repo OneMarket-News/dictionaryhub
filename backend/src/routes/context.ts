@@ -16,6 +16,7 @@ import {
 } from "../contextual-types.js";
 import {
   createApiError,
+  REGISTRY_API_CONTRACT_VERSION,
   withCollectionContract,
   withRequestId,
 } from "../lib/api-contract.js";
@@ -27,7 +28,13 @@ import {
   normalizeFilters,
   parsePagination,
   parseSort,
+  type PaginationQuery,
+  type QueryParameterError,
 } from "../lib/query-params.js";
+import {
+  getContextClaimReview,
+  getContextRecordReview,
+} from "../services/context-review-store.js";
 import {
   listContextExtensions,
   type ContextExtensionCollection,
@@ -535,6 +542,71 @@ const contextExtensionRoutes: ContextExtensionRoute[] = [
 
 const relationTypeSet = new Set<string>(claimRelationTypes);
 const supportRoleSet = new Set<string>(evidenceSupportRoles);
+const reviewIdPattern =
+  /^[A-Za-z0-9][A-Za-z0-9._:-]{0,255}$/;
+const recordReviewQueryParameters = new Set([
+  "page",
+  "limit",
+  "q",
+  "status",
+]);
+const claimReviewQueryParameters = new Set([
+  "version",
+  "versionsPage",
+  "versionsLimit",
+  "evidencePage",
+  "evidenceLimit",
+  "relationsPage",
+  "relationsLimit",
+  "provenancePage",
+  "provenanceLimit",
+]);
+
+function parseNamedPagination(
+  request: Request,
+  prefix: string,
+  defaults: { limit: number; maxLimit: number },
+): PaginationQuery | QueryParameterError {
+  const pageKey = `${prefix}Page`;
+  const limitKey = `${prefix}Limit`;
+  const parsed = parsePagination(
+    request.query[pageKey],
+    request.query[limitKey],
+    defaults,
+  );
+  if (!isQueryParameterError(parsed)) {
+    return parsed;
+  }
+  return {
+    ...parsed,
+    field:
+      parsed.field === "page"
+        ? pageKey
+        : limitKey,
+    message:
+      parsed.field === "page"
+        ? `${pageKey} must be a positive integer.`
+        : `${limitKey} must be an integer between 1 and ${defaults.maxLimit}.`,
+  };
+}
+
+function invalidReviewId(
+  response: Response,
+  field: "recordId" | "claimId" | "version",
+) {
+  return response.status(400).json(
+    createApiError(
+      "INVALID_CONTEXT_REVIEW_ID",
+      `${field} must be a bounded SourceRoot identifier.`,
+      400,
+      {
+        category: "invalid-query",
+        field,
+        requestId: response.locals.requestId,
+      },
+    ),
+  );
+}
 
 for (const route of contextExtensionRoutes) {
   contextRouter.get(
@@ -680,6 +752,178 @@ for (const route of contextExtensionRoutes) {
     },
   );
 }
+
+contextRouter.get(
+  "/review/records/:recordId",
+  async (request, response, next) => {
+    try {
+      const recordId = getRouteParam(request.params.recordId);
+      if (!reviewIdPattern.test(recordId)) {
+        return invalidReviewId(response, "recordId");
+      }
+      const pagination = parsePagination(
+        request.query.page,
+        request.query.limit,
+        { limit: 25, maxLimit: 100 },
+      );
+      if (isQueryParameterError(pagination)) {
+        return response.status(400).json(
+          withRequestId(pagination, response),
+        );
+      }
+      const query = getQueryString(request.query.q);
+      const status = getQueryString(request.query.status);
+      const result = await getContextRecordReview(recordId, {
+        pagination,
+        ...(query ? { query } : {}),
+        ...(status ? { status } : {}),
+      });
+      if (!result) {
+        return response.status(404).json(
+          createApiError(
+            "CONTEXT_REVIEW_RECORD_NOT_FOUND",
+            `No visible contextual record found with ID ${recordId}.`,
+            404,
+            {
+              category: "not-found",
+              field: "recordId",
+              requestId: response.locals.requestId,
+            },
+          ),
+        );
+      }
+      return response.status(200).json(
+        withCollectionContract(
+          {
+            ...result,
+            requestId: response.locals.requestId,
+          },
+          {
+            resource: "context-review-record-claims",
+            pagination,
+            filters: normalizeFilters({ q: query, status }),
+            sort: { sort: "label", direction: "asc" },
+            tieBreaker: "claimId:asc",
+            legacyKeys: ["claims"],
+            ignoredQueryParameters:
+              getUnsupportedQueryParameters(
+                request.query,
+                recordReviewQueryParameters,
+              ),
+            metadata: { recordId },
+          },
+        ),
+      );
+    } catch (error) {
+      return next(error);
+    }
+  },
+);
+
+contextRouter.get(
+  "/review/claims/:claimId",
+  async (request, response, next) => {
+    try {
+      const claimId = getRouteParam(request.params.claimId);
+      if (!reviewIdPattern.test(claimId)) {
+        return invalidReviewId(response, "claimId");
+      }
+      const version = getQueryString(request.query.version);
+      if (version && !reviewIdPattern.test(version)) {
+        return invalidReviewId(response, "version");
+      }
+      const sectionPagination = {
+        versions: parseNamedPagination(
+          request,
+          "versions",
+          { limit: 25, maxLimit: 50 },
+        ),
+        evidence: parseNamedPagination(
+          request,
+          "evidence",
+          { limit: 25, maxLimit: 50 },
+        ),
+        relations: parseNamedPagination(
+          request,
+          "relations",
+          { limit: 25, maxLimit: 50 },
+        ),
+        provenance: parseNamedPagination(
+          request,
+          "provenance",
+          { limit: 25, maxLimit: 50 },
+        ),
+      };
+      const invalidPagination = Object.values(
+        sectionPagination,
+      ).find(isQueryParameterError);
+      if (invalidPagination) {
+        return response.status(400).json(
+          withRequestId(invalidPagination, response),
+        );
+      }
+      const result = await getContextClaimReview(claimId, {
+        ...(version ? { requestedVersionId: version } : {}),
+        versions: sectionPagination.versions as PaginationQuery,
+        evidence: sectionPagination.evidence as PaginationQuery,
+        relations: sectionPagination.relations as PaginationQuery,
+        provenance: sectionPagination.provenance as PaginationQuery,
+      });
+      if (!result) {
+        return response.status(404).json(
+          createApiError(
+            "CONTEXT_REVIEW_CLAIM_NOT_FOUND",
+            `No visible contextual claim found with ID ${claimId}.`,
+            404,
+            {
+              category: "not-found",
+              field: "claimId",
+              requestId: response.locals.requestId,
+            },
+          ),
+        );
+      }
+      if (!result.requestedVersionFound) {
+        return response.status(404).json(
+          createApiError(
+            "CONTEXT_REVIEW_VERSION_NOT_FOUND",
+            `No visible claim version found with ID ${version}.`,
+            404,
+            {
+              category: "not-found",
+              field: "version",
+              requestId: response.locals.requestId,
+            },
+          ),
+        );
+      }
+      return response.status(200).json({
+        ...result,
+        contractVersion: REGISTRY_API_CONTRACT_VERSION,
+        requestId: response.locals.requestId,
+        registry: {
+          resource: "context-review-claim",
+          claimId,
+          ignoredQueryParameters:
+            getUnsupportedQueryParameters(
+              request.query,
+              claimReviewQueryParameters,
+            ),
+          boundedSections: {
+            versions: result.versions.pagination,
+            evidence: result.evidence.pagination,
+            relationships: result.relatedClaims.pagination,
+            provenance: result.provenance.pagination,
+            attributions: result.attributions.pagination,
+            sources: result.sources.summary,
+          },
+        },
+      });
+    } catch (error) {
+      return next(error);
+    }
+  },
+);
 
 contextRouter.get(
   "/entities/:contextId/aliases",

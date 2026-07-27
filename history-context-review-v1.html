@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Review a contextual HistoryRoot claim, its reporting account, explicit evidence roles, source locators, immutable versions, related claims, and field provenance.">
+    <title>Context review | HistoryRoot</title>
+    <link rel="icon" href="assets/brand/dictionaryroot-mark.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="assets/css/dictionaryroot-brand.css">
+    <link rel="stylesheet" href="assets/css/historyroot.css?v=1">
+    <link rel="stylesheet" href="assets/css/historyroot-context-review.css?v=1">
+  </head>
+  <body>
+    <main class="hr-main hr-context-review-main" id="main-content">
+      <div class="hr-review-live" id="historyrootContextReviewLive" role="status" aria-live="polite"></div>
+      <div id="historyrootContextReviewState"></div>
+
+      <article id="historyrootContextReview" hidden>
+        <nav class="hr-review-breadcrumbs" aria-label="Context review breadcrumb">
+          <a id="historyrootContextReviewBack" href="history-graph-v1.html">Back to HistoryRoot</a>
+          <span aria-hidden="true">/</span>
+          <span>Context review</span>
+        </nav>
+
+        <header class="hr-record-hero hr-review-hero">
+          <p class="hr-eyebrow">Context API review</p>
+          <div class="hr-record-hero-top">
+            <div>
+              <h1 id="historyrootContextReviewTitle">Contextual claim review</h1>
+              <p class="hr-record-lede" id="historyrootContextReviewSummary"></p>
+              <p class="hr-review-purpose">This page presents recorded wording, provenance, evidence, and lineage for human review. It does not calculate a truth score or resolve competing claims.</p>
+            </div>
+            <div class="hr-chip-row" id="historyrootContextReviewRecordChips"></div>
+          </div>
+        </header>
+
+        <div class="hr-review-layout">
+          <aside class="hr-review-claim-panel" aria-labelledby="historyroot-context-claims-title">
+            <div class="hr-review-sticky">
+              <p class="hr-kicker">Claims in this record</p>
+              <h2 id="historyroot-context-claims-title">Choose a claim</h2>
+              <label for="historyrootContextClaimFilter">Filter visible claims</label>
+              <input id="historyrootContextClaimFilter" type="search" autocomplete="off" placeholder="Statement, type, or stable ID">
+              <p class="hr-review-count" id="historyrootContextClaimCount"></p>
+              <div class="hr-review-claim-list" id="historyrootContextClaimList"></div>
+              <div class="hr-review-pagination" id="historyrootContextClaimPagination" hidden>
+                <button type="button" class="hr-button-secondary" id="historyrootContextClaimPrevious">Previous</button>
+                <button type="button" class="hr-button-secondary" id="historyrootContextClaimNext">Next</button>
+              </div>
+            </div>
+          </aside>
+
+          <div class="hr-review-detail">
+            <div class="hr-review-switching" id="historyrootContextSwitching" role="status" aria-live="polite" hidden>Loading the selected claim…</div>
+            <section class="hr-record-section hr-review-primary" id="historyrootContextPrimary" tabindex="-1" aria-labelledby="historyroot-context-primary-title"></section>
+            <section class="hr-record-section" id="historyrootContextAccount" aria-labelledby="historyroot-context-account-title"></section>
+            <section class="hr-record-section" id="historyrootContextSources" aria-labelledby="historyroot-context-sources-title"></section>
+            <section class="hr-record-section" id="historyrootContextEvidence" aria-labelledby="historyroot-context-evidence-title"></section>
+            <section class="hr-record-section" id="historyrootContextRelations" aria-labelledby="historyroot-context-relations-title"></section>
+            <section class="hr-record-section" id="historyrootContextVersions" aria-labelledby="historyroot-context-versions-title"></section>
+            <section class="hr-record-section" id="historyrootContextProvenance" aria-labelledby="historyroot-context-provenance-title"></section>
+            <details class="hr-review-diagnostics" id="historyrootContextDiagnostics">
+              <summary>Review diagnostics</summary>
+              <div id="historyrootContextDiagnosticsBody"></div>
+            </details>
+          </div>
+        </div>
+      </article>
+    </main>
+    <script src="assets/js/sourceroot-api.js?v=1"></script>
+    <script src="assets/js/historyroot-api.js?v=1"></script>
+    <script src="assets/js/historyroot-shared.js?v=1"></script>
+    <script src="assets/js/historyroot-context-review.js?v=1"></script>
+  </body>
+</html>

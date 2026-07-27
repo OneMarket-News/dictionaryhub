@@ -6,6 +6,7 @@
     "history-explore-v1.html": "explore",
     "history-timeline-v1.html": "timeline",
     "history-record-v1.html": "record",
+    "history-context-review-v1.html": "context-review",
     "history-sources-v1.html": "sources",
     "history-graph-v1.html": "graph"
   };
@@ -229,6 +230,18 @@
   }
 
   function recordHref(recordOrId, options) {
+    const suppliedReviewHref =
+      typeof recordOrId === "object" &&
+      recordOrId &&
+      recordOrId.metadata &&
+      clean(recordOrId.metadata.reviewUrl);
+    if (
+      /^history-context-review-v1\.html\?[A-Za-z0-9%._~!$&'()*+,;=:@/?-]+$/.test(
+        suppliedReviewHref
+      )
+    ) {
+      return suppliedReviewHref;
+    }
     const id =
       typeof recordOrId === "string"
         ? recordOrId
@@ -237,6 +250,15 @@
     if (id) query.set("id", id);
     if (options && options.from) query.set("from", options.from);
     return `history-record-v1.html?${query.toString()}`;
+  }
+
+  function contextReviewHref(recordId, claimId, versionId, from) {
+    const query = new URLSearchParams();
+    if (recordId) query.set("record", clean(recordId));
+    if (claimId) query.set("claim", clean(claimId));
+    if (versionId) query.set("version", clean(versionId));
+    if (from) query.set("from", clean(from));
+    return `history-context-review-v1.html?${query.toString()}`;
   }
 
   function sourceHref(sourceId) {
@@ -762,6 +784,7 @@
     matchedAlias,
     dedupeRecords,
     recordHref,
+    contextReviewHref,
     sourceHref,
     graphHref,
     timelineHref,

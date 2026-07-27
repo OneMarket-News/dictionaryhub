@@ -3,16 +3,16 @@
 ## Record Identity
 
 - Baseline record: SourceRoot Chunk 0 — Codex Stage Contract and Baseline Harness v1
-- Current-state record: SourceRoot Chunk 4 - Contextual Assertions, Evidence, and Versioning v1
-- Previous installed stage: SourceRoot Chunk 3 - Contextual Identity and Time Refinement v1
-- Earlier installed stages: SourceRoot Chunk 2 - Shared Frontend API Layer, Logging, and Observability v1; SourceRoot Chunk 1 - Registry and API Contract Standardization v1
+- Current-state record: SourceRoot Chunk 5 - Context API and Review Experience v1
+- Previous installed stage: SourceRoot Chunk 4 - Contextual Assertions, Evidence, and Versioning v1
+- Earlier installed stages: SourceRoot Chunk 3 - Contextual Identity and Time Refinement v1; SourceRoot Chunk 2 - Shared Frontend API Layer, Logging, and Observability v1; SourceRoot Chunk 1 - Registry and API Contract Standardization v1
 - Current-state update date: 2026-07-26
 - Repository inspected: `C:\Users\Josh\Documents\GitHub\dictionaryhub`
 - Branch at inspection: `release/historyroot-alpha-integration-v1`
-- Starting commit for the installed stage: `dfa306c46cdd5ec03f929b84b5ad6042de7d79e7`
-- Starting tag for the installed stage: `sourceroot-contextual-identity-time-refinement-v1`
+- Starting commit for the installed stage: `d4d7f7f49afe808fb9bf554c579800e254a67b99`
+- Starting tag for the installed stage: `sourceroot-contextual-assertions-evidence-versioning-v1`
 
-The repository at the branch and starting commit above was inspected directly, then SourceRoot Chunk 4 was installed and verified from complete repository files. Immutable Chunk 0-3 checks use the exact ZIP bytes in `C:\Users\Josh\Documents\SourceRoot-Releases`; no immutable package hash is reconstructed from Git.
+The repository at the branch and starting commit above was inspected directly, then SourceRoot Chunk 5 was installed and verified from complete repository files. Immutable Chunk 0-4 checks use the exact ZIP bytes in `C:\Users\Josh\Documents\SourceRoot-Releases`; no immutable package hash is reconstructed from Git.
 
 ## Repository Structure
 
@@ -167,6 +167,16 @@ SourceRoot Chunk 4 further refines the contextual foundation without changing le
 
 Claim and evidence detail responses expose normalized extensions while retaining legacy fields. Attribution and evidentiary support are never inferred, contradiction is never resolved automatically, and neither version history nor a current pointer is fabricated for legacy records.
 
+SourceRoot Chunk 5 composes those accepted normalized records into a public read-only review projection:
+
+- `GET /api/v1/context/review/records/:recordId` returns a visible record and deterministic, paginated contextual claim summaries;
+- `GET /api/v1/context/review/claims/:claimId` returns bounded current/historical version state, reporting account, explicit attributions, evidence roles and locators, related claims, public sources, field provenance, exact counts, and partial-data diagnostics;
+- draft versions, withdrawn records, and nonpublic source payloads remain hidden;
+- search retains its accepted response shape while adding stable claim, matched-version, parent-record, current-version, match-state, and review-link metadata; and
+- HistoryRoot provides a responsive, accessible record/claim/version review page through the shared SourceRoot API transport.
+
+The review surface has no public write operation, editor, moderation control, truth scoring, automatic ranking/resolution, inference, or external retrieval. Legacy claims and evidence remain reviewable without fabricated versions or normalized evidence roles.
+
 ### DictionaryRoot, Identity, and Governance Routes
 
 The backend also currently contains:
@@ -276,7 +286,7 @@ On the four core pages, scripts load in this order: shared request transport, AP
 
 ### Backend Tests
 
-The repository has 17 `backend/test/*.test.ts` files. The installed full suite contains 187 passing tests: the 168-test Chunk 3 baseline plus 19 focused Chunk 4 tests. It includes 11 focused Registry API Contract tests and 10 focused correlation/logging/observer tests, covering:
+The repository has 18 `backend/test/*.test.ts` files. The installed full suite contains 211 passing tests: the accepted 187-test Chunk 4 baseline plus 24 focused Chunk 5 tests. It includes 11 focused Registry API Contract tests and 10 focused correlation/logging/observer tests, covering:
 
 - HTTP health, validation, malformed JSON, and payload limits.
 - Bundle schema and validation.
@@ -292,20 +302,21 @@ The repository has 17 `backend/test/*.test.ts` files. The installed full suite c
 - Safe and generated correlation IDs, response/error/log propagation, structured success and failure logs, redaction, validation diagnostics, deterministic observer grouping, data-quality findings, clean records, and input non-mutation.
 - Contextual alias and external-identifier persistence, semantic and historical time including BCE/CE and unconverted calendars, proposal provenance, relationship validity, field provenance, identity ambiguity without merge, search compatibility, transaction rollback, governed snapshots, and observer refinement.
 - Contextual claim attribution, explicit competing and contradictory claims, evidence links, exact locators, immutable claim/evidence versions, deterministic hashes, current pointers, retained history, governed append/rollback, historical search, transactional conflicts, and explicit test-only cleanup.
+- Composed record/claim review, current and historical identity, legacy projections, explicit attribution/evidence/relationship grouping, version-targeted evidence, locators, correction/retraction/supersession lineage, field provenance, historical search deep links, bounded pagination, accepted errors/request IDs, read-only GET behavior, visibility, partial child failure, and existing endpoint/search compatibility.
 
-The frontend Node harness contains 10 passing cases for GET/query/JSON/empty responses, API and malformed-response errors, network/offline/timeout/abort classification, correlation propagation, DictionaryRoot and HistoryRoot return compatibility, legacy method presence, HTML load order, and SourceRoot registry wrapper delegation.
+Frontend Node verification contains the accepted 10-case observability harness plus 15 focused review cases. It covers shared API use, absence of fallback data, record/claim/version URL state, current/historical distinctions, provenance versus evidence, explicit evidence grouping, retained retraction/supersession lineage, legacy empty states, loading/empty/offline/not-found/malformed states, safe external protocols, safe DOM rendering, stale-request protection, accessible responsive landmarks, HistoryRoot integration, and preserved navigation/branding.
 
 Most persistence and governance integration tests require a configured PostgreSQL test database and reset it by truncating test tables. They must never be pointed at a non-test database.
 
 ### PowerShell and JavaScript Verifiers
 
-Before Chunk 0, the repository contained 34 root `VERIFY-*` scripts. They cover DictionaryRoot customer foundation, live connection, home, Concept, Sphere, Sources, navigation, coverage, editorial, history, governance, responsiveness, HistoryRoot, and contextual knowledge. The machine-readable baseline manifest now also lists the Chunk 0, Chunk 1, Chunk 2, Chunk 3, and Chunk 4 stage verifiers.
+Before Chunk 0, the repository contained 34 root `VERIFY-*` scripts. They cover DictionaryRoot customer foundation, live connection, home, Concept, Sphere, Sources, navigation, coverage, editorial, history, governance, responsiveness, HistoryRoot, and contextual knowledge. The machine-readable baseline manifest now also lists the Chunk 0, Chunk 1, Chunk 2, Chunk 3, Chunk 4, and Chunk 5 stage verifiers.
 
 Several PowerShell verifiers provide static file and marker checks plus optional or required live API calls. The `.mjs` responsive verifiers locate a Chromium-family browser, host pages locally, inspect responsive behavior, and can create screenshots. `VERIFY-DICTIONARYROOT-TYPESCRIPT-SYNTAX.mjs` performs TypeScript parse checks when TypeScript is installed.
 
 ### Installer Checks
 
-The Chunk 4 installer validates repository and Chunk 0-3 markers, proves the database name is exactly `sourceroot_test`, validates package identity, safe payload paths, physical completeness, and every payload hash, creates a timestamped path-preserving backup, records pre-existing added destinations, copies complete files, verifies installed hashes, writes rollback data, and runs the complete stage verifier. Its successful installer-test backup is `backups/sourceroot-contextual-assertions-evidence-versioning-v1-20260726-123751-553/`.
+The Chunk 5 installer validates repository and Chunk 0-4 markers, proves the database name is exactly `sourceroot_test`, validates package identity, source/destination separation, safe payload paths, physical completeness, and every payload hash, creates a timestamped path-preserving backup, records pre-existing added destinations, copies only complete manifest-declared files, verifies installed hashes, writes rollback data, and runs the complete stage verifier. A controlled package-copy test created `backups/sourceroot-context-api-review-experience-v1-20260726-145703-231` and its path-preserving `installation-record.json`; the successful final installer-launched verifier and its later backup are reported externally so package bytes can remain immutable.
 
 ### Dependency Classification
 
@@ -336,6 +347,8 @@ The Chunk 4 installer validates repository and Chunk 0-3 markers, proves the dat
 15. Contextual detail projections are bounded at 10,000 child/history rows; paginated collections provide the complete public history path.
 16. Import predecessor/version references resolve inside the supplied bundle, while governed append uses persisted current state.
 17. No truth engine, semantic inference, automatic contradiction resolution, or canonical-claim selection is present.
+18. The composed review payload is deliberately bounded: section pagination is capped at 50, public sources at 200, and per-evidence locator/provenance previews at 20.
+19. A missing or hidden requested historical version falls back to the visible current projection only after showing an explicit missing-version state.
 
 ## Prompt-to-Repository Discrepancy
 
@@ -346,12 +359,12 @@ The requested Chunk 0 exclusions prohibit implementing contextual entities, auth
 ```text
 Core Phases 1–9: completed according to the project roadmap
 Phase 10: next implementation phase
-Current Codex package: Chunk 4 - Contextual Assertions, Evidence, and Versioning v1
-Next Codex package after acceptance: SourceRoot Chunk 5 - Context API and Review Experience
+Current Codex package: Chunk 5 - Context API and Review Experience v1
+Next Codex package after acceptance: not precisely named in the accepted roadmap
 ```
 
 This roadmap status is a project-management classification, not an independent production-security audit. It also does not erase the factual discrepancy that later-scope implementation files are already present in the current repository.
 
 ## Next Dependency
 
-SourceRoot Chunk 5 - Context API and Review Experience
+The accepted roadmap inspected for Chunk 5 does not precisely name or scope the following dependency. The next dependency remains to be named.
