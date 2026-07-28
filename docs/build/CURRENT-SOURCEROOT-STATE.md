@@ -422,6 +422,19 @@ The original Chunk 7 golden workspace and output remain byte-identical. The
 existing importer, database schema, API routes, customer files, and accepted
 customer data state are unchanged.
 
+## HistoryRoot Corpus Expansion and Quality Review
+
+Chunk 8 uses preparation schema `1.1.0` and the unchanged v1.1 engine to
+produce a deterministic reviewed expansion from accepted local material. The
+reviewed corpus contains 116 records, 49 claims, 20 sources, 18 reporting
+accounts, 49 structured locators, 84 field-provenance records, and the six
+contextual collection counts 49/12/10/18/18/6.
+
+The deterministic review reports zero blockers, five disclosed review
+findings, and two observations. It assigns no truth, reliability, credibility,
+confidence, or composite quality score. The accepted importer, migrations,
+API routes, frontend, and v1.1 workflow implementation remain unchanged.
+
 ## Next Dependency
 
-HistoryRoot corpus expansion and quality review.
+Broader regional corpus expansion and product adoption.

@@ -174,6 +174,7 @@
                             "VERIFY-SOURCEROOT-HISTORYROOT-FOUNDATIONAL-CORPUS.ps1",
                             "VERIFY-SOURCEROOT-REPEATABLE-SOURCE-PREPARATION-WORKFLOW.ps1",
                             "VERIFY-SOURCEROOT-REPEATABLE-SOURCE-PREPARATION-WORKFLOW-V1-1.ps1",
+                            "VERIFY-SOURCEROOT-HISTORYROOT-CORPUS-EXPANSION-QUALITY.ps1",
                             "VERIFY-SOURCEROOT-REGISTRY-API-CONTRACT.ps1"
                         ],
     "known_installers":  [
@@ -186,6 +187,7 @@
                              "INSTALL-SOURCEROOT-HISTORYROOT-FOUNDATIONAL-CORPUS.ps1",
                              "INSTALL-SOURCEROOT-REPEATABLE-SOURCE-PREPARATION-WORKFLOW.ps1",
                              "INSTALL-SOURCEROOT-REPEATABLE-SOURCE-PREPARATION-WORKFLOW-V1-1.ps1",
+                             "INSTALL-SOURCEROOT-HISTORYROOT-CORPUS-EXPANSION-QUALITY.ps1",
                              "INSTALL-SOURCEROOT-REGISTRY-API-CONTRACT.ps1"
                          ],
     "active_stage":  {

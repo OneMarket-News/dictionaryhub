@@ -1,0 +1,337 @@
+{
+  "corpusId": "historyroot-corpus-expansion-quality-v1",
+  "workspaceSha256": "5670D0D88A1BCBE7C1B2A20FC3FAE4D68F8A77C25A1E54ADAA8AC22BE7A72837",
+  "bundleSha256": "532AA4030A210F5C4EBEF8A5F2794496C10D2F0A5F72447D2BA778D5D1A55A09",
+  "reviewedObjectCounts": {
+    "sources": 20,
+    "accounts": 18,
+    "records": 116,
+    "claims": 49,
+    "claimAttributions": 49,
+    "interpretations": 12,
+    "perspectives": 10,
+    "perspectiveLinks": 18,
+    "causalLinks": 18,
+    "culturalMemories": 6,
+    "historicalNames": 15,
+    "dateExpressions": 46,
+    "relationships": 73,
+    "locators": 49,
+    "evidence": 49,
+    "evidenceLinks": 25,
+    "claimRelations": 8,
+    "fieldProvenance": 84
+  },
+  "deltaFromSelectedChunk6": {
+    "records": 108,
+    "sources": 10,
+    "accounts": 10,
+    "claims": 24,
+    "relationships": 48,
+    "historicalNames": 0,
+    "dateExpressions": 34,
+    "locators": 24,
+    "evidenceLinks": 0,
+    "claimRelations": 0,
+    "fieldProvenance": 24
+  },
+  "newlyPromotedCounts": {
+    "sources": 10,
+    "accounts": 10,
+    "records": 108,
+    "claims": 24,
+    "claimAttributions": 24,
+    "interpretations": 0,
+    "perspectives": 0,
+    "perspectiveLinks": 0,
+    "causalLinks": 0,
+    "culturalMemories": 0,
+    "historicalNames": 0,
+    "dateExpressions": 34,
+    "relationships": 48,
+    "locators": 24,
+    "evidence": 0,
+    "evidenceLinks": 0,
+    "claimRelations": 0,
+    "fieldProvenance": 24
+  },
+  "dependencyOnlyCount": 198,
+  "omittedCandidateCount": 0,
+  "rightsSummary": {
+    "metadata_and_link_only": 20
+  },
+  "preparationStatusSummary": {
+    "approved": 665
+  },
+  "sourceAccountDiversity": {
+    "sources": 20,
+    "reportingAccounts": 18
+  },
+  "locatorCoverage": {
+    "claims": 49,
+    "claimsWithStructuredLocator": 49,
+    "claimsMissingStructuredLocator": []
+  },
+  "provenanceCoverage": {
+    "records": 116,
+    "recordsWithFieldProvenance": 8,
+    "claims": 49,
+    "claimsWithFieldProvenance": 49
+  },
+  "evidenceRoleDistribution": {
+    "contextualizes": 2,
+    "neutral_or_background": 1,
+    "qualifies": 6,
+    "supports": 16
+  },
+  "contextualCollectionCoverage": {
+    "claimAttributions": 49,
+    "interpretations": 12,
+    "perspectives": 10,
+    "perspectiveLinks": 18,
+    "causalLinks": 18,
+    "culturalMemories": 6
+  },
+  "sourceLineageConcentration": [
+    {
+      "sourceId": "historyroot-plymouth-source-nmai-timeline",
+      "claimCount": 18
+    },
+    {
+      "sourceId": "historyroot-plymouth-source-bradford-eada",
+      "claimCount": 10
+    },
+    {
+      "sourceId": "historyroot-plymouth-source-compact-loc-law-blog",
+      "claimCount": 6
+    },
+    {
+      "sourceId": "historyroot-plymouth-source-good-newes-gutenberg",
+      "claimCount": 5
+    },
+    {
+      "sourceId": "historyroot-plymouth-source-compact-loc-exhibit",
+      "claimCount": 3
+    },
+    {
+      "sourceId": "historyroot-plymouth-source-mashpee-culture",
+      "claimCount": 3
+    },
+    {
+      "sourceId": "historyroot-plymouth-source-nps-king-philips-war",
+      "claimCount": 3
+    },
+    {
+      "sourceId": "historyroot-plymouth-source-plimoth-thanksgiving-unit",
+      "claimCount": 3
+    },
+    {
+      "sourceId": "historyroot-plymouth-source-aquinnah-ancient-ways",
+      "claimCount": 2
+    },
+    {
+      "sourceId": "historyroot-plymouth-source-cdc-epidemic-study",
+      "claimCount": 2
+    },
+    {
+      "sourceId": "historyroot-plymouth-source-charter-1691-avalon",
+      "claimCount": 2
+    },
+    {
+      "sourceId": "historyroot-plymouth-source-church-war-narrative",
+      "claimCount": 2
+    },
+    {
+      "sourceId": "historyroot-plymouth-source-massachusetts-archives-overview",
+      "claimCount": 2
+    },
+    {
+      "sourceId": "historyroot-plymouth-source-massachusetts-plymouth-records",
+      "claimCount": 2
+    },
+    {
+      "sourceId": "historyroot-plymouth-source-mourts-relation-loc",
+      "claimCount": 2
+    },
+    {
+      "sourceId": "historyroot-plymouth-source-nmai-treaty-harvest",
+      "claimCount": 2
+    },
+    {
+      "sourceId": "historyroot-plymouth-source-nps-swansea-war-start",
+      "claimCount": 2
+    },
+    {
+      "sourceId": "historyroot-plymouth-source-pilgrim-hall-rock",
+      "claimCount": 2
+    },
+    {
+      "sourceId": "historyroot-plymouth-source-uaine-national-day-mourning",
+      "claimCount": 1
+    }
+  ],
+  "orphanCounts": {
+    "records": 13,
+    "sources": 0,
+    "accounts": 2
+  },
+  "duplicateCandidateCounts": {
+    "canonicalIds": 0,
+    "normalizedClaimStatements": 0
+  },
+  "versionHistoryReview": {
+    "claimVersions": 0,
+    "evidenceVersions": 0,
+    "artificialVersions": 0
+  },
+  "findingCounts": {
+    "blocker": 0,
+    "review": 5,
+    "observation": 2
+  },
+  "findings": [
+    {
+      "findingId": "evidence-role-separation-63179da831c1",
+      "ruleId": "EVIDENCE-ROLE-SEPARATION",
+      "level": "observation",
+      "objectIds": [],
+      "explanation": "6 accepted evidence links retain qualifying, disputing, or contradicting roles distinct from support."
+    },
+    {
+      "findingId": "omission-documentation-2b7c28ed8b50",
+      "ruleId": "OMISSION-DOCUMENTATION",
+      "level": "observation",
+      "objectIds": [],
+      "explanation": "Every accepted v1.1 candidate was selected; there are no deliberately omitted candidates."
+    },
+    {
+      "findingId": "no-separate-evidence-link-81486b8d422b",
+      "ruleId": "NO-SEPARATE-EVIDENCE-LINK",
+      "level": "review",
+      "objectIds": [
+        "historyroot-plymouth-claim-awashonks-diplomacy",
+        "historyroot-plymouth-claim-charter-annexed-plymouth",
+        "historyroot-plymouth-claim-charter-implementation-1692",
+        "historyroot-plymouth-claim-compact-memory-development",
+        "historyroot-plymouth-claim-english-patent-not-native-consent",
+        "historyroot-plymouth-claim-epenow-escape",
+        "historyroot-plymouth-claim-great-swamp-escalation",
+        "historyroot-plymouth-claim-land-pressure",
+        "historyroot-plymouth-claim-merrymount-contested",
+        "historyroot-plymouth-claim-merrymount-suppressed",
+        "historyroot-plymouth-claim-metacom-alliance-building",
+        "historyroot-plymouth-claim-national-day-mourning-origin",
+        "historyroot-plymouth-claim-plymouth-records-scope",
+        "historyroot-plymouth-claim-rock-absent-early-accounts",
+        "historyroot-plymouth-claim-rock-later-tradition",
+        "historyroot-plymouth-claim-thanksgiving-later-holiday",
+        "historyroot-plymouth-claim-wampanoag-continuity",
+        "historyroot-plymouth-claim-wamsutta-death-suspicion",
+        "historyroot-plymouth-claim-wamsutta-succession",
+        "historyroot-plymouth-claim-war-multiple-causes",
+        "historyroot-plymouth-claim-war-native-enslavement",
+        "historyroot-plymouth-claim-war-not-simple-binary",
+        "historyroot-plymouth-claim-war-outbreak-uncertain-command",
+        "historyroot-plymouth-claim-weetamoo-leadership"
+      ],
+      "explanation": "These claims retain accepted reporting provenance and locators but have no separate role-classified evidence link.",
+      "recommendedHumanAction": "Review qualifying, disputing, or supporting evidence without converting provenance into proof."
+    },
+    {
+      "findingId": "orphan-account-9fa1fd2cdd59",
+      "ruleId": "ORPHAN-ACCOUNT",
+      "level": "review",
+      "objectIds": [
+        "historyroot-plymouth-account-mashpee",
+        "historyroot-plymouth-account-mourts"
+      ],
+      "explanation": "2 accepted reporting accounts have no inbound reviewed corpus reference.",
+      "recommendedHumanAction": "Retain as a disclosed accepted-local-material limitation or omit in a future reviewed selection."
+    },
+    {
+      "findingId": "orphan-record-d349dec4e511",
+      "ruleId": "ORPHAN-RECORD",
+      "level": "review",
+      "objectIds": [
+        "historyroot-plymouth-person-john-sassamon",
+        "historyroot-plymouth-place-cape-cod",
+        "historyroot-plymouth-place-england",
+        "historyroot-plymouth-place-great-swamp",
+        "historyroot-plymouth-place-london",
+        "historyroot-plymouth-place-manomet",
+        "historyroot-plymouth-place-mount-hope",
+        "historyroot-plymouth-place-narragansett-bay",
+        "historyroot-plymouth-place-nemasket",
+        "historyroot-plymouth-place-newfoundland",
+        "historyroot-plymouth-place-plymouth-harbor",
+        "historyroot-plymouth-place-spain",
+        "historyroot-plymouth-place-swansea"
+      ],
+      "explanation": "13 accepted records have no inbound reviewed corpus reference.",
+      "recommendedHumanAction": "Retain as a disclosed accepted-local-material limitation or omit in a future reviewed selection."
+    },
+    {
+      "findingId": "single-reporting-lineage-49fe862d2357",
+      "ruleId": "SINGLE-REPORTING-LINEAGE",
+      "level": "review",
+      "objectIds": [
+        "historyroot-plymouth-claim-awashonks-diplomacy",
+        "historyroot-plymouth-claim-charter-implementation-1692",
+        "historyroot-plymouth-claim-compact-memory-development",
+        "historyroot-plymouth-claim-compact-signers-scope",
+        "historyroot-plymouth-claim-compact-three-witnesses",
+        "historyroot-plymouth-claim-epenow-escape",
+        "historyroot-plymouth-claim-epidemic-diagnosis-uncertain",
+        "historyroot-plymouth-claim-first-winter-mortality",
+        "historyroot-plymouth-claim-great-swamp-escalation",
+        "historyroot-plymouth-claim-harvest-evidence-limits",
+        "historyroot-plymouth-claim-hunt-kidnappings",
+        "historyroot-plymouth-claim-land-pressure",
+        "historyroot-plymouth-claim-merrymount-contested",
+        "historyroot-plymouth-claim-merrymount-suppressed",
+        "historyroot-plymouth-claim-metacom-alliance-building",
+        "historyroot-plymouth-claim-ousamequin-strategy",
+        "historyroot-plymouth-claim-plymouth-records-scope",
+        "historyroot-plymouth-claim-robinson-critique",
+        "historyroot-plymouth-claim-rock-absent-early-accounts",
+        "historyroot-plymouth-claim-rock-later-tradition",
+        "historyroot-plymouth-claim-samoset-contact",
+        "historyroot-plymouth-claim-thanksgiving-later-holiday",
+        "historyroot-plymouth-claim-tisquantum-political-agency",
+        "historyroot-plymouth-claim-tisquantum-travels-return",
+        "historyroot-plymouth-claim-wampanoag-deep-history",
+        "historyroot-plymouth-claim-wamsutta-death-suspicion",
+        "historyroot-plymouth-claim-wamsutta-succession",
+        "historyroot-plymouth-claim-war-native-enslavement",
+        "historyroot-plymouth-claim-war-outbreak-uncertain-command",
+        "historyroot-plymouth-claim-weetamoo-leadership",
+        "historyroot-plymouth-claim-wessagusset-aftermath-attributed",
+        "historyroot-plymouth-claim-wessagusset-head-display",
+        "historyroot-plymouth-claim-wessagusset-killings"
+      ],
+      "explanation": "These accepted claims currently have one reporting source lineage; no truth judgment is implied.",
+      "recommendedHumanAction": "Seek independent source categories during broader regional expansion."
+    },
+    {
+      "findingId": "source-lineage-concentration-7de54c15ebcb",
+      "ruleId": "SOURCE-LINEAGE-CONCENTRATION",
+      "level": "review",
+      "objectIds": [
+        "historyroot-plymouth-source-nmai-timeline"
+      ],
+      "explanation": "One or more accepted sources report at least one quarter of reviewed claims; this is a concentration observation, not a credibility judgment.",
+      "recommendedHumanAction": "Prioritize genuinely independent accepted source lineages in future research."
+    }
+  ],
+  "knownLimitations": [
+    "The corpus remains bounded to already accepted local Patuxet, Plymouth, Pokanoket, and later regional material.",
+    "Reporting-source concentration and single-lineage claims remain disclosed review needs rather than credibility or truth judgments.",
+    "Newly structured locator and provenance records preserve accepted strings and source paths; no external locator validation occurred.",
+    "No legal or rights certification was performed."
+  ],
+  "futureResearchCategories": [
+    "Independent Indigenous-authored and tribal-institutional source lineages",
+    "Additional archival editions with exact page, folio, or line locators",
+    "Broader regional corpus expansion and product adoption"
+  ]
+}

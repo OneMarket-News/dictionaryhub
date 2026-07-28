@@ -39,6 +39,10 @@
     "prepare:source-workspace": "node --import ./scripts/register-tsx.mjs src/scripts/prepare-sourceroot-workspace.ts",
     "test:source-preparation": "node --env-file=.env.test --import ./scripts/register-tsx.mjs --test --test-concurrency=1 test/source-preparation-workflow.test.ts",
     "test:source-preparation:lossless": "node --env-file=.env.test --import ./scripts/register-tsx.mjs --test --test-concurrency=1 test/source-preparation-lossless-context.test.ts",
+    "historyroot:expansion:initialize": "node --import ./scripts/register-tsx.mjs src/scripts/generate-historyroot-corpus-expansion.ts --initialize-workspace",
+    "historyroot:expansion:generate": "node --import ./scripts/register-tsx.mjs src/scripts/generate-historyroot-corpus-expansion.ts",
+    "historyroot:expansion:import": "node --env-file=.env.test --import ./scripts/register-tsx.mjs src/scripts/import-historyroot-corpus-expansion.ts",
+    "test:historyroot:expansion": "node --env-file=.env.test --import ./scripts/register-tsx.mjs --test --test-concurrency=1 test/historyroot-corpus-expansion-quality.test.ts",
     "verify:fresh-install": "node scripts/verify-fresh-install.mjs"
   },
   "dependencies": {

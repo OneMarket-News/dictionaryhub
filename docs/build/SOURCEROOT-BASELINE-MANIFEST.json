@@ -373,6 +373,32 @@
     "browserChecksPerformed": false,
     "successfulInstallerBackup": null
   },
-  "nextStageDependency": "HistoryRoot corpus expansion and quality review.",
+  "historyrootCorpusExpansionQuality": {
+    "migration": null,
+    "workspaceSchemaVersion": "1.1.0",
+    "records": 116,
+    "claims": 49,
+    "sources": 20,
+    "reportingAccounts": 18,
+    "structuredLocators": 49,
+    "fieldProvenance": 84,
+    "claimAttributions": 49,
+    "interpretations": 12,
+    "perspectives": 10,
+    "perspectiveLinks": 18,
+    "causalLinks": 18,
+    "culturalMemories": 6,
+    "blockerFindings": 0,
+    "reviewFindings": 5,
+    "observations": 2,
+    "focusedTests": 73,
+    "testDatabase": "sourceroot_test",
+    "externalResearch": false,
+    "importerChanged": false,
+    "migrationAdded": false,
+    "apiRoutesChanged": false,
+    "frontendChanged": false
+  },
+  "nextStageDependency": "Broader regional corpus expansion and product adoption.",
   "secretHandling": "No secrets, passwords, tokens, connection strings, or private environment values are stored in this manifest."
 }
