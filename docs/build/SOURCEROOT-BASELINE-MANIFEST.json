@@ -7,7 +7,7 @@
     "branch": "release/historyroot-alpha-integration-v1",
     "commit": "5549dff82fca447d8267d31b111bdca2cb4eeebd"
   },
-  "currentInstalledStage": "SourceRoot Chunk 7 - Repeatable Source Preparation Workflow v1",
+  "currentInstalledStage": "SourceRoot Repeatable Source Preparation Workflow v1.1 - Lossless Context Collection Support",
   "backendEntryPoints": [
     "backend/src/server.ts",
     "backend/src/app.ts",
@@ -352,6 +352,27 @@
     "browserChecksPerformed": false,
     "successfulInstallerBackup": null
   },
-  "nextStageDependency": "Corpus expansion and preparation-workflow adoption.",
+  "repeatableSourcePreparationWorkflowV11": {
+    "migration": null,
+    "workspaceSchemaVersions": ["1.0.0", "1.1.0"],
+    "losslessClaimAttributions": 25,
+    "losslessInterpretations": 12,
+    "losslessPerspectives": 10,
+    "losslessPerspectiveLinks": 18,
+    "losslessCausalLinks": 18,
+    "losslessCulturalMemories": 6,
+    "maintenanceFocusedTests": 50,
+    "acceptedBundleLength": 493760,
+    "acceptedBundleSha256": "d0a69e3501d8419a6b4eda77515a7ae290c1ed2314f64074de46931857492b6f",
+    "exactAcceptedBundleEquality": true,
+    "testDatabase": "sourceroot_test",
+    "importerChanged": false,
+    "migrationAdded": false,
+    "frontendChanged": false,
+    "customerDataChanged": false,
+    "browserChecksPerformed": false,
+    "successfulInstallerBackup": null
+  },
+  "nextStageDependency": "HistoryRoot corpus expansion and quality review.",
   "secretHandling": "No secrets, passwords, tokens, connection strings, or private environment values are stored in this manifest."
 }

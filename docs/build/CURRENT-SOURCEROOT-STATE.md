@@ -3,7 +3,8 @@
 ## Record Identity
 
 - Baseline record: SourceRoot Chunk 0 — Codex Stage Contract and Baseline Harness v1
-- Current-state record: SourceRoot Chunk 6 - HistoryRoot Foundational Corpus v1
+- Current-state record: SourceRoot Repeatable Source Preparation Workflow v1.1
+  - Lossless Context Collection Support
 - Previous installed stage: SourceRoot Chunk 5 - Context API and Review Experience v1
 - Earlier installed stages: SourceRoot Chunk 4 - Contextual Assertions, Evidence, and Versioning v1; SourceRoot Chunk 3 - Contextual Identity and Time Refinement v1; SourceRoot Chunk 2 - Shared Frontend API Layer, Logging, and Observability v1; SourceRoot Chunk 1 - Registry and API Contract Standardization v1
 - Current-state update date: 2026-07-26
@@ -401,11 +402,26 @@ The requested Chunk 0 exclusions prohibit implementing contextual entities, auth
 Core Phases 1–9: completed according to the project roadmap
 Phase 10: next implementation phase
 Current Codex package: Chunk 7 - Repeatable Source Preparation Workflow v1
-Next dependency: Corpus expansion and preparation-workflow adoption
+Current maintenance release: Repeatable Source Preparation Workflow v1.1 -
+Lossless Context Collection Support
+Next dependency: HistoryRoot corpus expansion and quality review
 ```
 
 This roadmap status is a project-management classification, not an independent production-security audit. It also does not erase the factual discrepancy that later-scope implementation files are already present in the current repository.
 
+## Lossless Context Collection Maintenance
+
+Preparation workspace schema `1.1.0` extends the accepted schema `1.0.0`
+without changing its behavior. It explicitly prepares claim attributions,
+interpretations, perspectives, perspective links, causal links, and cultural
+memories. The accepted Chunk 6 replacement bundle now regenerates exactly at
+493,760 bytes with unchanged SHA-256
+`D0A69E3501D8419A6B4EDA77515A7AE290C1ED2314F64074DE46931857492B6F`.
+
+The original Chunk 7 golden workspace and output remain byte-identical. The
+existing importer, database schema, API routes, customer files, and accepted
+customer data state are unchanged.
+
 ## Next Dependency
 
-Corpus expansion and preparation-workflow adoption.
+HistoryRoot corpus expansion and quality review.

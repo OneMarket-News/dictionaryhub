@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import {
+  LOSSLESS_PREPARATION_SCHEMA_VERSION,
   PREPARATION_SCHEMA_VERSION,
   contentUseModes,
   preparationStatuses,
@@ -78,8 +79,32 @@ const preparedSource = preparedItem.extend({
   }).strict(),
 });
 
-export const sourcePreparationWorkspaceSchema = z.object({
-  schemaVersion: z.literal(PREPARATION_SCHEMA_VERSION),
+const preparedLinkItem = z.object({
+  preparationStatus: z.enum(preparationStatuses),
+  reviewerNotes: nonEmpty.optional(),
+  unresolvedQuestions: z.array(nonEmpty).optional(),
+  omissionReason: nonEmpty.optional(),
+  approvalRecord: approvalRecord.optional(),
+  preparationId: nonEmpty,
+  object: z.record(z.string(), z.unknown()),
+}).strict().superRefine((value, context) => {
+  if (value.preparationStatus === "omitted" && !value.omissionReason) {
+    context.addIssue({
+      code: "custom",
+      path: ["omissionReason"],
+      message: "Omitted objects require a nonempty omission reason.",
+    });
+  }
+  if (value.preparationStatus === "approved" && !value.approvalRecord) {
+    context.addIssue({
+      code: "custom",
+      path: ["approvalRecord"],
+      message: "Approved objects require an approval record.",
+    });
+  }
+});
+
+const workspaceBaseShape = {
   workspaceId: nonEmpty,
   title: nonEmpty,
   description: nonEmpty,
@@ -110,7 +135,39 @@ export const sourcePreparationWorkspaceSchema = z.object({
     approvedAt: z.iso.datetime({ offset: true }).optional(),
     note: nonEmpty.optional(),
   }).strict(),
+};
+
+const sourcePreparationWorkspaceV1Schema = z.object({
+  schemaVersion: z.literal(PREPARATION_SCHEMA_VERSION),
+  ...workspaceBaseShape,
 }).strict();
+
+const sourcePreparationWorkspaceV1_1Schema = z.object({
+  schemaVersion: z.literal(LOSSLESS_PREPARATION_SCHEMA_VERSION),
+  ...workspaceBaseShape,
+  claimAttributions: z.array(preparedItem),
+  interpretations: z.array(preparedItem),
+  perspectives: z.array(preparedItem),
+  perspectiveLinks: z.array(preparedLinkItem),
+  causalLinks: z.array(preparedItem),
+  culturalMemories: z.array(preparedItem),
+  bundleFields: z.object({
+    bundleType: nonEmpty,
+    nodes: z.array(z.record(z.string(), z.unknown())),
+    assertions: z.array(z.record(z.string(), z.unknown())),
+    edges: z.array(z.record(z.string(), z.unknown())),
+    revisions: z.array(z.record(z.string(), z.unknown())),
+    extensions: z.record(z.string(), z.unknown()).optional(),
+  }).strict(),
+}).strict();
+
+export const sourcePreparationWorkspaceSchema = z.discriminatedUnion(
+  "schemaVersion",
+  [
+    sourcePreparationWorkspaceV1Schema,
+    sourcePreparationWorkspaceV1_1Schema,
+  ],
+);
 
 export function parseSourcePreparationWorkspace(
   input: unknown,

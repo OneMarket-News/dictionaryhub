@@ -1,6 +1,11 @@
 import type { SourceRootBundle, ValidationIssue } from "../types.js";
 
 export const PREPARATION_SCHEMA_VERSION = "1.0.0" as const;
+export const LOSSLESS_PREPARATION_SCHEMA_VERSION = "1.1.0" as const;
+export const preparationSchemaVersions = [
+  PREPARATION_SCHEMA_VERSION,
+  LOSSLESS_PREPARATION_SCHEMA_VERSION,
+] as const;
 export const preparationStatuses = [
   "draft",
   "needs_review",
@@ -42,6 +47,12 @@ export interface PreparedItem {
   object: Record<string, unknown>;
 }
 
+export interface PreparedLinkItem
+  extends Omit<PreparedItem, "object"> {
+  preparationId: string;
+  object: Record<string, unknown>;
+}
+
 export interface PreparedSource extends PreparedItem {
   rightsReview: {
     classification: RightsClassification;
@@ -78,8 +89,7 @@ export interface PreparedSource extends PreparedItem {
   };
 }
 
-export interface SourcePreparationWorkspace {
-  schemaVersion: typeof PREPARATION_SCHEMA_VERSION;
+interface SourcePreparationWorkspaceBase {
   workspaceId: string;
   title: string;
   description: string;
@@ -112,6 +122,34 @@ export interface SourcePreparationWorkspace {
   };
 }
 
+export interface SourcePreparationWorkspaceV1
+  extends SourcePreparationWorkspaceBase {
+  schemaVersion: typeof PREPARATION_SCHEMA_VERSION;
+}
+
+export interface SourcePreparationWorkspaceV1_1
+  extends SourcePreparationWorkspaceBase {
+  schemaVersion: typeof LOSSLESS_PREPARATION_SCHEMA_VERSION;
+  claimAttributions: PreparedItem[];
+  interpretations: PreparedItem[];
+  perspectives: PreparedItem[];
+  perspectiveLinks: PreparedLinkItem[];
+  causalLinks: PreparedItem[];
+  culturalMemories: PreparedItem[];
+  bundleFields: {
+    bundleType: string;
+    nodes: Record<string, unknown>[];
+    assertions: Record<string, unknown>[];
+    edges: Record<string, unknown>[];
+    revisions: Record<string, unknown>[];
+    extensions?: Record<string, unknown>;
+  };
+}
+
+export type SourcePreparationWorkspace =
+  | SourcePreparationWorkspaceV1
+  | SourcePreparationWorkspaceV1_1;
+
 export type PreparationMode = "validate" | "preview" | "generate";
 export type PreparationIssueCategory =
   | "structure"
@@ -132,7 +170,7 @@ export interface PreparationIssue {
 }
 
 export interface SourcePreparationReport {
-  schemaVersion: typeof PREPARATION_SCHEMA_VERSION;
+  schemaVersion: (typeof preparationSchemaVersions)[number];
   workspaceId: string;
   mode: PreparationMode;
   preview: boolean;

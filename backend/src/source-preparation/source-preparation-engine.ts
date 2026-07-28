@@ -12,11 +12,13 @@ import {
   sourcePreparationWorkspaceSchema,
 } from "./source-preparation-schema.js";
 import {
+  LOSSLESS_PREPARATION_SCHEMA_VERSION,
   PREPARATION_SCHEMA_VERSION,
   contentUseModes,
   preparationStatuses,
   rightsClassifications,
   type PreparedItem,
+  type PreparedLinkItem,
   type PreparationIssue,
   type PreparationMode,
   type PreparationResult,
@@ -30,10 +32,20 @@ const collections = [
   "evidenceLinks", "claimRelations", "fieldProvenance",
 ] as const;
 
-type CollectionName = (typeof collections)[number];
+const losslessCollections = [
+  "claimAttributions", "interpretations", "perspectives",
+  "perspectiveLinks", "causalLinks", "culturalMemories",
+] as const;
 
-function identifier(item: PreparedItem): string {
-  return String(item.object.id ?? "");
+type CollectionName =
+  | (typeof collections)[number]
+  | (typeof losslessCollections)[number];
+type PreparationEntry = PreparedItem | PreparedLinkItem;
+
+function identifier(item: PreparationEntry): string {
+  return "preparationId" in item
+    ? item.preparationId
+    : String(item.object.id ?? "");
 }
 
 function canonicalValue(value: unknown): unknown {
@@ -66,6 +78,10 @@ export function canonicalJsonBytes(value: unknown): Buffer {
   );
 }
 
+export function losslessJsonBytes(value: unknown): Buffer {
+  return Buffer.from(`${JSON.stringify(value, null, 2)}\n`, "utf8");
+}
+
 function issue(
   code: string,
   category: PreparationIssue["category"],
@@ -75,7 +91,9 @@ function issue(
   return { code, category, path, message, blocking: true };
 }
 
-function approved(items: PreparedItem[]): Record<string, unknown>[] {
+function approved(
+  items: PreparationEntry[],
+): Record<string, unknown>[] {
   return items
     .filter((item) => item.preparationStatus === "approved")
     .map((item) => structuredClone(item.object));
@@ -84,6 +102,47 @@ function approved(items: PreparedItem[]): Record<string, unknown>[] {
 function buildBundle(
   workspace: SourcePreparationWorkspace,
 ): SourceRootBundle {
+  if (workspace.schemaVersion === LOSSLESS_PREPARATION_SCHEMA_VERSION) {
+    const context = {
+      entities: approved(workspace.records),
+      temporalAssertions: approved(workspace.dateExpressions),
+      accounts: approved(workspace.accounts),
+      claims: approved(workspace.claims),
+      evidence: approved(workspace.evidence),
+      interpretations: approved(workspace.interpretations),
+      perspectives: approved(workspace.perspectives),
+      recordPerspectives: approved(workspace.perspectiveLinks),
+      causalLinks: approved(workspace.causalLinks),
+      relationships: approved(workspace.relationships),
+      culturalMemories: approved(workspace.culturalMemories),
+      aliases: approved(workspace.historicalNames),
+      claimAttributions: approved(workspace.claimAttributions),
+      claimRelations: approved(workspace.claimRelations),
+      sourceLocators: approved(workspace.sourceLocators),
+      evidenceClaimLinks: approved(workspace.evidenceLinks),
+      claimVersions: [],
+      evidenceVersions: [],
+      fieldProvenance: approved(workspace.fieldProvenance),
+    } as unknown as ContextualBundle;
+    return {
+      bundleId: workspace.reviewMetadata.bundleId,
+      bundleType: workspace.bundleFields.bundleType,
+      version: workspace.reviewMetadata.version,
+      domain: workspace.domain,
+      createdAt: workspace.reviewMetadata.createdAt,
+      createdBy: workspace.reviewMetadata.createdBy,
+      description: workspace.reviewMetadata.description,
+      nodes: structuredClone(workspace.bundleFields.nodes),
+      assertions: structuredClone(workspace.bundleFields.assertions),
+      edges: structuredClone(workspace.bundleFields.edges),
+      sources: approved(workspace.sourceSet),
+      revisions: structuredClone(workspace.bundleFields.revisions),
+      context,
+      ...(workspace.bundleFields.extensions === undefined
+        ? {}
+        : { extensions: structuredClone(workspace.bundleFields.extensions) }),
+    };
+  }
   const context = {
     entities: approved(workspace.records),
     accounts: approved(workspace.accounts),
@@ -124,10 +183,18 @@ function buildBundle(
 
 function allItems(workspace: SourcePreparationWorkspace): Array<{
   collection: CollectionName;
-  item: PreparedItem;
+  item: PreparationEntry;
 }> {
-  return collections.flatMap((collection) =>
+  const base = collections.flatMap((collection) =>
     workspace[collection].map((item) => ({ collection, item })));
+  if (workspace.schemaVersion === PREPARATION_SCHEMA_VERSION) {
+    return base;
+  }
+  return [
+    ...base,
+    ...losslessCollections.flatMap((collection) =>
+      workspace[collection].map((item) => ({ collection, item }))),
+  ];
 }
 
 function countBy(values: string[], keys: readonly string[]) {
@@ -181,7 +248,10 @@ export function validateSourcePreparationWorkspace(
   }
   const workspace = parsed.data as SourcePreparationWorkspace;
   const entries = allItems(workspace);
-  const ids = new Map<string, { collection: CollectionName; item: PreparedItem }>();
+  const ids = new Map<string, {
+    collection: CollectionName;
+    item: PreparationEntry;
+  }>();
   for (const entry of entries) {
     const id = identifier(entry.item);
     if (ids.has(id)) {
@@ -275,7 +345,8 @@ export function validateSourcePreparationWorkspace(
     "sourceId", "sourceIds", "accountId", "subjectId", "objectId",
     "fromId", "toId", "entityId", "claimId", "evidenceId",
     "fromClaimId", "toClaimId", "targetId", "evidenceRecordId",
-    "temporalAssertionId",
+    "temporalAssertionId", "actorEntityId", "recordId", "perspectiveId",
+    "causeId", "effectId",
   ]);
   function checkReferences(
     value: unknown,
@@ -339,6 +410,37 @@ export function validateSourcePreparationWorkspace(
   for (const { item } of entries) {
     if (item.preparationStatus === "approved") {
       checkReferences(item.object, identifier(item));
+    }
+  }
+
+  if (workspace.schemaVersion === LOSSLESS_PREPARATION_SCHEMA_VERSION) {
+    const perspectivePairs = new Set<string>();
+    for (const link of workspace.perspectiveLinks) {
+      if (link.preparationStatus !== "approved") continue;
+      const pair = [
+        String(link.object.recordId ?? ""),
+        String(link.object.perspectiveId ?? ""),
+      ].join("\u0000");
+      if (perspectivePairs.has(pair)) {
+        issues.push(issue(
+          "DUPLICATE_PERSPECTIVE_LINK",
+          "structure",
+          identifier(link),
+          "Perspective links must have a unique record and perspective pair.",
+        ));
+      }
+      perspectivePairs.add(pair);
+    }
+    const unresolvedStatuses = entries.filter(({ item }) =>
+      item.preparationStatus === "draft"
+      || item.preparationStatus === "needs_review");
+    if (mode === "generate" && unresolvedStatuses.length > 0) {
+      issues.push(issue(
+        "UNAPPROVED_OBJECTS_BLOCK_GENERATION",
+        "status",
+        identifier(unresolvedStatuses[0]!.item),
+        "Schema 1.1.0 generation requires every non-omitted object to be approved.",
+      ));
     }
   }
 
@@ -434,11 +536,13 @@ export function validateSourcePreparationWorkspace(
       validationIssue.message,
     ));
   }
-  const bundleBytes = canonicalJsonBytes(bundle);
+  const bundleBytes = workspace.schemaVersion === PREPARATION_SCHEMA_VERSION
+    ? canonicalJsonBytes(bundle)
+    : losslessJsonBytes(bundle);
   const hash = createHash("sha256").update(bundleBytes).digest("hex");
   const statuses = entries.map(({ item }) => item.preparationStatus);
   const report: SourcePreparationReport = {
-    schemaVersion: PREPARATION_SCHEMA_VERSION,
+    schemaVersion: workspace.schemaVersion,
     workspaceId: workspace.workspaceId,
     mode,
     preview: mode === "preview",
@@ -452,10 +556,14 @@ export function validateSourcePreparationWorkspace(
       errors: bundleValidation.errors,
       warnings: bundleValidation.warnings,
     },
-    counts: Object.fromEntries(collections.map((name) => [
+    counts: Object.fromEntries(
+      (workspace.schemaVersion === PREPARATION_SCHEMA_VERSION
+        ? [...collections]
+        : [...collections, ...losslessCollections]).map((name) => [
       name,
-      workspace[name].filter((item) =>
-        item.preparationStatus === "approved").length,
+      entries.filter(({ collection, item }) =>
+        collection === name
+        && item.preparationStatus === "approved").length,
     ])),
     rightsSummary: countBy(
       workspace.sourceSet.map((source) =>
