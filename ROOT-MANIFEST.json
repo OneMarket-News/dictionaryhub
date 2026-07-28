@@ -175,6 +175,7 @@
                             "VERIFY-SOURCEROOT-REPEATABLE-SOURCE-PREPARATION-WORKFLOW.ps1",
                             "VERIFY-SOURCEROOT-REPEATABLE-SOURCE-PREPARATION-WORKFLOW-V1-1.ps1",
                             "VERIFY-SOURCEROOT-HISTORYROOT-CORPUS-EXPANSION-QUALITY.ps1",
+                            "VERIFY-SOURCEROOT-HISTORYROOT-REGIONAL-EXPANSION-ACQUISITION-GATE.ps1",
                             "VERIFY-SOURCEROOT-REGISTRY-API-CONTRACT.ps1"
                         ],
     "known_installers":  [

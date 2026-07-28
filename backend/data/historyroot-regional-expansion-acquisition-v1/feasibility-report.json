@@ -1,0 +1,241 @@
+{
+  "artifactType": "feasibility_report",
+  "blockers": [],
+  "candidateRegistrySha256": "7651FB9363AEF1A0431DA76347F881F0B5EC0E5CC8A99F45B2376BCAAC755947",
+  "existingCorpusConnections": {
+    "accounts": [
+      "historyroot-plymouth-account-aquinnah",
+      "historyroot-plymouth-account-church",
+      "historyroot-plymouth-account-mashpee",
+      "historyroot-plymouth-account-nmai-timeline",
+      "historyroot-plymouth-account-nps-swansea",
+      "historyroot-plymouth-account-nps-war"
+    ],
+    "claimsNeedingAdditionalEvidence": {
+      "additionalReportingProvenance": [
+        "historyroot-plymouth-claim-awashonks-diplomacy",
+        "historyroot-plymouth-claim-epenow-escape",
+        "historyroot-plymouth-claim-great-swamp-escalation",
+        "historyroot-plymouth-claim-metacom-alliance-building",
+        "historyroot-plymouth-claim-wamsutta-death-suspicion",
+        "historyroot-plymouth-claim-wamsutta-succession",
+        "historyroot-plymouth-claim-weetamoo-leadership"
+      ],
+      "competingAccounts": [
+        "historyroot-plymouth-claim-war-multiple-causes",
+        "historyroot-plymouth-claim-war-not-simple-binary"
+      ],
+      "contextual": [
+        "historyroot-plymouth-claim-hunt-kidnappings",
+        "historyroot-plymouth-claim-wampanoag-continuity",
+        "historyroot-plymouth-claim-wampanoag-deep-history"
+      ],
+      "qualifying": [
+        "historyroot-plymouth-claim-great-swamp-escalation",
+        "historyroot-plymouth-claim-land-pressure",
+        "historyroot-plymouth-claim-wamsutta-death-suspicion",
+        "historyroot-plymouth-claim-war-outbreak-uncertain-command"
+      ],
+      "strongerLocators": [
+        "historyroot-plymouth-claim-epenow-escape",
+        "historyroot-plymouth-claim-wamsutta-succession",
+        "historyroot-plymouth-claim-weetamoo-leadership"
+      ],
+      "supporting": [
+        "historyroot-plymouth-claim-awashonks-diplomacy",
+        "historyroot-plymouth-claim-epenow-escape",
+        "historyroot-plymouth-claim-metacom-alliance-building",
+        "historyroot-plymouth-claim-weetamoo-leadership"
+      ]
+    },
+    "records": [
+      "historyroot-plymouth-person-awashonks",
+      "historyroot-plymouth-person-epenow",
+      "historyroot-plymouth-person-john-sassamon",
+      "historyroot-plymouth-person-metacom",
+      "historyroot-plymouth-person-weetamoo",
+      "historyroot-plymouth-place-cape-cod",
+      "historyroot-plymouth-place-great-swamp",
+      "historyroot-plymouth-place-manomet",
+      "historyroot-plymouth-place-mount-hope",
+      "historyroot-plymouth-place-narragansett-bay",
+      "historyroot-plymouth-place-nemasket",
+      "historyroot-plymouth-place-swansea"
+    ]
+  },
+  "gateAssessment": {
+    "archaeologicalOrScholarlyRepresentation": true,
+    "atLeastFifteenAcceptedSources": true,
+    "boundedLocatorsForEveryAcceptedSource": true,
+    "indigenousRepresentation": true,
+    "institutionalRepresentation": true,
+    "noDatabaseImport": true,
+    "noHistoricalObjectsCreated": true,
+    "primaryOrArchivalRepresentation": true,
+    "projectedMinimumsMet": true
+  },
+  "observations": [
+    "Six accepted Indigenous-led candidates meet the representation gate without treating any single tribal institution as a universal Wampanoag voice.",
+    "Primary accounts deliberately include conflicting colonial framings and an Indigenous primary text; disagreement is modeled, not reconciled.",
+    "Every accepted candidate has a bounded locator strategy and begins as metadata-and-link-only except the Library of Congress map's stated free-use item.",
+    "All six contextual collection families can be preserved or expanded without publishing any historical object during this gate."
+  ],
+  "planningOnly": true,
+  "projectedCounts": {
+    "claims": 28,
+    "contextualFamilyCoverage": {
+      "causalLinks": true,
+      "claimAttributions": true,
+      "culturalMemories": true,
+      "interpretations": true,
+      "perspectiveLinks": true,
+      "perspectives": true
+    },
+    "dateExpressions": 32,
+    "evidenceLinksWithExplicitRoles": 18,
+    "fieldProvenance": 32,
+    "qualifyingOrConflictingStructures": 8,
+    "records": 54,
+    "relationships": 48,
+    "reportingAccounts": 14,
+    "sources": 20,
+    "structuredLocators": 28
+  },
+  "projectedOrphanReduction": {
+    "accounts": {
+      "count": 1,
+      "ids": [
+        "historyroot-plymouth-account-mashpee"
+      ]
+    },
+    "records": {
+      "count": 8,
+      "ids": [
+        "historyroot-plymouth-person-john-sassamon",
+        "historyroot-plymouth-place-cape-cod",
+        "historyroot-plymouth-place-great-swamp",
+        "historyroot-plymouth-place-manomet",
+        "historyroot-plymouth-place-mount-hope",
+        "historyroot-plymouth-place-narragansett-bay",
+        "historyroot-plymouth-place-nemasket",
+        "historyroot-plymouth-place-swansea"
+      ]
+    },
+    "retainedLimitations": [
+      "The Mourt's Relation account remains outside this regional acquisition purpose.",
+      "Transatlantic orphan places remain outside the geographic boundary."
+    ]
+  },
+  "recommendation": "GO",
+  "reportId": "historyroot-regional-expansion-acquisition-v1-feasibility-report",
+  "researchCutoff": "2026-07-28",
+  "reviewFindings": [
+    {
+      "findingId": "scope-edge-narragansett",
+      "issue": "Narragansett Bay and Great Swamp are connected conflict edges, not permission for a Narragansett regional corpus.",
+      "requiredAction": "Limit objects to direct Wampanoag-network connections and retain Narragansett identities and accounts distinctly."
+    },
+    {
+      "findingId": "tribal-archive-access",
+      "issue": "Mashpee archival materials require collection-level permission and culturally appropriate access.",
+      "requiredAction": "Contact the archive; register no item until an archive-supplied identifier, access decision, and rights basis exist."
+    },
+    {
+      "findingId": "colonial-edition-separation",
+      "issue": "Easton, Mather, Hubbard, and later editions are distinct works, witnesses, and editorial layers.",
+      "requiredAction": "Preserve original-work, edition, transcription, and digital-surrogate identities separately."
+    },
+    {
+      "findingId": "archaeology-identity-limit",
+      "issue": "Site evidence cannot by itself establish a named seventeenth-century political identity or territorial boundary.",
+      "requiredAction": "Use archaeology as qualified contextual evidence and prohibit identity inference."
+    },
+    {
+      "findingId": "post-boundary-context",
+      "issue": "The 1681 Mittark petition and later memory scholarship fall outside the 1614–1676 core.",
+      "requiredAction": "Use only in marked continuity, memory, or aftermath structures."
+    },
+    {
+      "findingId": "source-concentration-control",
+      "issue": "The existing corpus concentrates reporting in the NMAI timeline and 33 claims have one reporting lineage.",
+      "requiredAction": "Cap projected use per new source, require independent lineages, and do not count a second edition as independence."
+    }
+  ],
+  "schemaVersion": "1.0.0",
+  "scope": {
+    "backgroundRule": "Earlier archaeological evidence and post-1676 continuity may appear only as explicitly attributed context, not as core event claims.",
+    "geographicBoundary": "Cape Cod and Noepe through Manomet and Nemasket to Pokanoket, Mount Hope, Pocasset, and Sakonnet; the Narragansett Bay edge appears only where directly connected.",
+    "temporalBoundary": "1614–1676",
+    "title": "Wampanoag Homelands and Intercommunity Networks, 1614–1676"
+  },
+  "sourceSummary": {
+    "accepted": 20,
+    "categoryDistribution": {
+      "archaeologicalOrScholarly": 12,
+      "indigenousLed": 8,
+      "institutional": 14,
+      "primaryOrArchival": 7
+    },
+    "indigenousSourceRepresentation": [
+      "hr9-src-aquinnah-history",
+      "hr9-src-aquinnah-thpo",
+      "hr9-src-brooks-beloved-kin",
+      "hr9-src-chappaquiddick-history",
+      "hr9-src-herring-pond-timeline",
+      "hr9-src-mashpee-archives",
+      "hr9-src-mashpee-timeline",
+      "hr9-src-mittark-petition"
+    ],
+    "locatorStrategies": {
+      "call_number_and_iiif_canvas": 1,
+      "chapter_and_page": 3,
+      "chapter_doi_and_page": 1,
+      "doi_and_page": 1,
+      "doi_page_and_section": 1,
+      "doi_page_and_table": 1,
+      "edition_page": 1,
+      "edition_page_and_note": 1,
+      "edition_page_and_text_mode": 1,
+      "heading_and_dated_entry": 3,
+      "portal_document_id_and_image": 1,
+      "report_page_and_section": 1,
+      "repository_accession_and_item": 1,
+      "section_and_report_reference": 1,
+      "section_heading": 2
+    },
+    "primarySourceRepresentation": [
+      "hr9-src-easton-relation",
+      "hr9-src-hubbard-map",
+      "hr9-src-hubbard-narrative",
+      "hr9-src-mashpee-archives",
+      "hr9-src-mather-brief-history",
+      "hr9-src-mittark-petition",
+      "hr9-src-nara-yale-indian-papers"
+    ],
+    "rejected": 3,
+    "rightsClassifications": {
+      "metadata_and_link_only": 19,
+      "public_domain": 1
+    },
+    "sourceConcentration": {
+      "maximumProjectedClaimsFromOneSource": 4,
+      "maximumProjectedShare": 0.1429,
+      "rule": "No source may report more than four of the 28 projected claims without a documented exception and an independent lineage."
+    }
+  },
+  "unresolvedChronologyQuestions": [
+    "Which Epenow kidnapping/return dates reflect distinct events or differing accounts?",
+    "Which dates for Wamsutta's final journey and death can be represented only as uncertain or contested?",
+    "Which war-event dates differ because sources use report date, event date, or later retrospective chronology?"
+  ],
+  "unresolvedGeographicQuestions": [
+    "Which archive-supported place relations connect Manomet and Nemasket without implying fixed territorial polygons?",
+    "Where should the Narragansett Bay edge stop when an account leaves the Wampanoag network?",
+    "Which Noepe and Cape Cod place names require community-preferred canonical forms and colonial aliases?"
+  ],
+  "unresolvedIdentityQuestions": [
+    "Which historical labels in colonial records refer to communities, places, offices, or imposed aggregates?",
+    "How should Epenow-related Chappaquiddick and Aquinnah accounts coexist without unsupported identity reconciliation?",
+    "Which person and office references in deeds or petitions require tribal review before canonical IDs are proposed?"
+  ]
+}

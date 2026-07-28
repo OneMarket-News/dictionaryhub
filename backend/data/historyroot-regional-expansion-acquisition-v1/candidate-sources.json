@@ -1,0 +1,1042 @@
+{
+  "artifactType": "planning_registry",
+  "candidates": [
+    {
+      "acquisitionStatus": "rejected",
+      "archiveIdentifier": "doi:10.1007/BF03376905",
+      "candidateId": "hr9-reject-cipolla-authenticity",
+      "candidateRecordsOrClaims": [
+        "general editorial-method caution"
+      ],
+      "categories": {
+        "archaeologicalOrScholarly": true,
+        "indigenousLed": false,
+        "institutional": true,
+        "primaryOrArchival": false
+      },
+      "creatorOrResponsibleInstitution": "Craig N. Cipolla",
+      "date": "2013",
+      "geographicCoverage": [
+        "Native North America; case-study dependent"
+      ],
+      "limitationsOrKnownPerspective": "Useful methodology but not sufficiently specific to the selected Wampanoag regional and temporal acquisition.",
+      "locatorStrategy": {
+        "bounded": true,
+        "notes": "Acquire and record this supplied locator exactly; do not infer pages, headings, archive identifiers, or edition identity.",
+        "type": "doi_and_page",
+        "value": "doi:10.1007/BF03376905; pp. 12–22"
+      },
+      "proposedHistoryRootRole": [
+        "methodological context"
+      ],
+      "publicationOrEdition": "Historical Archaeology 47, pp. 12–22",
+      "rejectionReason": "Rejected from the bounded pack because it does not independently support a selected regional record or claim; retain only as optional methodology.",
+      "rightsAccess": {
+        "basis": "No permission or open-license determination is made at this gate; retain metadata and a link only.",
+        "classification": "metadata_and_link_only",
+        "contentUse": "metadata_only"
+      },
+      "sourceType": "peer-reviewed methodological article",
+      "stableUrl": "https://doi.org/10.1007/BF03376905",
+      "temporalCoverage": "historical archaeology, broad",
+      "title": "Native American Historical Archaeology and the Trope of Authenticity"
+    },
+    {
+      "acquisitionStatus": "rejected",
+      "archiveIdentifier": "LCCN 08017406",
+      "candidateId": "hr9-reject-loc-church-1860",
+      "candidateRecordsOrClaims": [
+        "Awashonks and Sakonnet narrative cross-check"
+      ],
+      "categories": {
+        "archaeologicalOrScholarly": false,
+        "indigenousLed": false,
+        "institutional": true,
+        "primaryOrArchival": true
+      },
+      "creatorOrResponsibleInstitution": "Benjamin Church; Thomas Church and Samuel Gardner Drake, editors; Library of Congress",
+      "date": "1860",
+      "geographicCoverage": [
+        "southern New England"
+      ],
+      "limitationsOrKnownPerspective": "Later reissue of a retrospective narrative already represented by the accepted Evans-TCP Church lineage.",
+      "locatorStrategy": {
+        "bounded": true,
+        "notes": "Acquire and record this supplied locator exactly; do not infer pages, headings, archive identifiers, or edition identity.",
+        "type": "lccn_and_page_image",
+        "value": "LCCN 08017406 plus printed page and scan image"
+      },
+      "proposedHistoryRootRole": [
+        "retrospective colonial account"
+      ],
+      "publicationOrEdition": "New York: H. Dayton, 1860",
+      "rejectionReason": "Rejected as a separate acquisition source because it duplicates an existing reporting lineage; it may serve only as an edition cross-check.",
+      "rightsAccess": {
+        "basis": "The holding institution expressly marks the digital item free to use and reuse; acquisition still begins with metadata and links.",
+        "classification": "public_domain",
+        "contentUse": "metadata_only"
+      },
+      "sourceType": "digitized retrospective colonial narrative edition",
+      "stableUrl": "https://www.loc.gov/item/08017406/",
+      "temporalCoverage": "1675–1676 and later wars",
+      "title": "The history of the great Indian war of 1675 and 1676, commonly called Philip's war"
+    },
+    {
+      "acquisitionStatus": "rejected",
+      "archiveIdentifier": "NPS CACO:Wellfleet Tavern",
+      "candidateId": "hr9-reject-nps-wellfleet-tavern",
+      "candidateRecordsOrClaims": [
+        "later Great Island colonial site context"
+      ],
+      "categories": {
+        "archaeologicalOrScholarly": true,
+        "indigenousLed": false,
+        "institutional": true,
+        "primaryOrArchival": false
+      },
+      "creatorOrResponsibleInstitution": "National Park Service, Cape Cod National Seashore",
+      "date": "updated 2025",
+      "geographicCoverage": [
+        "Great Island",
+        "Wellfleet"
+      ],
+      "limitationsOrKnownPerspective": "The excavated activity substantially postdates the selected 1614–1676 core.",
+      "locatorStrategy": {
+        "bounded": true,
+        "notes": "Acquire and record this supplied locator exactly; do not infer pages, headings, archive identifiers, or edition identity.",
+        "type": "section_heading",
+        "value": "The Wellfleet Tavern Site"
+      },
+      "proposedHistoryRootRole": [
+        "post-boundary site context"
+      ],
+      "publicationOrEdition": "Official site interpretation",
+      "rejectionReason": "Rejected because its principal 1690–1740 occupation is outside the temporal boundary and does not close a core acquisition gap.",
+      "rightsAccess": {
+        "basis": "No permission or open-license determination is made at this gate; retain metadata and a link only.",
+        "classification": "metadata_and_link_only",
+        "contentUse": "metadata_only"
+      },
+      "sourceType": "government archaeological site summary",
+      "stableUrl": "https://www.nps.gov/caco/learn/historyculture/the-wellfleet-tavern-site-great-island-wellfleet.htm",
+      "temporalCoverage": "1690–1740",
+      "title": "The Wellfleet Tavern Site — Great Island"
+    },
+    {
+      "acquisitionStatus": "accepted",
+      "archiveIdentifier": "aquinnah:wampanoag-history",
+      "candidateId": "hr9-src-aquinnah-history",
+      "candidateRecordsOrClaims": [
+        "Noepe/Aquinnah place and community records",
+        "attributed continuity and homeland claims",
+        "historical-name and cultural-memory context"
+      ],
+      "categories": {
+        "archaeologicalOrScholarly": false,
+        "indigenousLed": true,
+        "institutional": false,
+        "primaryOrArchival": false
+      },
+      "creatorOrResponsibleInstitution": "Wampanoag Tribe of Gay Head (Aquinnah)",
+      "date": "n.d.; inspected 2026-07-28",
+      "geographicCoverage": [
+        "Aquinnah",
+        "Noepe (Martha's Vineyard)"
+      ],
+      "limitationsOrKnownPerspective": "Tribal public history combines community history, traditional narrative, and present governance; each mode must remain explicitly attributed.",
+      "locatorStrategy": {
+        "bounded": true,
+        "notes": "Acquire and record this supplied locator exactly; do not infer pages, headings, archive identifiers, or edition identity.",
+        "type": "section_heading",
+        "value": "History of Martha's Vineyard; Historical Background of the Wampanoag; Aquinnah Wampanoag History & Government"
+      },
+      "proposedHistoryRootRole": [
+        "reporting account",
+        "community continuity",
+        "place-name context"
+      ],
+      "publicationOrEdition": "Official tribal history webpage",
+      "rejectionReason": null,
+      "rightsAccess": {
+        "basis": "No permission or open-license determination is made at this gate; retain metadata and a link only.",
+        "classification": "metadata_and_link_only",
+        "contentUse": "metadata_only"
+      },
+      "sourceType": "tribal-institutional history",
+      "stableUrl": "https://wampanoagtribe-nsn.gov/wampanoag-history",
+      "temporalCoverage": "deep history to present; core acquisition 1614–1676",
+      "title": "Wampanoag History"
+    },
+    {
+      "acquisitionStatus": "accepted",
+      "archiveIdentifier": "aquinnah:thpo",
+      "candidateId": "hr9-src-aquinnah-thpo",
+      "candidateRecordsOrClaims": [
+        "tribal consultation and access-plan record",
+        "cultural-resource stewardship context"
+      ],
+      "categories": {
+        "archaeologicalOrScholarly": false,
+        "indigenousLed": true,
+        "institutional": false,
+        "primaryOrArchival": false
+      },
+      "creatorOrResponsibleInstitution": "Wampanoag Tribe of Gay Head (Aquinnah)",
+      "date": "n.d.; inspected 2026-07-28",
+      "geographicCoverage": [
+        "Aquinnah",
+        "Wampanoag ancestral lands"
+      ],
+      "limitationsOrKnownPerspective": "This is a preservation and consultation authority page, not evidence for a seventeenth-century event; use it to govern responsible follow-up.",
+      "locatorStrategy": {
+        "bounded": true,
+        "notes": "Acquire and record this supplied locator exactly; do not infer pages, headings, archive identifiers, or edition identity.",
+        "type": "section_heading",
+        "value": "Tribal Historic Preservation Officer (THPO)"
+      },
+      "proposedHistoryRootRole": [
+        "acquisition protocol",
+        "cultural-resource context"
+      ],
+      "publicationOrEdition": "Official Tribal Historic Preservation webpage",
+      "rejectionReason": null,
+      "rightsAccess": {
+        "basis": "No permission or open-license determination is made at this gate; retain metadata and a link only.",
+        "classification": "metadata_and_link_only",
+        "contentUse": "metadata_only"
+      },
+      "sourceType": "tribal historic-preservation guidance",
+      "stableUrl": "https://wampanoagtribe-nsn.gov/thpo",
+      "temporalCoverage": "present stewardship of resources with historical scope",
+      "title": "Tribal Historic Preservation"
+    },
+    {
+      "acquisitionStatus": "accepted",
+      "archiveIdentifier": "doi:10.1017/aaq.2024.80",
+      "candidateId": "hr9-src-beranek-great-island",
+      "candidateRecordsOrClaims": [
+        "Great Island archaeological-place record",
+        "qualified continuity across the contact-period calibration plateau",
+        "Cape Cod land-use evidence"
+      ],
+      "categories": {
+        "archaeologicalOrScholarly": true,
+        "indigenousLed": false,
+        "institutional": true,
+        "primaryOrArchival": false
+      },
+      "creatorOrResponsibleInstitution": "Christa M. Beranek, Dennis M. Piechota, Stephen A. Mrozowski, and John M. Steinberg",
+      "date": "2025",
+      "geographicCoverage": [
+        "Great Island",
+        "Wellfleet",
+        "Cape Cod"
+      ],
+      "limitationsOrKnownPerspective": "Archaeological interpretation is site-specific; it cannot establish a universal Wampanoag settlement pattern or precise political boundary.",
+      "locatorStrategy": {
+        "bounded": true,
+        "notes": "Acquire and record this supplied locator exactly; do not infer pages, headings, archive identifiers, or edition identity.",
+        "type": "doi_page_and_section",
+        "value": "doi:10.1017/aaq.2024.80; pp. 307–327; Cape Cod Archaeology; Discussion"
+      },
+      "proposedHistoryRootRole": [
+        "archaeological evidence",
+        "qualifying evidence",
+        "deep-history context"
+      ],
+      "publicationOrEdition": "American Antiquity 90(2), Cambridge University Press for the Society for American Archaeology",
+      "rejectionReason": null,
+      "rightsAccess": {
+        "basis": "No permission or open-license determination is made at this gate; retain metadata and a link only.",
+        "classification": "metadata_and_link_only",
+        "contentUse": "metadata_only"
+      },
+      "sourceType": "peer-reviewed archaeological article",
+      "stableUrl": "https://www.cambridge.org/core/product/2D740C58AC341A8B66C439B1A5C3FA1C",
+      "temporalCoverage": "AD 1480–1630",
+      "title": "Recognizing Indigenous Persistence by Dating Extensive Low-Density Indigenous Occupations across the AD 1480–1630 Radiocarbon Plateau in Wellfleet, Massachusetts"
+    },
+    {
+      "acquisitionStatus": "accepted",
+      "archiveIdentifier": "isbn:9780300231113",
+      "candidateId": "hr9-src-brooks-beloved-kin",
+      "candidateRecordsOrClaims": [
+        "Weetamoo and kin-network records",
+        "regional diplomacy and movement relationships",
+        "qualifying accounts of Metacom's War"
+      ],
+      "categories": {
+        "archaeologicalOrScholarly": true,
+        "indigenousLed": true,
+        "institutional": true,
+        "primaryOrArchival": false
+      },
+      "creatorOrResponsibleInstitution": "Lisa Brooks",
+      "date": "2018",
+      "geographicCoverage": [
+        "Pokanoket",
+        "Pocasset",
+        "Sakonnet",
+        "Native New England"
+      ],
+      "limitationsOrKnownPerspective": "A wide-ranging interpretive monograph; acquire claim-level page locators and do not flatten distinct communities into one regional voice.",
+      "locatorStrategy": {
+        "bounded": true,
+        "notes": "Acquire and record this supplied locator exactly; do not infer pages, headings, archive identifiers, or edition identity.",
+        "type": "chapter_and_page",
+        "value": "edition table of contents plus cited chapter and page span"
+      },
+      "proposedHistoryRootRole": [
+        "Indigenous-centered scholarly interpretation",
+        "network context",
+        "competing account"
+      ],
+      "publicationOrEdition": "Yale University Press, Henry Roe Cloud Series; ebook ISBN 9780300231113",
+      "rejectionReason": null,
+      "rightsAccess": {
+        "basis": "No permission or open-license determination is made at this gate; retain metadata and a link only.",
+        "classification": "metadata_and_link_only",
+        "contentUse": "metadata_only"
+      },
+      "sourceType": "scholarly monograph",
+      "stableUrl": "https://yalebooks.yale.edu/book/9780300231113/our-beloved-kin/",
+      "temporalCoverage": "primarily 1675–1676 with wider background",
+      "title": "Our Beloved Kin: A New History of King Philip's War"
+    },
+    {
+      "acquisitionStatus": "accepted",
+      "archiveIdentifier": "chappaquiddick:our-history",
+      "candidateId": "hr9-src-chappaquiddick-history",
+      "candidateRecordsOrClaims": [
+        "Chappaquiddick community and sachem records",
+        "Epenow competing/qualifying account",
+        "Noepe intercommunity relationships"
+      ],
+      "categories": {
+        "archaeologicalOrScholarly": false,
+        "indigenousLed": true,
+        "institutional": false,
+        "primaryOrArchival": false
+      },
+      "creatorOrResponsibleInstitution": "Chappaquiddick Wampanoag Tribe",
+      "date": "n.d.; inspected 2026-07-28",
+      "geographicCoverage": [
+        "Chappaquiddick",
+        "Cape Poge",
+        "Noepe"
+      ],
+      "limitationsOrKnownPerspective": "Concise community public history; dates and identity statements need independent archival or scholarly triangulation without overriding tribal attribution.",
+      "locatorStrategy": {
+        "bounded": true,
+        "notes": "Acquire and record this supplied locator exactly; do not infer pages, headings, archive identifiers, or edition identity.",
+        "type": "heading_and_dated_entry",
+        "value": "A Brief History; Selected Dates; exact year entry"
+      },
+      "proposedHistoryRootRole": [
+        "reporting account",
+        "intercommunity relationship context",
+        "historical-name context"
+      ],
+      "publicationOrEdition": "Official tribal history webpage",
+      "rejectionReason": null,
+      "rightsAccess": {
+        "basis": "No permission or open-license determination is made at this gate; retain metadata and a link only.",
+        "classification": "metadata_and_link_only",
+        "contentUse": "metadata_only"
+      },
+      "sourceType": "tribal-institutional history",
+      "stableUrl": "https://www.chappaquiddickwampanoag.org/who-we-are/our-history",
+      "temporalCoverage": "selected dates from 1595 onward; core 1614–1676",
+      "title": "Our History: A Brief History"
+    },
+    {
+      "acquisitionStatus": "accepted",
+      "archiveIdentifier": "isbn:9780300231120",
+      "candidateId": "hr9-src-delucia-memory-lands",
+      "candidateRecordsOrClaims": [
+        "Great Swamp and Mount Hope memory context",
+        "place-of-violence cultural-memory records",
+        "later interpretation distinguished from event claims"
+      ],
+      "categories": {
+        "archaeologicalOrScholarly": true,
+        "indigenousLed": false,
+        "institutional": true,
+        "primaryOrArchival": false
+      },
+      "creatorOrResponsibleInstitution": "Christine M. DeLucia",
+      "date": "2018",
+      "geographicCoverage": [
+        "Native New England",
+        "Metacom's War memory sites"
+      ],
+      "limitationsOrKnownPerspective": "The book deliberately follows memory beyond the gate's core period; post-1676 material belongs only in attributed cultural-memory structures.",
+      "locatorStrategy": {
+        "bounded": true,
+        "notes": "Acquire and record this supplied locator exactly; do not infer pages, headings, archive identifiers, or edition identity.",
+        "type": "chapter_and_page",
+        "value": "edition chapter plus exact page span"
+      },
+      "proposedHistoryRootRole": [
+        "memory-study interpretation",
+        "place-based contextual evidence"
+      ],
+      "publicationOrEdition": "Yale University Press, Henry Roe Cloud Series; ebook ISBN 9780300231120",
+      "rejectionReason": null,
+      "rightsAccess": {
+        "basis": "No permission or open-license determination is made at this gate; retain metadata and a link only.",
+        "classification": "metadata_and_link_only",
+        "contentUse": "metadata_only"
+      },
+      "sourceType": "scholarly monograph",
+      "stableUrl": "https://yalebooks.yale.edu/book/9780300231120/memory-lands/",
+      "temporalCoverage": "1675 to present; core event references bounded to 1675–1676",
+      "title": "Memory Lands: King Philip's War and the Place of Violence in the Northeast"
+    },
+    {
+      "acquisitionStatus": "accepted",
+      "archiveIdentifier": "UNL DigitalCommons:libraryscience/33",
+      "candidateId": "hr9-src-easton-relation",
+      "candidateRecordsOrClaims": [
+        "Sassamon crisis and Swansea accounts",
+        "reported grievances attributed through Easton",
+        "competing war-causation structure"
+      ],
+      "categories": {
+        "archaeologicalOrScholarly": true,
+        "indigenousLed": false,
+        "institutional": true,
+        "primaryOrArchival": true
+      },
+      "creatorOrResponsibleInstitution": "John Easton; Paul Royster, editor",
+      "date": "1675; electronic edition n.d.",
+      "geographicCoverage": [
+        "Rhode Island",
+        "Pokanoket",
+        "Swansea"
+      ],
+      "limitationsOrKnownPerspective": "Easton was a colonial official and mediator, not an Indigenous author; the modernized text and original-language appendix must not be conflated.",
+      "locatorStrategy": {
+        "bounded": true,
+        "notes": "Acquire and record this supplied locator exactly; do not infer pages, headings, archive identifiers, or edition identity.",
+        "type": "edition_page_and_text_mode",
+        "value": "PDF page plus modernized/original-language appendix designation"
+      },
+      "proposedHistoryRootRole": [
+        "competing colonial account",
+        "reporting provenance",
+        "qualifying evidence"
+      ],
+      "publicationOrEdition": "University of Nebraska–Lincoln Libraries electronic edition with modernized text and original-language appendix",
+      "rejectionReason": null,
+      "rightsAccess": {
+        "basis": "No permission or open-license determination is made at this gate; retain metadata and a link only.",
+        "classification": "metadata_and_link_only",
+        "contentUse": "metadata_only"
+      },
+      "sourceType": "digitized primary account and later edition",
+      "stableUrl": "https://digitalcommons.unl.edu/libraryscience/33/",
+      "temporalCoverage": "1675",
+      "title": "A Relation of the Indian War, by Mr. Easton, of Rhode Island, 1675"
+    },
+    {
+      "acquisitionStatus": "accepted",
+      "archiveIdentifier": "herring-pond:timeline",
+      "candidateId": "hr9-src-herring-pond-timeline",
+      "candidateRecordsOrClaims": [
+        "Herring Pond community record",
+        "Patuxet survivor/continuity account for review",
+        "Cape Cod–Plymouth relationship records"
+      ],
+      "categories": {
+        "archaeologicalOrScholarly": false,
+        "indigenousLed": true,
+        "institutional": false,
+        "primaryOrArchival": false
+      },
+      "creatorOrResponsibleInstitution": "Herring Pond Wampanoag Tribe",
+      "date": "n.d.; inspected 2026-07-28",
+      "geographicCoverage": [
+        "Herring Pond",
+        "Plymouth",
+        "Cape Cod"
+      ],
+      "limitationsOrKnownPerspective": "Community timeline entries are concise and sometimes synthesize long periods; preserve attribution and seek bounded corroborating records.",
+      "locatorStrategy": {
+        "bounded": true,
+        "notes": "Acquire and record this supplied locator exactly; do not infer pages, headings, archive identifiers, or edition identity.",
+        "type": "heading_and_dated_entry",
+        "value": "Historical Events; exact displayed year or year range"
+      },
+      "proposedHistoryRootRole": [
+        "reporting account",
+        "community continuity",
+        "regional connection"
+      ],
+      "publicationOrEdition": "Official tribal timeline webpage",
+      "rejectionReason": null,
+      "rightsAccess": {
+        "basis": "No permission or open-license determination is made at this gate; retain metadata and a link only.",
+        "classification": "metadata_and_link_only",
+        "contentUse": "metadata_only"
+      },
+      "sourceType": "tribal-institutional timeline",
+      "stableUrl": "https://www.herringpondtribe.org/timeline/",
+      "temporalCoverage": "deep history to present; core entries 1617–1676",
+      "title": "Herring Pond Wampanoag Tribe Historical Timeline"
+    },
+    {
+      "acquisitionStatus": "accepted",
+      "archiveIdentifier": "LCCN gm71002303; call number G3720 1677 .H81",
+      "candidateId": "hr9-src-hubbard-map",
+      "candidateRecordsOrClaims": [
+        "historical place-name records",
+        "relative-location context for Mount Hope and Narragansett Bay",
+        "qualified colonial spatial perspective"
+      ],
+      "categories": {
+        "archaeologicalOrScholarly": false,
+        "indigenousLed": false,
+        "institutional": true,
+        "primaryOrArchival": true
+      },
+      "creatorOrResponsibleInstitution": "William Hubbard; Library of Congress Geography and Map Division",
+      "date": "1677?",
+      "geographicCoverage": [
+        "New England",
+        "southeastern Massachusetts",
+        "eastern Rhode Island"
+      ],
+      "limitationsOrKnownPerspective": "Colonial wartime cartography with acknowledged defects; not a territorial authority and never a basis for polygons.",
+      "locatorStrategy": {
+        "bounded": true,
+        "notes": "Acquire and record this supplied locator exactly; do not infer pages, headings, archive identifiers, or edition identity.",
+        "type": "call_number_and_iiif_canvas",
+        "value": "G3720 1677 .H81; LCCN gm71002303; IIIF canvas/image region"
+      },
+      "proposedHistoryRootRole": [
+        "colonial geographic account",
+        "historical-name evidence",
+        "qualifying cartographic evidence"
+      ],
+      "publicationOrEdition": "Manuscript copy associated with Hubbard's 1677 narrative",
+      "rejectionReason": null,
+      "rightsAccess": {
+        "basis": "The holding institution expressly marks the digital item free to use and reuse; acquisition still begins with metadata and links.",
+        "classification": "public_domain",
+        "contentUse": "metadata_only"
+      },
+      "sourceType": "digitized historical map",
+      "stableUrl": "https://www.loc.gov/resource/g3720.ct003936/",
+      "temporalCoverage": "wartime geography represented circa 1677",
+      "title": "A map of New-England, being the first that ever was here cut"
+    },
+    {
+      "acquisitionStatus": "accepted",
+      "archiveIdentifier": "Google Books:nWNYzgEACAAJ",
+      "candidateId": "hr9-src-hubbard-narrative",
+      "candidateRecordsOrClaims": [
+        "Great Swamp and Mount Hope competing accounts",
+        "colonial wartime chronology",
+        "source-conflict structures"
+      ],
+      "categories": {
+        "archaeologicalOrScholarly": false,
+        "indigenousLed": false,
+        "institutional": true,
+        "primaryOrArchival": true
+      },
+      "creatorOrResponsibleInstitution": "William Hubbard",
+      "date": "1677",
+      "geographicCoverage": [
+        "New England",
+        "Pokanoket",
+        "Narragansett Bay"
+      ],
+      "limitationsOrKnownPerspective": "Partisan colonial war narrative with providential framing; use only as an attributed reporting lineage and compare with Easton and Indigenous-centered scholarship.",
+      "locatorStrategy": {
+        "bounded": true,
+        "notes": "Acquire and record this supplied locator exactly; do not infer pages, headings, archive identifiers, or edition identity.",
+        "type": "edition_page",
+        "value": "1677 John Foster edition page number and scan image"
+      },
+      "proposedHistoryRootRole": [
+        "competing colonial account",
+        "reporting provenance"
+      ],
+      "publicationOrEdition": "Boston: John Foster, 1677; Google Books cataloged scan",
+      "rejectionReason": null,
+      "rightsAccess": {
+        "basis": "No permission or open-license determination is made at this gate; retain metadata and a link only.",
+        "classification": "metadata_and_link_only",
+        "contentUse": "metadata_only"
+      },
+      "sourceType": "digitized primary colonial narrative",
+      "stableUrl": "https://books.google.com/books/about/A_Narrative_of_the_Troubles_with_the_Ind.html?id=nWNYzgEACAAJ",
+      "temporalCoverage": "1607–1677",
+      "title": "A Narrative of the Troubles with the Indians in New-England, from 1607 to 1677"
+    },
+    {
+      "acquisitionStatus": "accepted",
+      "archiveIdentifier": "MWT Tribal Archives",
+      "candidateId": "hr9-src-mashpee-archives",
+      "candidateRecordsOrClaims": [
+        "Mashpee reporting-account connection",
+        "future land, governance, and community records after permission",
+        "archive-level provenance plan"
+      ],
+      "categories": {
+        "archaeologicalOrScholarly": false,
+        "indigenousLed": true,
+        "institutional": false,
+        "primaryOrArchival": true
+      },
+      "creatorOrResponsibleInstitution": "Mashpee Wampanoag Tribe",
+      "date": "n.d.; inspected 2026-07-28",
+      "geographicCoverage": [
+        "Mashpee",
+        "Wampanoag homelands"
+      ],
+      "limitationsOrKnownPerspective": "The public page is a collection and access description, not permission to inspect or publish records; tribal law, protocols, and access decisions control.",
+      "locatorStrategy": {
+        "bounded": true,
+        "notes": "Acquire and record this supplied locator exactly; do not infer pages, headings, archive identifiers, or edition identity.",
+        "type": "repository_accession_and_item",
+        "value": "repository name plus archive-supplied collection/accession/item identifier"
+      },
+      "proposedHistoryRootRole": [
+        "acquisition authority",
+        "archival provenance",
+        "data-sovereignty protocol"
+      ],
+      "publicationOrEdition": "Official Tribal Historic Preservation Department archives page",
+      "rejectionReason": null,
+      "rightsAccess": {
+        "basis": "No permission or open-license determination is made at this gate; retain metadata and a link only.",
+        "classification": "metadata_and_link_only",
+        "contentUse": "metadata_only"
+      },
+      "sourceType": "tribal archive and access authority",
+      "stableUrl": "https://mashpeewampanoagtribe-nsn.gov/thpd-archives",
+      "temporalCoverage": "collection-dependent",
+      "title": "Mashpee Wampanoag Tribal Archives"
+    },
+    {
+      "acquisitionStatus": "accepted",
+      "archiveIdentifier": "mashpee:timeline",
+      "candidateId": "hr9-src-mashpee-timeline",
+      "candidateRecordsOrClaims": [
+        "existing orphan Mashpee reporting account",
+        "Mashpee community and continuity records",
+        "qualified Metacom's War impact account"
+      ],
+      "categories": {
+        "archaeologicalOrScholarly": false,
+        "indigenousLed": true,
+        "institutional": false,
+        "primaryOrArchival": false
+      },
+      "creatorOrResponsibleInstitution": "Mashpee Wampanoag Tribe; jessie little doe baird",
+      "date": "n.d.; inspected 2026-07-28",
+      "geographicCoverage": [
+        "Mashpee",
+        "Plymouth",
+        "Wampanoag homelands"
+      ],
+      "limitationsOrKnownPerspective": "Concise tribal timeline; numerical and causal statements need claim-level triangulation and must remain attributed.",
+      "locatorStrategy": {
+        "bounded": true,
+        "notes": "Acquire and record this supplied locator exactly; do not infer pages, headings, archive identifiers, or edition identity.",
+        "type": "heading_and_dated_entry",
+        "value": "A Brief Timeline of Wampanoag History; exact year entry"
+      },
+      "proposedHistoryRootRole": [
+        "reporting account",
+        "community continuity",
+        "qualifying regional context"
+      ],
+      "publicationOrEdition": "Official tribal timeline webpage",
+      "rejectionReason": null,
+      "rightsAccess": {
+        "basis": "No permission or open-license determination is made at this gate; retain metadata and a link only.",
+        "classification": "metadata_and_link_only",
+        "contentUse": "metadata_only"
+      },
+      "sourceType": "tribal-institutional timeline",
+      "stableUrl": "https://mashpeewampanoagtribe-nsn.gov/timeline",
+      "temporalCoverage": "1620 to present; core entries 1620 and 1675",
+      "title": "A Brief Timeline of Wampanoag History"
+    },
+    {
+      "acquisitionStatus": "accepted",
+      "archiveIdentifier": "UNL DigitalCommons:libraryscience/31",
+      "candidateId": "hr9-src-mather-brief-history",
+      "candidateRecordsOrClaims": [
+        "Great Swamp and regional war chronology accounts",
+        "explicit colonial providential perspective",
+        "conflict with Easton's causation account"
+      ],
+      "categories": {
+        "archaeologicalOrScholarly": true,
+        "indigenousLed": false,
+        "institutional": true,
+        "primaryOrArchival": true
+      },
+      "creatorOrResponsibleInstitution": "Increase Mather; Paul Royster, editor",
+      "date": "1676",
+      "geographicCoverage": [
+        "New England",
+        "southern war theater"
+      ],
+      "limitationsOrKnownPerspective": "Contemporary Puritan providential narrative by a nonparticipant closely tied to colonial leadership; never treat its claims as neutral.",
+      "locatorStrategy": {
+        "bounded": true,
+        "notes": "Acquire and record this supplied locator exactly; do not infer pages, headings, archive identifiers, or edition identity.",
+        "type": "edition_page_and_note",
+        "value": "electronic-edition PDF page plus editorial note when used"
+      },
+      "proposedHistoryRootRole": [
+        "competing colonial account",
+        "reporting provenance",
+        "perspective evidence"
+      ],
+      "publicationOrEdition": "1676 first-edition-based electronic text, University of Nebraska–Lincoln Libraries",
+      "rejectionReason": null,
+      "rightsAccess": {
+        "basis": "No permission or open-license determination is made at this gate; retain metadata and a link only.",
+        "classification": "metadata_and_link_only",
+        "contentUse": "metadata_only"
+      },
+      "sourceType": "digitized primary colonial narrative",
+      "stableUrl": "https://digitalcommons.unl.edu/libraryscience/31/",
+      "temporalCoverage": "1675–August 1676",
+      "title": "A Brief History of the Warr with the Indians in New-England"
+    },
+    {
+      "acquisitionStatus": "accepted",
+      "archiveIdentifier": "MHC regional reconnaissance:Cape Cod and Islands",
+      "candidateId": "hr9-src-mhc-cape-islands",
+      "candidateRecordsOrClaims": [
+        "Cape Cod and islands archaeological-place candidates",
+        "research-gap and preservation-context records",
+        "qualified geographic scope"
+      ],
+      "categories": {
+        "archaeologicalOrScholarly": true,
+        "indigenousLed": false,
+        "institutional": true,
+        "primaryOrArchival": false
+      },
+      "creatorOrResponsibleInstitution": "Massachusetts Historical Commission",
+      "date": "1987; reprinted 2007",
+      "geographicCoverage": [
+        "Cape Cod",
+        "Martha's Vineyard",
+        "Nantucket"
+      ],
+      "limitationsOrKnownPerspective": "The state warns that the report is dated and scanned with OCR errors; use page images, not OCR alone, and supersede with newer tribal and peer-reviewed work.",
+      "locatorStrategy": {
+        "bounded": true,
+        "notes": "Acquire and record this supplied locator exactly; do not infer pages, headings, archive identifiers, or edition identity.",
+        "type": "report_page_and_section",
+        "value": "PDF page plus period/geographic section heading"
+      },
+      "proposedHistoryRootRole": [
+        "archaeological context",
+        "research-gap identification",
+        "place context"
+      ],
+      "publicationOrEdition": "1987 regional report; 2007 PDF reprint",
+      "rejectionReason": null,
+      "rightsAccess": {
+        "basis": "No permission or open-license determination is made at this gate; retain metadata and a link only.",
+        "classification": "metadata_and_link_only",
+        "contentUse": "metadata_only"
+      },
+      "sourceType": "government archaeological reconnaissance report",
+      "stableUrl": "https://www.sec.state.ma.us/divisions/mhc/preservation/survey/regional-reports/capeandislands.pdf",
+      "temporalCoverage": "precontact through historic periods",
+      "title": "Historic and Archaeological Resources of Cape Cod and the Islands: A Framework for Preservation Decisions"
+    },
+    {
+      "acquisitionStatus": "accepted",
+      "archiveIdentifier": "doi:10.2307/j.ctt1d9njj2.206",
+      "candidateId": "hr9-src-mittark-petition",
+      "candidateRecordsOrClaims": [
+        "Mittark person/account candidate",
+        "Aquinnah postwar continuity context",
+        "Indigenous-writing provenance model"
+      ],
+      "categories": {
+        "archaeologicalOrScholarly": true,
+        "indigenousLed": true,
+        "institutional": true,
+        "primaryOrArchival": true
+      },
+      "creatorOrResponsibleInstitution": "Mittark; edited in Dawnland Voices by Siobhan Senier, with Wampanoag section introduced by Joan Tavares Avant",
+      "date": "1681; edition 2014",
+      "geographicCoverage": [
+        "Gay Head (Aquinnah)",
+        "Noepe"
+      ],
+      "limitationsOrKnownPerspective": "Outside the core end date and mediated by a modern edition; use only for explicitly marked continuity and postwar context, with language/translation metadata.",
+      "locatorStrategy": {
+        "bounded": true,
+        "notes": "Acquire and record this supplied locator exactly; do not infer pages, headings, archive identifiers, or edition identity.",
+        "type": "doi_and_page",
+        "value": "doi:10.2307/j.ctt1d9njj2.206; pp. 435–436"
+      },
+      "proposedHistoryRootRole": [
+        "primary Indigenous writing",
+        "post-boundary continuity context",
+        "competing account"
+      ],
+      "publicationOrEdition": "Dawnland Voices: An Anthology of Indigenous Writing from New England, pp. 435–436",
+      "rejectionReason": null,
+      "rightsAccess": {
+        "basis": "No permission or open-license determination is made at this gate; retain metadata and a link only.",
+        "classification": "metadata_and_link_only",
+        "contentUse": "metadata_only"
+      },
+      "sourceType": "published Indigenous primary text in scholarly edition",
+      "stableUrl": "https://doi.org/10.2307/j.ctt1d9njj2.206",
+      "temporalCoverage": "1681; contextual exception beyond the 1676 core boundary",
+      "title": "Petition from Gay Head Sachem Mittark, 1681"
+    },
+    {
+      "acquisitionStatus": "accepted",
+      "archiveIdentifier": "NHPRC project catalog:Yale Indian Papers Project",
+      "candidateId": "hr9-src-nara-yale-indian-papers",
+      "candidateRecordsOrClaims": [
+        "deed, petition, and correspondence candidates",
+        "Manomet, Nemasket, Mount Hope, and Noepe archival relationships",
+        "additional reporting provenance"
+      ],
+      "categories": {
+        "archaeologicalOrScholarly": true,
+        "indigenousLed": false,
+        "institutional": true,
+        "primaryOrArchival": true
+      },
+      "creatorOrResponsibleInstitution": "Yale University, partner repositories, and National Historical Publications and Records Commission",
+      "date": "project coverage through 2017; inspected 2026-07-28",
+      "geographicCoverage": [
+        "New England",
+        "Wampanoag homelands"
+      ],
+      "limitationsOrKnownPerspective": "Portal-level acceptance does not accept every item; each document requires separate identity, rights, transcription, and locator review.",
+      "locatorStrategy": {
+        "bounded": true,
+        "notes": "Acquire and record this supplied locator exactly; do not infer pages, headings, archive identifiers, or edition identity.",
+        "type": "portal_document_id_and_image",
+        "value": "Native Northeast Portal document ID, repository call number, page/image"
+      },
+      "proposedHistoryRootRole": [
+        "primary-document discovery",
+        "edition identity",
+        "archival provenance"
+      ],
+      "publicationOrEdition": "Digital edition and archival portal catalog",
+      "rejectionReason": null,
+      "rightsAccess": {
+        "basis": "No permission or open-license determination is made at this gate; retain metadata and a link only.",
+        "classification": "metadata_and_link_only",
+        "contentUse": "metadata_only"
+      },
+      "sourceType": "archival digital edition portal",
+      "stableUrl": "https://www.archives.gov/nhprc/projects/catalog/yale-indian-papers",
+      "temporalCoverage": "seventeenth century and later, item-dependent",
+      "title": "Yale Indian Papers Project / Native Northeast Portal"
+    },
+    {
+      "acquisitionStatus": "accepted",
+      "archiveIdentifier": "NPS CACO:Carns Site",
+      "candidateId": "hr9-src-nps-carns",
+      "candidateRecordsOrClaims": [
+        "Carns archaeological-place record",
+        "Cape Cod deep-history contextual evidence",
+        "qualified chronology structure"
+      ],
+      "categories": {
+        "archaeologicalOrScholarly": true,
+        "indigenousLed": false,
+        "institutional": true,
+        "primaryOrArchival": false
+      },
+      "creatorOrResponsibleInstitution": "National Park Service, Cape Cod National Seashore",
+      "date": "updated 2025",
+      "geographicCoverage": [
+        "Coast Guard Beach",
+        "Eastham",
+        "Cape Cod"
+      ],
+      "limitationsOrKnownPerspective": "Site-specific precontact evidence; it cannot be projected onto later named communities or used to infer unsupported identity continuity.",
+      "locatorStrategy": {
+        "bounded": true,
+        "notes": "Acquire and record this supplied locator exactly; do not infer pages, headings, archive identifiers, or edition identity.",
+        "type": "section_and_report_reference",
+        "value": "webpage section plus cited excavation/report identifier"
+      },
+      "proposedHistoryRootRole": [
+        "archaeological context",
+        "qualifying deep-history evidence"
+      ],
+      "publicationOrEdition": "Official archaeological site summary",
+      "rejectionReason": null,
+      "rightsAccess": {
+        "basis": "No permission or open-license determination is made at this gate; retain metadata and a link only.",
+        "classification": "metadata_and_link_only",
+        "contentUse": "metadata_only"
+      },
+      "sourceType": "government archaeological report summary",
+      "stableUrl": "https://home.nps.gov/caco/learn/historyculture/the-carns-site.htm",
+      "temporalCoverage": "site periods preceding the seventeenth-century core",
+      "title": "The Carns Site"
+    },
+    {
+      "acquisitionStatus": "accepted",
+      "archiveIdentifier": "isbn:9780521842808",
+      "candidateId": "hr9-src-silverman-faith-boundaries",
+      "candidateRecordsOrClaims": [
+        "Noepe community, missionary, and sachemship records",
+        "Chappaquiddick–Aquinnah relationships",
+        "qualifying governance and land-pressure claims"
+      ],
+      "categories": {
+        "archaeologicalOrScholarly": true,
+        "indigenousLed": false,
+        "institutional": true,
+        "primaryOrArchival": false
+      },
+      "creatorOrResponsibleInstitution": "David J. Silverman",
+      "date": "2005",
+      "geographicCoverage": [
+        "Noepe (Martha's Vineyard)",
+        "Aquinnah",
+        "Chappaquiddick"
+      ],
+      "limitationsOrKnownPerspective": "Long temporal scope and scholarly interpretation require claim-level pages and separation of colonial documentation from authorial analysis.",
+      "locatorStrategy": {
+        "bounded": true,
+        "notes": "Acquire and record this supplied locator exactly; do not infer pages, headings, archive identifiers, or edition identity.",
+        "type": "chapter_doi_and_page",
+        "value": "chapter DOI plus page span; Chapter 4 doi:10.1017/CBO9780511806537.006, pp. 121–156"
+      },
+      "proposedHistoryRootRole": [
+        "scholarly interpretation",
+        "community and governance context",
+        "qualifying evidence"
+      ],
+      "publicationOrEdition": "Cambridge University Press, ISBN 9780521842808",
+      "rejectionReason": null,
+      "rightsAccess": {
+        "basis": "No permission or open-license determination is made at this gate; retain metadata and a link only.",
+        "classification": "metadata_and_link_only",
+        "contentUse": "metadata_only"
+      },
+      "sourceType": "peer-reviewed scholarly monograph",
+      "stableUrl": "https://www.cambridge.org/core/books/faith-and-boundaries/32351F3767A59466BC187107A2D71CAA",
+      "temporalCoverage": "1600–1871; core acquisition 1600–1676",
+      "title": "Faith and Boundaries: Colonists, Christianity, and Community among the Wampanoag Indians of Martha's Vineyard, 1600–1871"
+    },
+    {
+      "acquisitionStatus": "accepted",
+      "archiveIdentifier": "isbn:9781625349149",
+      "candidateId": "hr9-src-thomas-creating-new-england",
+      "candidateRecordsOrClaims": [
+        "regional spatial-relation candidates",
+        "colonial and Algonquian map-perspective comparison",
+        "qualified homeland and mobility context"
+      ],
+      "categories": {
+        "archaeologicalOrScholarly": true,
+        "indigenousLed": false,
+        "institutional": true,
+        "primaryOrArchival": false
+      },
+      "creatorOrResponsibleInstitution": "Ann Marie Plane and Gregory A. Waselkov, editors",
+      "date": "2026",
+      "geographicCoverage": [
+        "southern New England",
+        "Wampanoag and neighboring homelands"
+      ],
+      "limitationsOrKnownPerspective": "Regional comparative scholarship extends beyond the bounded scope; only relevant chapters may enter acquisition and no map becomes a territorial polygon.",
+      "locatorStrategy": {
+        "bounded": true,
+        "notes": "Acquire and record this supplied locator exactly; do not infer pages, headings, archive identifiers, or edition identity.",
+        "type": "chapter_and_page",
+        "value": "named chapter author/title plus exact page span"
+      },
+      "proposedHistoryRootRole": [
+        "spatial-history interpretation",
+        "map analysis",
+        "qualifying regional context"
+      ],
+      "publicationOrEdition": "University of Massachusetts Press, ISBN 9781625349149",
+      "rejectionReason": null,
+      "rightsAccess": {
+        "basis": "No permission or open-license determination is made at this gate; retain metadata and a link only.",
+        "classification": "metadata_and_link_only",
+        "contentUse": "metadata_only"
+      },
+      "sourceType": "peer-reviewed scholarly collection",
+      "stableUrl": "https://www.umasspress.com/9781625349149/creating-new-england-defending-the-northeast/",
+      "temporalCoverage": "colonial New England, chapter-dependent",
+      "title": "Creating New England, Defending the Northeast"
+    },
+    {
+      "acquisitionStatus": "accepted",
+      "archiveIdentifier": "doi:10.1017/RDC.2020.19",
+      "candidateId": "hr9-src-watson-ams-dates",
+      "candidateRecordsOrClaims": [
+        "Hornblower II and Frisby-Butler site records",
+        "Noepe seasonal-use date expressions",
+        "qualified archaeological chronology"
+      ],
+      "categories": {
+        "archaeologicalOrScholarly": true,
+        "indigenousLed": false,
+        "institutional": true,
+        "primaryOrArchival": false
+      },
+      "creatorOrResponsibleInstitution": "Jessica E. Watson",
+      "date": "2020",
+      "geographicCoverage": [
+        "Martha's Vineyard",
+        "southwest coast of Noepe"
+      ],
+      "limitationsOrKnownPerspective": "Radiocarbon and faunal evidence concerns specific sites and seasonal use; do not infer seventeenth-century personal, political, or territorial identities.",
+      "locatorStrategy": {
+        "bounded": true,
+        "notes": "Acquire and record this supplied locator exactly; do not infer pages, headings, archive identifiers, or edition identity.",
+        "type": "doi_page_and_table",
+        "value": "doi:10.1017/RDC.2020.19; pp. 1437–1451; dated-sample table"
+      },
+      "proposedHistoryRootRole": [
+        "archaeological evidence",
+        "chronology qualification",
+        "deep-history context"
+      ],
+      "publicationOrEdition": "Radiocarbon 62(5), Cambridge University Press",
+      "rejectionReason": null,
+      "rightsAccess": {
+        "basis": "No permission or open-license determination is made at this gate; retain metadata and a link only.",
+        "classification": "metadata_and_link_only",
+        "contentUse": "metadata_only"
+      },
+      "sourceType": "peer-reviewed archaeological article",
+      "stableUrl": "https://www.cambridge.org/core/journals/radiocarbon/article/abs/an-updated-history-of-precontact-new-england-new-ams-dates-for-the-hornblower-ii-and-frisbybutler-archaeological-sites/EBBF6A9D0E99FDD2CEB341C85BB2D8B3",
+      "temporalCoverage": "Late Archaic through Late Woodland",
+      "title": "An Updated History of Pre-Contact New England: New AMS Dates for the Hornblower II and Frisby-Butler Archaeological Sites"
+    }
+  ],
+  "planningOnly": true,
+  "registryId": "historyroot-regional-expansion-acquisition-v1",
+  "researchCutoff": "2026-07-28",
+  "schemaVersion": "1.0.0",
+  "scope": {
+    "geographicBoundary": "Cape Cod and Noepe through the Manomet–Nemasket corridor to Pokanoket, Mount Hope, Pocasset, and Sakonnet, with the immediate Narragansett Bay conflict edge.",
+    "temporalBoundary": "1614–1676",
+    "title": "Wampanoag Homelands and Intercommunity Networks, 1614–1676"
+  }
+}
