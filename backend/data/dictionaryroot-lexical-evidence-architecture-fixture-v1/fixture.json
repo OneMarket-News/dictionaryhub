@@ -1,0 +1,2144 @@
+{
+  "schemaVersion": "1.0.0",
+  "dataset": {
+    "datasetId": "dictionaryroot-lexical-evidence-architecture-fixture-v1",
+    "bundleId": "dictionaryroot-lexical-evidence-architecture-fixture-v1",
+    "title": "DictionaryRoot Lexical Evidence Architecture Fixture v1",
+    "version": "1.0.0",
+    "status": "fixture",
+    "rightsSummary": "Synthetic structural test content only; not a production lexical corpus.",
+    "fixtureOnly": true
+  },
+  "sources": [
+    {
+      "sourceId": "fixture-source-general-a",
+      "accountId": "fixture-editorial-process",
+      "name": "DictionaryRoot Fixture General Source A",
+      "edition": "Architecture fixture v1",
+      "rightsClass": "synthetic_test_only",
+      "license": "Synthetic test content; no production reuse claim",
+      "lineageId": "fixture-general-a"
+    },
+    {
+      "sourceId": "fixture-source-general-b",
+      "accountId": "fixture-editorial-process",
+      "name": "DictionaryRoot Fixture General Source B",
+      "edition": "Architecture fixture v1",
+      "rightsClass": "synthetic_test_only",
+      "license": "Synthetic test content; no production reuse claim",
+      "lineageId": "fixture-general-b"
+    },
+    {
+      "sourceId": "fixture-source-historical",
+      "accountId": "fixture-editorial-process",
+      "name": "DictionaryRoot Fixture Historical Source",
+      "edition": "Architecture fixture v1",
+      "rightsClass": "synthetic_test_only",
+      "license": "Synthetic test content; no production reuse claim",
+      "lineageId": "fixture-historical"
+    },
+    {
+      "sourceId": "fixture-source-technical",
+      "accountId": "fixture-editorial-process",
+      "name": "DictionaryRoot Fixture Technical Source",
+      "edition": "Architecture fixture v1",
+      "rightsClass": "synthetic_test_only",
+      "license": "Synthetic test content; no production reuse claim",
+      "lineageId": "fixture-technical"
+    },
+    {
+      "sourceId": "fixture-source-etymology",
+      "accountId": "fixture-editorial-process",
+      "name": "DictionaryRoot Fixture Etymology Source",
+      "edition": "Architecture fixture v1",
+      "rightsClass": "synthetic_test_only",
+      "license": "Synthetic test content; no production reuse claim",
+      "lineageId": "fixture-etymology"
+    }
+  ],
+  "lemmas": [
+    {
+      "lemmaId": "lex-lemma-bank",
+      "canonicalWrittenForm": "bank",
+      "normalizedForm": "bank",
+      "language": "en",
+      "script": "Latn",
+      "status": "fixture-reviewed",
+      "recordVersion": 1
+    },
+    {
+      "lemmaId": "lex-lemma-connection",
+      "canonicalWrittenForm": "connection",
+      "normalizedForm": "connection",
+      "language": "en",
+      "script": "Latn",
+      "status": "fixture-reviewed",
+      "recordVersion": 1
+    },
+    {
+      "lemmaId": "lex-lemma-algorithm",
+      "canonicalWrittenForm": "algorithm",
+      "normalizedForm": "algorithm",
+      "language": "en",
+      "script": "Latn",
+      "status": "fixture-reviewed",
+      "recordVersion": 1
+    },
+    {
+      "lemmaId": "lex-lemma-walk",
+      "canonicalWrittenForm": "walk",
+      "normalizedForm": "walk",
+      "language": "en",
+      "script": "Latn",
+      "status": "fixture-reviewed",
+      "recordVersion": 1
+    },
+    {
+      "lemmaId": "lex-lemma-color",
+      "canonicalWrittenForm": "color",
+      "normalizedForm": "color",
+      "language": "en",
+      "script": "Latn",
+      "status": "fixture-reviewed",
+      "recordVersion": 1
+    },
+    {
+      "lemmaId": "lex-lemma-island",
+      "canonicalWrittenForm": "island",
+      "normalizedForm": "island",
+      "language": "en",
+      "script": "Latn",
+      "status": "fixture-reviewed",
+      "recordVersion": 1
+    },
+    {
+      "lemmaId": "lex-lemma-compact",
+      "canonicalWrittenForm": "compact",
+      "normalizedForm": "compact",
+      "language": "en",
+      "script": "Latn",
+      "status": "fixture-reviewed",
+      "recordVersion": 1
+    },
+    {
+      "lemmaId": "lex-lemma-logos",
+      "canonicalWrittenForm": "logos",
+      "normalizedForm": "logos",
+      "language": "grc-Latn",
+      "script": "Latn",
+      "status": "fixture-reviewed",
+      "recordVersion": 1
+    },
+    {
+      "lemmaId": "lex-lemma-evidence",
+      "canonicalWrittenForm": "evidence",
+      "normalizedForm": "evidence",
+      "language": "en",
+      "script": "Latn",
+      "status": "fixture-reviewed",
+      "recordVersion": 1
+    },
+    {
+      "lemmaId": "lex-lemma-mouse",
+      "canonicalWrittenForm": "mouse",
+      "normalizedForm": "mouse",
+      "language": "en",
+      "script": "Latn",
+      "status": "fixture-reviewed",
+      "recordVersion": 1
+    }
+  ],
+  "senses": [
+    {
+      "senseId": "lex-sense-bank-finance",
+      "lemmaIds": [
+        "lex-lemma-bank"
+      ],
+      "partOfSpeech": "noun",
+      "lexicalCategory": "institution",
+      "status": "fixture-reviewed",
+      "reviewStatus": "reviewed",
+      "recordVersion": 1
+    },
+    {
+      "senseId": "lex-sense-bank-river",
+      "lemmaIds": [
+        "lex-lemma-bank"
+      ],
+      "partOfSpeech": "noun",
+      "lexicalCategory": "landform",
+      "status": "fixture-reviewed",
+      "reviewStatus": "reviewed",
+      "recordVersion": 1
+    },
+    {
+      "senseId": "lex-sense-bank-tilt",
+      "lemmaIds": [
+        "lex-lemma-bank"
+      ],
+      "partOfSpeech": "verb",
+      "lexicalCategory": "motion",
+      "status": "fixture-reviewed",
+      "reviewStatus": "reviewed",
+      "recordVersion": 1
+    },
+    {
+      "senseId": "lex-sense-connection-link",
+      "lemmaIds": [
+        "lex-lemma-connection"
+      ],
+      "partOfSpeech": "noun",
+      "lexicalCategory": "relation",
+      "status": "fixture-reviewed",
+      "reviewStatus": "reviewed",
+      "recordVersion": 1
+    },
+    {
+      "senseId": "lex-sense-algorithm-procedure",
+      "lemmaIds": [
+        "lex-lemma-algorithm"
+      ],
+      "partOfSpeech": "noun",
+      "lexicalCategory": "technical-process",
+      "status": "fixture-reviewed",
+      "reviewStatus": "reviewed",
+      "recordVersion": 1
+    },
+    {
+      "senseId": "lex-sense-walk-move",
+      "lemmaIds": [
+        "lex-lemma-walk"
+      ],
+      "partOfSpeech": "verb",
+      "lexicalCategory": "motion",
+      "status": "fixture-reviewed",
+      "reviewStatus": "reviewed",
+      "recordVersion": 1
+    },
+    {
+      "senseId": "lex-sense-walk-journey",
+      "lemmaIds": [
+        "lex-lemma-walk"
+      ],
+      "partOfSpeech": "noun",
+      "lexicalCategory": "event",
+      "status": "fixture-reviewed",
+      "reviewStatus": "reviewed",
+      "recordVersion": 1
+    },
+    {
+      "senseId": "lex-sense-color-property",
+      "lemmaIds": [
+        "lex-lemma-color"
+      ],
+      "partOfSpeech": "noun",
+      "lexicalCategory": "perceptual-property",
+      "status": "fixture-reviewed",
+      "reviewStatus": "reviewed",
+      "recordVersion": 1
+    },
+    {
+      "senseId": "lex-sense-island-land",
+      "lemmaIds": [
+        "lex-lemma-island"
+      ],
+      "partOfSpeech": "noun",
+      "lexicalCategory": "landform",
+      "status": "fixture-reviewed",
+      "reviewStatus": "reviewed",
+      "recordVersion": 1
+    },
+    {
+      "senseId": "lex-sense-compact-agreement",
+      "lemmaIds": [
+        "lex-lemma-compact"
+      ],
+      "partOfSpeech": "noun",
+      "lexicalCategory": "agreement",
+      "status": "fixture-reviewed",
+      "reviewStatus": "reviewed",
+      "recordVersion": 1
+    },
+    {
+      "senseId": "lex-sense-compact-small",
+      "lemmaIds": [
+        "lex-lemma-compact"
+      ],
+      "partOfSpeech": "adjective",
+      "lexicalCategory": "physical-property",
+      "status": "fixture-reviewed",
+      "reviewStatus": "reviewed",
+      "recordVersion": 1
+    },
+    {
+      "senseId": "lex-sense-logos-word",
+      "lemmaIds": [
+        "lex-lemma-logos"
+      ],
+      "partOfSpeech": "noun",
+      "lexicalCategory": "semantic-range",
+      "status": "fixture-reviewed",
+      "reviewStatus": "reviewed",
+      "recordVersion": 1
+    },
+    {
+      "senseId": "lex-sense-logos-principle",
+      "lemmaIds": [
+        "lex-lemma-logos"
+      ],
+      "partOfSpeech": "noun",
+      "lexicalCategory": "philosophical-concept",
+      "status": "fixture-reviewed",
+      "reviewStatus": "reviewed",
+      "recordVersion": 1
+    },
+    {
+      "senseId": "lex-sense-evidence-support",
+      "lemmaIds": [
+        "lex-lemma-evidence"
+      ],
+      "partOfSpeech": "noun",
+      "lexicalCategory": "epistemic-object",
+      "status": "fixture-reviewed",
+      "reviewStatus": "reviewed",
+      "recordVersion": 1
+    },
+    {
+      "senseId": "lex-sense-mouse-animal",
+      "lemmaIds": [
+        "lex-lemma-mouse"
+      ],
+      "partOfSpeech": "noun",
+      "lexicalCategory": "animal",
+      "status": "fixture-reviewed",
+      "reviewStatus": "reviewed",
+      "recordVersion": 1
+    },
+    {
+      "senseId": "lex-sense-mouse-device",
+      "lemmaIds": [
+        "lex-lemma-mouse"
+      ],
+      "partOfSpeech": "noun",
+      "lexicalCategory": "technical-device",
+      "status": "fixture-reviewed",
+      "reviewStatus": "reviewed",
+      "recordVersion": 1
+    }
+  ],
+  "definitionClaims": [
+    {
+      "claimId": "lex-claim-bank-finance-a",
+      "senseId": "lex-sense-bank-finance",
+      "sourceId": "fixture-source-general-a",
+      "exactWording": "A managed institution that receives, safeguards, and lends money.",
+      "language": "en",
+      "claimStatus": "reviewed-fixture",
+      "evidenceRelationship": "direct",
+      "recordVersion": 1,
+      "editionContext": "Architecture fixture v1; synthetic test wording"
+    },
+    {
+      "claimId": "lex-claim-bank-finance-b",
+      "senseId": "lex-sense-bank-finance",
+      "sourceId": "fixture-source-general-b",
+      "exactWording": "An institution that accepts deposits and provides financial services.",
+      "language": "en",
+      "claimStatus": "reviewed-fixture",
+      "evidenceRelationship": "direct",
+      "recordVersion": 1,
+      "editionContext": "Architecture fixture v1; synthetic test wording"
+    },
+    {
+      "claimId": "lex-claim-bank-river-a",
+      "senseId": "lex-sense-bank-river",
+      "sourceId": "fixture-source-general-a",
+      "exactWording": "The sloping ground beside a river or other body of water.",
+      "language": "en",
+      "claimStatus": "reviewed-fixture",
+      "evidenceRelationship": "direct",
+      "recordVersion": 1,
+      "editionContext": "Architecture fixture v1; synthetic test wording"
+    },
+    {
+      "claimId": "lex-claim-bank-river-b",
+      "senseId": "lex-sense-bank-river",
+      "sourceId": "fixture-source-general-b",
+      "exactWording": "Ground bordering water.",
+      "language": "en",
+      "claimStatus": "reviewed-fixture",
+      "evidenceRelationship": "direct",
+      "recordVersion": 1,
+      "editionContext": "Architecture fixture v1; synthetic test wording",
+      "qualification": "Broader than the paired fixture claim."
+    },
+    {
+      "claimId": "lex-claim-bank-tilt",
+      "senseId": "lex-sense-bank-tilt",
+      "sourceId": "fixture-source-general-a",
+      "exactWording": "To incline an aircraft or vehicle while turning.",
+      "language": "en",
+      "claimStatus": "reviewed-fixture",
+      "evidenceRelationship": "direct",
+      "recordVersion": 1,
+      "editionContext": "Architecture fixture v1; synthetic test wording"
+    },
+    {
+      "claimId": "lex-claim-connection-modern",
+      "senseId": "lex-sense-connection-link",
+      "sourceId": "fixture-source-general-a",
+      "exactWording": "A relationship or link joining people, things, or ideas.",
+      "language": "en",
+      "claimStatus": "reviewed-fixture",
+      "evidenceRelationship": "direct",
+      "recordVersion": 1,
+      "editionContext": "Architecture fixture v1; synthetic test wording"
+    },
+    {
+      "claimId": "lex-claim-connection-historical",
+      "senseId": "lex-sense-connection-link",
+      "sourceId": "fixture-source-historical",
+      "exactWording": "A joining or relation between things.",
+      "language": "en",
+      "claimStatus": "reviewed-fixture",
+      "evidenceRelationship": "direct",
+      "recordVersion": 1,
+      "editionContext": "Architecture fixture v1; synthetic test wording",
+      "usageLabel": "historical spelling evidence"
+    },
+    {
+      "claimId": "lex-claim-algorithm-technical",
+      "senseId": "lex-sense-algorithm-procedure",
+      "sourceId": "fixture-source-technical",
+      "exactWording": "A finite, ordered procedure for solving a defined computational problem.",
+      "language": "en",
+      "claimStatus": "reviewed-fixture",
+      "evidenceRelationship": "direct",
+      "recordVersion": 1,
+      "editionContext": "Architecture fixture v1; synthetic test wording",
+      "domainLabel": "computer science",
+      "registerLabel": "technical"
+    },
+    {
+      "claimId": "lex-claim-algorithm-general",
+      "senseId": "lex-sense-algorithm-procedure",
+      "sourceId": "fixture-source-general-a",
+      "exactWording": "A step-by-step method for completing a task.",
+      "language": "en",
+      "claimStatus": "reviewed-fixture",
+      "evidenceRelationship": "direct",
+      "recordVersion": 1,
+      "editionContext": "Architecture fixture v1; synthetic test wording",
+      "qualification": "Generalized fixture wording."
+    },
+    {
+      "claimId": "lex-claim-walk-verb",
+      "senseId": "lex-sense-walk-move",
+      "sourceId": "fixture-source-general-a",
+      "exactWording": "To move on foot at a regular pace.",
+      "language": "en",
+      "claimStatus": "reviewed-fixture",
+      "evidenceRelationship": "direct",
+      "recordVersion": 1,
+      "editionContext": "Architecture fixture v1; synthetic test wording"
+    },
+    {
+      "claimId": "lex-claim-walk-noun",
+      "senseId": "lex-sense-walk-journey",
+      "sourceId": "fixture-source-general-a",
+      "exactWording": "A journey made on foot.",
+      "language": "en",
+      "claimStatus": "reviewed-fixture",
+      "evidenceRelationship": "direct",
+      "recordVersion": 1,
+      "editionContext": "Architecture fixture v1; synthetic test wording"
+    },
+    {
+      "claimId": "lex-claim-color-property",
+      "senseId": "lex-sense-color-property",
+      "sourceId": "fixture-source-general-a",
+      "exactWording": "A visual property associated with how light is perceived.",
+      "language": "en",
+      "claimStatus": "reviewed-fixture",
+      "evidenceRelationship": "direct",
+      "recordVersion": 1,
+      "editionContext": "Architecture fixture v1; synthetic test wording"
+    },
+    {
+      "claimId": "lex-claim-island-land",
+      "senseId": "lex-sense-island-land",
+      "sourceId": "fixture-source-general-a",
+      "exactWording": "Land surrounded by water.",
+      "language": "en",
+      "claimStatus": "reviewed-fixture",
+      "evidenceRelationship": "direct",
+      "recordVersion": 1,
+      "editionContext": "Architecture fixture v1; synthetic test wording"
+    },
+    {
+      "claimId": "lex-claim-compact-agreement-a",
+      "senseId": "lex-sense-compact-agreement",
+      "sourceId": "fixture-source-historical",
+      "exactWording": "A formal agreement among people or communities.",
+      "language": "en",
+      "claimStatus": "reviewed-fixture",
+      "evidenceRelationship": "direct",
+      "recordVersion": 1,
+      "editionContext": "Architecture fixture v1; synthetic test wording"
+    },
+    {
+      "claimId": "lex-claim-compact-agreement-b",
+      "senseId": "lex-sense-compact-agreement",
+      "sourceId": "fixture-source-general-a",
+      "exactWording": "An agreement or covenant between parties.",
+      "language": "en",
+      "claimStatus": "reviewed-fixture",
+      "evidenceRelationship": "direct",
+      "recordVersion": 1,
+      "editionContext": "Architecture fixture v1; synthetic test wording"
+    },
+    {
+      "claimId": "lex-claim-compact-small",
+      "senseId": "lex-sense-compact-small",
+      "sourceId": "fixture-source-general-a",
+      "exactWording": "Closely packed or occupying little space.",
+      "language": "en",
+      "claimStatus": "reviewed-fixture",
+      "evidenceRelationship": "direct",
+      "recordVersion": 1,
+      "editionContext": "Architecture fixture v1; synthetic test wording"
+    },
+    {
+      "claimId": "lex-claim-logos-word",
+      "senseId": "lex-sense-logos-word",
+      "sourceId": "fixture-source-historical",
+      "exactWording": "A term whose historical range may include word, account, or reason.",
+      "language": "en",
+      "claimStatus": "reviewed-fixture",
+      "evidenceRelationship": "direct",
+      "recordVersion": 1,
+      "editionContext": "Architecture fixture v1; synthetic test wording",
+      "uncertainty": "Semantic range varies by context and period."
+    },
+    {
+      "claimId": "lex-claim-logos-principle",
+      "senseId": "lex-sense-logos-principle",
+      "sourceId": "fixture-source-general-b",
+      "exactWording": "A principle of reason or ordering.",
+      "language": "en",
+      "claimStatus": "reviewed-fixture",
+      "evidenceRelationship": "direct",
+      "recordVersion": 1,
+      "editionContext": "Architecture fixture v1; synthetic test wording",
+      "uncertainty": "This fixture does not select a translation."
+    },
+    {
+      "claimId": "lex-claim-evidence-support",
+      "senseId": "lex-sense-evidence-support",
+      "sourceId": "fixture-source-general-a",
+      "exactWording": "Information used to support or challenge a claim.",
+      "language": "en",
+      "claimStatus": "reviewed-fixture",
+      "evidenceRelationship": "direct",
+      "recordVersion": 1,
+      "editionContext": "Architecture fixture v1; synthetic test wording"
+    },
+    {
+      "claimId": "lex-claim-mouse-animal",
+      "senseId": "lex-sense-mouse-animal",
+      "sourceId": "fixture-source-general-a",
+      "exactWording": "A small rodent.",
+      "language": "en",
+      "claimStatus": "reviewed-fixture",
+      "evidenceRelationship": "direct",
+      "recordVersion": 1,
+      "editionContext": "Architecture fixture v1; synthetic test wording"
+    },
+    {
+      "claimId": "lex-claim-mouse-device",
+      "senseId": "lex-sense-mouse-device",
+      "sourceId": "fixture-source-technical",
+      "exactWording": "A hand-operated pointing device for controlling a computer interface.",
+      "language": "en",
+      "claimStatus": "reviewed-fixture",
+      "evidenceRelationship": "direct",
+      "recordVersion": 1,
+      "editionContext": "Architecture fixture v1; synthetic test wording",
+      "domainLabel": "computing",
+      "registerLabel": "technical"
+    },
+    {
+      "claimId": "lex-claim-mouse-device-general",
+      "senseId": "lex-sense-mouse-device",
+      "sourceId": "fixture-source-general-b",
+      "exactWording": "A device used to point at and select items on a screen.",
+      "language": "en",
+      "claimStatus": "reviewed-fixture",
+      "evidenceRelationship": "direct",
+      "recordVersion": 1,
+      "editionContext": "Architecture fixture v1; synthetic test wording",
+      "domainLabel": "computing"
+    }
+  ],
+  "forms": [
+    {
+      "formId": "lex-form-connexion",
+      "lemmaId": "lex-lemma-connection",
+      "senseId": "lex-sense-connection-link",
+      "sourceId": "fixture-source-historical",
+      "writtenForm": "connexion",
+      "normalizedForm": "connexion",
+      "formType": "historical",
+      "language": "en",
+      "script": "Latn",
+      "usageContext": "chiefly historical spelling",
+      "recordVersion": 1
+    },
+    {
+      "formId": "lex-form-colour",
+      "lemmaId": "lex-lemma-color",
+      "senseId": "lex-sense-color-property",
+      "sourceId": "fixture-source-general-a",
+      "writtenForm": "colour",
+      "normalizedForm": "colour",
+      "formType": "spelling_variant",
+      "language": "en",
+      "script": "Latn",
+      "usageContext": "regional spelling variant",
+      "recordVersion": 1
+    },
+    {
+      "formId": "lex-form-walked",
+      "lemmaId": "lex-lemma-walk",
+      "senseId": "lex-sense-walk-move",
+      "sourceId": "fixture-source-general-a",
+      "writtenForm": "walked",
+      "normalizedForm": "walked",
+      "formType": "inflected",
+      "language": "en",
+      "script": "Latn",
+      "usageContext": "past tense and past participle",
+      "recordVersion": 1
+    },
+    {
+      "formId": "lex-form-walking",
+      "lemmaId": "lex-lemma-walk",
+      "senseId": "lex-sense-walk-move",
+      "sourceId": "fixture-source-general-a",
+      "writtenForm": "walking",
+      "normalizedForm": "walking",
+      "formType": "inflected",
+      "language": "en",
+      "script": "Latn",
+      "usageContext": "present participle and gerund",
+      "recordVersion": 1
+    },
+    {
+      "formId": "lex-form-walker",
+      "lemmaId": "lex-lemma-walk",
+      "senseId": "lex-sense-walk-move",
+      "sourceId": "fixture-source-general-a",
+      "writtenForm": "walker",
+      "normalizedForm": "walker",
+      "formType": "derived",
+      "language": "en",
+      "script": "Latn",
+      "usageContext": "agent noun",
+      "recordVersion": 1
+    },
+    {
+      "formId": "lex-form-banking",
+      "lemmaId": "lex-lemma-bank",
+      "senseId": "lex-sense-bank-finance",
+      "sourceId": "fixture-source-general-a",
+      "writtenForm": "banking",
+      "normalizedForm": "banking",
+      "formType": "derived",
+      "language": "en",
+      "script": "Latn",
+      "usageContext": "activity noun",
+      "recordVersion": 1
+    },
+    {
+      "formId": "lex-form-banked",
+      "lemmaId": "lex-lemma-bank",
+      "senseId": "lex-sense-bank-tilt",
+      "sourceId": "fixture-source-general-a",
+      "writtenForm": "banked",
+      "normalizedForm": "banked",
+      "formType": "inflected",
+      "language": "en",
+      "script": "Latn",
+      "usageContext": "past tense",
+      "recordVersion": 1
+    },
+    {
+      "formId": "lex-form-algorithms",
+      "lemmaId": "lex-lemma-algorithm",
+      "senseId": "lex-sense-algorithm-procedure",
+      "sourceId": "fixture-source-technical",
+      "writtenForm": "algorithms",
+      "normalizedForm": "algorithms",
+      "formType": "inflected",
+      "language": "en",
+      "script": "Latn",
+      "usageContext": "plural",
+      "recordVersion": 1
+    },
+    {
+      "formId": "lex-form-mice",
+      "lemmaId": "lex-lemma-mouse",
+      "senseId": "lex-sense-mouse-animal",
+      "sourceId": "fixture-source-general-a",
+      "writtenForm": "mice",
+      "normalizedForm": "mice",
+      "formType": "inflected",
+      "language": "en",
+      "script": "Latn",
+      "usageContext": "irregular plural",
+      "recordVersion": 1
+    },
+    {
+      "formId": "lex-form-mouses",
+      "lemmaId": "lex-lemma-mouse",
+      "senseId": "lex-sense-mouse-device",
+      "sourceId": "fixture-source-technical",
+      "writtenForm": "mouses",
+      "normalizedForm": "mouses",
+      "formType": "inflected",
+      "language": "en",
+      "script": "Latn",
+      "usageContext": "attested technical plural in fixture",
+      "recordVersion": 1
+    }
+  ],
+  "etymologyProposals": [
+    {
+      "proposalId": "lex-etymology-island-inherited",
+      "subject": {
+        "lemmaId": "lex-lemma-island"
+      },
+      "sourceId": "fixture-source-etymology",
+      "proposedSourceLanguage": "Old English",
+      "proposedEtymon": "iegland",
+      "relationshipType": "inheritance",
+      "chronologyDisplay": "Old English to Middle English",
+      "confidence": "qualified",
+      "qualification": "Synthetic structural proposal; exact historical evidence is not asserted.",
+      "reviewStatus": "reviewed-fixture",
+      "competingProposalIds": [
+        "lex-etymology-island-spelling-influence"
+      ],
+      "recordVersion": 1
+    },
+    {
+      "proposalId": "lex-etymology-island-spelling-influence",
+      "subject": {
+        "lemmaId": "lex-lemma-island"
+      },
+      "sourceId": "fixture-source-etymology",
+      "proposedSourceLanguage": "Old French",
+      "proposedEtymon": "isle",
+      "relationshipType": "spelling_influence",
+      "chronologyDisplay": "Early Modern English",
+      "confidence": "uncertain",
+      "qualification": "Competing influence proposal retained separately.",
+      "reviewStatus": "unresolved",
+      "competingProposalIds": [
+        "lex-etymology-island-inherited"
+      ],
+      "recordVersion": 1
+    },
+    {
+      "proposalId": "lex-etymology-algorithm-borrowing",
+      "subject": {
+        "lemmaId": "lex-lemma-algorithm"
+      },
+      "sourceId": "fixture-source-etymology",
+      "proposedSourceLanguage": "Medieval Latin",
+      "proposedEtymon": "algorismus",
+      "relationshipType": "borrowing",
+      "confidence": "qualified",
+      "qualification": "Synthetic architecture fixture, not an accepted origin claim.",
+      "reviewStatus": "reviewed-fixture",
+      "competingProposalIds": [],
+      "recordVersion": 1
+    },
+    {
+      "proposalId": "lex-etymology-logos-unknown",
+      "subject": {
+        "lemmaId": "lex-lemma-logos"
+      },
+      "sourceId": "fixture-source-etymology",
+      "proposedSourceLanguage": "Ancient Greek",
+      "proposedEtymon": "logos",
+      "relationshipType": "unknown_origin",
+      "confidence": "uncertain",
+      "qualification": "The fixture preserves uncertainty and does not infer a deeper origin.",
+      "reviewStatus": "unresolved",
+      "competingProposalIds": [],
+      "recordVersion": 1
+    }
+  ],
+  "sourceComparisons": [
+    {
+      "comparisonId": "lex-comparison-bank-finance-equivalent",
+      "senseId": "lex-sense-bank-finance",
+      "leftClaimId": "lex-claim-bank-finance-a",
+      "rightClaimId": "lex-claim-bank-finance-b",
+      "comparisonType": "substantially_equivalent_meaning",
+      "reviewStatus": "reviewed",
+      "explanation": "Both fixture claims identify an institution handling deposits and financial services.",
+      "reviewerIdentity": "fixture-human-review",
+      "algorithmicSuggestion": "equivalent_candidate",
+      "algorithmicRulesetVersion": "fixture-rules-v1",
+      "sourceLineageRelation": "independent_fixture_lineages",
+      "recordVersion": 1
+    },
+    {
+      "comparisonId": "lex-comparison-bank-river-broader",
+      "senseId": "lex-sense-bank-river",
+      "leftClaimId": "lex-claim-bank-river-a",
+      "rightClaimId": "lex-claim-bank-river-b",
+      "comparisonType": "broader_definition",
+      "reviewStatus": "reviewed",
+      "explanation": "The right claim covers any bordering ground; the left claim specifies sloping ground.",
+      "reviewerIdentity": "fixture-human-review",
+      "recordVersion": 1
+    },
+    {
+      "comparisonId": "lex-comparison-algorithm-general-technical",
+      "senseId": "lex-sense-algorithm-procedure",
+      "leftClaimId": "lex-claim-algorithm-technical",
+      "rightClaimId": "lex-claim-algorithm-general",
+      "comparisonType": "general_versus_technical",
+      "reviewStatus": "reviewed",
+      "explanation": "One claim is constrained to computation; the other describes a general method.",
+      "reviewerIdentity": "fixture-human-review",
+      "recordVersion": 1
+    },
+    {
+      "comparisonId": "lex-comparison-logos-unresolved",
+      "senseId": "lex-sense-logos-word",
+      "leftClaimId": "lex-claim-logos-word",
+      "rightClaimId": "lex-claim-logos-principle",
+      "comparisonType": "unresolved_comparison",
+      "reviewStatus": "unresolved",
+      "explanation": "The fixture deliberately leaves sense alignment and translation range unresolved.",
+      "reviewerIdentity": "fixture-human-review",
+      "recordVersion": 1
+    }
+  ],
+  "locators": [
+    {
+      "locatorId": "lex-locator-lex-claim-bank-finance-a",
+      "subject": {
+        "claimId": "lex-claim-bank-finance-a"
+      },
+      "sourceId": "fixture-source-general-a",
+      "edition": "Architecture fixture v1; synthetic test wording",
+      "datasetRecordId": "fixture-claim-001",
+      "stableFragment": "lex-claim-bank-finance-a"
+    },
+    {
+      "locatorId": "lex-locator-lex-claim-bank-finance-b",
+      "subject": {
+        "claimId": "lex-claim-bank-finance-b"
+      },
+      "sourceId": "fixture-source-general-b",
+      "edition": "Architecture fixture v1; synthetic test wording",
+      "datasetRecordId": "fixture-claim-002",
+      "stableFragment": "lex-claim-bank-finance-b"
+    },
+    {
+      "locatorId": "lex-locator-lex-claim-bank-river-a",
+      "subject": {
+        "claimId": "lex-claim-bank-river-a"
+      },
+      "sourceId": "fixture-source-general-a",
+      "edition": "Architecture fixture v1; synthetic test wording",
+      "datasetRecordId": "fixture-claim-003",
+      "stableFragment": "lex-claim-bank-river-a"
+    },
+    {
+      "locatorId": "lex-locator-lex-claim-bank-river-b",
+      "subject": {
+        "claimId": "lex-claim-bank-river-b"
+      },
+      "sourceId": "fixture-source-general-b",
+      "edition": "Architecture fixture v1; synthetic test wording",
+      "datasetRecordId": "fixture-claim-004",
+      "stableFragment": "lex-claim-bank-river-b"
+    },
+    {
+      "locatorId": "lex-locator-lex-claim-bank-tilt",
+      "subject": {
+        "claimId": "lex-claim-bank-tilt"
+      },
+      "sourceId": "fixture-source-general-a",
+      "edition": "Architecture fixture v1; synthetic test wording",
+      "datasetRecordId": "fixture-claim-005",
+      "stableFragment": "lex-claim-bank-tilt"
+    },
+    {
+      "locatorId": "lex-locator-lex-claim-connection-modern",
+      "subject": {
+        "claimId": "lex-claim-connection-modern"
+      },
+      "sourceId": "fixture-source-general-a",
+      "edition": "Architecture fixture v1; synthetic test wording",
+      "datasetRecordId": "fixture-claim-006",
+      "stableFragment": "lex-claim-connection-modern"
+    },
+    {
+      "locatorId": "lex-locator-lex-claim-connection-historical",
+      "subject": {
+        "claimId": "lex-claim-connection-historical"
+      },
+      "sourceId": "fixture-source-historical",
+      "edition": "Architecture fixture v1; synthetic test wording",
+      "datasetRecordId": "fixture-claim-007",
+      "stableFragment": "lex-claim-connection-historical"
+    },
+    {
+      "locatorId": "lex-locator-lex-claim-algorithm-technical",
+      "subject": {
+        "claimId": "lex-claim-algorithm-technical"
+      },
+      "sourceId": "fixture-source-technical",
+      "edition": "Architecture fixture v1; synthetic test wording",
+      "datasetRecordId": "fixture-claim-008",
+      "stableFragment": "lex-claim-algorithm-technical"
+    },
+    {
+      "locatorId": "lex-locator-lex-claim-algorithm-general",
+      "subject": {
+        "claimId": "lex-claim-algorithm-general"
+      },
+      "sourceId": "fixture-source-general-a",
+      "edition": "Architecture fixture v1; synthetic test wording",
+      "datasetRecordId": "fixture-claim-009",
+      "stableFragment": "lex-claim-algorithm-general"
+    },
+    {
+      "locatorId": "lex-locator-lex-claim-walk-verb",
+      "subject": {
+        "claimId": "lex-claim-walk-verb"
+      },
+      "sourceId": "fixture-source-general-a",
+      "edition": "Architecture fixture v1; synthetic test wording",
+      "datasetRecordId": "fixture-claim-010",
+      "stableFragment": "lex-claim-walk-verb"
+    },
+    {
+      "locatorId": "lex-locator-lex-claim-walk-noun",
+      "subject": {
+        "claimId": "lex-claim-walk-noun"
+      },
+      "sourceId": "fixture-source-general-a",
+      "edition": "Architecture fixture v1; synthetic test wording",
+      "datasetRecordId": "fixture-claim-011",
+      "stableFragment": "lex-claim-walk-noun"
+    },
+    {
+      "locatorId": "lex-locator-lex-claim-color-property",
+      "subject": {
+        "claimId": "lex-claim-color-property"
+      },
+      "sourceId": "fixture-source-general-a",
+      "edition": "Architecture fixture v1; synthetic test wording",
+      "datasetRecordId": "fixture-claim-012",
+      "stableFragment": "lex-claim-color-property"
+    },
+    {
+      "locatorId": "lex-locator-lex-claim-island-land",
+      "subject": {
+        "claimId": "lex-claim-island-land"
+      },
+      "sourceId": "fixture-source-general-a",
+      "edition": "Architecture fixture v1; synthetic test wording",
+      "datasetRecordId": "fixture-claim-013",
+      "stableFragment": "lex-claim-island-land"
+    },
+    {
+      "locatorId": "lex-locator-lex-claim-compact-agreement-a",
+      "subject": {
+        "claimId": "lex-claim-compact-agreement-a"
+      },
+      "sourceId": "fixture-source-historical",
+      "edition": "Architecture fixture v1; synthetic test wording",
+      "datasetRecordId": "fixture-claim-014",
+      "stableFragment": "lex-claim-compact-agreement-a"
+    },
+    {
+      "locatorId": "lex-locator-lex-claim-compact-agreement-b",
+      "subject": {
+        "claimId": "lex-claim-compact-agreement-b"
+      },
+      "sourceId": "fixture-source-general-a",
+      "edition": "Architecture fixture v1; synthetic test wording",
+      "datasetRecordId": "fixture-claim-015",
+      "stableFragment": "lex-claim-compact-agreement-b"
+    },
+    {
+      "locatorId": "lex-locator-lex-claim-compact-small",
+      "subject": {
+        "claimId": "lex-claim-compact-small"
+      },
+      "sourceId": "fixture-source-general-a",
+      "edition": "Architecture fixture v1; synthetic test wording",
+      "datasetRecordId": "fixture-claim-016",
+      "stableFragment": "lex-claim-compact-small"
+    },
+    {
+      "locatorId": "lex-locator-lex-claim-logos-word",
+      "subject": {
+        "claimId": "lex-claim-logos-word"
+      },
+      "sourceId": "fixture-source-historical",
+      "edition": "Architecture fixture v1; synthetic test wording",
+      "datasetRecordId": "fixture-claim-017",
+      "stableFragment": "lex-claim-logos-word"
+    },
+    {
+      "locatorId": "lex-locator-lex-claim-logos-principle",
+      "subject": {
+        "claimId": "lex-claim-logos-principle"
+      },
+      "sourceId": "fixture-source-general-b",
+      "edition": "Architecture fixture v1; synthetic test wording",
+      "datasetRecordId": "fixture-claim-018",
+      "stableFragment": "lex-claim-logos-principle"
+    },
+    {
+      "locatorId": "lex-locator-lex-claim-evidence-support",
+      "subject": {
+        "claimId": "lex-claim-evidence-support"
+      },
+      "sourceId": "fixture-source-general-a",
+      "edition": "Architecture fixture v1; synthetic test wording",
+      "datasetRecordId": "fixture-claim-019",
+      "stableFragment": "lex-claim-evidence-support"
+    },
+    {
+      "locatorId": "lex-locator-lex-claim-mouse-animal",
+      "subject": {
+        "claimId": "lex-claim-mouse-animal"
+      },
+      "sourceId": "fixture-source-general-a",
+      "edition": "Architecture fixture v1; synthetic test wording",
+      "datasetRecordId": "fixture-claim-020",
+      "stableFragment": "lex-claim-mouse-animal"
+    },
+    {
+      "locatorId": "lex-locator-lex-claim-mouse-device",
+      "subject": {
+        "claimId": "lex-claim-mouse-device"
+      },
+      "sourceId": "fixture-source-technical",
+      "edition": "Architecture fixture v1; synthetic test wording",
+      "datasetRecordId": "fixture-claim-021",
+      "stableFragment": "lex-claim-mouse-device"
+    },
+    {
+      "locatorId": "lex-locator-lex-claim-mouse-device-general",
+      "subject": {
+        "claimId": "lex-claim-mouse-device-general"
+      },
+      "sourceId": "fixture-source-general-b",
+      "edition": "Architecture fixture v1; synthetic test wording",
+      "datasetRecordId": "fixture-claim-022",
+      "stableFragment": "lex-claim-mouse-device-general"
+    },
+    {
+      "locatorId": "lex-locator-lex-form-connexion",
+      "subject": {
+        "formId": "lex-form-connexion"
+      },
+      "sourceId": "fixture-source-historical",
+      "datasetRecordId": "fixture-form-001",
+      "entryHeadword": "connection"
+    },
+    {
+      "locatorId": "lex-locator-lex-form-colour",
+      "subject": {
+        "formId": "lex-form-colour"
+      },
+      "sourceId": "fixture-source-general-a",
+      "datasetRecordId": "fixture-form-002",
+      "entryHeadword": "color"
+    },
+    {
+      "locatorId": "lex-locator-lex-form-walked",
+      "subject": {
+        "formId": "lex-form-walked"
+      },
+      "sourceId": "fixture-source-general-a",
+      "datasetRecordId": "fixture-form-003",
+      "entryHeadword": "walk"
+    },
+    {
+      "locatorId": "lex-locator-lex-form-walking",
+      "subject": {
+        "formId": "lex-form-walking"
+      },
+      "sourceId": "fixture-source-general-a",
+      "datasetRecordId": "fixture-form-004",
+      "entryHeadword": "walk"
+    },
+    {
+      "locatorId": "lex-locator-lex-form-walker",
+      "subject": {
+        "formId": "lex-form-walker"
+      },
+      "sourceId": "fixture-source-general-a",
+      "datasetRecordId": "fixture-form-005",
+      "entryHeadword": "walk"
+    },
+    {
+      "locatorId": "lex-locator-lex-form-banking",
+      "subject": {
+        "formId": "lex-form-banking"
+      },
+      "sourceId": "fixture-source-general-a",
+      "datasetRecordId": "fixture-form-006",
+      "entryHeadword": "bank"
+    },
+    {
+      "locatorId": "lex-locator-lex-form-banked",
+      "subject": {
+        "formId": "lex-form-banked"
+      },
+      "sourceId": "fixture-source-general-a",
+      "datasetRecordId": "fixture-form-007",
+      "entryHeadword": "bank"
+    },
+    {
+      "locatorId": "lex-locator-lex-form-algorithms",
+      "subject": {
+        "formId": "lex-form-algorithms"
+      },
+      "sourceId": "fixture-source-technical",
+      "datasetRecordId": "fixture-form-008",
+      "entryHeadword": "algorithm"
+    },
+    {
+      "locatorId": "lex-locator-lex-form-mice",
+      "subject": {
+        "formId": "lex-form-mice"
+      },
+      "sourceId": "fixture-source-general-a",
+      "datasetRecordId": "fixture-form-009",
+      "entryHeadword": "mouse"
+    },
+    {
+      "locatorId": "lex-locator-lex-form-mouses",
+      "subject": {
+        "formId": "lex-form-mouses"
+      },
+      "sourceId": "fixture-source-technical",
+      "datasetRecordId": "fixture-form-010",
+      "entryHeadword": "mouse"
+    },
+    {
+      "locatorId": "lex-locator-lex-etymology-island-inherited",
+      "subject": {
+        "proposalId": "lex-etymology-island-inherited"
+      },
+      "sourceId": "fixture-source-etymology",
+      "datasetRecordId": "fixture-etymology-001",
+      "stableFragment": "lex-etymology-island-inherited"
+    },
+    {
+      "locatorId": "lex-locator-lex-etymology-island-spelling-influence",
+      "subject": {
+        "proposalId": "lex-etymology-island-spelling-influence"
+      },
+      "sourceId": "fixture-source-etymology",
+      "datasetRecordId": "fixture-etymology-002",
+      "stableFragment": "lex-etymology-island-spelling-influence"
+    },
+    {
+      "locatorId": "lex-locator-lex-etymology-algorithm-borrowing",
+      "subject": {
+        "proposalId": "lex-etymology-algorithm-borrowing"
+      },
+      "sourceId": "fixture-source-etymology",
+      "datasetRecordId": "fixture-etymology-003",
+      "stableFragment": "lex-etymology-algorithm-borrowing"
+    },
+    {
+      "locatorId": "lex-locator-lex-etymology-logos-unknown",
+      "subject": {
+        "proposalId": "lex-etymology-logos-unknown"
+      },
+      "sourceId": "fixture-source-etymology",
+      "datasetRecordId": "fixture-etymology-004",
+      "stableFragment": "lex-etymology-logos-unknown"
+    },
+    {
+      "locatorId": "lex-locator-lex-comparison-bank-finance-equivalent",
+      "subject": {
+        "comparisonId": "lex-comparison-bank-finance-equivalent"
+      },
+      "sourceId": "fixture-source-general-a",
+      "datasetRecordId": "fixture-comparison-001",
+      "stableFragment": "lex-comparison-bank-finance-equivalent"
+    },
+    {
+      "locatorId": "lex-locator-lex-comparison-bank-river-broader",
+      "subject": {
+        "comparisonId": "lex-comparison-bank-river-broader"
+      },
+      "sourceId": "fixture-source-general-a",
+      "datasetRecordId": "fixture-comparison-002",
+      "stableFragment": "lex-comparison-bank-river-broader"
+    },
+    {
+      "locatorId": "lex-locator-lex-comparison-algorithm-general-technical",
+      "subject": {
+        "comparisonId": "lex-comparison-algorithm-general-technical"
+      },
+      "sourceId": "fixture-source-technical",
+      "datasetRecordId": "fixture-comparison-003",
+      "stableFragment": "lex-comparison-algorithm-general-technical"
+    },
+    {
+      "locatorId": "lex-locator-lex-comparison-logos-unresolved",
+      "subject": {
+        "comparisonId": "lex-comparison-logos-unresolved"
+      },
+      "sourceId": "fixture-source-historical",
+      "datasetRecordId": "fixture-comparison-004",
+      "stableFragment": "lex-comparison-logos-unresolved"
+    }
+  ],
+  "fieldProvenance": [
+    {
+      "provenanceId": "lex-provenance-lex-lemma-bank-written-form",
+      "subject": {
+        "lemmaId": "lex-lemma-bank"
+      },
+      "subjectField": "canonical_written_form",
+      "sourceId": "fixture-source-general-a",
+      "evidenceRole": "supports",
+      "transformationType": "synthetic_fixture_assignment",
+      "reviewerOrProcessIdentity": "fixture-generator-v1",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-lemma-connection-written-form",
+      "subject": {
+        "lemmaId": "lex-lemma-connection"
+      },
+      "subjectField": "canonical_written_form",
+      "sourceId": "fixture-source-general-a",
+      "evidenceRole": "supports",
+      "transformationType": "synthetic_fixture_assignment",
+      "reviewerOrProcessIdentity": "fixture-generator-v1",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-lemma-algorithm-written-form",
+      "subject": {
+        "lemmaId": "lex-lemma-algorithm"
+      },
+      "subjectField": "canonical_written_form",
+      "sourceId": "fixture-source-general-a",
+      "evidenceRole": "supports",
+      "transformationType": "synthetic_fixture_assignment",
+      "reviewerOrProcessIdentity": "fixture-generator-v1",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-lemma-walk-written-form",
+      "subject": {
+        "lemmaId": "lex-lemma-walk"
+      },
+      "subjectField": "canonical_written_form",
+      "sourceId": "fixture-source-general-a",
+      "evidenceRole": "supports",
+      "transformationType": "synthetic_fixture_assignment",
+      "reviewerOrProcessIdentity": "fixture-generator-v1",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-lemma-color-written-form",
+      "subject": {
+        "lemmaId": "lex-lemma-color"
+      },
+      "subjectField": "canonical_written_form",
+      "sourceId": "fixture-source-general-a",
+      "evidenceRole": "supports",
+      "transformationType": "synthetic_fixture_assignment",
+      "reviewerOrProcessIdentity": "fixture-generator-v1",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-lemma-island-written-form",
+      "subject": {
+        "lemmaId": "lex-lemma-island"
+      },
+      "subjectField": "canonical_written_form",
+      "sourceId": "fixture-source-general-a",
+      "evidenceRole": "supports",
+      "transformationType": "synthetic_fixture_assignment",
+      "reviewerOrProcessIdentity": "fixture-generator-v1",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-lemma-compact-written-form",
+      "subject": {
+        "lemmaId": "lex-lemma-compact"
+      },
+      "subjectField": "canonical_written_form",
+      "sourceId": "fixture-source-general-a",
+      "evidenceRole": "supports",
+      "transformationType": "synthetic_fixture_assignment",
+      "reviewerOrProcessIdentity": "fixture-generator-v1",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-lemma-logos-written-form",
+      "subject": {
+        "lemmaId": "lex-lemma-logos"
+      },
+      "subjectField": "canonical_written_form",
+      "sourceId": "fixture-source-general-a",
+      "evidenceRole": "supports",
+      "transformationType": "synthetic_fixture_assignment",
+      "reviewerOrProcessIdentity": "fixture-generator-v1",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-lemma-evidence-written-form",
+      "subject": {
+        "lemmaId": "lex-lemma-evidence"
+      },
+      "subjectField": "canonical_written_form",
+      "sourceId": "fixture-source-general-a",
+      "evidenceRole": "supports",
+      "transformationType": "synthetic_fixture_assignment",
+      "reviewerOrProcessIdentity": "fixture-generator-v1",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-lemma-mouse-written-form",
+      "subject": {
+        "lemmaId": "lex-lemma-mouse"
+      },
+      "subjectField": "canonical_written_form",
+      "sourceId": "fixture-source-general-a",
+      "evidenceRole": "supports",
+      "transformationType": "synthetic_fixture_assignment",
+      "reviewerOrProcessIdentity": "fixture-generator-v1",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-bank-finance-a-exact-wording",
+      "subject": {
+        "claimId": "lex-claim-bank-finance-a"
+      },
+      "subjectField": "exact_wording",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-claim-bank-finance-a",
+      "evidenceRole": "supports",
+      "transformationType": "synthetic_fixture_verbatim",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-bank-finance-a-sense-alignment",
+      "subject": {
+        "claimId": "lex-claim-bank-finance-a"
+      },
+      "subjectField": "sense_alignment",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-claim-bank-finance-a",
+      "evidenceRole": "qualifies",
+      "transformationType": "human_fixture_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-bank-finance-b-exact-wording",
+      "subject": {
+        "claimId": "lex-claim-bank-finance-b"
+      },
+      "subjectField": "exact_wording",
+      "sourceId": "fixture-source-general-b",
+      "locatorId": "lex-locator-lex-claim-bank-finance-b",
+      "evidenceRole": "supports",
+      "transformationType": "synthetic_fixture_verbatim",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-bank-finance-b-sense-alignment",
+      "subject": {
+        "claimId": "lex-claim-bank-finance-b"
+      },
+      "subjectField": "sense_alignment",
+      "sourceId": "fixture-source-general-b",
+      "locatorId": "lex-locator-lex-claim-bank-finance-b",
+      "evidenceRole": "qualifies",
+      "transformationType": "human_fixture_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-bank-river-a-exact-wording",
+      "subject": {
+        "claimId": "lex-claim-bank-river-a"
+      },
+      "subjectField": "exact_wording",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-claim-bank-river-a",
+      "evidenceRole": "supports",
+      "transformationType": "synthetic_fixture_verbatim",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-bank-river-a-sense-alignment",
+      "subject": {
+        "claimId": "lex-claim-bank-river-a"
+      },
+      "subjectField": "sense_alignment",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-claim-bank-river-a",
+      "evidenceRole": "qualifies",
+      "transformationType": "human_fixture_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-bank-river-b-exact-wording",
+      "subject": {
+        "claimId": "lex-claim-bank-river-b"
+      },
+      "subjectField": "exact_wording",
+      "sourceId": "fixture-source-general-b",
+      "locatorId": "lex-locator-lex-claim-bank-river-b",
+      "evidenceRole": "supports",
+      "transformationType": "synthetic_fixture_verbatim",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-bank-river-b-sense-alignment",
+      "subject": {
+        "claimId": "lex-claim-bank-river-b"
+      },
+      "subjectField": "sense_alignment",
+      "sourceId": "fixture-source-general-b",
+      "locatorId": "lex-locator-lex-claim-bank-river-b",
+      "evidenceRole": "qualifies",
+      "transformationType": "human_fixture_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-bank-tilt-exact-wording",
+      "subject": {
+        "claimId": "lex-claim-bank-tilt"
+      },
+      "subjectField": "exact_wording",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-claim-bank-tilt",
+      "evidenceRole": "supports",
+      "transformationType": "synthetic_fixture_verbatim",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-bank-tilt-sense-alignment",
+      "subject": {
+        "claimId": "lex-claim-bank-tilt"
+      },
+      "subjectField": "sense_alignment",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-claim-bank-tilt",
+      "evidenceRole": "qualifies",
+      "transformationType": "human_fixture_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-connection-modern-exact-wording",
+      "subject": {
+        "claimId": "lex-claim-connection-modern"
+      },
+      "subjectField": "exact_wording",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-claim-connection-modern",
+      "evidenceRole": "supports",
+      "transformationType": "synthetic_fixture_verbatim",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-connection-modern-sense-alignment",
+      "subject": {
+        "claimId": "lex-claim-connection-modern"
+      },
+      "subjectField": "sense_alignment",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-claim-connection-modern",
+      "evidenceRole": "qualifies",
+      "transformationType": "human_fixture_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-connection-historical-exact-wording",
+      "subject": {
+        "claimId": "lex-claim-connection-historical"
+      },
+      "subjectField": "exact_wording",
+      "sourceId": "fixture-source-historical",
+      "locatorId": "lex-locator-lex-claim-connection-historical",
+      "evidenceRole": "supports",
+      "transformationType": "synthetic_fixture_verbatim",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-connection-historical-sense-alignment",
+      "subject": {
+        "claimId": "lex-claim-connection-historical"
+      },
+      "subjectField": "sense_alignment",
+      "sourceId": "fixture-source-historical",
+      "locatorId": "lex-locator-lex-claim-connection-historical",
+      "evidenceRole": "qualifies",
+      "transformationType": "human_fixture_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-algorithm-technical-exact-wording",
+      "subject": {
+        "claimId": "lex-claim-algorithm-technical"
+      },
+      "subjectField": "exact_wording",
+      "sourceId": "fixture-source-technical",
+      "locatorId": "lex-locator-lex-claim-algorithm-technical",
+      "evidenceRole": "supports",
+      "transformationType": "synthetic_fixture_verbatim",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-algorithm-technical-sense-alignment",
+      "subject": {
+        "claimId": "lex-claim-algorithm-technical"
+      },
+      "subjectField": "sense_alignment",
+      "sourceId": "fixture-source-technical",
+      "locatorId": "lex-locator-lex-claim-algorithm-technical",
+      "evidenceRole": "qualifies",
+      "transformationType": "human_fixture_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-algorithm-general-exact-wording",
+      "subject": {
+        "claimId": "lex-claim-algorithm-general"
+      },
+      "subjectField": "exact_wording",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-claim-algorithm-general",
+      "evidenceRole": "supports",
+      "transformationType": "synthetic_fixture_verbatim",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-algorithm-general-sense-alignment",
+      "subject": {
+        "claimId": "lex-claim-algorithm-general"
+      },
+      "subjectField": "sense_alignment",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-claim-algorithm-general",
+      "evidenceRole": "qualifies",
+      "transformationType": "human_fixture_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-walk-verb-exact-wording",
+      "subject": {
+        "claimId": "lex-claim-walk-verb"
+      },
+      "subjectField": "exact_wording",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-claim-walk-verb",
+      "evidenceRole": "supports",
+      "transformationType": "synthetic_fixture_verbatim",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-walk-verb-sense-alignment",
+      "subject": {
+        "claimId": "lex-claim-walk-verb"
+      },
+      "subjectField": "sense_alignment",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-claim-walk-verb",
+      "evidenceRole": "qualifies",
+      "transformationType": "human_fixture_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-walk-noun-exact-wording",
+      "subject": {
+        "claimId": "lex-claim-walk-noun"
+      },
+      "subjectField": "exact_wording",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-claim-walk-noun",
+      "evidenceRole": "supports",
+      "transformationType": "synthetic_fixture_verbatim",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-walk-noun-sense-alignment",
+      "subject": {
+        "claimId": "lex-claim-walk-noun"
+      },
+      "subjectField": "sense_alignment",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-claim-walk-noun",
+      "evidenceRole": "qualifies",
+      "transformationType": "human_fixture_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-color-property-exact-wording",
+      "subject": {
+        "claimId": "lex-claim-color-property"
+      },
+      "subjectField": "exact_wording",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-claim-color-property",
+      "evidenceRole": "supports",
+      "transformationType": "synthetic_fixture_verbatim",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-color-property-sense-alignment",
+      "subject": {
+        "claimId": "lex-claim-color-property"
+      },
+      "subjectField": "sense_alignment",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-claim-color-property",
+      "evidenceRole": "qualifies",
+      "transformationType": "human_fixture_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-island-land-exact-wording",
+      "subject": {
+        "claimId": "lex-claim-island-land"
+      },
+      "subjectField": "exact_wording",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-claim-island-land",
+      "evidenceRole": "supports",
+      "transformationType": "synthetic_fixture_verbatim",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-island-land-sense-alignment",
+      "subject": {
+        "claimId": "lex-claim-island-land"
+      },
+      "subjectField": "sense_alignment",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-claim-island-land",
+      "evidenceRole": "qualifies",
+      "transformationType": "human_fixture_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-compact-agreement-a-exact-wording",
+      "subject": {
+        "claimId": "lex-claim-compact-agreement-a"
+      },
+      "subjectField": "exact_wording",
+      "sourceId": "fixture-source-historical",
+      "locatorId": "lex-locator-lex-claim-compact-agreement-a",
+      "evidenceRole": "supports",
+      "transformationType": "synthetic_fixture_verbatim",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-compact-agreement-a-sense-alignment",
+      "subject": {
+        "claimId": "lex-claim-compact-agreement-a"
+      },
+      "subjectField": "sense_alignment",
+      "sourceId": "fixture-source-historical",
+      "locatorId": "lex-locator-lex-claim-compact-agreement-a",
+      "evidenceRole": "qualifies",
+      "transformationType": "human_fixture_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-compact-agreement-b-exact-wording",
+      "subject": {
+        "claimId": "lex-claim-compact-agreement-b"
+      },
+      "subjectField": "exact_wording",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-claim-compact-agreement-b",
+      "evidenceRole": "supports",
+      "transformationType": "synthetic_fixture_verbatim",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-compact-agreement-b-sense-alignment",
+      "subject": {
+        "claimId": "lex-claim-compact-agreement-b"
+      },
+      "subjectField": "sense_alignment",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-claim-compact-agreement-b",
+      "evidenceRole": "qualifies",
+      "transformationType": "human_fixture_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-compact-small-exact-wording",
+      "subject": {
+        "claimId": "lex-claim-compact-small"
+      },
+      "subjectField": "exact_wording",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-claim-compact-small",
+      "evidenceRole": "supports",
+      "transformationType": "synthetic_fixture_verbatim",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-compact-small-sense-alignment",
+      "subject": {
+        "claimId": "lex-claim-compact-small"
+      },
+      "subjectField": "sense_alignment",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-claim-compact-small",
+      "evidenceRole": "qualifies",
+      "transformationType": "human_fixture_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-logos-word-exact-wording",
+      "subject": {
+        "claimId": "lex-claim-logos-word"
+      },
+      "subjectField": "exact_wording",
+      "sourceId": "fixture-source-historical",
+      "locatorId": "lex-locator-lex-claim-logos-word",
+      "evidenceRole": "supports",
+      "transformationType": "synthetic_fixture_verbatim",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-logos-word-sense-alignment",
+      "subject": {
+        "claimId": "lex-claim-logos-word"
+      },
+      "subjectField": "sense_alignment",
+      "sourceId": "fixture-source-historical",
+      "locatorId": "lex-locator-lex-claim-logos-word",
+      "evidenceRole": "qualifies",
+      "transformationType": "human_fixture_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-logos-principle-exact-wording",
+      "subject": {
+        "claimId": "lex-claim-logos-principle"
+      },
+      "subjectField": "exact_wording",
+      "sourceId": "fixture-source-general-b",
+      "locatorId": "lex-locator-lex-claim-logos-principle",
+      "evidenceRole": "supports",
+      "transformationType": "synthetic_fixture_verbatim",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-logos-principle-sense-alignment",
+      "subject": {
+        "claimId": "lex-claim-logos-principle"
+      },
+      "subjectField": "sense_alignment",
+      "sourceId": "fixture-source-general-b",
+      "locatorId": "lex-locator-lex-claim-logos-principle",
+      "evidenceRole": "qualifies",
+      "transformationType": "human_fixture_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-evidence-support-exact-wording",
+      "subject": {
+        "claimId": "lex-claim-evidence-support"
+      },
+      "subjectField": "exact_wording",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-claim-evidence-support",
+      "evidenceRole": "supports",
+      "transformationType": "synthetic_fixture_verbatim",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-evidence-support-sense-alignment",
+      "subject": {
+        "claimId": "lex-claim-evidence-support"
+      },
+      "subjectField": "sense_alignment",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-claim-evidence-support",
+      "evidenceRole": "qualifies",
+      "transformationType": "human_fixture_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-mouse-animal-exact-wording",
+      "subject": {
+        "claimId": "lex-claim-mouse-animal"
+      },
+      "subjectField": "exact_wording",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-claim-mouse-animal",
+      "evidenceRole": "supports",
+      "transformationType": "synthetic_fixture_verbatim",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-mouse-animal-sense-alignment",
+      "subject": {
+        "claimId": "lex-claim-mouse-animal"
+      },
+      "subjectField": "sense_alignment",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-claim-mouse-animal",
+      "evidenceRole": "qualifies",
+      "transformationType": "human_fixture_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-mouse-device-exact-wording",
+      "subject": {
+        "claimId": "lex-claim-mouse-device"
+      },
+      "subjectField": "exact_wording",
+      "sourceId": "fixture-source-technical",
+      "locatorId": "lex-locator-lex-claim-mouse-device",
+      "evidenceRole": "supports",
+      "transformationType": "synthetic_fixture_verbatim",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-mouse-device-sense-alignment",
+      "subject": {
+        "claimId": "lex-claim-mouse-device"
+      },
+      "subjectField": "sense_alignment",
+      "sourceId": "fixture-source-technical",
+      "locatorId": "lex-locator-lex-claim-mouse-device",
+      "evidenceRole": "qualifies",
+      "transformationType": "human_fixture_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-mouse-device-general-exact-wording",
+      "subject": {
+        "claimId": "lex-claim-mouse-device-general"
+      },
+      "subjectField": "exact_wording",
+      "sourceId": "fixture-source-general-b",
+      "locatorId": "lex-locator-lex-claim-mouse-device-general",
+      "evidenceRole": "supports",
+      "transformationType": "synthetic_fixture_verbatim",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-claim-mouse-device-general-sense-alignment",
+      "subject": {
+        "claimId": "lex-claim-mouse-device-general"
+      },
+      "subjectField": "sense_alignment",
+      "sourceId": "fixture-source-general-b",
+      "locatorId": "lex-locator-lex-claim-mouse-device-general",
+      "evidenceRole": "qualifies",
+      "transformationType": "human_fixture_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-form-connexion-classification",
+      "subject": {
+        "formId": "lex-form-connexion"
+      },
+      "subjectField": "form_type",
+      "sourceId": "fixture-source-historical",
+      "locatorId": "lex-locator-lex-form-connexion",
+      "evidenceRole": "supports",
+      "transformationType": "human_fixture_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-form-colour-classification",
+      "subject": {
+        "formId": "lex-form-colour"
+      },
+      "subjectField": "form_type",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-form-colour",
+      "evidenceRole": "supports",
+      "transformationType": "human_fixture_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-form-walked-classification",
+      "subject": {
+        "formId": "lex-form-walked"
+      },
+      "subjectField": "form_type",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-form-walked",
+      "evidenceRole": "supports",
+      "transformationType": "human_fixture_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-form-walking-classification",
+      "subject": {
+        "formId": "lex-form-walking"
+      },
+      "subjectField": "form_type",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-form-walking",
+      "evidenceRole": "supports",
+      "transformationType": "human_fixture_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-form-walker-classification",
+      "subject": {
+        "formId": "lex-form-walker"
+      },
+      "subjectField": "form_type",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-form-walker",
+      "evidenceRole": "supports",
+      "transformationType": "human_fixture_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-form-banking-classification",
+      "subject": {
+        "formId": "lex-form-banking"
+      },
+      "subjectField": "form_type",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-form-banking",
+      "evidenceRole": "supports",
+      "transformationType": "human_fixture_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-form-banked-classification",
+      "subject": {
+        "formId": "lex-form-banked"
+      },
+      "subjectField": "form_type",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-form-banked",
+      "evidenceRole": "supports",
+      "transformationType": "human_fixture_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-form-algorithms-classification",
+      "subject": {
+        "formId": "lex-form-algorithms"
+      },
+      "subjectField": "form_type",
+      "sourceId": "fixture-source-technical",
+      "locatorId": "lex-locator-lex-form-algorithms",
+      "evidenceRole": "supports",
+      "transformationType": "human_fixture_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-form-mice-classification",
+      "subject": {
+        "formId": "lex-form-mice"
+      },
+      "subjectField": "form_type",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-form-mice",
+      "evidenceRole": "supports",
+      "transformationType": "human_fixture_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-form-mouses-classification",
+      "subject": {
+        "formId": "lex-form-mouses"
+      },
+      "subjectField": "form_type",
+      "sourceId": "fixture-source-technical",
+      "locatorId": "lex-locator-lex-form-mouses",
+      "evidenceRole": "supports",
+      "transformationType": "human_fixture_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-etymology-island-inherited-proposal",
+      "subject": {
+        "proposalId": "lex-etymology-island-inherited"
+      },
+      "subjectField": "proposed_etymon",
+      "sourceId": "fixture-source-etymology",
+      "locatorId": "lex-locator-lex-etymology-island-inherited",
+      "evidenceRole": "supports",
+      "transformationType": "synthetic_fixture_proposal",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-etymology-island-spelling-influence-proposal",
+      "subject": {
+        "proposalId": "lex-etymology-island-spelling-influence"
+      },
+      "subjectField": "proposed_etymon",
+      "sourceId": "fixture-source-etymology",
+      "locatorId": "lex-locator-lex-etymology-island-spelling-influence",
+      "evidenceRole": "qualifies",
+      "transformationType": "synthetic_fixture_proposal",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-etymology-algorithm-borrowing-proposal",
+      "subject": {
+        "proposalId": "lex-etymology-algorithm-borrowing"
+      },
+      "subjectField": "proposed_etymon",
+      "sourceId": "fixture-source-etymology",
+      "locatorId": "lex-locator-lex-etymology-algorithm-borrowing",
+      "evidenceRole": "supports",
+      "transformationType": "synthetic_fixture_proposal",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-etymology-logos-unknown-proposal",
+      "subject": {
+        "proposalId": "lex-etymology-logos-unknown"
+      },
+      "subjectField": "proposed_etymon",
+      "sourceId": "fixture-source-etymology",
+      "locatorId": "lex-locator-lex-etymology-logos-unknown",
+      "evidenceRole": "qualifies",
+      "transformationType": "synthetic_fixture_proposal",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-comparison-bank-finance-equivalent-determination",
+      "subject": {
+        "comparisonId": "lex-comparison-bank-finance-equivalent"
+      },
+      "subjectField": "comparison_type",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-comparison-bank-finance-equivalent",
+      "evidenceRole": "supports",
+      "transformationType": "human_comparison_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-comparison-bank-river-broader-determination",
+      "subject": {
+        "comparisonId": "lex-comparison-bank-river-broader"
+      },
+      "subjectField": "comparison_type",
+      "sourceId": "fixture-source-general-a",
+      "locatorId": "lex-locator-lex-comparison-bank-river-broader",
+      "evidenceRole": "supports",
+      "transformationType": "human_comparison_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-comparison-algorithm-general-technical-determination",
+      "subject": {
+        "comparisonId": "lex-comparison-algorithm-general-technical"
+      },
+      "subjectField": "comparison_type",
+      "sourceId": "fixture-source-technical",
+      "locatorId": "lex-locator-lex-comparison-algorithm-general-technical",
+      "evidenceRole": "supports",
+      "transformationType": "human_comparison_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    },
+    {
+      "provenanceId": "lex-provenance-lex-comparison-logos-unresolved-determination",
+      "subject": {
+        "comparisonId": "lex-comparison-logos-unresolved"
+      },
+      "subjectField": "comparison_type",
+      "sourceId": "fixture-source-historical",
+      "locatorId": "lex-locator-lex-comparison-logos-unresolved",
+      "evidenceRole": "qualifies",
+      "transformationType": "human_comparison_review",
+      "reviewerOrProcessIdentity": "fixture-human-review",
+      "versionContext": "1.0.0"
+    }
+  ]
+}

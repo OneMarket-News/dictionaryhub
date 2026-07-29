@@ -19,8 +19,18 @@ import {
   type DictionaryRootReviewCoverageFilter,
   type DictionaryRootSourceCoverageFilter,
 } from "../services/lexical-store.js";
+import {
+  getDictionaryRootLexicalEvidenceLemma,
+  getDictionaryRootLexicalEvidenceSense,
+  listDictionaryRootLexicalEvidenceResource,
+  searchDictionaryRootLexicalEvidence,
+} from "../services/lexical-evidence-store.js";
 
 export const lexiconRouter = Router();
+
+const evidenceResources = new Set([
+  "claims", "forms", "etymologies", "comparisons", "locators", "provenance",
+] as const);
 
 const coverageFilters = new Set<DictionaryRootLemmaCoverageFilter>([
   "all",
@@ -59,6 +69,88 @@ function validatedFilter<T extends string>(
   const value = getQueryString(rawValue) || fallback;
   return allowed.has(value as T) ? (value as T) : undefined;
 }
+
+lexiconRouter.get("/evidence/search", async (request, response, next) => {
+  try {
+    const query = getQueryString(request.query.q);
+    if (query === undefined) {
+      return response.status(400).json({
+        error: "INVALID_QUERY",
+        message: "q must contain a lexical form to inspect.",
+      });
+    }
+    const pagination = parsePagination(request.query.page, request.query.limit, {
+      limit: 25,
+      maxLimit: 100,
+    });
+    if (isQueryParameterError(pagination)) {
+      return response.status(400).json(pagination);
+    }
+    return response.status(200).json(await searchDictionaryRootLexicalEvidence({
+      query,
+      page: pagination.page,
+      limit: pagination.limit,
+    }));
+  } catch (error) {
+    return next(error);
+  }
+});
+
+lexiconRouter.get("/evidence/lemmas/:lemmaId", async (request, response, next) => {
+  try {
+    const result = await getDictionaryRootLexicalEvidenceLemma(
+      request.params.lemmaId,
+    );
+    return result
+      ? response.status(200).json(result)
+      : response.status(404).json({
+        error: "LEXICAL_LEMMA_NOT_FOUND",
+        message: `No lexical lemma found with ID ${request.params.lemmaId}.`,
+      });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+lexiconRouter.get("/evidence/senses/:senseId", async (request, response, next) => {
+  try {
+    const result = await getDictionaryRootLexicalEvidenceSense(
+      request.params.senseId,
+    );
+    return result
+      ? response.status(200).json(result)
+      : response.status(404).json({
+        error: "LEXICAL_SENSE_NOT_FOUND",
+        message: `No lexical sense found with ID ${request.params.senseId}.`,
+      });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+lexiconRouter.get(
+  "/evidence/objects/:subjectId/:resource",
+  async (request, response, next) => {
+    try {
+      const resource = request.params.resource;
+      if (!evidenceResources.has(resource as typeof evidenceResources extends
+      Set<infer T> ? T : never)) {
+        return response.status(400).json({
+          error: "INVALID_LEXICAL_EVIDENCE_RESOURCE",
+          message: "resource must be claims, forms, etymologies, comparisons, locators, or provenance.",
+        });
+      }
+      const items = await listDictionaryRootLexicalEvidenceResource(
+        resource as "claims" | "forms" | "etymologies" | "comparisons"
+          | "locators" | "provenance",
+        request.params.subjectId,
+      );
+      return response.status(200).json({ total: items.length, items });
+    } catch (error) {
+      return next(error);
+    }
+  },
+);
 
 
 lexiconRouter.get("/neighborhood/:nodeId", async (request, response, next) => {

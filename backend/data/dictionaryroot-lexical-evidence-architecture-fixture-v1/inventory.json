@@ -1,0 +1,26 @@
+{
+  "datasetId": "dictionaryroot-lexical-evidence-architecture-fixture-v1",
+  "version": "1.0.0",
+  "fixtureOnly": true,
+  "counts": {
+    "sources": 5,
+    "lemmas": 10,
+    "senses": 16,
+    "definitionClaims": 22,
+    "forms": 10,
+    "etymologyProposals": 4,
+    "sourceComparisons": 4,
+    "unresolvedComparisons": 1,
+    "locators": 40,
+    "fieldProvenance": 72
+  },
+  "rightsDistribution": {
+    "synthetic_test_only": 5
+  },
+  "sourceDistribution": {
+    "fixture-source-general-a": 13,
+    "fixture-source-general-b": 4,
+    "fixture-source-historical": 3,
+    "fixture-source-technical": 2
+  }
+}

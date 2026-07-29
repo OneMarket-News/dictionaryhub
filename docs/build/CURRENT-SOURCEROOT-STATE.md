@@ -460,3 +460,24 @@ parallel dataset was added.
 Tribal and historical review, claim-level acquisition for currently
 portal-only or book-level sources, and product adoption of the accepted
 regional corpus.
+
+## DictionaryRoot Lexical Evidence Architecture
+
+Chunk 10A introduces an additive normalized lexical-evidence layer and a
+bounded synthetic architecture fixture. Migration 013 adds twelve tables.
+The fixture contains 5 sources, 10 lemmas, 16 senses, 22 definition claims, 10
+forms, 4 etymology proposals, 4 source comparisons, 40 locators, and 72
+field-provenance records, with zero quality blockers.
+
+Home can combine complete OEWN results with live lexical-evidence results.
+Concept groups senses by part of speech and separately renders claims, forms,
+etymology proposals, source comparisons, locators, and provenance. Existing
+OEWN, SourceRoot registry, URL/history, and HistoryRoot behavior remains
+protected. The fixture is not a production corpus and is never embedded as
+fallback customer knowledge.
+
+The repository and `sourceroot_test` implementation checks pass. After the
+manually managed backend was corrected to use `backend/.env.test`, live
+desktop and 390-by-844 smoke passed for fixture search, part-of-speech
+grouping, claims, locators, forms, provenance, comparisons, competing
+etymologies, uncertainty, result handling, overflow, and console output.

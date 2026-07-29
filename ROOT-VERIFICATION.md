@@ -110,3 +110,26 @@ work from newly unauthorized scope.
 - Preserve and report child-process exit codes.
 - Keep manual and automated results separate.
 - Add verification when a new capability becomes protected.
+
+## Chunk 10A lexical evidence verification
+
+`VERIFY-SOURCEROOT-DICTIONARYROOT-LEXICAL-EVIDENCE-ARCHITECTURE.ps1`
+validates the normalized migration markers, fixture-only identity, exact
+quality accounting, additive routes and client helpers, customer evidence
+sections, and the architecture contract. It deliberately does not manage a
+backend or frontend service.
+
+The focused backend suite separately proves deterministic repository equality,
+fresh-schema migration behavior, migration-ledger order, replacement-safe
+import and rollback, HistoryRoot/OEWN preservation, pagination, detail
+composition, competing etymologies, comparisons, empty resources, and
+malformed pagination. The focused frontend suite covers syntax, bounded
+pagination, combined live results, part-of-speech grouping, evidence families,
+empty states, uncertainty, locators, provenance, responsive styles, and
+protected integrations.
+
+Manual browser acceptance must use both 1280-by-720 and 390-by-844 viewports.
+It must inspect fixture search and detail content, result handling, horizontal
+overflow, console output, an existing OEWN concept, and HistoryRoot. A healthy
+`/health` response does not prove the evidence routes are connected to the
+database containing migration 013 and the fixture.

@@ -7,7 +7,9 @@
     client: null,
     searchToken: 0,
     valueToken: 0,
-    lastQuery: ""
+    lastQuery: "",
+    resultPayload: null,
+    resultPage: 1
   };
   const elements = {};
 
@@ -144,6 +146,11 @@
     const id = nodeId(record);
     const sourceId = firstSourceId(record);
     const context = { meaning: label || query, nodeId: id, sourceId };
+    if (metadata(record).lexicalEvidence === true) {
+      return `<div class="dr-home-result-actions">
+        <a href="${escapeHtml(navHref("concept-v2.html", context))}">Inspect lexical evidence</a>
+      </div>`;
+    }
     return `<div class="dr-home-result-actions">
       <a href="${escapeHtml(navHref("concept-v2.html", context))}">Open concept</a>
       <a href="${escapeHtml(navHref("graph-v2.html", context))}">Open sphere</a>
@@ -152,14 +159,42 @@
     </div>`;
   }
 
-  function renderSearchResults(term, payload) {
+  function lexicalEvidenceSearchNodes(payload) {
+    return global.DictionaryRootApi.extractItems(payload).map((item) => ({
+      resultType: "node",
+      id: item.senseId,
+      nodeId: item.senseId,
+      title: item.canonicalWrittenForm,
+      summary: item.definition,
+      objectType: "lexical-evidence-sense",
+      metadata: {
+        exactLemma: item.canonicalWrittenForm,
+        lemmas: [item.canonicalWrittenForm],
+        partOfSpeech: item.partOfSpeech,
+        lexicalCategory: item.lexicalCategory,
+        lexicalEvidence: true,
+        uncertainty: item.uncertainty,
+        domainLabel: item.domainLabel,
+        registerLabel: item.registerLabel
+      },
+      sourceIds: []
+    }));
+  }
+
+  function renderSearchResults(term, payload, requestedPage) {
     const raw = global.DictionaryRootApi.extractItems(payload)
       .filter((item) => item && (item.resultType === "node" || !item.resultType));
     const ranked = global.DictionaryRootApi.rankMeaningResults(raw, term);
     const exact = global.DictionaryRootApi.exactMeaningResults(ranked, term);
     const related = ranked.filter((item) => !exact.includes(item));
-    const shown = exact.concat(related.slice(0, 6));
+    const ordered = exact.concat(related);
+    const pageSize = 12;
+    const totalPages = Math.max(1, Math.ceil(ordered.length / pageSize));
+    const page = Math.min(Math.max(1, Number(requestedPage) || 1), totalPages);
+    const shown = ordered.slice((page - 1) * pageSize, page * pageSize);
     const coverage = payload && payload.coverage && typeof payload.coverage === "object" ? payload.coverage : null;
+    state.resultPayload = payload;
+    state.resultPage = page;
 
     elements.resultsSection.hidden = false;
     elements.resultCount.textContent = `${exact.length} exact · ${related.length} related`;
@@ -188,7 +223,12 @@
         </div>
         ${resultLinks(record, term, label)}
       </article>`;
-    }).join("");
+    }).join("") + (ordered.length > pageSize ? `
+      <nav class="dr-home-result-pagination" aria-label="Meaning result pages">
+        <button type="button" class="dr-live-button-secondary" data-dr-result-page="${page - 1}" ${page === 1 ? "disabled" : ""}>Previous</button>
+        <span>Page ${page} of ${totalPages} · ${ordered.length} results</span>
+        <button type="button" class="dr-live-button-secondary" data-dr-result-page="${page + 1}" ${page === totalPages ? "disabled" : ""}>Next</button>
+      </nav>` : "");
 
     const exactCount = coverage && coverage.available ? Number(coverage.exactSenseCount) : exact.length;
     const parts = coverage && coverage.partOfSpeechCounts ? Object.entries(coverage.partOfSpeechCounts)
@@ -221,9 +261,23 @@
 
     try {
       const client = await ensureClient();
-      const response = await client.searchNodes(query, { limit: 100 });
+      const [baseline, evidence] = await Promise.all([
+        client.searchNodes(query, { limit: 100 }),
+        client.lexicalEvidenceSearchAll(query, { limit: 25, maxPages: 20 })
+      ]);
       if (token !== state.searchToken) return;
-      renderSearchResults(query, response.data);
+      renderSearchResults(query, {
+        items: global.DictionaryRootApi.extractItems(baseline.data)
+          .concat(lexicalEvidenceSearchNodes(evidence.data)),
+        total: global.DictionaryRootApi.extractTotal(baseline.data)
+          + global.DictionaryRootApi.extractTotal(evidence.data),
+        coverage: baseline.data && baseline.data.coverage,
+        lexicalEvidencePagination: {
+          totalPages: evidence.data.totalPages,
+          loadedPages: evidence.data.loadedPages,
+          complete: evidence.data.complete
+        }
+      }, 1);
       elements.resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
     } catch (error) {
       if (token !== state.searchToken) return;
@@ -334,6 +388,13 @@
     elements.recents.addEventListener("click", (event) => {
       const button = event.target.closest("[data-dr-recent]");
       if (button) performSearch(button.dataset.drRecent);
+    });
+
+    elements.results.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-dr-result-page]");
+      if (!button || !state.resultPayload) return;
+      renderSearchResults(state.lastQuery, state.resultPayload, Number(button.dataset.drResultPage));
+      elements.resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
     });
 
     global.addEventListener("popstate", () => {

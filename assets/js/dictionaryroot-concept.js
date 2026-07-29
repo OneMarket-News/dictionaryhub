@@ -168,9 +168,13 @@
     const ranked = DictionaryRootApi.rankMeaningResults(raw, query);
     const exact = DictionaryRootApi.exactMeaningResults(ranked, query);
     const related = ranked.filter((item) => !exact.includes(item));
-    const shown = exact.length
+    const shown = (exact.length
       ? exact.concat(related.slice(0, Math.max(0, 24 - exact.length)))
-      : related.slice(0, 24);
+      : related.slice(0, 24)).sort((left, right) =>
+      String(partOfSpeechFrom(left)).localeCompare(String(partOfSpeechFrom(right)))
+      || DictionaryRootApi.meaningMatchRank(left, query)
+        - DictionaryRootApi.meaningMatchRank(right, query)
+      || String(left.id || "").localeCompare(String(right.id || "")));
 
     elements.results.innerHTML = "";
     elements.sensePanel.hidden = false;
@@ -186,9 +190,18 @@
       return;
     }
 
+    let currentPartOfSpeech = "";
     shown.forEach((result) => {
       const rank = DictionaryRootApi.meaningMatchRank(result, query);
       const preferred = DictionaryRootApi.preferredMeaningLabel(result, query);
+      const partOfSpeech = String(partOfSpeechFrom(result));
+      if (partOfSpeech !== currentPartOfSpeech) {
+        currentPartOfSpeech = partOfSpeech;
+        const heading = document.createElement("h3");
+        heading.className = "dr-concept-sense-group-heading";
+        heading.textContent = `${evidenceLabel(partOfSpeech)} meanings`;
+        elements.results.appendChild(heading);
+      }
       const card = document.createElement("article");
       card.className = "dr-concept-sense-card";
       card.dataset.exact = rank <= 1 ? "true" : "false";
@@ -198,7 +211,7 @@
           ${canonicalNote(result, preferred)}
           <p>${escapeHtml(result.summary || "Open this meaning to inspect its source-backed definition and semantic neighborhood.")}</p>
           <div class="dr-live-chip-row">
-            <span class="dr-live-chip" data-tone="accent">${escapeHtml(partOfSpeechFrom(result))}</span>
+            <span class="dr-live-chip" data-tone="accent">${escapeHtml(partOfSpeech)}</span>
             <span class="dr-live-chip" data-tone="good">Source-backed</span>
             <span class="dr-live-chip">${rank <= 1 ? "Exact sense" : "Related match"}</span>
           </div>
@@ -218,6 +231,28 @@
     }
   }
 
+  function lexicalEvidenceSearchNodes(payload) {
+    return DictionaryRootApi.extractItems(payload).map((item) => ({
+      resultType: "node",
+      id: item.senseId,
+      nodeId: item.senseId,
+      title: item.canonicalWrittenForm,
+      summary: item.definition,
+      objectType: "lexical-evidence-sense",
+      metadata: {
+        exactLemma: item.canonicalWrittenForm,
+        lemmas: [item.canonicalWrittenForm],
+        partOfSpeech: item.partOfSpeech,
+        lexicalCategory: item.lexicalCategory,
+        lexicalEvidence: true,
+        uncertainty: item.uncertainty,
+        domainLabel: item.domainLabel,
+        registerLabel: item.registerLabel
+      },
+      sourceIds: []
+    }));
+  }
+
   async function search(query, options) {
     const settings = Object.assign({ history: "push", scroll: false }, options || {});
     const clean = String(query || "").trim();
@@ -234,8 +269,22 @@
     elements.sensePanel.hidden = false;
 
     try {
-      const response = await state.client.searchNodes(clean, { limit: 100 });
-      renderSearchResults(clean, response.data);
+      const [baseline, evidence] = await Promise.all([
+        state.client.searchNodes(clean, { limit: 100 }),
+        state.client.lexicalEvidenceSearchAll(clean, { limit: 25, maxPages: 20 })
+      ]);
+      const combined = {
+        items: DictionaryRootApi.extractItems(baseline.data)
+          .concat(lexicalEvidenceSearchNodes(evidence.data)),
+        total: DictionaryRootApi.extractTotal(baseline.data)
+          + DictionaryRootApi.extractTotal(evidence.data),
+        lexicalEvidencePagination: {
+          totalPages: evidence.data.totalPages,
+          loadedPages: evidence.data.loadedPages,
+          complete: evidence.data.complete
+        }
+      };
+      renderSearchResults(clean, combined);
       if (settings.history) updateHistory({ q: clean, nodeId: null }, settings.history);
       if (settings.scroll) elements.sensePanel.scrollIntoView({ behavior: "smooth", block: "start" });
     } catch (error) {
@@ -432,6 +481,91 @@
       </section>`;
   }
 
+  function evidenceLabel(value) {
+    return String(value || "").replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+  }
+
+  function renderLexicalEvidenceSections(evidence) {
+    if (!evidence) return "";
+    const claims = Array.isArray(evidence.claims) ? evidence.claims : [];
+    const forms = Array.isArray(evidence.forms) ? evidence.forms : [];
+    const proposals = Array.isArray(evidence.etymologyProposals) ? evidence.etymologyProposals : [];
+    const comparisons = Array.isArray(evidence.comparisons) ? evidence.comparisons : [];
+    const locators = Array.isArray(evidence.locators) ? evidence.locators : [];
+    const provenance = Array.isArray(evidence.fieldProvenance) ? evidence.fieldProvenance : [];
+    const locatorByClaim = new Map(locators.filter((item) => item.claimId).map((item) => [item.claimId, item]));
+    return `
+      <section class="dr-concept-content-section dr-lexical-evidence-section">
+        <h2>Source-specific definition claims</h2>
+        <p class="dr-concept-section-intro">Each statement remains separate; DictionaryRoot does not manufacture a consensus definition.</p>
+        <div class="dr-lexical-evidence-grid">
+          ${claims.length ? claims.map((item) => {
+            const locator = locatorByClaim.get(item.claimId) || {};
+            return `<article class="dr-lexical-evidence-card">
+              <div class="dr-live-chip-row">
+                <span class="dr-live-chip" data-tone="accent">${escapeHtml(item.sourceId)}</span>
+                <span class="dr-live-chip">${escapeHtml(item.claimStatus)}</span>
+                ${item.domainLabel ? `<span class="dr-live-chip">${escapeHtml(item.domainLabel)}</span>` : ""}
+                ${item.registerLabel ? `<span class="dr-live-chip">${escapeHtml(item.registerLabel)}</span>` : ""}
+              </div>
+              <p>${escapeHtml(item.exactWording || item.normalizedDefinition || "No reusable wording is available.")}</p>
+              ${item.uncertainty ? `<p class="dr-lexical-qualification"><strong>Uncertainty:</strong> ${escapeHtml(item.uncertainty)}</p>` : ""}
+              ${item.qualification ? `<p class="dr-lexical-qualification"><strong>Qualification:</strong> ${escapeHtml(item.qualification)}</p>` : ""}
+              <dl class="dr-lexical-locator">
+                <div><dt>Locator</dt><dd>${escapeHtml(locator.datasetRecordId || locator.stableFragment || "Not recorded")}</dd></div>
+                <div><dt>Edition</dt><dd>${escapeHtml(locator.edition || item.editionContext || "Not recorded")}</dd></div>
+              </dl>
+            </article>`;
+          }).join("") : '<p class="dr-concept-section-intro">No definition claims are recorded for this sense.</p>'}
+        </div>
+      </section>
+      <section class="dr-concept-content-section">
+        <h2>Variant, historical, and family forms</h2>
+        <div class="dr-lexical-evidence-grid">
+          ${forms.length ? forms.map((item) => `<article class="dr-lexical-evidence-card">
+            <strong>${escapeHtml(item.writtenForm)}</strong>
+            <span>${escapeHtml(evidenceLabel(item.formType))}</span>
+            <p>${escapeHtml(item.usageContext || item.chronologyDisplay || "Source-supported lexical form.")}</p>
+            ${item.uncertainty ? `<p class="dr-lexical-qualification">${escapeHtml(item.uncertainty)}</p>` : ""}
+          </article>`).join("") : '<p class="dr-concept-section-intro">No additional forms are recorded for this lemma.</p>'}
+        </div>
+      </section>
+      <section class="dr-concept-content-section">
+        <h2>Etymology proposals</h2>
+        <p class="dr-concept-section-intro">Proposals and competing explanations remain distinct.</p>
+        <div class="dr-lexical-evidence-grid">
+          ${proposals.length ? proposals.map((item) => `<article class="dr-lexical-evidence-card">
+            <div class="dr-live-chip-row">
+              <span class="dr-live-chip" data-tone="accent">${escapeHtml(evidenceLabel(item.relationshipType))}</span>
+              <span class="dr-live-chip" data-tone="${item.confidence === "uncertain" ? "warning" : "good"}">${escapeHtml(item.confidence)}</span>
+              <span class="dr-live-chip">${escapeHtml(item.reviewStatus)}</span>
+            </div>
+            <p><strong>${escapeHtml(item.proposedSourceLanguage || "Unknown language")}</strong>${item.proposedEtymon ? ` · ${escapeHtml(item.proposedEtymon)}` : ""}</p>
+            <p>${escapeHtml(item.qualification || "No qualification recorded.")}</p>
+            ${Array.isArray(item.competingProposalIds) && item.competingProposalIds.length ? `<p class="dr-lexical-qualification">Competes with: ${escapeHtml(item.competingProposalIds.join(", "))}</p>` : ""}
+          </article>`).join("") : '<p class="dr-concept-section-intro">No etymology proposal is recorded.</p>'}
+        </div>
+      </section>
+      <section class="dr-concept-content-section">
+        <h2>Reviewed source comparisons</h2>
+        <div class="dr-lexical-evidence-grid">
+          ${comparisons.length ? comparisons.map((item) => `<article class="dr-lexical-evidence-card">
+            <div class="dr-live-chip-row">
+              <span class="dr-live-chip" data-tone="accent">${escapeHtml(evidenceLabel(item.comparisonType))}</span>
+              <span class="dr-live-chip" data-tone="${item.reviewStatus === "unresolved" ? "warning" : "good"}">${escapeHtml(item.reviewStatus)}</span>
+            </div>
+            <p>${escapeHtml(item.explanation)}</p>
+            <span>${escapeHtml(item.leftClaimId)} ↔ ${escapeHtml(item.rightClaimId)}</span>
+          </article>`).join("") : '<p class="dr-concept-section-intro">No source comparison is recorded for this sense.</p>'}
+        </div>
+      </section>
+      <section class="dr-concept-content-section">
+        <h2>Field-level provenance</h2>
+        <p class="dr-concept-section-intro">${provenance.length} independently addressable provenance record${provenance.length === 1 ? "" : "s"} support this lemma and sense.</p>
+        ${provenance.length ? `<details class="dr-live-advanced"><summary>Inspect provenance records</summary><ul class="dr-lexical-provenance-list">${provenance.map((item) => `<li><strong>${escapeHtml(item.subjectField)}</strong><span>${escapeHtml(item.evidenceRole)} · ${escapeHtml(item.transformationType)} · ${escapeHtml(item.sourceId)}</span></li>`).join("")}</ul></details>` : ""}
+      </section>`;
+  }
+
   function renderSummary(concept, displayTitle, relationCount, uniqueRelationCount, durationMs) {
     const node = concept.node;
     const sourceIds = Array.from(new Set(
@@ -509,6 +643,7 @@
         ${renderLanguageSection(node, lemmas)}
         ${renderDefinitionSection(definitions)}
         ${renderExamplesSection(examples)}
+        ${renderLexicalEvidenceSections(concept.lexicalEvidence)}
         ${renderRelationshipSections(relations, neighborMap)}
         ${renderSourcesSection(concept)}
         <details class="dr-live-advanced">
@@ -529,7 +664,9 @@
     setStatus("Loading source-backed concept details...", "loading");
 
     try {
-      const concept = await state.client.concept(nodeId);
+      const concept = String(nodeId).startsWith("lex-sense-")
+        ? await state.client.lexicalEvidenceConcept(nodeId)
+        : await state.client.concept(nodeId);
       state.current = concept;
       state.currentLabel = String(preferredLabel || concept.node.title || "");
       elements.input.value = state.currentLabel;

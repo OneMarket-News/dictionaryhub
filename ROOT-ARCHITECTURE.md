@@ -153,3 +153,30 @@ undocumented external service.
 
 No production hosting topology, undocumented API, or external identity
 provider is asserted by this document.
+
+## DictionaryRoot lexical evidence architecture
+
+Migration 013 adds an evidence-preserving lexical layer beside the complete
+OEWN index. Lemma and sense identity is separated from source wording.
+Definition claims, forms, etymology proposals, source comparisons, locators,
+and field provenance remain independently inspectable and versionable.
+
+The architecture is additive:
+
+```text
+DictionaryRoot Home / Concept
+        |
+        +-- existing OEWN search and concept routes
+        |
+        +-- /dictionaryroot/lexicon/evidence/*
+                    |
+                    +-- normalized lexical evidence tables
+                    +-- source identity + locators
+                    +-- field-level provenance
+```
+
+The committed ten-lemma fixture is structural test content, not a production
+corpus. Customer scripts may combine its live API results with OEWN results,
+but may not embed it as fallback knowledge. Etymology alternatives and source
+comparisons preserve uncertainty and review status rather than collapsing
+them into an automatic truth or similarity score.

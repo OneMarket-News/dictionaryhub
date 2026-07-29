@@ -1,0 +1,74 @@
+{
+  "datasetId": "dictionaryroot-lexical-evidence-architecture-fixture-v1",
+  "version": "1.0.0",
+  "blockerCount": 0,
+  "orphanCounts": {
+    "lemmas": 0,
+    "senses": 0,
+    "definitionClaims": 0,
+    "forms": 0,
+    "etymologyProposals": 0,
+    "locators": 0,
+    "fieldProvenance": 0,
+    "sourceComparisons": 0
+  },
+  "duplicateIdentityCounts": {
+    "sources": 0,
+    "lemmas": 0,
+    "senses": 0,
+    "definitionClaims": 0,
+    "forms": 0,
+    "etymologyProposals": 0,
+    "locators": 0,
+    "fieldProvenance": 0,
+    "sourceComparisons": 0
+  },
+  "unsupportedCounts": {
+    "labelsWithoutClaims": 0,
+    "chronologyWithoutQualification": 0,
+    "originClaimsWithoutQualification": 0,
+    "claimsWithoutLocators": 0,
+    "objectsWithoutProvenance": 0
+  },
+  "cases": {
+    "highlyPolysemous": [
+      "lex-lemma-bank"
+    ],
+    "historicalOrObsoleteForms": [
+      "lex-form-connexion"
+    ],
+    "technicalSenses": [
+      "lex-sense-algorithm-procedure",
+      "lex-sense-mouse-device"
+    ],
+    "inflectedOrDerivedFamilies": [
+      "lex-form-walked",
+      "lex-form-walking",
+      "lex-form-walker"
+    ],
+    "spellingVariants": [
+      "lex-form-colour"
+    ],
+    "disputedOrUncertainEtymology": [
+      "lex-etymology-island-inherited",
+      "lex-etymology-island-spelling-influence"
+    ],
+    "equivalentDefinitions": [
+      "lex-comparison-bank-finance-equivalent"
+    ],
+    "broaderOrNarrowerDefinitions": [
+      "lex-comparison-bank-river-broader"
+    ],
+    "unresolvedComparisons": [
+      "lex-comparison-logos-unresolved"
+    ],
+    "historyRootTerms": [
+      "lex-lemma-compact",
+      "lex-lemma-evidence"
+    ],
+    "futureBibleRootTerms": [
+      "lex-lemma-logos"
+    ]
+  },
+  "productionCorpusGenerated": false
+}

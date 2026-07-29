@@ -1013,6 +1013,101 @@ body.dictionaryroot-live-page {
   }
 }
 
+.dr-concept-sense-group-heading {
+  grid-column: 1 / -1;
+  margin: 1rem 0 0;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid var(--dr-border, #d8d4c8);
+  font-size: 1rem;
+}
+
+.dr-lexical-evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  gap: 0.85rem;
+}
+
+.dr-lexical-evidence-card {
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid var(--dr-border, #d8d4c8);
+  border-radius: 0.75rem;
+  background: var(--dr-surface, #fff);
+  overflow-wrap: anywhere;
+}
+
+.dr-lexical-evidence-card > :first-child {
+  margin-top: 0;
+}
+
+.dr-lexical-evidence-card > :last-child {
+  margin-bottom: 0;
+}
+
+.dr-lexical-qualification {
+  padding: 0.65rem;
+  border-left: 0.25rem solid #9b6b22;
+  background: #fff8e9;
+}
+
+.dr-lexical-locator {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0.75rem 0 0;
+  font-size: 0.88rem;
+}
+
+.dr-lexical-locator div {
+  display: grid;
+  grid-template-columns: minmax(4rem, auto) 1fr;
+  gap: 0.65rem;
+}
+
+.dr-lexical-locator dt {
+  font-weight: 700;
+}
+
+.dr-lexical-locator dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.dr-lexical-provenance-list {
+  display: grid;
+  gap: 0.5rem;
+  padding-left: 1.25rem;
+}
+
+.dr-lexical-provenance-list li span {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.dr-home-result-pagination {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 0;
+}
+
+@media (max-width: 520px) {
+  .dr-lexical-locator div {
+    grid-template-columns: 1fr;
+    gap: 0.15rem;
+  }
+
+  .dr-home-result-pagination {
+    align-items: stretch;
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
 /* DictionaryRoot Knowledge Sphere v1.1 — full-width experience */
 .dictionaryroot-graph-page .dictionaryroot-product-bar-inner,
 .dictionaryroot-graph-page .dictionaryroot-page-intro,

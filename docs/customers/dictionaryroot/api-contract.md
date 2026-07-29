@@ -73,3 +73,26 @@ For a DictionaryRoot node search, the response may include:
 - `coverage.partOfSpeechCounts`
 
 All exact lexical senses are returned on the first page before related registry matches. A selected lexical-only node remains resolvable through the existing node, assertion, and edge routes, so customer URLs do not require a second concept contract.
+
+## Lexical evidence inspection
+
+Chunk 10A adds read-only inspection without changing the existing OEWN
+contract:
+
+| Customer need | SourceRoot operation |
+|---|---|
+| Search fixture lexical evidence | `GET /dictionaryroot/lexicon/evidence/search?q=...&page=...&limit=...` |
+| Read a normalized lemma | `GET /dictionaryroot/lexicon/evidence/lemmas/:lemmaId` |
+| Read all evidence for a sense | `GET /dictionaryroot/lexicon/evidence/senses/:senseId` |
+| Inspect one evidence family | `GET /dictionaryroot/lexicon/evidence/objects/:subjectId/:resource` |
+
+The evidence search is bounded to 100 records per page and the customer client
+loads at most 20 pages. Result order is exact lemma first, then normalized
+form, part of speech, and immutable sense ID. Sense detail keeps
+source-specific claims, lexical forms, proposals, reviewed comparisons,
+locators, and field provenance separate.
+
+These routes currently expose only the bounded synthetic architecture fixture.
+They do not replace the complete OEWN index or authorize a production corpus.
+A customer page must show live empty or unavailable states rather than embed
+fixture records as fallback data.

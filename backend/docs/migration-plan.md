@@ -191,3 +191,21 @@ the contextual record kinds introduced by migration 009.
 
 The extension remains backward compatible with the existing DictionaryRoot
 workflow mount. It does not add Root-specific proposal or revision tables.
+
+## Migration 013 — DictionaryRoot lexical evidence
+
+`013_create_dictionaryroot_lexical_evidence.sql` adds twelve normalized,
+additive tables for lexical-evidence datasets, sources, lemmas, senses,
+lemma-sense associations, definition claims, forms, etymology proposals,
+etymology competitors, source comparisons, locators, and field provenance.
+
+The migration does not modify or replace the existing OEWN lexicon tables,
+contextual/HistoryRoot tables, registry routes, or governed workflow schema.
+Public identities are stable text IDs; foreign keys use bounded cascade or
+restrict behavior according to record ownership. Read paths ignore archived
+lemmas, senses, claims, forms, proposals, and comparisons.
+
+The architecture fixture importer is separately restricted to
+`sourceroot_test`, deletes only the exact fixture dataset inside a
+transaction, and rolls back failed replacement. A production corpus requires
+a later reviewed acquisition, rights, generation, import, and migration plan.

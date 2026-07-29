@@ -387,6 +387,97 @@
       return this.search(query, Object.assign({ type: "node" }, normalizeParams(params)));
     }
 
+    lexicalEvidenceSearch(query, params) {
+      return this.request(`/dictionaryroot/lexicon/evidence/search${buildQuery(Object.assign({
+        q: query,
+        page: 1,
+        limit: 25
+      }, normalizeParams(params)))}`);
+    }
+
+    async lexicalEvidenceSearchAll(query, options) {
+      const settings = Object.assign({ limit: 25, maxPages: 20 }, options || {});
+      const first = await this.lexicalEvidenceSearch(query, {
+        page: 1,
+        limit: settings.limit
+      });
+      const totalPages = Math.min(
+        extractTotalPages(first.data, settings.limit),
+        settings.maxPages
+      );
+      const items = extractItems(first.data);
+      let durationMs = Number(first.durationMs || 0);
+      for (let page = 2; page <= totalPages; page += 1) {
+        const response = await this.lexicalEvidenceSearch(query, {
+          page,
+          limit: settings.limit
+        });
+        items.push(...extractItems(response.data));
+        durationMs += Number(response.durationMs || 0);
+      }
+      return {
+        data: {
+          page: 1,
+          limit: settings.limit,
+          total: extractTotal(first.data),
+          totalPages: extractTotalPages(first.data, settings.limit),
+          loadedPages: totalPages,
+          complete: totalPages >= extractTotalPages(first.data, settings.limit),
+          items
+        },
+        durationMs
+      };
+    }
+
+    lexicalEvidenceLemma(lemmaId) {
+      return this.request(`/dictionaryroot/lexicon/evidence/lemmas/${encodeURIComponent(lemmaId)}`);
+    }
+
+    lexicalEvidenceSense(senseId) {
+      return this.request(`/dictionaryroot/lexicon/evidence/senses/${encodeURIComponent(senseId)}`);
+    }
+
+    async lexicalEvidenceConcept(senseId) {
+      const response = await this.lexicalEvidenceSense(senseId);
+      const evidence = response.data || {};
+      const sense = evidence.sense || {};
+      const claims = Array.isArray(evidence.claims) ? evidence.claims : [];
+      const sources = Array.isArray(evidence.sources) ? evidence.sources : [];
+      const definition = claims.find((item) => item.exactWording || item.normalizedDefinition) || {};
+      const sourceIds = Array.from(new Set(claims.map((item) => item.sourceId).filter(Boolean)));
+      return {
+        node: {
+          nodeId: sense.senseId,
+          title: sense.canonicalWrittenForm || sense.normalizedForm || sense.senseId,
+          summary: definition.exactWording || definition.normalizedDefinition || "",
+          nodeType: "lexical-evidence-sense",
+          objectType: "lexical-evidence-sense",
+          sourceIds,
+          metadata: {
+            partOfSpeech: sense.partOfSpeech,
+            lexicalCategory: sense.lexicalCategory,
+            lemmas: [sense.canonicalWrittenForm].filter(Boolean),
+            lexicalEvidence: true,
+            reviewStatus: sense.reviewStatus
+          }
+        },
+        assertions: claims.map((item) => ({
+          assertionId: item.claimId,
+          assertionType: "definition",
+          body: item.exactWording || item.normalizedDefinition || "",
+          summary: item.exactWording || item.normalizedDefinition || "",
+          sourceIds: [item.sourceId].filter(Boolean),
+          metadata: item
+        })),
+        edges: [],
+        incoming: [],
+        outgoing: [],
+        sources,
+        lexicalEvidence: evidence,
+        durationMs: response.durationMs
+      };
+    }
+
     node(nodeId) {
       return this.request(`/nodes/${encodeURIComponent(nodeId)}`);
     }
