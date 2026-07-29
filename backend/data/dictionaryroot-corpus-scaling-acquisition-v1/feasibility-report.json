@@ -1,0 +1,525 @@
+{
+  "reportId": "dictionaryroot-corpus-scaling-acquisition-v1",
+  "gate": {
+    "requiredStartingCommit": "01eab17573f5eb9a6e957093496c500cf67a07db",
+    "requiredBranch": "release/historyroot-alpha-integration-v1",
+    "requiredTag": "sourceroot-historyroot-wampanoag-regional-corpus-v1",
+    "requiredZipSha256": "D4E11DD28EECC46BEFA76E3E4805BB8CDB6F8C8EE57FA07C72BEB898DF409D29",
+    "databaseBoundary": "sourceroot_test",
+    "migrationBoundary": "001-012 present; 013 absent"
+  },
+  "baseline": {
+    "repositoryArtifact": {
+      "bundleId": "dictionaryroot-oewn-2025-pilot-500",
+      "version": "0.1.0-oewn-2025",
+      "lexicalRecords": 500,
+      "lemmas": 654,
+      "senses": 500,
+      "claims": 928,
+      "definitions": 500,
+      "usageExamples": 428,
+      "sources": 1,
+      "relationships": 436,
+      "structuredLocators": 0,
+      "fieldProvenanceRecords": 0,
+      "historicalForms": 0,
+      "etymologyStructures": 0,
+      "sourceComparisonStructures": 0,
+      "orphanRecords": 0,
+      "duplicateIdentities": 0,
+      "searchCoverage": 500,
+      "graphCoveredNodes": 225,
+      "conceptPageCoverage": 500,
+      "sourcePageCoverage": 1
+    },
+    "database": {
+      "name": "sourceroot_test",
+      "dictionaryRootDatasets": 0,
+      "acceptedHistoryRootBundleId": "historyroot-plymouth-knowledge-dataset-v1",
+      "acceptedHistoryRootVersion": "1.3.0",
+      "migrationsPresent": [
+        "001",
+        "002",
+        "003",
+        "004",
+        "005",
+        "006",
+        "007",
+        "008",
+        "009",
+        "010",
+        "011",
+        "012"
+      ],
+      "migration013Present": false
+    }
+  },
+  "recommendedCorpus": {
+    "title": "DictionaryRoot Core Lexical Corpus v1",
+    "selectionMethod": "Deterministic stratified sampling from a reviewed candidate ledger, keyed by normalized lemma and strata rather than alphabetic convenience.",
+    "strata": [
+      "high-frequency and function words",
+      "highly polysemous words",
+      "concrete and abstract nouns",
+      "verbs, adjectives, and adverbs",
+      "word families and morphology",
+      "borrowings and disputed origins",
+      "historical, obsolete, technical, and variant senses",
+      "cross-source disagreements",
+      "HistoryRoot-linked civic and evidentiary terms",
+      "future BibleRoot translation, metaphor, idiom, and semantic-range cases"
+    ],
+    "crossRootSeedTerms": [
+      "account",
+      "alliance",
+      "claim",
+      "colony",
+      "community",
+      "evidence",
+      "homeland",
+      "identity",
+      "memory",
+      "migration",
+      "nation",
+      "settlement",
+      "source",
+      "sovereignty",
+      "territory",
+      "translation",
+      "treaty",
+      "tribe"
+    ],
+    "bibleRootDeferredStructures": [
+      "original-language term identity",
+      "translation sense selection",
+      "historical meaning",
+      "metaphor",
+      "idiom",
+      "phrase-level semantics",
+      "semantic range",
+      "disputed translation"
+    ]
+  },
+  "sourceSummary": {
+    "acceptedCount": 17,
+    "rejectedCount": 5,
+    "rightsClassDistribution": {
+      "open_license": 8,
+      "public_domain": 9,
+      "rejected_unknown_rights": 2,
+      "restricted_reference_only": 3
+    },
+    "acceptedCategoryDistribution": {
+      "corpus_morphology_or_lexical_network": 12,
+      "general_lexical": 10,
+      "historical_or_etymological": 6,
+      "institutional_or_technical": 6,
+      "multi_source_comparison": 13
+    },
+    "acceptedIds": [
+      "century-dictionary-1889-1891",
+      "conceptnet-5-8",
+      "dbnary-english",
+      "english-wiktionary",
+      "johnson-dictionary-1755",
+      "moby-thesaurus-ii",
+      "nasa-thesaurus-2012",
+      "nist-csrc-glossary",
+      "nlm-mesh",
+      "oewn-2025",
+      "princeton-wordnet-3-1",
+      "roget-thesaurus-1911",
+      "usda-nalt",
+      "usgs-thesaurus",
+      "webster-revised-unabridged-1913",
+      "weekley-etymological-1921",
+      "wikidata-lexemes"
+    ],
+    "rejectedIds": [
+      "coca",
+      "etymonline",
+      "merriam-webster-online",
+      "oed-online",
+      "unimorph-english"
+    ]
+  },
+  "projectedProductionTarget": {
+    "canonicalLemmas": 500,
+    "lexicalSenses": 1000,
+    "sourceAttributedDefinitionClaims": 1200,
+    "acceptedSources": 17,
+    "lexicalRelationships": 850,
+    "forms": 325,
+    "etymologyOrLanguageOriginStructures": 275,
+    "multiSourceComparisonStructures": 225,
+    "structuredLocators": 1200,
+    "fieldProvenanceRecords": 1400,
+    "historicalOrObsoleteSenses": 120,
+    "technicalOrSpecializedSenses": 125,
+    "qualifiedDisputedOrUncertainStructures": 110
+  },
+  "mandatoryMinimum": {
+    "feasible": true,
+    "canonicalLemmas": 300,
+    "lexicalSenses": 600,
+    "sourceAttributedDefinitionClaims": 600,
+    "usableAcceptedSources": 12,
+    "lexicalRelationships": 400,
+    "forms": 150,
+    "etymologyOrLanguageOriginStructures": 100,
+    "multiSourceComparisonStructures": 100,
+    "structuredLocators": 600,
+    "fieldProvenanceRecords": 600,
+    "historicalOrObsoleteSenses": 50,
+    "technicalOrSpecializedSenses": 50,
+    "qualifiedDisputedOrUncertainStructures": 50,
+    "condition": "Feasible only after approval of a narrow lexical-claim/form/locator/provenance/comparison schema extension and matching API contract."
+  },
+  "lexicalModelCapabilities": [
+    {
+      "capability": "written_form",
+      "classification": "supportable_through_existing_structures",
+      "rationale": "Node metadata and lemma arrays can retain written forms, but form identity is not first-class."
+    },
+    {
+      "capability": "normalized_lemma",
+      "classification": "supported_directly",
+      "rationale": "normalized_lemmas is indexed in the DictionaryRoot lexical table."
+    },
+    {
+      "capability": "sense",
+      "classification": "supported_directly",
+      "rationale": "Each lexical synset row and node ID represents a sense-like lexical concept."
+    },
+    {
+      "capability": "definition_claim",
+      "classification": "requires_schema_or_migration_approval",
+      "rationale": "The lexical table has one definition column; multiple source claims need separate claim identity and source joins."
+    },
+    {
+      "capability": "part_of_speech",
+      "classification": "supported_directly",
+      "rationale": "part_of_speech is stored, indexed through queries, and displayed."
+    },
+    {
+      "capability": "lexical_category",
+      "classification": "supportable_through_existing_structures",
+      "rationale": "Synset type and generic metadata can retain categories."
+    },
+    {
+      "capability": "usage_label",
+      "classification": "supportable_with_modest_non_migration_extension",
+      "rationale": "Generic assertion/node metadata can carry labels, but the complete index and UI do not expose them."
+    },
+    {
+      "capability": "domain_label",
+      "classification": "supportable_with_modest_non_migration_extension",
+      "rationale": "WordNet domain relations exist; normalized label claims need generator/service additions."
+    },
+    {
+      "capability": "register",
+      "classification": "supportable_with_modest_non_migration_extension",
+      "rationale": "Can be source-backed metadata but is not modeled or displayed today."
+    },
+    {
+      "capability": "historical_status",
+      "classification": "requires_schema_or_migration_approval",
+      "rationale": "Durable source-backed status, period, and provenance need structured claim fields."
+    },
+    {
+      "capability": "obsolete_status",
+      "classification": "requires_schema_or_migration_approval",
+      "rationale": "A boolean alone would lose source, date, and qualification."
+    },
+    {
+      "capability": "technical_status",
+      "classification": "supportable_with_modest_non_migration_extension",
+      "rationale": "Technical domains can be source-backed metadata pending UI activation."
+    },
+    {
+      "capability": "inflection",
+      "classification": "requires_schema_or_migration_approval",
+      "rationale": "Forms need stable identity, grammatical features, and source provenance."
+    },
+    {
+      "capability": "derivation",
+      "classification": "supportable_through_existing_structures",
+      "rationale": "DERIVATIONALLY_RELATED_TO edges exist, though form-vs-sense semantics need review."
+    },
+    {
+      "capability": "compound",
+      "classification": "supportable_with_modest_non_migration_extension",
+      "rationale": "Can be represented as a typed lexical relation after deterministic modeling rules."
+    },
+    {
+      "capability": "synonym",
+      "classification": "supportable_through_existing_structures",
+      "rationale": "Shared sense membership can express synonymy without manufacturing pairwise claims."
+    },
+    {
+      "capability": "antonym",
+      "classification": "supported_directly",
+      "rationale": "ANTONYM_OF is an existing typed relation."
+    },
+    {
+      "capability": "broader_concept",
+      "classification": "supported_directly",
+      "rationale": "Hypernym relations and generic typed edges support broader concepts."
+    },
+    {
+      "capability": "narrower_concept",
+      "classification": "supported_directly",
+      "rationale": "Hyponym relations and generic typed edges support narrower concepts."
+    },
+    {
+      "capability": "related_concept",
+      "classification": "supported_directly",
+      "rationale": "Generic typed edges and ALSO_SEE are supported."
+    },
+    {
+      "capability": "spelling_variant",
+      "classification": "requires_schema_or_migration_approval",
+      "rationale": "Variant identity, type, period, dialect, and provenance need a form model."
+    },
+    {
+      "capability": "historical_form",
+      "classification": "requires_schema_or_migration_approval",
+      "rationale": "The contextual alias model is not connected to DictionaryRoot lexical senses."
+    },
+    {
+      "capability": "language_of_origin",
+      "classification": "requires_schema_or_migration_approval",
+      "rationale": "Needs language identity plus sourced/qualified claims."
+    },
+    {
+      "capability": "etymon",
+      "classification": "requires_schema_or_migration_approval",
+      "rationale": "Needs first-class etymon/form identity and directed provenance."
+    },
+    {
+      "capability": "semantic_drift",
+      "classification": "requires_schema_or_migration_approval",
+      "rationale": "Requires chronological sense relations and evidence, not a generic edge label alone."
+    },
+    {
+      "capability": "disputed_etymology",
+      "classification": "requires_schema_or_migration_approval",
+      "rationale": "Competing proposals, qualifiers, sources, and review state must remain distinct."
+    },
+    {
+      "capability": "example_usage",
+      "classification": "supported_directly",
+      "rationale": "Examples are stored and exposed as usage-example assertions."
+    },
+    {
+      "capability": "pronunciation",
+      "classification": "supportable_with_modest_non_migration_extension",
+      "rationale": "Can be source-backed metadata, but no current importer/API/UI contract exposes it."
+    },
+    {
+      "capability": "source_attribution",
+      "classification": "supported_directly",
+      "rationale": "Nodes, assertions, and edges carry source IDs."
+    },
+    {
+      "capability": "source_locator",
+      "classification": "requires_schema_or_migration_approval",
+      "rationale": "Context locators exist but are evidence-scoped and not linked to lexical claims."
+    },
+    {
+      "capability": "field_provenance",
+      "classification": "requires_schema_or_migration_approval",
+      "rationale": "Context field provenance exists but is not connected to DictionaryRoot lexical fields."
+    },
+    {
+      "capability": "version_history",
+      "classification": "supported_directly",
+      "rationale": "Generic revisions and the History customer experience preserve explicit snapshots."
+    },
+    {
+      "capability": "source_comparison",
+      "classification": "requires_schema_or_migration_approval",
+      "rationale": "No structure links distinct source statements to one reviewed sense with a comparison decision."
+    }
+  ],
+  "frontendGaps": [
+    {
+      "requirement": "multiple_sense_navigation",
+      "classification": "already_supported"
+    },
+    {
+      "requirement": "part_of_speech_grouping",
+      "classification": "already_supported"
+    },
+    {
+      "requirement": "historical_and_technical_labels",
+      "classification": "modest_frontend_enhancement"
+    },
+    {
+      "requirement": "source_comparison",
+      "classification": "significant_frontend_enhancement"
+    },
+    {
+      "requirement": "etymology_display",
+      "classification": "significant_frontend_enhancement"
+    },
+    {
+      "requirement": "word_family_relationships",
+      "classification": "data_only_activation"
+    },
+    {
+      "requirement": "variant_form_display",
+      "classification": "modest_frontend_enhancement"
+    },
+    {
+      "requirement": "larger_search_result_handling",
+      "classification": "modest_frontend_enhancement"
+    },
+    {
+      "requirement": "provenance_coverage_indicators",
+      "classification": "modest_frontend_enhancement"
+    },
+    {
+      "requirement": "quality_and_uncertainty_labels",
+      "classification": "modest_frontend_enhancement"
+    }
+  ],
+  "apiFindings": [
+    {
+      "classification": "already_supported",
+      "requirement": "exact lemma search, sense resolution, definition assertions, edges, source records, and revision history"
+    },
+    {
+      "classification": "requires_api_work",
+      "requirement": "multi-source definition claims, form records, etymology proposals, source locators, field provenance, and comparison decisions"
+    },
+    {
+      "classification": "requires_api_work",
+      "requirement": "bounded pagination/facets for larger sense and source-comparison result sets"
+    }
+  ],
+  "migrationFindings": [
+    "Migration 013 remains absent during this gate.",
+    "Production implementation requires approval for first-class lexical claims, forms, etymology proposals, locators, field provenance, and source comparisons, or an equally explicit reviewed alternative.",
+    "Generic JSON metadata alone is insufficient for durable field-level provenance and competing source statements."
+  ],
+  "sourceComparisonPlan": {
+    "structure": [
+      "comparison_id",
+      "sense_id",
+      "left_claim_id",
+      "right_claim_id",
+      "comparison_type",
+      "decision_status",
+      "reviewer_rationale",
+      "source_lineage_relation",
+      "created_from_ruleset_version"
+    ],
+    "allowedComparisonTypes": [
+      "equivalent_wording",
+      "broader",
+      "narrower",
+      "distinct_sense",
+      "historical_vs_contemporary",
+      "general_vs_technical",
+      "part_of_speech_difference",
+      "disputed_etymology",
+      "edition_or_date_difference",
+      "genuine_contradiction",
+      "editorial_scope_difference"
+    ],
+    "rule": "Lexical identity, part of speech, time/domain labels, and inspectible source statements drive a deterministic candidate comparison; a human records the accepted decision and rationale.",
+    "algorithmicSimilarity": "Permitted only as a review queue aid; never stored as the accepted comparison decision."
+  },
+  "coverageMetrics": [
+    "lemma_count",
+    "sense_count",
+    "definitions_per_lemma",
+    "sources_per_sense",
+    "multi_source_coverage",
+    "part_of_speech_coverage",
+    "historical_sense_coverage",
+    "technical_sense_coverage",
+    "etymology_coverage",
+    "form_and_morphology_coverage",
+    "semantic_relationship_coverage",
+    "structured_locator_coverage",
+    "field_provenance_coverage",
+    "source_concentration",
+    "license_distribution",
+    "open_reuse_share",
+    "orphan_lemmas",
+    "orphan_senses",
+    "duplicate_senses",
+    "unlinked_forms",
+    "unsupported_labels",
+    "unsupported_etymologies",
+    "single_source_senses",
+    "single_lineage_senses",
+    "unresolved_sense_boundaries",
+    "unresolved_part_of_speech_distinctions",
+    "unresolved_chronology",
+    "unresolved_origin",
+    "missing_source_comparison"
+  ],
+  "findings": {
+    "blockers": [],
+    "reviewFindings": [
+      "Wiktionary and DBnary are one editorial lineage and must not count as independent corroboration.",
+      "Princeton WordNet and OEWN are related editions and must carry an explicit lineage relation.",
+      "Historical OCR and transcription must be checked against page images before claim acceptance.",
+      "NIST aggregated definitions require item-level source-publication and rights validation.",
+      "Thesaurus co-membership and ConceptNet relatedness are discovery signals, not accepted synonymy."
+    ],
+    "observations": [
+      "The repository pilot already proves multiple senses, exact search, source attribution, examples, and typed semantic relations.",
+      "The live test database currently contains no DictionaryRoot lexicon dataset row, so repository and database baselines differ.",
+      "The current customer experience already renders sense choice, part of speech, definitions, word forms, relationships, sources, and revision links."
+    ],
+    "unresolvedRightsQuestions": [
+      "Confirm international public-domain treatment before distribution outside the United States.",
+      "Approve license-layer isolation policy for CC BY-SA/GFDL-derived text.",
+      "Perform item-level review for government vocabularies containing third-party contributions."
+    ],
+    "unresolvedModelingQuestions": [
+      "Approve first-class form and etymology proposal identities.",
+      "Approve sense alignment and source-comparison review states.",
+      "Choose whether phrase-level semantics share the lexical schema or a later BibleRoot extension."
+    ],
+    "unresolvedSourceAccessQuestions": [
+      "Pin exact archive items and checksums for each historical volume during implementation.",
+      "Confirm rate and download policies immediately before acquisition."
+    ],
+    "unresolvedFrontendQuestions": [
+      "Choose comparison layout and uncertainty-label vocabulary.",
+      "Choose pagination/facet behavior for dense polysemy and larger search results."
+    ],
+    "unresolvedApiQuestions": [
+      "Define read contracts for claims, forms, etymology proposals, locators, provenance, and comparisons."
+    ],
+    "unresolvedMigrationQuestions": [
+      "Migration 013 or a later approved migration is required for the recommended normalized model."
+    ]
+  },
+  "recommendation": {
+    "decision": "CONDITIONAL_GO",
+    "rationale": "The accepted source set exceeds all category thresholds and can support every mandatory minimum without copyrighted modern definition reproduction, but the current schema/API cannot preserve required claim, form, locator, provenance, etymology, and comparison distinctions without a narrow approved extension.",
+    "blockers": 0,
+    "conditions": [
+      "Approve the normalized lexical claim/form/etymology/locator/provenance/comparison model.",
+      "Approve API contracts and targeted frontend enhancements before production import.",
+      "Complete license-layer and lineage-isolation review.",
+      "Run page-image and item-level rights review during source preparation."
+    ]
+  },
+  "negativeConfirmations": {
+    "productionCorpusGenerated": false,
+    "databaseDataChanged": false,
+    "frontendSourceChanged": false,
+    "apiRouteChanged": false,
+    "importerImplementationChanged": false,
+    "migrationAdded": false,
+    "packageOrZipCreated": false,
+    "gitHistoryOperationPerformed": false
+  }
+}
