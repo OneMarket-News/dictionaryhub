@@ -1,0 +1,191 @@
+{
+  "corpusId": "historyroot-wampanoag-regional-corpus-v1",
+  "canonicalBundleId": "historyroot-plymouth-knowledge-dataset-v1",
+  "version": "1.3.0",
+  "workspaceSha256": "87901F6D5BC672FC2BC2ACC2559296EF8AC5BA5634E2954FDC3D265A063C3A4C",
+  "bundleSha256": "E3BFEBD9D98353BB9F05893E2865C838DF04E322F18E0F4E68CE124B32665B02",
+  "baselineCounts": {
+    "sources": 20,
+    "accounts": 18,
+    "records": 116,
+    "claims": 49,
+    "claimAttributions": 49,
+    "interpretations": 12,
+    "perspectives": 10,
+    "perspectiveLinks": 18,
+    "causalLinks": 18,
+    "culturalMemories": 6,
+    "historicalNames": 15,
+    "dateExpressions": 46,
+    "relationships": 73,
+    "locators": 49,
+    "evidence": 49,
+    "evidenceLinks": 25,
+    "claimRelations": 8,
+    "fieldProvenance": 84
+  },
+  "additionCounts": {
+    "sources": 20,
+    "accounts": 14,
+    "records": 54,
+    "claims": 28,
+    "claimAttributions": 28,
+    "interpretations": 11,
+    "perspectives": 8,
+    "perspectiveLinks": 8,
+    "causalLinks": 4,
+    "culturalMemories": 4,
+    "historicalNames": 12,
+    "dateExpressions": 32,
+    "relationships": 48,
+    "locators": 28,
+    "evidence": 28,
+    "evidenceLinks": 18,
+    "claimRelations": 8,
+    "fieldProvenance": 32
+  },
+  "finalCounts": {
+    "sources": 40,
+    "accounts": 32,
+    "records": 170,
+    "claims": 77,
+    "claimAttributions": 77,
+    "interpretations": 23,
+    "perspectives": 18,
+    "perspectiveLinks": 26,
+    "causalLinks": 22,
+    "culturalMemories": 10,
+    "historicalNames": 27,
+    "dateExpressions": 78,
+    "relationships": 121,
+    "locators": 77,
+    "evidence": 77,
+    "evidenceLinks": 43,
+    "claimRelations": 16,
+    "fieldProvenance": 116
+  },
+  "sourceCategoryDistribution": {
+    "accepted": 20,
+    "indigenousLed": 8,
+    "primaryOrArchival": 7,
+    "institutional": 14,
+    "archaeologicalOrScholarly": 12
+  },
+  "rightsClassifications": {
+    "metadata_and_link_only": 19,
+    "public_domain": 1
+  },
+  "indigenousLedRepresentation": 8,
+  "primaryOrArchivalRepresentation": 7,
+  "institutionalRepresentation": 14,
+  "archaeologicalOrScholarlyRepresentation": 12,
+  "locatorStrategyDistribution": {
+    "citation": 28
+  },
+  "evidenceRoleDistribution": {
+    "contextualizes": 4,
+    "qualifies": 3,
+    "supports": 11
+  },
+  "contextualFamilyAdditions": {
+    "claimAttributions": 28,
+    "interpretations": 11,
+    "perspectives": 8,
+    "perspectiveLinks": 8,
+    "causalLinks": 4,
+    "culturalMemories": 4
+  },
+  "existingOrphansConnected": [
+    "historyroot-plymouth-person-john-sassamon",
+    "historyroot-plymouth-place-cape-cod",
+    "historyroot-plymouth-place-great-swamp",
+    "historyroot-plymouth-place-manomet",
+    "historyroot-plymouth-place-mount-hope",
+    "historyroot-plymouth-place-narragansett-bay",
+    "historyroot-plymouth-place-nemasket",
+    "historyroot-plymouth-place-swansea"
+  ],
+  "existingOrphansRemaining": [
+    "historyroot-plymouth-place-england",
+    "historyroot-plymouth-place-london",
+    "historyroot-plymouth-place-newfoundland",
+    "historyroot-plymouth-place-plymouth-harbor",
+    "historyroot-plymouth-place-spain"
+  ],
+  "existingOrphanAccountsConnected": [
+    "historyroot-plymouth-account-mashpee"
+  ],
+  "existingOrphanAccountsRemaining": [
+    "historyroot-plymouth-account-mourts"
+  ],
+  "newOrphanRecordIds": [],
+  "newOrphanAccountIds": [],
+  "singleSourceClaimCount": 28,
+  "singleLineageClaimCount": 28,
+  "claimsWithoutSeparateEvidenceLink": [
+    "historyroot-wampanoag-claim-hornblower-dates",
+    "historyroot-wampanoag-claim-frisby-dates",
+    "historyroot-wampanoag-claim-watson-seasonal-use-qualified",
+    "historyroot-wampanoag-claim-easton-native-grievances-mediated",
+    "historyroot-wampanoag-claim-easton-differs-mather",
+    "historyroot-wampanoag-claim-mather-providential-frame",
+    "historyroot-wampanoag-claim-mather-chronology-scope",
+    "historyroot-wampanoag-claim-hubbard-map-identity",
+    "historyroot-wampanoag-claim-hubbard-map-defects",
+    "historyroot-wampanoag-claim-mittark-postwar-petition"
+  ],
+  "missingRoleClassifiedEvidence": 10,
+  "unresolvedIdentities": [
+    "Colonial and modern name forms remain distinct aliases requiring future tribal and historical review.",
+    "Portal-only documents require item-level identity review before claim use."
+  ],
+  "unresolvedGeography": [
+    "No territorial polygons or exact community boundaries are asserted.",
+    "Manomet, Nemasket, Pokanoket, Pocasset, Sakonnet, and Noepe connections remain source-bounded place relationships."
+  ],
+  "unresolvedChronology": [
+    "AD 1480-1630 archaeological calibration ranges remain approximate.",
+    "Epenow chronology remains an attributed 1611-1614 range.",
+    "The 1681 Mittark petition is post-boundary context only."
+  ],
+  "sourceConcentration": {
+    "historyroot-wampanoag-source-aquinnah-history": 3,
+    "historyroot-wampanoag-source-aquinnah-thpo": 1,
+    "historyroot-wampanoag-source-beranek-great-island": 3,
+    "historyroot-wampanoag-source-chappaquiddick-history": 4,
+    "historyroot-wampanoag-source-easton-relation": 2,
+    "historyroot-wampanoag-source-herring-pond-timeline": 2,
+    "historyroot-wampanoag-source-hubbard-map": 2,
+    "historyroot-wampanoag-source-mashpee-archives": 1,
+    "historyroot-wampanoag-source-mashpee-timeline": 2,
+    "historyroot-wampanoag-source-mather-brief-history": 2,
+    "historyroot-wampanoag-source-mittark-petition": 1,
+    "historyroot-wampanoag-source-nps-carns": 2,
+    "historyroot-wampanoag-source-watson-ams-dates": 3
+  },
+  "findingCounts": {
+    "blocker": 0,
+    "review": 3,
+    "observation": 5
+  },
+  "blockers": [],
+  "reviewFindings": [
+    "Ten claims deliberately omit a redundant separate evidence-link object while retaining evidence, locator, attribution, provenance, and an explicit reason.",
+    "Portal-level and book-level sources remain registered but do not support claims without bounded item, chapter, or page locators.",
+    "Identity, naming, chronology, and geographic relationships remain subject to historical, editorial, and tribal review."
+  ],
+  "observations": [
+    "All 20 accepted sources and no rejected sources are registered.",
+    "Nineteen sources are metadata-and-link-only and one is public domain.",
+    "Eight existing orphan records and one existing orphan account gain responsible context.",
+    "All six contextual families are preserved and expanded.",
+    "No frontend, API route, importer implementation, or migration is required."
+  ],
+  "knownLimitations": [
+    "This bounded corpus is not a complete Wampanoag history or a complete military chronology.",
+    "Pre-1614 archaeology is contextual only and does not establish later personal, political, or territorial identity.",
+    "Post-1676 continuity is contextual only and does not extend the core event window.",
+    "Tribal public histories, colonial accounts, archival metadata, archaeology, and later scholarship retain distinct reporting modes.",
+    "No absence in colonial documentation is treated as evidence of nonexistence."
+  ]
+}

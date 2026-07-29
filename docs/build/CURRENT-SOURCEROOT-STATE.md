@@ -435,6 +435,28 @@ findings, and two observations. It assigns no truth, reliability, credibility,
 confidence, or composite quality score. The accepted importer, migrations,
 API routes, frontend, and v1.1 workflow implementation remain unchanged.
 
+## HistoryRoot Wampanoag Regional Corpus
+
+Chunk 9 completes the first accepted regional expansion, *Wampanoag Homelands
+and Intercommunity Networks, 1614-1676*. The canonical
+`historyroot-plymouth-knowledge-dataset-v1` identity continues from version
+`1.2.0` to `1.3.0`; the combined corpus contains 170 records, 77 claims, 40
+sources, 32 accounts, 78 date expressions, 121 relationships, 77 structured
+locators, 116 field-provenance records, and all six contextual families.
+
+The regional delta registers all 20 acquisition-gate sources and adds 54
+records, 28 claims, 14 accounts, 32 date expressions, 48 relationships, 28
+locators, 32 provenance records, 18 explicit-role evidence links, and 8
+qualifying or conflicting claim relations. Nineteen new sources remain
+metadata-and-link-only; one map source is public domain. Pre-1614 archaeology
+and post-1676 continuity are contextual only.
+
+The unchanged preparation engine and replacement-safe importer remain
+authoritative. No frontend, API route, importer implementation, migration, or
+parallel dataset was added.
+
 ## Next Dependency
 
-Broader regional corpus expansion and product adoption.
+Tribal and historical review, claim-level acquisition for currently
+portal-only or book-level sources, and product adoption of the accepted
+regional corpus.

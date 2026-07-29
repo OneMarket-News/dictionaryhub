@@ -43,6 +43,9 @@
     "historyroot:expansion:generate": "node --import ./scripts/register-tsx.mjs src/scripts/generate-historyroot-corpus-expansion.ts",
     "historyroot:expansion:import": "node --env-file=.env.test --import ./scripts/register-tsx.mjs src/scripts/import-historyroot-corpus-expansion.ts",
     "test:historyroot:expansion": "node --env-file=.env.test --import ./scripts/register-tsx.mjs --test --test-concurrency=1 test/historyroot-corpus-expansion-quality.test.ts",
+    "historyroot:wampanoag-regional:generate": "node --import ./scripts/register-tsx.mjs src/scripts/generate-historyroot-wampanoag-regional-corpus.ts",
+    "historyroot:wampanoag-regional:import": "node --env-file=.env.test --import ./scripts/register-tsx.mjs src/scripts/import-historyroot-wampanoag-regional-corpus.ts",
+    "test:historyroot:wampanoag-regional": "node --env-file=.env.test --import ./scripts/register-tsx.mjs --test --test-concurrency=1 test/historyroot-wampanoag-regional-corpus.test.ts",
     "verify:fresh-install": "node scripts/verify-fresh-install.mjs"
   },
   "dependencies": {
