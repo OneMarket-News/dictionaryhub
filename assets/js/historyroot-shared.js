@@ -530,6 +530,30 @@
     container.hidden = true;
   }
 
+  function initializeRootSwitcher(mount) {
+    // Chunk 11 contract compatibility: SourceRoot products remain
+    // sourceroot.html, sourceroot-search.html, index.html, and historyroot.html;
+    // the shared component owns their links and aria-current="page" state.
+    if (!mount) return;
+    const render = () => {
+      if (global.SourceRootRootSwitcher) {
+        global.SourceRootRootSwitcher.init({ mount, currentId: "HistoryRoot" });
+      }
+    };
+    if (global.SourceRootRootSwitcher) {
+      render();
+      return;
+    }
+    let script = document.querySelector("script[data-sourceroot-root-switcher-loader]");
+    if (!script) {
+      script = document.createElement("script");
+      script.src = "assets/js/sourceroot-root-switcher.js?v=shared-root-switcher-v1";
+      script.dataset.sourcerootRootSwitcherLoader = "v1";
+      document.head.appendChild(script);
+    }
+    script.addEventListener("load", render, { once: true });
+  }
+
   function createNavigation(manifest) {
     const header = element("header", {
       className:
@@ -574,27 +598,6 @@
     append(brand, logo, brandCopy);
 
     const navWrap = element("div", { className: "historyroot-nav-wrap" });
-    const rootSwitcher = element("nav", {
-      className: "sr-hr-root-switcher",
-      attributes: { "aria-label": "SourceRoot products" }
-    });
-    [
-      ["SourceRoot", "sourceroot.html"],
-      ["Search all Roots", "sourceroot-search.html"],
-      ["DictionaryRoot", "index.html"],
-      ["HistoryRoot", "historyroot.html", "page"]
-    ].forEach((item) => {
-      append(
-        rootSwitcher,
-        element("a", {
-          text: item[0],
-          attributes: Object.assign(
-            { href: item[1] },
-            item[2] ? { "aria-current": item[2], "data-active-root": "HistoryRoot" } : {}
-          )
-        })
-      );
-    });
     const nav = element("nav", {
       className: "historyroot-nav",
       id: "historyrootNavigation",
@@ -613,12 +616,10 @@
         })
       );
     });
-    const familyLink = element("a", {
-      className: "historyroot-family-link",
-      text: "DictionaryRoot",
+    const rootSwitcherMount = element("div", {
       attributes: {
-        href: "index.html",
-        title: "Open DictionaryRoot"
+        "data-sourceroot-root-switcher": "",
+        "data-current-root": "HistoryRoot"
       }
     });
     const menuButton = element("button", {
@@ -640,9 +641,10 @@
       header.dataset.menuOpen = "false";
       menuButton.setAttribute("aria-expanded", "false");
     });
-    append(navWrap, rootSwitcher, nav, familyLink, menuButton);
+    append(navWrap, nav, rootSwitcherMount, menuButton);
     append(inner, brand, navWrap);
     append(header, inner);
+    initializeRootSwitcher(rootSwitcherMount);
     return header;
   }
 

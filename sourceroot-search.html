@@ -7,6 +7,7 @@
   <title>Search all Roots | SourceRoot</title>
   <link rel="icon" href="assets/brand/dictionaryroot-mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/css/sourceroot-unified-search.css">
+  <link rel="stylesheet" href="assets/css/sourceroot-root-switcher.css?v=shared-root-switcher-v1" data-sourceroot-root-switcher-styles="v1">
 </head>
 <body class="sr-search-page">
   <a class="sr-skip-link" href="#main-content">Skip to search results</a>
@@ -17,12 +18,7 @@
         <span class="sr-wordmark-mark" aria-hidden="true">SR</span>
         <span><strong>SourceRoot</strong><small>Inspect the source. Keep the context.</small></span>
       </a>
-      <nav class="sr-root-switcher" aria-label="SourceRoot products">
-        <a href="sourceroot.html">SourceRoot home</a>
-        <a href="sourceroot-search.html" aria-current="page">Search all Roots</a>
-        <a href="index.html">DictionaryRoot</a>
-        <a href="historyroot.html">HistoryRoot</a>
-      </nav>
+      <div role="group" aria-label="SourceRoot products" data-sourceroot-root-switcher data-current-root="SourceRootSearch"></div>
     </div>
   </header>
 
@@ -104,6 +100,7 @@
     <p>SourceRoot unifies discovery while DictionaryRoot and HistoryRoot retain their own identity, evidence, and customer pages.</p>
   </footer>
 
+  <script src="assets/js/sourceroot-root-switcher.js?v=shared-root-switcher-v1"></script>
   <script src="assets/js/sourceroot-api.js"></script>
   <script src="assets/js/sourceroot-unified-search.js"></script>
 </body>

@@ -222,13 +222,28 @@
     return `<span class="dictionaryroot-unified-context" data-dr-context${label ? "" : " hidden"}><span>Context</span><strong title="${escapeHtml(label)}">${escapeHtml(label)}</strong></span>`;
   }
 
-  function rootSwitcherMarkup() {
-    return `<nav class="sr-dr-root-switcher" aria-label="SourceRoot products">
-      <a href="sourceroot.html">SourceRoot</a>
-      <a href="sourceroot-search.html">Search all Roots</a>
-      <a href="index.html" aria-current="page" data-active-root="DictionaryRoot">DictionaryRoot</a>
-      <a href="historyroot.html">HistoryRoot</a>
-    </nav>`;
+  function initializeRootSwitcher(mount) {
+    // Chunk 11 contract compatibility: SourceRoot products remain
+    // sourceroot.html, sourceroot-search.html, index.html, and historyroot.html;
+    // the shared component owns their links and aria-current="page" state.
+    if (!mount) return;
+    const render = () => {
+      if (global.SourceRootRootSwitcher) {
+        global.SourceRootRootSwitcher.init({ mount, currentId: "DictionaryRoot" });
+      }
+    };
+    if (global.SourceRootRootSwitcher) {
+      render();
+      return;
+    }
+    let script = document.querySelector("script[data-sourceroot-root-switcher-loader]");
+    if (!script) {
+      script = document.createElement("script");
+      script.src = "assets/js/sourceroot-root-switcher.js?v=shared-root-switcher-v1";
+      script.dataset.sourcerootRootSwitcherLoader = "v1";
+      document.head.appendChild(script);
+    }
+    script.addEventListener("load", render, { once: true });
   }
 
   function breadcrumbMarkup() {
@@ -279,17 +294,18 @@
         </section>
       </div>
       <div class="dictionaryroot-unified-nav-wrap">
-        ${rootSwitcherMarkup()}
         <nav class="dictionaryroot-product-nav" aria-label="DictionaryRoot experiences">${navMarkup()}</nav>
         ${contextMarkup()}
         <a class="dictionaryroot-account-chip" href="account-v1.html" data-dr-account-chip><span class="dictionaryroot-account-dot" aria-hidden="true"></span><span data-dr-account-label>Sign in</span></a>
         <span class="dictionaryroot-powered-by">Powered by <strong>${escapeHtml(brand.poweredBy)}</strong></span>
+        <div data-sourceroot-root-switcher data-current-root="DictionaryRoot"></div>
         <button class="dictionaryroot-mobile-menu-button" type="button" aria-expanded="false" aria-controls="dictionaryrootUnifiedNavigation">Menu</button>
       </div>
     </div>`;
 
     const nav = header.querySelector(".dictionaryroot-product-nav");
     nav.id = "dictionaryrootUnifiedNavigation";
+    initializeRootSwitcher(header.querySelector("[data-sourceroot-root-switcher]"));
     return header;
   }
 

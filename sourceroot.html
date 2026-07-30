@@ -5,6 +5,7 @@
   <title>SourceRoot Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="assets/css/sourceroot-unified-search.css" />
+  <link rel="stylesheet" href="assets/css/sourceroot-root-switcher.css?v=shared-root-switcher-v1" data-sourceroot-root-switcher-styles="v1" />
 
   <style>
     body {
@@ -385,12 +386,7 @@
         A live provenance engine connecting imported knowledge, claims, relationships, sources, credibility, identity, revisions, and validation through PostgreSQL and the SourceRoot API. SourceRoot turns separate knowledge systems into one inspectable, source-aware graph.
       </div>
 
-      <nav class="sr-root-nav" aria-label="SourceRoot products">
-        <a href="sourceroot.html" aria-current="page">SourceRoot home</a>
-        <a href="sourceroot-search.html">Search all Roots</a>
-        <a href="index.html">DictionaryRoot</a>
-        <a href="historyroot.html">HistoryRoot</a>
-      </nav>
+      <div role="group" aria-label="SourceRoot products" data-sourceroot-root-switcher data-current-root="SourceRoot"></div>
 
       <form class="sr-home-search" action="sourceroot-search.html" method="get" role="search" aria-label="Search DictionaryRoot and HistoryRoot">
         <label for="sourceRootHomeSearch">Search all Roots</label>
@@ -931,6 +927,7 @@ DictionaryHub / BibleRoot / Wiki / Future Hubs</code>
     SourceRoot live development dashboard. Backend: Express + PostgreSQL. Core model: Node → Assertion → Edge → Source → Credibility → Identity → Revision → Validation → Import.
   </footer>
 
+  <script src="assets/js/sourceroot-root-switcher.js?v=shared-root-switcher-v1"></script>
   <script>
     const SOURCE_ROOT_API = "http://localhost:3000/api/v1";
     const SOURCE_ROOT_ORIGIN = "http://localhost:3000";
