@@ -231,7 +231,7 @@ export async function getLexicalEvidenceGraphNeighborhood(options: {
   const datasetId = await findDatasetId(options.seedId);
   if (!datasetId) return undefined;
   const pool = database();
-  const cap = 500;
+  const cap = 5_000;
   const [
     lemmas, associations, senses, claims, forms, proposals, competitors,
     comparisons, locators, provenance, sources, relationships, evidence,

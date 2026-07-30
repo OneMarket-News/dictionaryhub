@@ -1,0 +1,511 @@
+{
+  "datasetId": "dictionaryroot-core-lexical-corpus-v1",
+  "version": "1.0.0",
+  "sources": [
+    {
+      "sourceId": "century-dictionary-1889-1891",
+      "title": "The Century Dictionary",
+      "publisher": "The Century Company; Internet Archive/Open Library scan",
+      "editionOrDatasetVersion": "first edition, 1889–1891",
+      "sourceType": "historical encyclopedic dictionary",
+      "stableUrl": "https://openlibrary.org/books/OL13516513M/The_Century_dictionary",
+      "rightsClass": "public_domain",
+      "licenseOrPublicDomainBasis": "Edition published 1889–1891; public-domain scan of a pre-1931 work.",
+      "attributionRequirements": [
+        "Preserve source title, publisher, version, stable URL, and rights statement on every derived claim."
+      ],
+      "redistributionRestrictions": [
+        "Use only public-domain page images/OCR; do not import later copyrighted editorial additions."
+      ],
+      "permittedUseClass": "historical definitions, technical senses, labels, quotations metadata, and etymologies",
+      "sourceLimitations": [
+        "OCR quality varies",
+        "Large entries require human sense-boundary review"
+      ],
+      "editorialLineage": "William Dwight Whitney and Century Company editorial program.",
+      "sourceRootRole": "Independent public-domain historical and technical comparison source.",
+      "locatorStrategy": "Open Library/Internet Archive ID, volume, printed page, column, headword, and OCR line range.",
+      "supportedCounts": {
+        "claims": 0,
+        "forms": 0,
+        "etymologies": 0,
+        "relationshipEvidence": 0
+      }
+    },
+    {
+      "sourceId": "conceptnet-5-8",
+      "title": "ConceptNet",
+      "publisher": "ConceptNet contributors and Luminoso/maintainers",
+      "editionOrDatasetVersion": "5.8",
+      "sourceType": "open semantic network",
+      "stableUrl": "https://conceptnet.io/",
+      "rightsClass": "open_license",
+      "licenseOrPublicDomainBasis": "Creative Commons Attribution-ShareAlike 4.0 International.",
+      "attributionRequirements": [
+        "Credit ConceptNet and preserve CC BY-SA 4.0; retain edge source attribution."
+      ],
+      "redistributionRestrictions": [
+        "Share-alike applies; constituent source licenses and quality must be reviewed."
+      ],
+      "permittedUseClass": "reviewable semantic-relationship candidates with source attribution",
+      "sourceLimitations": [
+        "Commonsense edges are not dictionary sense analysis",
+        "Mixed constituent quality and languages"
+      ],
+      "editorialLineage": "Aggregated commonsense knowledge network.",
+      "sourceRootRole": "Relationship discovery and corroboration review aid.",
+      "locatorStrategy": "Release, edge URI, start/end concept URIs, relation, source assertion, and download line number.",
+      "supportedCounts": {
+        "claims": 0,
+        "forms": 0,
+        "etymologies": 0,
+        "relationshipEvidence": 0
+      }
+    },
+    {
+      "sourceId": "dbnary-english",
+      "title": "DBnary English Extract",
+      "publisher": "GETALP, Université Grenoble Alpes",
+      "editionOrDatasetVersion": "dated monthly English RDF dump",
+      "sourceType": "Wiktionary-derived linked lexical data",
+      "stableUrl": "https://kaiko.getalp.org/about-dbnary/development/",
+      "rightsClass": "open_license",
+      "licenseOrPublicDomainBasis": "Extracted Wiktionary content remains subject to Wiktionary CC BY-SA 4.0/GFDL terms.",
+      "attributionRequirements": [
+        "Attribute English Wiktionary contributors and DBnary/GETALP; preserve share-alike obligations."
+      ],
+      "redistributionRestrictions": [
+        "Do not treat DBnary as an editorially independent source from Wiktionary."
+      ],
+      "permittedUseClass": "structured Wiktionary-derived lexical entries and relations in a share-alike layer",
+      "sourceLimitations": [
+        "Derivative of Wiktionary",
+        "Some relations are entry-level rather than sense-level"
+      ],
+      "editorialLineage": "Automated extraction of Wiktionary; same editorial lineage.",
+      "sourceRootRole": "Deterministic structured extraction aid, never an independent corroborating vote.",
+      "locatorStrategy": "Dump date, RDF graph, subject URI, predicate, object, and originating Wiktionary page/revision when available.",
+      "supportedCounts": {
+        "claims": 0,
+        "forms": 0,
+        "etymologies": 0,
+        "relationshipEvidence": 0
+      }
+    },
+    {
+      "sourceId": "english-wiktionary",
+      "title": "English Wiktionary",
+      "publisher": "Wikimedia Foundation and Wiktionary contributors",
+      "editionOrDatasetVersion": "dated English-language XML dump",
+      "sourceType": "collaborative dictionary",
+      "stableUrl": "https://dumps.wikimedia.org/enwiktionary/",
+      "rightsClass": "open_license",
+      "licenseOrPublicDomainBasis": "Entry text is dual-licensed under CC BY-SA 4.0 and GFDL, subject to per-item exceptions.",
+      "attributionRequirements": [
+        "Provide contributor/page attribution and a link to the transparent source; preserve applicable share-alike terms."
+      ],
+      "redistributionRestrictions": [
+        "Share-alike applies to adapted entry text; external quotations, audio, and images require separate review."
+      ],
+      "permittedUseClass": "definitions, forms, labels, pronunciations, etymologies, and examples after license-aware filtering",
+      "sourceLimitations": [
+        "Community quality varies",
+        "Templates change",
+        "License compatibility requires isolation and review"
+      ],
+      "editorialLineage": "Collaborative Wikimedia lexicography.",
+      "sourceRootRole": "Supplemental form, label, pronunciation, and etymology evidence in a license-isolated layer.",
+      "locatorStrategy": "Dump date, namespace/page title, page ID, revision ID, section language, entry heading, and source line span.",
+      "supportedCounts": {
+        "claims": 1,
+        "forms": 0,
+        "etymologies": 2,
+        "relationshipEvidence": 0
+      }
+    },
+    {
+      "sourceId": "johnson-dictionary-1755",
+      "title": "A Dictionary of the English Language",
+      "publisher": "Samuel Johnson; Internet Archive scan",
+      "editionOrDatasetVersion": "1755 first edition, with 1785 scan fallback for verification",
+      "sourceType": "historical general dictionary",
+      "stableUrl": "https://en.wikisource.org/wiki/A_Dictionary_of_the_English_Language_(Johnson)",
+      "rightsClass": "public_domain",
+      "licenseOrPublicDomainBasis": "Eighteenth-century work; public domain.",
+      "attributionRequirements": [
+        "Preserve source title, publisher, version, stable URL, and rights statement on every derived claim."
+      ],
+      "redistributionRestrictions": [
+        "Exclude copyrighted modern commentary and editions."
+      ],
+      "permittedUseClass": "historical senses, definitions, etymologies, and citation metadata",
+      "sourceLimitations": [
+        "Obsolete scholarship and biases",
+        "Typography and OCR require human verification"
+      ],
+      "editorialLineage": "Samuel Johnson's single-editor lexicographic program.",
+      "sourceRootRole": "Independent historical comparison source.",
+      "locatorStrategy": "Edition, volume, printed page, column, headword, sense number, and page-image URL.",
+      "supportedCounts": {
+        "claims": 0,
+        "forms": 0,
+        "etymologies": 0,
+        "relationshipEvidence": 0
+      }
+    },
+    {
+      "sourceId": "moby-thesaurus-ii",
+      "title": "MOBY Thesaurus II",
+      "publisher": "Grady Ward; Project Gutenberg mirror",
+      "editionOrDatasetVersion": "Project Gutenberg eBook 3202",
+      "sourceType": "machine-readable thesaurus",
+      "stableUrl": "https://www.gutenberg.org/ebooks/3202",
+      "rightsClass": "public_domain",
+      "licenseOrPublicDomainBasis": "Moby Project resources were dedicated to the public domain; Gutenberg distributes the machine-readable work.",
+      "attributionRequirements": [
+        "Preserve source title, publisher, version, stable URL, and rights statement on every derived claim."
+      ],
+      "redistributionRestrictions": [
+        "Do not accept large related-term clusters as synonyms without source and sense review."
+      ],
+      "permittedUseClass": "semantic relationship candidate discovery",
+      "sourceLimitations": [
+        "Relatedness is not typed",
+        "No definitions or sense boundaries"
+      ],
+      "editorialLineage": "Moby Project compilation.",
+      "sourceRootRole": "Candidate relationship discovery only.",
+      "locatorStrategy": "eBook number, root term, source line number, and raw-file checksum.",
+      "supportedCounts": {
+        "claims": 0,
+        "forms": 0,
+        "etymologies": 0,
+        "relationshipEvidence": 0
+      }
+    },
+    {
+      "sourceId": "nasa-thesaurus-2012",
+      "title": "NASA Thesaurus",
+      "publisher": "NASA Scientific and Technical Information Program",
+      "editionOrDatasetVersion": "2012 edition; current downloadable data files",
+      "sourceType": "institutional technical thesaurus",
+      "stableUrl": "https://www.sti.nasa.gov/nasa-thesaurus/",
+      "rightsClass": "public_domain",
+      "licenseOrPublicDomainBasis": "U.S. Government work; official page provides complete downloadable data and requested citation.",
+      "attributionRequirements": [
+        "Use NASA STI's supplied citation and do not imply endorsement."
+      ],
+      "redistributionRestrictions": [
+        "Review any third-party material or marks separately."
+      ],
+      "permittedUseClass": "aerospace and science terms, definitions, preferred terms, and hierarchical relationships",
+      "sourceLimitations": [
+        "CSV omits definitions",
+        "Edition date is old; scope notes need format-aware extraction"
+      ],
+      "editorialLineage": "NASA STI controlled vocabulary.",
+      "sourceRootRole": "Aerospace and physical-science technical sense authority.",
+      "locatorStrategy": "Edition, SKOS concept URI, preferred label, source file checksum, and scope-note field.",
+      "supportedCounts": {
+        "claims": 0,
+        "forms": 0,
+        "etymologies": 0,
+        "relationshipEvidence": 0
+      }
+    },
+    {
+      "sourceId": "nist-csrc-glossary",
+      "title": "NIST CSRC Glossary",
+      "publisher": "National Institute of Standards and Technology",
+      "editionOrDatasetVersion": "daily JSON snapshot, pinned by acquisition date",
+      "sourceType": "institutional technical glossary aggregator",
+      "stableUrl": "https://csrc.nist.gov/glossary",
+      "rightsClass": "public_domain",
+      "licenseOrPublicDomainBasis": "NIST U.S. Government content is generally public domain; every definition remains attributed to its named source publication.",
+      "attributionRequirements": [
+        "Cite the source publication rather than treating the changing glossary page as the authority."
+      ],
+      "redistributionRestrictions": [
+        "CNSSI or other non-NIST source text requires item-level rights review."
+      ],
+      "permittedUseClass": "cybersecurity and privacy definitions with source-publication attribution",
+      "sourceLimitations": [
+        "Not all included sources are NIST works",
+        "Definitions are context-specific and change over time"
+      ],
+      "editorialLineage": "NIST aggregation of standards and guidance terminology.",
+      "sourceRootRole": "Cybersecurity and privacy technical claims with publication-level provenance.",
+      "locatorStrategy": "Snapshot date, term key, source document identifier/version, section/page, and JSON object hash.",
+      "supportedCounts": {
+        "claims": 0,
+        "forms": 0,
+        "etymologies": 0,
+        "relationshipEvidence": 0
+      }
+    },
+    {
+      "sourceId": "nlm-mesh",
+      "title": "Medical Subject Headings (MeSH)",
+      "publisher": "U.S. National Library of Medicine",
+      "editionOrDatasetVersion": "current annual production year, pinned at acquisition",
+      "sourceType": "institutional biomedical terminology",
+      "stableUrl": "https://www.nlm.nih.gov/databases/download/mesh.html",
+      "rightsClass": "open_license",
+      "licenseOrPublicDomainBasis": "NLM freely provides MeSH with explicit attribution, currency, disclaimer, and no-endorsement conditions.",
+      "attributionRequirements": [
+        "Acknowledge NLM clearly and conspicuously; identify the MeSH version."
+      ],
+      "redistributionRestrictions": [
+        "Keep data current or clearly identify it as non-current; translation files have separate terms."
+      ],
+      "permittedUseClass": "biomedical preferred terms, concepts, scope notes, and hierarchy",
+      "sourceLimitations": [
+        "Indexing vocabulary rather than a general dictionary",
+        "Translation files excluded"
+      ],
+      "editorialLineage": "NLM biomedical indexing terminology.",
+      "sourceRootRole": "Biomedical technical term and preferred-form authority.",
+      "locatorStrategy": "MeSH year, Descriptor/Concept/Term UI, XML element path, and source file checksum.",
+      "supportedCounts": {
+        "claims": 0,
+        "forms": 0,
+        "etymologies": 0,
+        "relationshipEvidence": 0
+      }
+    },
+    {
+      "sourceId": "oewn-2025",
+      "title": "Open English WordNet 2025",
+      "publisher": "Open English WordNet Community, University of Galway",
+      "editionOrDatasetVersion": "2025 (2025-12-31)",
+      "sourceType": "open lexical database",
+      "stableUrl": "https://en-word.net/downloads",
+      "rightsClass": "open_license",
+      "licenseOrPublicDomainBasis": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+      "attributionRequirements": [
+        "Credit the Open English WordNet Community and preserve CC BY 4.0 notice and version."
+      ],
+      "redistributionRestrictions": [
+        "Attribution and change indication are required."
+      ],
+      "permittedUseClass": "definitions, senses, lemmas, examples, and semantic relations with attribution",
+      "sourceLimitations": [
+        "Limited etymology and historical labeling",
+        "One WordNet editorial lineage"
+      ],
+      "editorialLineage": "Community continuation of Princeton WordNet.",
+      "sourceRootRole": "Primary modern sense spine and relation network.",
+      "locatorStrategy": "Release ID plus part-of-speech and eight-digit synset offset; retain original gloss and file checksum.",
+      "supportedCounts": {
+        "claims": 1000,
+        "forms": 325,
+        "etymologies": 0,
+        "relationshipEvidence": 722
+      }
+    },
+    {
+      "sourceId": "princeton-wordnet-3-1",
+      "title": "Princeton WordNet",
+      "publisher": "Princeton University",
+      "editionOrDatasetVersion": "3.1 database files",
+      "sourceType": "lexical database",
+      "stableUrl": "https://wordnet.princeton.edu/license-and-commercial-use",
+      "rightsClass": "open_license",
+      "licenseOrPublicDomainBasis": "WordNet license permits use, copy, modification, and distribution without fee when notices are preserved.",
+      "attributionRequirements": [
+        "Preserve the Princeton copyright, license, disclaimer, and scholarly citation."
+      ],
+      "redistributionRestrictions": [
+        "All copies and modifications must retain the required notices; Princeton name cannot imply endorsement."
+      ],
+      "permittedUseClass": "sense and relationship comparison with required notices",
+      "sourceLimitations": [
+        "No longer developed",
+        "Substantial lineage overlap with OEWN"
+      ],
+      "editorialLineage": "Princeton Cognitive Science Laboratory; ancestor of OEWN.",
+      "sourceRootRole": "Lineage audit and edition-difference source, not an independent consensus vote.",
+      "locatorStrategy": "Release 3.1, part-of-speech, synset offset, and source file checksum.",
+      "supportedCounts": {
+        "claims": 0,
+        "forms": 0,
+        "etymologies": 0,
+        "relationshipEvidence": 0
+      }
+    },
+    {
+      "sourceId": "roget-thesaurus-1911",
+      "title": "Roget's Thesaurus of English Words and Phrases",
+      "publisher": "Peter Mark Roget; Project Gutenberg/MICRA",
+      "editionOrDatasetVersion": "1911 edition; Project Gutenberg eBook 22",
+      "sourceType": "historical thesaurus",
+      "stableUrl": "https://www.gutenberg.org/ebooks/22",
+      "rightsClass": "public_domain",
+      "licenseOrPublicDomainBasis": "Project Gutenberg marks the work public domain in the USA.",
+      "attributionRequirements": [
+        "Preserve source title, publisher, version, stable URL, and rights statement on every derived claim."
+      ],
+      "redistributionRestrictions": [
+        "Relationships require human validation; thesaurus co-membership is not automatic synonymy."
+      ],
+      "permittedUseClass": "review candidates for semantic groupings and historical related-term evidence",
+      "sourceLimitations": [
+        "Groups are broader than synonym sets",
+        "No modern sense identifiers"
+      ],
+      "editorialLineage": "Roget conceptual classification.",
+      "sourceRootRole": "Relationship discovery and review source, not automatic accepted synonym authority.",
+      "locatorStrategy": "eBook number, class, section, head number, paragraph, and source line range.",
+      "supportedCounts": {
+        "claims": 0,
+        "forms": 0,
+        "etymologies": 0,
+        "relationshipEvidence": 0
+      }
+    },
+    {
+      "sourceId": "usda-nalt",
+      "title": "NAL Agricultural Thesaurus and Glossary",
+      "publisher": "USDA National Agricultural Library",
+      "editionOrDatasetVersion": "dated RDF/Turtle snapshot",
+      "sourceType": "institutional agricultural terminology",
+      "stableUrl": "https://lod.nal.usda.gov/nalt/en/",
+      "rightsClass": "open_license",
+      "licenseOrPublicDomainBasis": "U.S. Government waives rights under CC0 1.0 for NALT.",
+      "attributionRequirements": [
+        "Record USDA NAL source and snapshot even though CC0 does not require attribution."
+      ],
+      "redistributionRestrictions": [],
+      "permittedUseClass": "agricultural terms, definitions, translations, and concept relations",
+      "sourceLimitations": [
+        "Not regulatory definitions",
+        "Domain-specific"
+      ],
+      "editorialLineage": "USDA National Agricultural Library controlled vocabulary.",
+      "sourceRootRole": "Agricultural and biological technical sense authority.",
+      "locatorStrategy": "Snapshot date, concept URI, language tag, RDF predicate, and source file checksum.",
+      "supportedCounts": {
+        "claims": 0,
+        "forms": 0,
+        "etymologies": 0,
+        "relationshipEvidence": 0
+      }
+    },
+    {
+      "sourceId": "usgs-thesaurus",
+      "title": "USGS Thesaurus",
+      "publisher": "U.S. Geological Survey",
+      "editionOrDatasetVersion": "dated downloadable database snapshot",
+      "sourceType": "institutional earth-science thesaurus",
+      "stableUrl": "https://apps.usgs.gov/thesaurus/",
+      "rightsClass": "public_domain",
+      "licenseOrPublicDomainBasis": "USGS explains that employee-created U.S. Government works are public domain in the United States.",
+      "attributionRequirements": [
+        "Credit USGS and retain source snapshot/version."
+      ],
+      "redistributionRestrictions": [],
+      "permittedUseClass": "earth-science terms, scope notes, and broader/narrower relationships",
+      "sourceLimitations": [
+        "Controlled vocabulary, not complete lexical senses",
+        "Check any incorporated third-party content"
+      ],
+      "editorialLineage": "USGS science information-management vocabulary.",
+      "sourceRootRole": "Earth-science technical term authority.",
+      "locatorStrategy": "Snapshot date, vocabulary table, term ID, scope field, and database checksum.",
+      "supportedCounts": {
+        "claims": 0,
+        "forms": 0,
+        "etymologies": 0,
+        "relationshipEvidence": 0
+      }
+    },
+    {
+      "sourceId": "webster-revised-unabridged-1913",
+      "title": "Webster's Revised Unabridged Dictionary",
+      "publisher": "C. & G. Merriam; Project Gutenberg transcription",
+      "editionOrDatasetVersion": "1913 edition; Project Gutenberg eBook 29765",
+      "sourceType": "historical general dictionary",
+      "stableUrl": "https://www.gutenberg.org/ebooks/29765",
+      "rightsClass": "public_domain",
+      "licenseOrPublicDomainBasis": "Project Gutenberg marks eBook 29765 public domain in the USA.",
+      "attributionRequirements": [
+        "Preserve source title, publisher, version, stable URL, and rights statement on every derived claim."
+      ],
+      "redistributionRestrictions": [
+        "Remove Project Gutenberg trademarks or comply with its distribution terms; confirm law outside the USA."
+      ],
+      "permittedUseClass": "historical definitions, forms, labels, and etymologies after transcription review",
+      "sourceLimitations": [
+        "OCR/transcription defects",
+        "Historical biases and outdated labels require contextual review"
+      ],
+      "editorialLineage": "Early Merriam-Webster editorial tradition.",
+      "sourceRootRole": "Public-domain historical comparison dictionary.",
+      "locatorStrategy": "eBook number, source section/file, headword, entry ordinal, and normalized line range; retain raw transcription checksum.",
+      "supportedCounts": {
+        "claims": 144,
+        "forms": 0,
+        "etymologies": 141,
+        "relationshipEvidence": 0
+      }
+    },
+    {
+      "sourceId": "weekley-etymological-1921",
+      "title": "An Etymological Dictionary of Modern English",
+      "publisher": "Ernest Weekley; John Murray; Internet Archive/Open Library scan",
+      "editionOrDatasetVersion": "1921",
+      "sourceType": "historical etymological dictionary",
+      "stableUrl": "https://openlibrary.org/books/OL24156426M/An_etymological_dictionary_of_modern_English",
+      "rightsClass": "public_domain",
+      "licenseOrPublicDomainBasis": "Published in 1921; public domain in the United States.",
+      "attributionRequirements": [
+        "Preserve source title, publisher, version, stable URL, and rights statement on every derived claim."
+      ],
+      "redistributionRestrictions": [
+        "Do not modernize uncertain derivations into certainty."
+      ],
+      "permittedUseClass": "historical etymology proposals and qualified origin claims",
+      "sourceLimitations": [
+        "Scholarship is dated",
+        "Many derivations require comparison with newer open evidence"
+      ],
+      "editorialLineage": "Ernest Weekley's early twentieth-century etymological scholarship.",
+      "sourceRootRole": "Historical etymology claim source, always date-qualified.",
+      "locatorStrategy": "Archive ID, volume, printed column/page, headword, and OCR line range.",
+      "supportedCounts": {
+        "claims": 0,
+        "forms": 0,
+        "etymologies": 0,
+        "relationshipEvidence": 0
+      }
+    },
+    {
+      "sourceId": "wikidata-lexemes",
+      "title": "Wikidata Lexemes",
+      "publisher": "Wikimedia Foundation and Wikidata contributors",
+      "editionOrDatasetVersion": "dated Lexeme namespace dump",
+      "sourceType": "structured lexical knowledge base",
+      "stableUrl": "https://www.wikidata.org/wiki/Wikidata:Database_download",
+      "rightsClass": "open_license",
+      "licenseOrPublicDomainBasis": "Lexeme namespace structured data is CC0 1.0.",
+      "attributionRequirements": [
+        "Attribution is not legally required under CC0; record provenance as a SourceRoot quality requirement."
+      ],
+      "redistributionRestrictions": [],
+      "permittedUseClass": "structured forms, grammatical features, senses, and external identifiers",
+      "sourceLimitations": [
+        "English definition coverage is incomplete",
+        "Community statements need source-quality review"
+      ],
+      "editorialLineage": "Collaborative structured-data project.",
+      "sourceRootRole": "Form identity and cross-resource alignment authority.",
+      "locatorStrategy": "Dump date plus Lexeme, Form, Sense, and statement GUID; retain referenced source IDs.",
+      "supportedCounts": {
+        "claims": 0,
+        "forms": 0,
+        "etymologies": 0,
+        "relationshipEvidence": 0
+      }
+    }
+  ]
+}

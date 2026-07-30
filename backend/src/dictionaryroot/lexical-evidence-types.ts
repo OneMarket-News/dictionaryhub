@@ -229,6 +229,30 @@ export interface DictionaryRootLexicalEvidenceFixture {
   relationshipEvidence: LexicalRelationshipEvidence[];
 }
 
+export interface DictionaryRootCoreLexicalCorpus {
+  schemaVersion: "1.0.0";
+  dataset: {
+    datasetId: "dictionaryroot-core-lexical-corpus-v1";
+    bundleId: "dictionaryroot-core-lexical-corpus-v1";
+    title: "DictionaryRoot Core Lexical Corpus v1";
+    version: "1.0.0";
+    status: "accepted";
+    rightsSummary: string;
+    fixtureOnly: false;
+  };
+  sources: LexicalEvidenceSource[];
+  lemmas: LexicalLemma[];
+  senses: LexicalSense[];
+  definitionClaims: LexicalDefinitionClaim[];
+  forms: LexicalForm[];
+  etymologyProposals: LexicalEtymologyProposal[];
+  sourceComparisons: LexicalSourceComparison[];
+  locators: LexicalSourceLocator[];
+  fieldProvenance: LexicalFieldProvenance[];
+  relationships: LexicalRelationship[];
+  relationshipEvidence: LexicalRelationshipEvidence[];
+}
+
 export interface LexicalEvidenceInventory {
   datasetId: string;
   version: string;

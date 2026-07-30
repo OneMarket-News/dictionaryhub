@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "1.0.0",
+  "datasetId": "dictionaryroot-core-lexical-corpus-v1",
+  "version": "1.0.0",
+  "artifacts": [
+    {
+      "name": "corpus.json",
+      "byteLength": 3624640,
+      "sha256": "D81576A1ABD254EB3479CB638283FD07AB461000C118DB46B4E0DFB3E08A0D16"
+    },
+    {
+      "name": "inventory.json",
+      "byteLength": 1863,
+      "sha256": "EB4C2D0F1E93631670B62866A856D280D7C1D859A50145FF72E0DD04163D5A90"
+    },
+    {
+      "name": "lemma-selection.json",
+      "byteLength": 58775,
+      "sha256": "DB69BB081E9BBF97FED586ED98D60C464920A0EBB256991969FB28425B9B56B0"
+    },
+    {
+      "name": "prepared-source-accounting.json",
+      "byteLength": 1467,
+      "sha256": "67B53B46E9A103C60EBB16CE8D46C6DCBE8FC7E76559B881FF68D28391008D23"
+    },
+    {
+      "name": "quality-review.json",
+      "byteLength": 1610,
+      "sha256": "047A285A13CF033074BC812AECA8648D7D0137B787D1F98A1E5A37E9889639D4"
+    },
+    {
+      "name": "quality-review.md",
+      "byteLength": 1182,
+      "sha256": "3E0602EE72E97FF622764D87DFE1749042CAC5AD900E76E6E3C2550B334B95CF"
+    },
+    {
+      "name": "relationship-accounting.json",
+      "byteLength": 480,
+      "sha256": "99EA6AB1F5FAE2287B9E47DD608A3E29F764E650DA734B0AFBE6176132A6A204"
+    },
+    {
+      "name": "source-rights-attribution.json",
+      "byteLength": 24379,
+      "sha256": "9BAD27E075EA1FAD505FBE94E075A4C077C4F02B14C6AD899010E1BB06792DBD"
+    }
+  ]
+}

@@ -1,0 +1,3473 @@
+{
+  "rulesetVersion": "dictionaryroot-core-selection-v1",
+  "methodology": "Unicode NFKC normalization; required cross-Root seeds; polysemy; technical coverage; deterministic normalized-lemma ordering; one mandatory sense per selected lemma followed by stable sense-ID fill.",
+  "selectedCount": 500,
+  "selectedLemmas": [
+    "abstract",
+    "accent",
+    "accept",
+    "access",
+    "account",
+    "acquire",
+    "acquirer",
+    "act",
+    "action",
+    "activate",
+    "activity",
+    "actual",
+    "add",
+    "address",
+    "advance",
+    "affect",
+    "affirmation",
+    "agitate",
+    "aim",
+    "air",
+    "alive",
+    "alliance",
+    "amount",
+    "answer",
+    "anticipate",
+    "appear",
+    "apply",
+    "area",
+    "argument",
+    "arouse",
+    "articulate",
+    "ascertain",
+    "ask",
+    "association",
+    "assure",
+    "attack",
+    "attest",
+    "back",
+    "bad",
+    "bank",
+    "base",
+    "be",
+    "beam",
+    "bear",
+    "bear on",
+    "beat",
+    "bed",
+    "begin",
+    "believe",
+    "better",
+    "big",
+    "black",
+    "block",
+    "blow",
+    "blur",
+    "body",
+    "book",
+    "break",
+    "bright",
+    "bring",
+    "broadcast",
+    "build",
+    "burn",
+    "buy",
+    "calculate",
+    "call",
+    "call for",
+    "capitalise",
+    "capitalize",
+    "capture",
+    "care",
+    "carry",
+    "case",
+    "cast",
+    "catch",
+    "cause",
+    "center",
+    "centre",
+    "change",
+    "charge",
+    "charm",
+    "check",
+    "circulate",
+    "citation",
+    "claim",
+    "clear",
+    "close",
+    "colony",
+    "come",
+    "come up",
+    "communicate",
+    "community",
+    "compare",
+    "composition",
+    "conclusion",
+    "condition",
+    "conjecture",
+    "connect",
+    "connection",
+    "connexion",
+    "conserve",
+    "consider",
+    "constitute",
+    "contend",
+    "content",
+    "continue",
+    "control",
+    "conversion",
+    "convert",
+    "cook",
+    "copy",
+    "correct",
+    "count",
+    "counter",
+    "cover",
+    "create",
+    "creation",
+    "crop",
+    "cue",
+    "cultural",
+    "culture",
+    "cut",
+    "damage",
+    "dark",
+    "darkness",
+    "date",
+    "deaden",
+    "deal",
+    "debate",
+    "declaration",
+    "defence",
+    "defense",
+    "demand",
+    "derivative",
+    "derive",
+    "design",
+    "determine",
+    "develop",
+    "development",
+    "diet",
+    "direct",
+    "discernment",
+    "discharge",
+    "discourse",
+    "discover",
+    "discovery",
+    "disturb",
+    "divide",
+    "do",
+    "docket",
+    "document",
+    "dodge",
+    "draw",
+    "drift",
+    "drive",
+    "drop",
+    "dull",
+    "earth",
+    "effect",
+    "encounter",
+    "end",
+    "energy",
+    "engage",
+    "establish",
+    "estimate",
+    "evidence",
+    "evoke",
+    "exact",
+    "examine",
+    "example",
+    "exchange",
+    "excite",
+    "excuse",
+    "exercise",
+    "expect",
+    "experience",
+    "express",
+    "expression",
+    "extract",
+    "face",
+    "fact",
+    "factor",
+    "fail",
+    "fall",
+    "false",
+    "falsify",
+    "fast",
+    "feel",
+    "ferment",
+    "field",
+    "figure",
+    "find",
+    "fire",
+    "firing",
+    "fix",
+    "fleet",
+    "flow",
+    "fly",
+    "focus",
+    "follow",
+    "force",
+    "forfeit",
+    "forge",
+    "form",
+    "format",
+    "formation",
+    "formula",
+    "foundation",
+    "frame",
+    "free",
+    "function",
+    "gain",
+    "general",
+    "generalisation",
+    "generalization",
+    "generate",
+    "get",
+    "get down",
+    "give",
+    "give up",
+    "give way",
+    "glide",
+    "glow",
+    "go",
+    "go on",
+    "good",
+    "gospel",
+    "ground",
+    "grow",
+    "guess",
+    "hand",
+    "have",
+    "head",
+    "hear",
+    "hearing",
+    "heavy",
+    "history",
+    "hit",
+    "hold",
+    "homeland",
+    "human",
+    "idea",
+    "identical",
+    "identification",
+    "identify",
+    "identity",
+    "image",
+    "import",
+    "impress",
+    "impression",
+    "indicate",
+    "induce",
+    "infer",
+    "influence",
+    "information",
+    "initiate",
+    "interchange",
+    "interest",
+    "invite",
+    "island",
+    "issue",
+    "job",
+    "join",
+    "judge",
+    "judgement",
+    "judgment",
+    "jump",
+    "justice",
+    "kb",
+    "keep",
+    "keynote",
+    "kill",
+    "know",
+    "labor",
+    "labour",
+    "land",
+    "language",
+    "large",
+    "largeness",
+    "law",
+    "lead",
+    "leap",
+    "learn",
+    "leave",
+    "left",
+    "life",
+    "lift",
+    "light",
+    "light up",
+    "lightness",
+    "line",
+    "link",
+    "little",
+    "live",
+    "lively",
+    "logic",
+    "logos",
+    "look",
+    "loose",
+    "loosen",
+    "lose",
+    "lurch",
+    "lyric",
+    "machine",
+    "maintain",
+    "make",
+    "make out",
+    "make up",
+    "man",
+    "manage",
+    "maneuver",
+    "manifest",
+    "manipulate",
+    "manoeuvre",
+    "mark",
+    "match",
+    "matter",
+    "mean",
+    "meet",
+    "memory",
+    "migration",
+    "mind",
+    "model",
+    "moderate",
+    "mold",
+    "motion",
+    "mould",
+    "mouth",
+    "move",
+    "movement",
+    "mover",
+    "name",
+    "nation",
+    "naturalize",
+    "need",
+    "neglect",
+    "network",
+    "number",
+    "obscure",
+    "observe",
+    "occasion",
+    "occupy",
+    "operate",
+    "operation",
+    "opinion",
+    "order",
+    "part",
+    "pass",
+    "patent",
+    "pattern",
+    "perception",
+    "perceptiveness",
+    "phrase",
+    "pick up",
+    "piece",
+    "place",
+    "plan",
+    "plant",
+    "play",
+    "point",
+    "position",
+    "postulate",
+    "power",
+    "practice",
+    "predicate",
+    "prepare",
+    "present",
+    "preserve",
+    "pretend",
+    "principle",
+    "print",
+    "proceed",
+    "process",
+    "produce",
+    "product",
+    "program",
+    "programme",
+    "progress",
+    "project",
+    "promise",
+    "prompt",
+    "proof",
+    "propagate",
+    "prove",
+    "puddle",
+    "push",
+    "put",
+    "raise",
+    "reach",
+    "read",
+    "reading",
+    "realise",
+    "realize",
+    "reason",
+    "receive",
+    "reckon",
+    "record",
+    "reference",
+    "register",
+    "relate",
+    "relation",
+    "release",
+    "remember",
+    "remove",
+    "report",
+    "represent",
+    "reservation",
+    "resolution",
+    "resolve",
+    "ride",
+    "right",
+    "rise",
+    "roll",
+    "root",
+    "round",
+    "rule",
+    "run",
+    "rush",
+    "say",
+    "score",
+    "see",
+    "sense",
+    "separate",
+    "serve",
+    "set",
+    "set up",
+    "settle",
+    "settlement",
+    "shape",
+    "shift",
+    "show",
+    "sign",
+    "sink",
+    "slip",
+    "slow",
+    "small",
+    "snap",
+    "sound",
+    "source",
+    "sovereignty",
+    "space",
+    "speak",
+    "speech",
+    "speed",
+    "spell",
+    "spread",
+    "start",
+    "statement",
+    "step",
+    "stimulate",
+    "stir",
+    "stop",
+    "strike",
+    "study",
+    "subject",
+    "substance",
+    "sum",
+    "support",
+    "swing",
+    "system",
+    "take",
+    "take in",
+    "talk",
+    "tame",
+    "tell",
+    "term",
+    "territory",
+    "thing",
+    "think",
+    "time",
+    "title",
+    "tone",
+    "total",
+    "touch",
+    "transfer",
+    "transform",
+    "translation",
+    "travel",
+    "treaty",
+    "tribe",
+    "trust",
+    "turn",
+    "understand",
+    "understanding",
+    "use",
+    "value",
+    "variable",
+    "view",
+    "voice",
+    "watch",
+    "water",
+    "win",
+    "witness",
+    "word",
+    "work",
+    "work out",
+    "write",
+    "writing",
+    "wrong",
+    "yield"
+  ],
+  "strata": [
+    {
+      "lemma": "light",
+      "stratum": 0,
+      "polysemy": 48,
+      "technical": true
+    },
+    {
+      "lemma": "claim",
+      "stratum": 0,
+      "polysemy": 11,
+      "technical": false
+    },
+    {
+      "lemma": "run",
+      "stratum": 0,
+      "polysemy": 11,
+      "technical": false
+    },
+    {
+      "lemma": "source",
+      "stratum": 0,
+      "polysemy": 11,
+      "technical": false
+    },
+    {
+      "lemma": "account",
+      "stratum": 0,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "community",
+      "stratum": 0,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "evidence",
+      "stratum": 0,
+      "polysemy": 6,
+      "technical": true
+    },
+    {
+      "lemma": "memory",
+      "stratum": 0,
+      "polysemy": 5,
+      "technical": true
+    },
+    {
+      "lemma": "value",
+      "stratum": 0,
+      "polysemy": 5,
+      "technical": true
+    },
+    {
+      "lemma": "identity",
+      "stratum": 0,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "justice",
+      "stratum": 0,
+      "polysemy": 3,
+      "technical": false
+    },
+    {
+      "lemma": "bank",
+      "stratum": 0,
+      "polysemy": 2,
+      "technical": false
+    },
+    {
+      "lemma": "settlement",
+      "stratum": 0,
+      "polysemy": 2,
+      "technical": false
+    },
+    {
+      "lemma": "island",
+      "stratum": 0,
+      "polysemy": 1,
+      "technical": false
+    },
+    {
+      "lemma": "migration",
+      "stratum": 0,
+      "polysemy": 1,
+      "technical": false
+    },
+    {
+      "lemma": "territory",
+      "stratum": 0,
+      "polysemy": 1,
+      "technical": false
+    },
+    {
+      "lemma": "translation",
+      "stratum": 0,
+      "polysemy": 1,
+      "technical": false
+    },
+    {
+      "lemma": "treaty",
+      "stratum": 0,
+      "polysemy": 1,
+      "technical": false
+    },
+    {
+      "lemma": "tribe",
+      "stratum": 0,
+      "polysemy": 1,
+      "technical": false
+    },
+    {
+      "lemma": "make",
+      "stratum": 1,
+      "polysemy": 51,
+      "technical": true
+    },
+    {
+      "lemma": "right",
+      "stratum": 1,
+      "polysemy": 37,
+      "technical": true
+    },
+    {
+      "lemma": "work",
+      "stratum": 1,
+      "polysemy": 34,
+      "technical": true
+    },
+    {
+      "lemma": "good",
+      "stratum": 1,
+      "polysemy": 27,
+      "technical": true
+    },
+    {
+      "lemma": "see",
+      "stratum": 1,
+      "polysemy": 25,
+      "technical": false
+    },
+    {
+      "lemma": "take",
+      "stratum": 1,
+      "polysemy": 25,
+      "technical": false
+    },
+    {
+      "lemma": "play",
+      "stratum": 1,
+      "polysemy": 23,
+      "technical": true
+    },
+    {
+      "lemma": "fire",
+      "stratum": 1,
+      "polysemy": 21,
+      "technical": false
+    },
+    {
+      "lemma": "move",
+      "stratum": 1,
+      "polysemy": 21,
+      "technical": false
+    },
+    {
+      "lemma": "change",
+      "stratum": 1,
+      "polysemy": 20,
+      "technical": false
+    },
+    {
+      "lemma": "get",
+      "stratum": 1,
+      "polysemy": 19,
+      "technical": false
+    },
+    {
+      "lemma": "number",
+      "stratum": 1,
+      "polysemy": 18,
+      "technical": false
+    },
+    {
+      "lemma": "bad",
+      "stratum": 1,
+      "polysemy": 17,
+      "technical": false
+    },
+    {
+      "lemma": "turn",
+      "stratum": 1,
+      "polysemy": 17,
+      "technical": false
+    },
+    {
+      "lemma": "find",
+      "stratum": 1,
+      "polysemy": 16,
+      "technical": false
+    },
+    {
+      "lemma": "air",
+      "stratum": 1,
+      "polysemy": 15,
+      "technical": false
+    },
+    {
+      "lemma": "break",
+      "stratum": 1,
+      "polysemy": 15,
+      "technical": false
+    },
+    {
+      "lemma": "dark",
+      "stratum": 1,
+      "polysemy": 15,
+      "technical": false
+    },
+    {
+      "lemma": "fast",
+      "stratum": 1,
+      "polysemy": 15,
+      "technical": false
+    },
+    {
+      "lemma": "set",
+      "stratum": 1,
+      "polysemy": 15,
+      "technical": true
+    },
+    {
+      "lemma": "shift",
+      "stratum": 1,
+      "polysemy": 15,
+      "technical": false
+    },
+    {
+      "lemma": "time",
+      "stratum": 1,
+      "polysemy": 15,
+      "technical": false
+    },
+    {
+      "lemma": "book",
+      "stratum": 1,
+      "polysemy": 14,
+      "technical": false
+    },
+    {
+      "lemma": "draw",
+      "stratum": 1,
+      "polysemy": 14,
+      "technical": false
+    },
+    {
+      "lemma": "form",
+      "stratum": 1,
+      "polysemy": 14,
+      "technical": false
+    },
+    {
+      "lemma": "life",
+      "stratum": 1,
+      "polysemy": 14,
+      "technical": false
+    },
+    {
+      "lemma": "think",
+      "stratum": 1,
+      "polysemy": 14,
+      "technical": false
+    },
+    {
+      "lemma": "catch",
+      "stratum": 1,
+      "polysemy": 13,
+      "technical": false
+    },
+    {
+      "lemma": "develop",
+      "stratum": 1,
+      "polysemy": 13,
+      "technical": false
+    },
+    {
+      "lemma": "drive",
+      "stratum": 1,
+      "polysemy": 13,
+      "technical": false
+    },
+    {
+      "lemma": "pass",
+      "stratum": 1,
+      "polysemy": 13,
+      "technical": false
+    },
+    {
+      "lemma": "small",
+      "stratum": 1,
+      "polysemy": 13,
+      "technical": false
+    },
+    {
+      "lemma": "use",
+      "stratum": 1,
+      "polysemy": 13,
+      "technical": true
+    },
+    {
+      "lemma": "wrong",
+      "stratum": 1,
+      "polysemy": 13,
+      "technical": true
+    },
+    {
+      "lemma": "build",
+      "stratum": 1,
+      "polysemy": 12,
+      "technical": false
+    },
+    {
+      "lemma": "call",
+      "stratum": 1,
+      "polysemy": 12,
+      "technical": false
+    },
+    {
+      "lemma": "fall",
+      "stratum": 1,
+      "polysemy": 12,
+      "technical": false
+    },
+    {
+      "lemma": "give",
+      "stratum": 1,
+      "polysemy": 12,
+      "technical": false
+    },
+    {
+      "lemma": "keep",
+      "stratum": 1,
+      "polysemy": 12,
+      "technical": false
+    },
+    {
+      "lemma": "read",
+      "stratum": 1,
+      "polysemy": 12,
+      "technical": true
+    },
+    {
+      "lemma": "record",
+      "stratum": 1,
+      "polysemy": 12,
+      "technical": true
+    },
+    {
+      "lemma": "connect",
+      "stratum": 1,
+      "polysemy": 11,
+      "technical": false
+    },
+    {
+      "lemma": "demand",
+      "stratum": 1,
+      "polysemy": 11,
+      "technical": false
+    },
+    {
+      "lemma": "ground",
+      "stratum": 1,
+      "polysemy": 11,
+      "technical": false
+    },
+    {
+      "lemma": "know",
+      "stratum": 1,
+      "polysemy": 11,
+      "technical": false
+    },
+    {
+      "lemma": "large",
+      "stratum": 1,
+      "polysemy": 11,
+      "technical": false
+    },
+    {
+      "lemma": "slow",
+      "stratum": 1,
+      "polysemy": 11,
+      "technical": true
+    },
+    {
+      "lemma": "act",
+      "stratum": 1,
+      "polysemy": 10,
+      "technical": true
+    },
+    {
+      "lemma": "check",
+      "stratum": 1,
+      "polysemy": 10,
+      "technical": false
+    },
+    {
+      "lemma": "clear",
+      "stratum": 1,
+      "polysemy": 10,
+      "technical": false
+    },
+    {
+      "lemma": "cut",
+      "stratum": 1,
+      "polysemy": 10,
+      "technical": false
+    },
+    {
+      "lemma": "exchange",
+      "stratum": 1,
+      "polysemy": 10,
+      "technical": false
+    },
+    {
+      "lemma": "go",
+      "stratum": 1,
+      "polysemy": 10,
+      "technical": false
+    },
+    {
+      "lemma": "have",
+      "stratum": 1,
+      "polysemy": 10,
+      "technical": false
+    },
+    {
+      "lemma": "hold",
+      "stratum": 1,
+      "polysemy": 10,
+      "technical": false
+    },
+    {
+      "lemma": "mark",
+      "stratum": 1,
+      "polysemy": 10,
+      "technical": false
+    },
+    {
+      "lemma": "place",
+      "stratum": 1,
+      "polysemy": 10,
+      "technical": false
+    },
+    {
+      "lemma": "plant",
+      "stratum": 1,
+      "polysemy": 10,
+      "technical": false
+    },
+    {
+      "lemma": "release",
+      "stratum": 1,
+      "polysemy": 10,
+      "technical": true
+    },
+    {
+      "lemma": "sound",
+      "stratum": 1,
+      "polysemy": 10,
+      "technical": true
+    },
+    {
+      "lemma": "space",
+      "stratum": 1,
+      "polysemy": 10,
+      "technical": true
+    },
+    {
+      "lemma": "study",
+      "stratum": 1,
+      "polysemy": 10,
+      "technical": true
+    },
+    {
+      "lemma": "water",
+      "stratum": 1,
+      "polysemy": 10,
+      "technical": false
+    },
+    {
+      "lemma": "word",
+      "stratum": 1,
+      "polysemy": 10,
+      "technical": false
+    },
+    {
+      "lemma": "beat",
+      "stratum": 1,
+      "polysemy": 9,
+      "technical": true
+    },
+    {
+      "lemma": "big",
+      "stratum": 1,
+      "polysemy": 9,
+      "technical": false
+    },
+    {
+      "lemma": "design",
+      "stratum": 1,
+      "polysemy": 9,
+      "technical": false
+    },
+    {
+      "lemma": "earth",
+      "stratum": 1,
+      "polysemy": 9,
+      "technical": false
+    },
+    {
+      "lemma": "force",
+      "stratum": 1,
+      "polysemy": 9,
+      "technical": true
+    },
+    {
+      "lemma": "part",
+      "stratum": 1,
+      "polysemy": 9,
+      "technical": true
+    },
+    {
+      "lemma": "preserve",
+      "stratum": 1,
+      "polysemy": 9,
+      "technical": true
+    },
+    {
+      "lemma": "reason",
+      "stratum": 1,
+      "polysemy": 9,
+      "technical": false
+    },
+    {
+      "lemma": "register",
+      "stratum": 1,
+      "polysemy": 9,
+      "technical": true
+    },
+    {
+      "lemma": "rule",
+      "stratum": 1,
+      "polysemy": 9,
+      "technical": true
+    },
+    {
+      "lemma": "say",
+      "stratum": 1,
+      "polysemy": 9,
+      "technical": true
+    },
+    {
+      "lemma": "sign",
+      "stratum": 1,
+      "polysemy": 9,
+      "technical": true
+    },
+    {
+      "lemma": "system",
+      "stratum": 1,
+      "polysemy": 9,
+      "technical": true
+    },
+    {
+      "lemma": "take in",
+      "stratum": 1,
+      "polysemy": 9,
+      "technical": false
+    },
+    {
+      "lemma": "view",
+      "stratum": 1,
+      "polysemy": 9,
+      "technical": false
+    },
+    {
+      "lemma": "charge",
+      "stratum": 1,
+      "polysemy": 8,
+      "technical": true
+    },
+    {
+      "lemma": "come",
+      "stratum": 1,
+      "polysemy": 8,
+      "technical": false
+    },
+    {
+      "lemma": "correct",
+      "stratum": 1,
+      "polysemy": 8,
+      "technical": false
+    },
+    {
+      "lemma": "count",
+      "stratum": 1,
+      "polysemy": 8,
+      "technical": false
+    },
+    {
+      "lemma": "culture",
+      "stratum": 1,
+      "polysemy": 8,
+      "technical": true
+    },
+    {
+      "lemma": "do",
+      "stratum": 1,
+      "polysemy": 8,
+      "technical": true
+    },
+    {
+      "lemma": "dull",
+      "stratum": 1,
+      "polysemy": 8,
+      "technical": true
+    },
+    {
+      "lemma": "effect",
+      "stratum": 1,
+      "polysemy": 8,
+      "technical": true
+    },
+    {
+      "lemma": "figure",
+      "stratum": 1,
+      "polysemy": 8,
+      "technical": false
+    },
+    {
+      "lemma": "follow",
+      "stratum": 1,
+      "polysemy": 8,
+      "technical": false
+    },
+    {
+      "lemma": "frame",
+      "stratum": 1,
+      "polysemy": 8,
+      "technical": false
+    },
+    {
+      "lemma": "jump",
+      "stratum": 1,
+      "polysemy": 8,
+      "technical": false
+    },
+    {
+      "lemma": "make out",
+      "stratum": 1,
+      "polysemy": 8,
+      "technical": false
+    },
+    {
+      "lemma": "mind",
+      "stratum": 1,
+      "polysemy": 8,
+      "technical": false
+    },
+    {
+      "lemma": "order",
+      "stratum": 1,
+      "polysemy": 8,
+      "technical": true
+    },
+    {
+      "lemma": "process",
+      "stratum": 1,
+      "polysemy": 8,
+      "technical": true
+    },
+    {
+      "lemma": "program",
+      "stratum": 1,
+      "polysemy": 8,
+      "technical": false
+    },
+    {
+      "lemma": "reference",
+      "stratum": 1,
+      "polysemy": 8,
+      "technical": false
+    },
+    {
+      "lemma": "score",
+      "stratum": 1,
+      "polysemy": 8,
+      "technical": false
+    },
+    {
+      "lemma": "speech",
+      "stratum": 1,
+      "polysemy": 8,
+      "technical": false
+    },
+    {
+      "lemma": "start",
+      "stratum": 1,
+      "polysemy": 8,
+      "technical": true
+    },
+    {
+      "lemma": "stir",
+      "stratum": 1,
+      "polysemy": 8,
+      "technical": false
+    },
+    {
+      "lemma": "strike",
+      "stratum": 1,
+      "polysemy": 8,
+      "technical": false
+    },
+    {
+      "lemma": "travel",
+      "stratum": 1,
+      "polysemy": 8,
+      "technical": false
+    },
+    {
+      "lemma": "write",
+      "stratum": 1,
+      "polysemy": 8,
+      "technical": true
+    },
+    {
+      "lemma": "action",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "burn",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "carry",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "cause",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": true
+    },
+    {
+      "lemma": "connection",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "consider",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "control",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "convert",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "determine",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "discharge",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "drift",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "energy",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": true
+    },
+    {
+      "lemma": "establish",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "exercise",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": true
+    },
+    {
+      "lemma": "experience",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "expression",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "fly",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "heavy",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": true
+    },
+    {
+      "lemma": "influence",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "issue",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "job",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "land",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "law",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": true
+    },
+    {
+      "lemma": "look",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "matter",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "position",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "present",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "programme",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "raise",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": true
+    },
+    {
+      "lemma": "resolution",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": true
+    },
+    {
+      "lemma": "resolve",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "roll",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "root",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": true
+    },
+    {
+      "lemma": "separate",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "serve",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": true
+    },
+    {
+      "lemma": "show",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "speed",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "stimulate",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "support",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "talk",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "tell",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "touch",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "transfer",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "transform",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "watch",
+      "stratum": 1,
+      "polysemy": 7,
+      "technical": false
+    },
+    {
+      "lemma": "acquire",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "address",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "ask",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "attack",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "base",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": true
+    },
+    {
+      "lemma": "begin",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": true
+    },
+    {
+      "lemma": "bring",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": true
+    },
+    {
+      "lemma": "cast",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "close",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "communicate",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "continue",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "create",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": true
+    },
+    {
+      "lemma": "deal",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "drop",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "estimate",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "excite",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "expect",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "fail",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": true
+    },
+    {
+      "lemma": "feel",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "flow",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "gain",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "grow",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "guess",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "head",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "identify",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": true
+    },
+    {
+      "lemma": "import",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "impression",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": true
+    },
+    {
+      "lemma": "judgement",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": true
+    },
+    {
+      "lemma": "judgment",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": true
+    },
+    {
+      "lemma": "language",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": true
+    },
+    {
+      "lemma": "lead",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "learn",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "leave",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "lightness",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "link",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "maintain",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "meet",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "mold",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "mould",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "movement",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "name",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": true
+    },
+    {
+      "lemma": "network",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "observe",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "opinion",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "practice",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": true
+    },
+    {
+      "lemma": "prepare",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "pretend",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "proof",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "push",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "put",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": true
+    },
+    {
+      "lemma": "reach",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": true
+    },
+    {
+      "lemma": "reading",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "reckon",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "relation",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": true
+    },
+    {
+      "lemma": "report",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "represent",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "rise",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "settle",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "shape",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "snap",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "spell",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "statement",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": true
+    },
+    {
+      "lemma": "swing",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "term",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "title",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": false
+    },
+    {
+      "lemma": "witness",
+      "stratum": 1,
+      "polysemy": 6,
+      "technical": true
+    },
+    {
+      "lemma": "access",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "actual",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "affect",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": true
+    },
+    {
+      "lemma": "amount",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "answer",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": true
+    },
+    {
+      "lemma": "appear",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "arouse",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "be",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "blur",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "capture",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "care",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "center",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "centre",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "circulate",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "compare",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "conclusion",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "condition",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "connexion",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "contend",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "copy",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "counter",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "cover",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "crop",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "darkness",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "debate",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "declaration",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": true
+    },
+    {
+      "lemma": "derive",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "discernment",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "divide",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "document",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "end",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "excuse",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "extract",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "face",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "false",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "field",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "fix",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "focus",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "forge",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "format",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "formula",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": true
+    },
+    {
+      "lemma": "free",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "get down",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "hear",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "history",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "hit",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "idea",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": true
+    },
+    {
+      "lemma": "image",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": true
+    },
+    {
+      "lemma": "indicate",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": true
+    },
+    {
+      "lemma": "infer",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "information",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "interchange",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "invite",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "join",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "kb",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "lift",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": true
+    },
+    {
+      "lemma": "line",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "little",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "live",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "lively",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "logic",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "loosen",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "lose",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "manage",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "mouth",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "plan",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "point",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "predicate",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "produce",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": true
+    },
+    {
+      "lemma": "promise",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "prompt",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "realise",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": true
+    },
+    {
+      "lemma": "realize",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": true
+    },
+    {
+      "lemma": "receive",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "relate",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "remember",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "remove",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "reservation",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "ride",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "round",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "rush",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "sense",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "set up",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "sink",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "slip",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "speak",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "spread",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "step",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "stop",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": true
+    },
+    {
+      "lemma": "subject",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "substance",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "sum",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "tame",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "thing",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "tone",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": true
+    },
+    {
+      "lemma": "total",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "trust",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "understand",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "understanding",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "variable",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "voice",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": true
+    },
+    {
+      "lemma": "win",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "work out",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "writing",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "yield",
+      "stratum": 1,
+      "polysemy": 5,
+      "technical": false
+    },
+    {
+      "lemma": "abstract",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "accent",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "accept",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "acquirer",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "activate",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "activity",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "add",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": true
+    },
+    {
+      "lemma": "advance",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "affirmation",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "agitate",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "aim",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "alive",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "anticipate",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "apply",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "area",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "argument",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "articulate",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "ascertain",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "association",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "assure",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "attest",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": true
+    },
+    {
+      "lemma": "back",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "beam",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "bear",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "bear on",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "bed",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "believe",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "better",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "black",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "block",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "blow",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "body",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": true
+    },
+    {
+      "lemma": "bright",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "broadcast",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "buy",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "calculate",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "call for",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "capitalise",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "capitalize",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "case",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": true
+    },
+    {
+      "lemma": "charm",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "citation",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": true
+    },
+    {
+      "lemma": "come up",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "composition",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "conjecture",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "conserve",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "constitute",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "content",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "conversion",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "cook",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "creation",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "cue",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "cultural",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "damage",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "date",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "deaden",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "defence",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "defense",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "derivative",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": true
+    },
+    {
+      "lemma": "development",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": true
+    },
+    {
+      "lemma": "diet",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "direct",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "discourse",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "discover",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": true
+    },
+    {
+      "lemma": "discovery",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": true
+    },
+    {
+      "lemma": "disturb",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "docket",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": true
+    },
+    {
+      "lemma": "dodge",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "encounter",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "engage",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "evoke",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "exact",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "examine",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "example",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "express",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "fact",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "factor",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "falsify",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "ferment",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "firing",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "fleet",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "forfeit",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "formation",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "foundation",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": true
+    },
+    {
+      "lemma": "function",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "general",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "generalisation",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": true
+    },
+    {
+      "lemma": "generalization",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": true
+    },
+    {
+      "lemma": "generate",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "give up",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "give way",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "glide",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "glow",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "go on",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "gospel",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "hand",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "hearing",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": true
+    },
+    {
+      "lemma": "human",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "identical",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "identification",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "impress",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": true
+    },
+    {
+      "lemma": "induce",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "initiate",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "interest",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": true
+    },
+    {
+      "lemma": "judge",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "keynote",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": true
+    },
+    {
+      "lemma": "kill",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "labor",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "labour",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "largeness",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "leap",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "left",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "light up",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "loose",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "lurch",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "lyric",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": true
+    },
+    {
+      "lemma": "machine",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "make up",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "man",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "maneuver",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "manifest",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "manipulate",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "manoeuvre",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "match",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "mean",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "model",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "moderate",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "motion",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "mover",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "naturalize",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "need",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "neglect",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "obscure",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "occasion",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "occupy",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "operate",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "operation",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": true
+    },
+    {
+      "lemma": "patent",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "pattern",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "perception",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "perceptiveness",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "phrase",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "pick up",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "piece",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "postulate",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "power",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "principle",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": true
+    },
+    {
+      "lemma": "print",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": true
+    },
+    {
+      "lemma": "proceed",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "product",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "progress",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "project",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "propagate",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "prove",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    },
+    {
+      "lemma": "puddle",
+      "stratum": 1,
+      "polysemy": 4,
+      "technical": false
+    }
+  ]
+}

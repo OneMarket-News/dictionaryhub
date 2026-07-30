@@ -240,8 +240,21 @@
     elements.results.innerHTML = '<div class="dr-live-empty"><strong>Retrieving exact meanings...</strong>Searching the live SourceRoot index.</div>';
 
     try {
-      const response = await state.client.searchNodes(term, { limit: 100 });
-      renderSearchResults(term, response.data);
+      const response = await state.client.lexicalEvidenceSearchAll(term, { limit: 100, maxPages: 20 });
+      const items = (response.data.items || []).map((item) => ({
+        id: item.senseId,
+        nodeId: item.senseId,
+        title: item.canonicalWrittenForm,
+        summary: item.definition,
+        sourceIds: [],
+        metadata: {
+          partOfSpeech: item.partOfSpeech,
+          lexicalCategory: item.lexicalCategory,
+          lexicalEvidence: true,
+          datasetId: item.datasetId
+        }
+      }));
+      renderSearchResults(term, { items, total: response.data.total });
       if (settings.history) updateUrl({ q: term, nodeId: "", revision: "" }, settings.history);
       if (settings.scroll) elements.sensePanel.scrollIntoView({ behavior: "smooth", block: "start" });
     } catch (error) {
@@ -271,6 +284,8 @@
       <div class="dr-live-chip-row">
         <span class="dr-live-chip" data-tone="accent">${escapeHtml(partOfSpeech(node))}</span>
         <span class="dr-live-chip">${escapeHtml(node.nodeId)}</span>
+        ${node.metadata && node.metadata.datasetId ? `<span class="dr-live-chip">${escapeHtml(node.metadata.datasetId)} ${escapeHtml(node.metadata.datasetVersion || "")}</span>` : ""}
+        ${node.metadata && node.metadata.recordVersion ? `<span class="dr-live-chip">Sense record v${escapeHtml(node.metadata.recordVersion)}</span>` : ""}
       </div>
       <div class="dr-history-current-actions">
         <a class="dr-live-button" href="${escapeHtml(experienceHref("concept-v2.html", node.nodeId, state.currentLabel, snapshot.sourceIds[0]))}">Open current concept</a>
@@ -465,10 +480,13 @@
     elements.timeline.innerHTML = '<div class="dr-live-empty"><strong>Loading revision timeline...</strong>No fallback history is being used.</div>';
 
     try {
+      const lexicalEvidence = nodeId.indexOf("lex-sense-core-") === 0;
       const [concept, conceptRevisions, bundleRevisions] = await Promise.all([
-        state.client.concept(nodeId),
-        state.client.listAll("revisions", { objectType: "node", objectId: nodeId }, { limit: 100, maxPages: 20 }),
-        state.client.listAll("revisions", { objectType: "import-bundle", objectId: state.manifest.bundleId }, { limit: 100, maxPages: 20 })
+        lexicalEvidence ? state.client.lexicalEvidenceConcept(nodeId) : state.client.concept(nodeId),
+        lexicalEvidence ? Promise.resolve({ items: [] })
+          : state.client.listAll("revisions", { objectType: "node", objectId: nodeId }, { limit: 100, maxPages: 20 }),
+        lexicalEvidence ? Promise.resolve({ items: [] })
+          : state.client.listAll("revisions", { objectType: "import-bundle", objectId: state.manifest.bundleId }, { limit: 100, maxPages: 20 })
       ]);
       state.concept = concept;
       state.currentLabel = clean(label || concept.node.title);

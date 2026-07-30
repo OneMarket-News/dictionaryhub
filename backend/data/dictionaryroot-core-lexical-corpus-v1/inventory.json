@@ -1,0 +1,93 @@
+{
+  "datasetId": "dictionaryroot-core-lexical-corpus-v1",
+  "version": "1.0.0",
+  "fixtureOnly": false,
+  "counts": {
+    "sources": 17,
+    "lemmas": 500,
+    "senses": 1014,
+    "definitionClaims": 1145,
+    "forms": 325,
+    "etymologyProposals": 143,
+    "sourceComparisons": 131,
+    "locators": 1613,
+    "fieldProvenance": 1613,
+    "relationships": 722,
+    "relationshipEvidence": 722,
+    "historicalOrObsoleteSenses": 144,
+    "technicalOrSpecializedSenses": 52,
+    "uncertaintyBearingStructures": 275
+  },
+  "rightsDistribution": {
+    "open_license": 8,
+    "public_domain": 9
+  },
+  "sourceClaimDistribution": {
+    "english-wiktionary": 1,
+    "oewn-2025": 1000,
+    "webster-revised-unabridged-1913": 144
+  },
+  "partOfSpeechDistribution": {
+    "adjective": 204,
+    "adverb": 27,
+    "noun": 616,
+    "unresolved": 12,
+    "verb": 155
+  },
+  "requiredLemmaCoverage": {
+    "bank": true,
+    "light": true,
+    "value": true,
+    "justice": true,
+    "run": true,
+    "island": true,
+    "logos": true,
+    "source": true,
+    "evidence": true,
+    "claim": true,
+    "identity": true,
+    "account": true,
+    "memory": true,
+    "community": true,
+    "nation": true,
+    "tribe": true,
+    "colony": true,
+    "settlement": true,
+    "treaty": true,
+    "alliance": true,
+    "homeland": true,
+    "migration": true,
+    "sovereignty": true,
+    "territory": true,
+    "translation": true
+  },
+  "historyRootLinkedTerms": [
+    "account",
+    "alliance",
+    "claim",
+    "colony",
+    "community",
+    "evidence",
+    "homeland",
+    "identity",
+    "memory",
+    "migration",
+    "nation",
+    "settlement",
+    "source",
+    "sovereignty",
+    "territory",
+    "translation",
+    "treaty",
+    "tribe"
+  ],
+  "futureBibleRootTerms": [
+    "justice",
+    "language",
+    "law",
+    "light",
+    "logos",
+    "translation",
+    "word"
+  ]
+}

@@ -395,6 +395,14 @@
       }, normalizeParams(params)))}`);
     }
 
+    lexicalEvidenceCoverage() {
+      return this.request("/dictionaryroot/lexicon/evidence/coverage");
+    }
+
+    lexicalEvidenceSources() {
+      return this.request("/dictionaryroot/lexicon/evidence/sources");
+    }
+
     lexicalEvidenceGraphSeeds(query, params) {
       return this.request(`/dictionaryroot/lexicon/evidence/graph/seeds${buildQuery(Object.assign({
         q: query,
@@ -484,7 +492,10 @@
             lexicalCategory: sense.lexicalCategory,
             lemmas: [sense.canonicalWrittenForm].filter(Boolean),
             lexicalEvidence: true,
-            reviewStatus: sense.reviewStatus
+            reviewStatus: sense.reviewStatus,
+            datasetId: sense.datasetId,
+            datasetVersion: sense.datasetVersion,
+            recordVersion: sense.recordVersion
           }
         },
         assertions: claims.map((item) => ({

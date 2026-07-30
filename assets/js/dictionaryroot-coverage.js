@@ -192,7 +192,7 @@
     elements.updated.textContent = "No fallback counts are displayed or substituted.";
   }
 
-  async function loadDashboard() {
+  async function loadLegacyDashboard() {
     try {
       const client = await ensureClient();
       setServiceState("Loading live coverage", "loading");
@@ -211,6 +211,89 @@
       elements.dataset.textContent = `${data.sourceName || "Open English WordNet"} ${data.sourceVersion || ""}`.trim();
       elements.updated.textContent = `Coverage calculated from the live registry · updated ${formatDate(data.updatedAt || data.importedAt)}`;
     } catch (error) {
+      renderDashboardOffline(error && error.message ? error.message : "DictionaryRoot could not reach SourceRoot.");
+    }
+  }
+
+  function renderCoverageUnavailable(message) {
+    const unavailable = `<div class="dr-coverage-offline"><strong>Coverage endpoint unavailable.</strong>${escapeHtml(message || "SourceRoot is healthy, but production lexical coverage could not be calculated.")}</div>`;
+    elements.metrics.innerHTML = unavailable;
+    elements.bars.innerHTML = unavailable;
+    elements.queue.innerHTML = unavailable;
+    elements.pos.innerHTML = unavailable;
+    setServiceState("Coverage unavailable", "error");
+    elements.dataset.textContent = "SourceRoot connected";
+    elements.updated.textContent = "No fallback or substituted metrics are displayed.";
+  }
+
+  function renderAwaitingCorpus(data) {
+    const awaiting = `<div class="dr-live-empty"><strong>Awaiting production lexical corpus.</strong>${escapeHtml(data.message || "SourceRoot is healthy; no production dataset is installed.")}</div>`;
+    elements.metrics.innerHTML = awaiting;
+    elements.bars.innerHTML = awaiting;
+    elements.queue.innerHTML = awaiting;
+    elements.pos.innerHTML = awaiting;
+    setServiceState("SourceRoot connected", "connected");
+    elements.dataset.textContent = "No production lexical dataset installed";
+    elements.updated.textContent = "Coverage endpoint responded successfully; no fallback counts are displayed.";
+  }
+
+  function renderProductionMetrics(data) {
+    elements.metrics.innerHTML = [
+      metric("Canonical lemmas", data.lemmaCount, `${formatNumber(data.definitionClaimCount)} source-attributed claims.`, "accent"),
+      metric("Lexical senses", data.senseCount, `${formatNumber(data.historicalOrObsoleteSenseCount)} historical or obsolete.`, "good"),
+      metric("Accepted sources", data.sourceCount, `${formatPercent(data.publicDomainSharePercent)} public-domain share.`, "good"),
+      metric("Lexical relationships", data.lexicalRelationshipCount, `${formatNumber(data.relationshipEvidenceCount)} inspectable evidence records.`, "accent"),
+      metric("Forms", data.formCount, `${formatPercent(data.formCoveragePercent)} form coverage.`, "good"),
+      metric("Etymologies & comparisons", Number(data.etymologyCount) + Number(data.sourceComparisonCount), `${formatNumber(data.uncertaintyBearingStructureCount)} uncertainty-bearing structures remain explicit.`, "warn")
+    ].join("");
+    elements.bars.innerHTML = [
+      bar("Multi-source senses", data.multiSourceSenseCount, data.senseCount, "Multiple source statements remain separate."),
+      bar("Forms", data.formCount, data.lemmaCount, "Historical, alternate, inflected, or derived forms."),
+      bar("Etymology", data.etymologyCount, data.lemmaCount, "Qualified language-origin structures."),
+      bar("Relationships", data.lexicalRelationshipCount, data.senseCount, "Canonical migration 014 sense relationships."),
+      bar("Comparisons", data.sourceComparisonCount, data.senseCount, "Reviewed or explicitly unresolved source comparisons.")
+    ].join("");
+    elements.queue.innerHTML = [
+      queueCard(data.unresolvedSenseBoundaryCount, "Unresolved sense boundaries", "Preserved for review; never converted into certainty."),
+      queueCard(data.unresolvedChronologyCount, "Unresolved chronology", "No invented first-use dates are supplied."),
+      queueCard(data.unresolvedOriginCount, "Unresolved origins", "Competing or incomplete origin work remains visible."),
+      queueCard(data.singleSourceSenseCount, "Single-source senses", "Source concentration remains explicit."),
+      queueCard(data.singleLineageSenseCount, "Single-lineage senses", "Related editions do not masquerade as independent corroboration."),
+      queueCard(data.missingComparisonCount, "Missing comparisons", "Senses without a reviewed comparison structure.")
+    ].join("");
+    const distribution = data.partOfSpeechDistribution || {};
+    elements.pos.innerHTML = `<table class="dr-coverage-pos-table">
+      <thead><tr><th>Part of speech</th><th>Production senses</th></tr></thead>
+      <tbody>${Object.entries(distribution).map(([partOfSpeech, count]) => `<tr><td><strong>${escapeHtml(partOfSpeech)}</strong></td><td>${escapeHtml(formatNumber(count))}</td></tr>`).join("")}</tbody>
+    </table>`;
+  }
+
+  async function loadDashboard() {
+    let client;
+    try {
+      client = await ensureClient();
+      setServiceState("Loading live coverage", "loading");
+      const response = await client.lexicalEvidenceCoverage();
+      const data = response.data || {};
+      if (!data.productionDatasetAvailable) {
+        renderAwaitingCorpus(data);
+        return;
+      }
+      state.dashboard = data;
+      renderProductionMetrics(data);
+      setServiceState("SourceRoot connected", "connected");
+      elements.dataset.textContent = `${data.datasetId} ${data.datasetVersion}`;
+      elements.updated.textContent = "Coverage calculated directly from canonical migrations 013 and 014.";
+    } catch (error) {
+      try {
+        if (client) {
+          await client.health();
+          renderCoverageUnavailable(error && error.message ? error.message : "The production coverage calculation failed.");
+          return;
+        }
+      } catch (_) {
+        // Health also failed, so the backend-unavailable state is accurate.
+      }
       renderDashboardOffline(error && error.message ? error.message : "DictionaryRoot could not reach SourceRoot.");
     }
   }

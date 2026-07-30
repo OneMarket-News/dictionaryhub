@@ -1,0 +1,34 @@
+{
+  "datasetId": "dictionaryroot-core-lexical-corpus-v1",
+  "inputs": [
+    {
+      "sourceId": "oewn-2025",
+      "repositoryPath": "data/dictionaryroot/dictionaryroot-oewn-2025-pilot-10000.json",
+      "byteLength": 50684488,
+      "sha256": "E6E95DAA936B542CED9CA3CE9C95D066953BB65BE33E62222757E8ED18541091",
+      "transformationStatus": "source-faithful normalized migration-013/014 projection",
+      "reviewStatus": "accepted repository pilot source"
+    },
+    {
+      "sourceId": "webster-revised-unabridged-1913",
+      "repositoryPath": "backend/data/dictionaryroot-core-lexical-corpus-v1/webster-1913.txt",
+      "byteLength": 28956350,
+      "sha256": "86FB9C28C32008EA288CA4BCF34F4F0D3D11CCF9E0898294D98B73671497F1D3",
+      "sourceRecordIdentity": "Project Gutenberg eBook 29765, updated 2025-07-06",
+      "transformationStatus": "bounded entry extraction with exact line locators",
+      "reviewStatus": "public-domain historical source"
+    },
+    {
+      "sourceId": "english-wiktionary",
+      "sourceRecordIdentity": "English Wiktionary: homeland",
+      "exactSourceWording": [
+        "The country that one regards as home.",
+        "From home + land."
+      ],
+      "canonicalUrl": "https://en.wiktionary.org/wiki/homeland",
+      "sourceVersion": "page snapshot accessed 2026-07-29",
+      "transformationStatus": "source wording retained; share-alike lineage explicit",
+      "reviewStatus": "bounded required-seed supplement"
+    }
+  ]
+}

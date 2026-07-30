@@ -1,0 +1,57 @@
+{
+  "datasetId": "dictionaryroot-core-lexical-corpus-v1",
+  "version": "1.0.0",
+  "blockerCount": 0,
+  "blockers": [],
+  "orphanCounts": {
+    "lemmas": 0,
+    "senses": 0,
+    "claims": 0,
+    "forms": 0,
+    "etymologyProposals": 0,
+    "locators": 0,
+    "fieldProvenance": 0,
+    "sourceComparisons": 0,
+    "relationships": 0,
+    "relationshipEvidence": 0
+  },
+  "duplicateIdentityCounts": {
+    "lemmas": 0,
+    "senses": 0,
+    "claims": 0,
+    "forms": 0,
+    "etymologyProposals": 0,
+    "sourceComparisons": 0,
+    "locators": 0,
+    "fieldProvenance": 0,
+    "relationships": 0,
+    "relationshipEvidence": 0
+  },
+  "findings": [
+    {
+      "classification": "review finding",
+      "id": "source-concentration-oewn",
+      "explanation": "OEWN is the modern sense and relationship spine; source counts and independent editorial lineages are reported separately."
+    },
+    {
+      "classification": "accepted uncertainty",
+      "id": "historical-modern-alignment",
+      "explanation": "Webster/OEWN comparisons remain unresolved and do not assert artificial consensus."
+    },
+    {
+      "classification": "observation",
+      "id": "accepted-unused-source-metadata",
+      "explanation": "The full accepted 17-source registry is exposed for rights and acquisition accounting; sources without prepared statements contribute no lexical claims."
+    }
+  ],
+  "unsupportedCounts": {
+    "labels": 0,
+    "chronology": 0,
+    "origins": 0,
+    "semanticRelationships": 0,
+    "restrictedSourceText": 0
+  },
+  "fixtureLeakage": 0,
+  "legacyLexiconWrites": 0,
+  "genericDuplicateLexicalNodes": 0
+}

@@ -604,8 +604,40 @@
 
     try {
       await state.client.health();
-      const result = await state.client.sources({}, { limit: 100, concurrency: 4, maxPages: 100 });
-      state.sources = result.items.filter((source) => sourceId(source));
+      const response = await state.client.lexicalEvidenceSources();
+      const payload = response.data || {};
+      state.sources = (Array.isArray(payload.items) ? payload.items : []).map((item) => {
+        const source = Object.assign({}, item, {
+          publisher: item.accountId || "Responsible institution recorded in the source-rights ledger",
+          sourceType: item.rightsClass,
+          url: item.canonicalUrl,
+          licenseStatus: item.rightsClass,
+          attribution: `Dataset ${payload.datasetId || "dictionaryroot-core-lexical-corpus-v1"} ${payload.datasetVersion || "1.0.0"}`,
+          supportedAssertionCount: item.supportedClaimCount,
+          linkedConceptCount: item.supportedSenseCount
+        });
+        source.__dictionaryRootExperience = {
+          source,
+          assertions: [],
+          assertionTotal: item.supportedClaimCount,
+          assertionTotalIsExact: true,
+          assertionScan: {
+            strategy: "single-source-bundle",
+            totalIsExact: true,
+            scannedPages: 1
+          },
+          edges: [],
+          edgeTotal: item.supportedRelationshipCount,
+          edgeTotalIsExact: true,
+          edgeScan: {
+            strategy: "single-source-bundle",
+            totalIsExact: true,
+            scannedPages: 1
+          },
+          nodes: []
+        };
+        return source;
+      }).filter((source) => sourceId(source));
       state.loading = false;
       clearOffline();
       buildSourceTypeControls();

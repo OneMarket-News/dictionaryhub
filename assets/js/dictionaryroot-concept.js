@@ -501,6 +501,18 @@
         <div class="dr-lexical-evidence-grid">
           ${claims.length ? claims.map((item) => {
             const locator = locatorByClaim.get(item.claimId) || {};
+            const locatorDisplay = locator.datasetRecordId
+              || locator.stableFragment
+              || locator.apiObjectId
+              || locator.synsetId
+              || [
+                locator.entryHeadword,
+                locator.senseNumber,
+                locator.section,
+                locator.page
+              ].filter(Boolean).join(" · ")
+              || locator.canonicalUrl
+              || "Not recorded";
             return `<article class="dr-lexical-evidence-card">
               <div class="dr-live-chip-row">
                 <span class="dr-live-chip" data-tone="accent">${escapeHtml(item.sourceId)}</span>
@@ -512,7 +524,7 @@
               ${item.uncertainty ? `<p class="dr-lexical-qualification"><strong>Uncertainty:</strong> ${escapeHtml(item.uncertainty)}</p>` : ""}
               ${item.qualification ? `<p class="dr-lexical-qualification"><strong>Qualification:</strong> ${escapeHtml(item.qualification)}</p>` : ""}
               <dl class="dr-lexical-locator">
-                <div><dt>Locator</dt><dd>${escapeHtml(locator.datasetRecordId || locator.stableFragment || "Not recorded")}</dd></div>
+                <div><dt>Locator</dt><dd>${escapeHtml(locatorDisplay)}</dd></div>
                 <div><dt>Edition</dt><dd>${escapeHtml(locator.edition || item.editionContext || "Not recorded")}</dd></div>
               </dl>
             </article>`;

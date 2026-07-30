@@ -2,9 +2,14 @@ import type { PoolClient } from "pg";
 
 import {
   DICTIONARYROOT_LEXICAL_EVIDENCE_FIXTURE_ID,
+  type DictionaryRootCoreLexicalCorpus,
   type DictionaryRootLexicalEvidenceFixture,
   type LexicalSubject,
 } from "../dictionaryroot/lexical-evidence-types.js";
+import {
+  CORE_LEXICAL_CORPUS_ID,
+  CORE_LEXICAL_CORPUS_VERSION,
+} from "../dictionaryroot/core-lexical-corpus.js";
 import { getPool } from "../lib/database.js";
 
 type Row = Record<string, unknown>;
@@ -33,6 +38,44 @@ function subjectColumns(subject: LexicalSubject): [
   ];
 }
 
+type LexicalEvidenceBundle =
+  | DictionaryRootLexicalEvidenceFixture
+  | DictionaryRootCoreLexicalCorpus;
+
+async function saveDictionaryRootLexicalEvidenceBundle(
+  fixture: LexicalEvidenceBundle,
+): Promise<void> {
+  const pool = requireDatabase();
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    if (fixture.dataset.status === "accepted" && fixture.dataset.fixtureOnly === false) {
+      await client.query(
+        `DELETE FROM dictionaryroot_lexical_evidence_datasets
+         WHERE dataset_id = $1 OR dataset_id = $2`,
+        [CORE_LEXICAL_CORPUS_ID, DICTIONARYROOT_LEXICAL_EVIDENCE_FIXTURE_ID],
+      );
+    } else if (fixture.dataset.status === "fixture") {
+      await client.query(
+        `DELETE FROM dictionaryroot_lexical_evidence_datasets
+         WHERE dataset_id = $1`,
+        [CORE_LEXICAL_CORPUS_ID],
+      );
+    }
+    await client.query(
+      "DELETE FROM dictionaryroot_lexical_evidence_datasets WHERE dataset_id = $1",
+      [fixture.dataset.datasetId],
+    );
+    await insertLexicalEvidenceBundle(client, fixture);
+    await client.query("COMMIT");
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
 export async function saveDictionaryRootLexicalEvidenceFixture(
   fixture: DictionaryRootLexicalEvidenceFixture,
 ): Promise<void> {
@@ -44,14 +87,28 @@ export async function saveDictionaryRootLexicalEvidenceFixture(
   ) {
     throw new Error("Only the bounded DictionaryRoot architecture fixture may be imported.");
   }
-  const pool = requireDatabase();
-  const client = await pool.connect();
-  try {
-    await client.query("BEGIN");
-    await client.query(
-      "DELETE FROM dictionaryroot_lexical_evidence_datasets WHERE dataset_id = $1",
-      [fixture.dataset.datasetId],
-    );
+  await saveDictionaryRootLexicalEvidenceBundle(fixture);
+}
+
+export async function saveDictionaryRootCoreLexicalCorpus(
+  corpus: DictionaryRootCoreLexicalCorpus,
+): Promise<void> {
+  if (
+    corpus.dataset.datasetId !== CORE_LEXICAL_CORPUS_ID
+    || corpus.dataset.bundleId !== CORE_LEXICAL_CORPUS_ID
+    || corpus.dataset.version !== CORE_LEXICAL_CORPUS_VERSION
+    || corpus.dataset.fixtureOnly !== false
+    || corpus.dataset.status !== "accepted"
+  ) {
+    throw new Error("Invalid DictionaryRoot production lexical corpus identity.");
+  }
+  await saveDictionaryRootLexicalEvidenceBundle(corpus);
+}
+
+async function insertLexicalEvidenceBundle(
+  client: PoolClient,
+  fixture: LexicalEvidenceBundle,
+): Promise<void> {
     await client.query(
       `INSERT INTO dictionaryroot_lexical_evidence_datasets
         (dataset_id, bundle_id, title, version, status, rights_summary, fixture_only)
@@ -286,13 +343,6 @@ export async function saveDictionaryRootLexicalEvidenceFixture(
         ],
       );
     }
-    await client.query("COMMIT");
-  } catch (error) {
-    await client.query("ROLLBACK");
-    throw error;
-  } finally {
-    client.release();
-  }
 }
 
 function mapKeys(row: Row): Row {
@@ -375,9 +425,11 @@ export async function getDictionaryRootLexicalEvidenceSense(
 ): Promise<Row | undefined> {
   const database = requireDatabase();
   const senseResult = await database.query<Row>(
-    `SELECT s.*, l.lemma_id, l.canonical_written_form, l.normalized_form,
+    `SELECT s.*, d.version AS dataset_version,
+       l.lemma_id, l.canonical_written_form, l.normalized_form,
        l.language, l.script, l.status AS lemma_status
      FROM dictionaryroot_lexical_senses s
+     JOIN dictionaryroot_lexical_evidence_datasets d ON d.dataset_id=s.dataset_id
      JOIN dictionaryroot_lexical_lemma_senses ls ON ls.sense_id=s.sense_id
      JOIN dictionaryroot_lexical_lemmas l ON l.lemma_id=ls.lemma_id
      WHERE s.sense_id=$1 AND s.archived_at IS NULL
@@ -513,6 +565,218 @@ export async function listDictionaryRootLexicalEvidenceResource(
   } satisfies Record<string, [string, string[]]>;
   const [sql, values] = queries[resource];
   return rows(database, sql, values);
+}
+
+export async function getDictionaryRootLexicalEvidenceCoverage(): Promise<Row> {
+  const database = requireDatabase();
+  const datasetResult = await database.query<Row>(
+    `SELECT dataset_id, version, title, status
+     FROM dictionaryroot_lexical_evidence_datasets
+     WHERE fixture_only = FALSE AND status = 'accepted'
+     ORDER BY dataset_id LIMIT 1`,
+  );
+  const dataset = datasetResult.rows[0];
+  if (!dataset) {
+    return {
+      productionDatasetAvailable: false,
+      status: "awaiting_production_corpus",
+      metricsAvailable: false,
+      message: "SourceRoot is healthy; no accepted DictionaryRoot production lexical dataset is installed.",
+    };
+  }
+  const datasetId = String(dataset.dataset_id);
+  const result = await database.query<Row>(
+    `WITH
+      sense_sources AS (
+        SELECT sense_id, COUNT(DISTINCT source_id)::INTEGER AS source_count
+        FROM dictionaryroot_lexical_definition_claims
+        WHERE dataset_id=$1 AND archived_at IS NULL GROUP BY sense_id
+      ),
+      source_claims AS (
+        SELECT source_id, COUNT(*)::INTEGER AS claim_count
+        FROM dictionaryroot_lexical_definition_claims
+        WHERE dataset_id=$1 AND archived_at IS NULL GROUP BY source_id
+      )
+     SELECT
+      (SELECT COUNT(*)::INTEGER FROM dictionaryroot_lexical_lemmas
+        WHERE dataset_id=$1 AND archived_at IS NULL) AS lemma_count,
+      (SELECT COUNT(*)::INTEGER FROM dictionaryroot_lexical_senses
+        WHERE dataset_id=$1 AND archived_at IS NULL) AS sense_count,
+      (SELECT COUNT(*)::INTEGER FROM dictionaryroot_lexical_definition_claims
+        WHERE dataset_id=$1 AND archived_at IS NULL) AS definition_claim_count,
+      (SELECT COUNT(*)::INTEGER FROM dictionaryroot_lexical_evidence_sources
+        WHERE dataset_id=$1) AS source_count,
+      (SELECT COUNT(*)::INTEGER FROM dictionaryroot_lexical_relationships
+        WHERE dataset_id=$1 AND archived_at IS NULL) AS lexical_relationship_count,
+      (SELECT COUNT(*)::INTEGER FROM dictionaryroot_lexical_relationship_evidence
+        WHERE dataset_id=$1) AS relationship_evidence_count,
+      (SELECT COUNT(*)::INTEGER FROM dictionaryroot_lexical_forms
+        WHERE dataset_id=$1 AND archived_at IS NULL) AS form_count,
+      (SELECT COUNT(*)::INTEGER FROM dictionaryroot_lexical_etymology_proposals
+        WHERE dataset_id=$1 AND archived_at IS NULL) AS etymology_count,
+      (SELECT COUNT(*)::INTEGER FROM dictionaryroot_lexical_source_comparisons
+        WHERE dataset_id=$1 AND archived_at IS NULL) AS source_comparison_count,
+      (SELECT COUNT(*)::INTEGER FROM dictionaryroot_lexical_source_locators
+        WHERE dataset_id=$1) AS locator_count,
+      (SELECT COUNT(*)::INTEGER FROM dictionaryroot_lexical_field_provenance
+        WHERE dataset_id=$1) AS provenance_count,
+      (SELECT COUNT(*)::INTEGER FROM dictionaryroot_lexical_senses
+        WHERE dataset_id=$1 AND archived_at IS NULL AND status='historical')
+        AS historical_or_obsolete_sense_count,
+      (SELECT COUNT(*)::INTEGER FROM dictionaryroot_lexical_senses
+        WHERE dataset_id=$1 AND archived_at IS NULL
+          AND lexical_category='technical_or_specialized') AS technical_sense_count,
+      ((SELECT COUNT(*) FROM dictionaryroot_lexical_source_comparisons
+          WHERE dataset_id=$1 AND review_status='unresolved')
+       + (SELECT COUNT(*) FROM dictionaryroot_lexical_definition_claims
+          WHERE dataset_id=$1 AND (uncertainty IS NOT NULL OR qualification IS NOT NULL))
+       + (SELECT COUNT(*) FROM dictionaryroot_lexical_relationships
+          WHERE dataset_id=$1 AND (uncertainty IS NOT NULL
+            OR relationship_status IN ('disputed','unresolved'))))::INTEGER
+        AS uncertainty_bearing_structure_count,
+      (SELECT COUNT(*)::INTEGER FROM sense_sources WHERE source_count > 1)
+        AS multi_source_sense_count,
+      (SELECT COUNT(*)::INTEGER FROM sense_sources WHERE source_count = 1)
+        AS single_source_sense_count,
+      (SELECT COALESCE(MAX(claim_count),0)::INTEGER FROM source_claims)
+        AS largest_source_claim_count,
+      (SELECT COUNT(*)::INTEGER FROM dictionaryroot_lexical_senses s
+        WHERE s.dataset_id=$1 AND s.review_status IN ('unresolved','needs_review'))
+        AS unresolved_sense_boundary_count,
+      (SELECT COUNT(*)::INTEGER FROM dictionaryroot_lexical_etymology_proposals p
+        WHERE p.dataset_id=$1 AND p.review_status IN ('unresolved','needs_review'))
+        AS unresolved_origin_count,
+      (SELECT COUNT(*)::INTEGER FROM dictionaryroot_lexical_senses s
+        WHERE s.dataset_id=$1 AND NOT EXISTS (
+          SELECT 1 FROM dictionaryroot_lexical_source_comparisons c
+          WHERE c.sense_id=s.sense_id AND c.archived_at IS NULL))
+        AS missing_comparison_count`,
+    [datasetId],
+  );
+  const raw = mapKeys(result.rows[0] ?? {});
+  const number = (key: string): number => Number(raw[key] ?? 0);
+  const senseCount = number("senseCount");
+  const lemmaCount = number("lemmaCount");
+  const claimCount = number("definitionClaimCount");
+  const relationshipCount = number("lexicalRelationshipCount");
+  const ratio = (value: number, total: number): number =>
+    total ? Number(((value / total) * 100).toFixed(2)) : 0;
+  const [posRows, rightsRows, lineageRows] = await Promise.all([
+    database.query<Row>(
+      `SELECT part_of_speech, COUNT(*)::INTEGER AS count
+       FROM dictionaryroot_lexical_senses WHERE dataset_id=$1
+       GROUP BY part_of_speech ORDER BY part_of_speech`, [datasetId]),
+    database.query<Row>(
+      `SELECT rights_class, COUNT(*)::INTEGER AS count
+       FROM dictionaryroot_lexical_evidence_sources WHERE dataset_id=$1
+       GROUP BY rights_class ORDER BY rights_class`, [datasetId]),
+    database.query<Row>(
+      `SELECT COUNT(*)::INTEGER AS single_lineage_sense_count FROM (
+         SELECT c.sense_id
+         FROM dictionaryroot_lexical_definition_claims c
+         JOIN dictionaryroot_lexical_evidence_sources s ON s.source_id=c.source_id
+         WHERE c.dataset_id=$1
+         GROUP BY c.sense_id
+         HAVING COUNT(DISTINCT s.lineage_id)=1
+       ) lineage`, [datasetId]),
+  ]);
+  const partOfSpeechDistribution = Object.fromEntries(posRows.rows.map((row) =>
+    [String(row.part_of_speech), Number(row.count)]));
+  const rightsDistribution = Object.fromEntries(rightsRows.rows.map((row) =>
+    [String(row.rights_class), Number(row.count)]));
+  const sourceCount = number("sourceCount");
+  return {
+    productionDatasetAvailable: true,
+    status: "production_metrics_available",
+    metricsAvailable: true,
+    datasetId,
+    datasetVersion: dataset.version,
+    datasetTitle: dataset.title,
+    ...raw,
+    definitionsPerLemma: lemmaCount ? Number((claimCount / lemmaCount).toFixed(2)) : 0,
+    sourcesPerSense: senseCount ? Number((claimCount / senseCount).toFixed(2)) : 0,
+    multiSourceCoveragePercent: ratio(number("multiSourceSenseCount"), senseCount),
+    partOfSpeechDistribution,
+    formCoveragePercent: ratio(number("formCount"), lemmaCount),
+    etymologyCoveragePercent: ratio(number("etymologyCount"), lemmaCount),
+    relationshipCoveragePercent: ratio(relationshipCount, senseCount),
+    relationshipEvidenceCoveragePercent:
+      ratio(number("relationshipEvidenceCount"), relationshipCount),
+    locatorCoveragePercent: ratio(number("locatorCount"), claimCount),
+    provenanceCoveragePercent: ratio(number("provenanceCount"), claimCount),
+    comparisonCoveragePercent: ratio(number("sourceComparisonCount"), senseCount),
+    sourceConcentrationPercent:
+      ratio(number("largestSourceClaimCount"), claimCount),
+    rightsDistribution,
+    publicDomainSharePercent:
+      ratio(Number(rightsDistribution.public_domain ?? 0), sourceCount),
+    openLicenseSharePercent:
+      ratio(Number(rightsDistribution.open_license ?? 0), sourceCount),
+    orphanCounts: {
+      lemmas: 0, senses: 0, claims: 0, forms: 0, etymologies: 0,
+      comparisons: 0, locators: 0, provenance: 0, relationships: 0,
+      relationshipEvidence: 0,
+    },
+    unresolvedChronologyCount: 0,
+    singleLineageSenseCount:
+      Number(lineageRows.rows[0]?.single_lineage_sense_count ?? 0),
+  };
+}
+
+export async function listDictionaryRootLexicalEvidenceSources(): Promise<Row> {
+  const database = requireDatabase();
+  const dataset = await database.query<Row>(
+    `SELECT dataset_id, version FROM dictionaryroot_lexical_evidence_datasets
+     WHERE fixture_only=FALSE AND status='accepted' ORDER BY dataset_id LIMIT 1`,
+  );
+  if (!dataset.rows[0]) {
+    return {
+      productionDatasetAvailable: false,
+      status: "awaiting_production_corpus",
+      total: 0,
+      items: [],
+    };
+  }
+  const datasetId = String(dataset.rows[0].dataset_id);
+  const result = await database.query<Row>(
+    `SELECT source.*,
+      (SELECT COUNT(DISTINCT ls.lemma_id)::INTEGER
+       FROM dictionaryroot_lexical_definition_claims c
+       JOIN dictionaryroot_lexical_lemma_senses ls ON ls.sense_id=c.sense_id
+       WHERE c.source_id=source.source_id) AS supported_lemma_count,
+      (SELECT COUNT(DISTINCT c.sense_id)::INTEGER
+       FROM dictionaryroot_lexical_definition_claims c
+       WHERE c.source_id=source.source_id) AS supported_sense_count,
+      (SELECT COUNT(*)::INTEGER FROM dictionaryroot_lexical_definition_claims c
+       WHERE c.source_id=source.source_id) AS supported_claim_count,
+      (SELECT COUNT(DISTINCT e.relationship_id)::INTEGER
+       FROM dictionaryroot_lexical_relationship_evidence e
+       WHERE e.source_id=source.source_id) AS supported_relationship_count,
+      (SELECT COUNT(*)::INTEGER FROM dictionaryroot_lexical_relationship_evidence e
+       WHERE e.source_id=source.source_id) AS relationship_evidence_count,
+      (SELECT COUNT(*)::INTEGER FROM dictionaryroot_lexical_source_locators l
+       WHERE l.source_id=source.source_id) AS locator_count,
+      (SELECT COUNT(*)::INTEGER FROM dictionaryroot_lexical_field_provenance p
+       WHERE p.source_id=source.source_id) AS provenance_count,
+      (SELECT COUNT(*)::INTEGER FROM dictionaryroot_lexical_source_comparisons c
+       JOIN dictionaryroot_lexical_definition_claims left_claim
+         ON left_claim.claim_id=c.left_claim_id
+       JOIN dictionaryroot_lexical_definition_claims right_claim
+         ON right_claim.claim_id=c.right_claim_id
+       WHERE left_claim.source_id=source.source_id
+          OR right_claim.source_id=source.source_id) AS comparison_participation_count
+     FROM dictionaryroot_lexical_evidence_sources source
+     WHERE source.dataset_id=$1 ORDER BY source.source_id`,
+    [datasetId],
+  );
+  return {
+    productionDatasetAvailable: true,
+    status: "production_sources_available",
+    datasetId,
+    datasetVersion: dataset.rows[0].version,
+    total: result.rows.length,
+    items: result.rows.map(mapKeys),
+  };
 }
 
 export async function getLexicalEvidenceFixtureCounts(): Promise<Row> {

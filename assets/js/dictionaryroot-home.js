@@ -288,7 +288,7 @@
     }
   }
 
-  async function loadCoverage() {
+  async function loadLegacyCoverage() {
     setServiceState("Checking", "loading");
     try {
       const client = await ensureClient();
@@ -313,6 +313,36 @@
       elements.reviewNote.textContent = `${formatNumber(status.reviewRequiredSenseCount)} still need review`;
       const datasetLineage = Number(status.datasetRevisionCount) || 0;
       elements.coverageNote.textContent = `${clean(status.sourceName) || "Open English WordNet"} ${clean(status.sourceVersion)} · live registry updated ${formatDate(status.updatedAt || status.importedAt)} · ${formatNumber(datasetLineage)} dataset-lineage record${datasetLineage === 1 ? "" : "s"} kept separate from concept history.`;
+      setServiceState("Connected", "connected");
+    } catch (error) {
+      setServiceState("Offline", "offline");
+      elements.coverageNote.textContent = "DictionaryRoot could not reach SourceRoot. No cached or fallback coverage counts were displayed.";
+    }
+  }
+
+  async function loadCoverage() {
+    setServiceState("Checking", "loading");
+    try {
+      const client = await ensureClient();
+      const response = await client.lexicalEvidenceCoverage();
+      const status = response.data || {};
+      if (!status.productionDatasetAvailable) {
+        setServiceState("Awaiting corpus", "offline");
+        elements.coverageNote.textContent = "SourceRoot is connected, but no accepted production lexical corpus is installed. No fallback counts are displayed.";
+        return;
+      }
+      elements.synsets.textContent = formatNumber(status.senseCount);
+      elements.lemmas.textContent = formatNumber(status.lemmaCount);
+      elements.relations.textContent = formatNumber(status.lexicalRelationshipCount);
+      elements.graphCount.textContent = formatNumber(status.definitionClaimCount);
+      elements.lexicalOnlyCount.textContent = formatNumber(status.formCount);
+      elements.sourceBackedCount.textContent = formatNumber(status.sourceCount);
+      elements.reviewedCount.textContent = formatNumber(status.etymologyCount);
+      elements.historyCount.textContent = formatNumber(status.sourceComparisonCount);
+      elements.graphPercent.textContent = `${formatNumber(status.relationshipEvidenceCount)} evidence records`;
+      elements.sourcePercent.textContent = `${formatPercent(status.publicDomainSharePercent)} public domain`;
+      elements.reviewNote.textContent = `${formatNumber(status.uncertaintyBearingStructureCount)} qualified or unresolved`;
+      elements.coverageNote.textContent = `${status.datasetId} ${status.datasetVersion} · canonical migrations 013 and 014 · no fallback metrics.`;
       setServiceState("Connected", "connected");
     } catch (error) {
       setServiceState("Offline", "offline");

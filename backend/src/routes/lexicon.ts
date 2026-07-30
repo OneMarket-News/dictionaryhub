@@ -28,7 +28,9 @@ import {
 import {
   getDictionaryRootLexicalEvidenceLemma,
   getDictionaryRootLexicalEvidenceSense,
+  getDictionaryRootLexicalEvidenceCoverage,
   listDictionaryRootLexicalEvidenceResource,
+  listDictionaryRootLexicalEvidenceSources,
   searchDictionaryRootLexicalEvidence,
 } from "../services/lexical-evidence-store.js";
 
@@ -196,6 +198,26 @@ lexiconRouter.get("/evidence/search", async (request, response, next) => {
       page: pagination.page,
       limit: pagination.limit,
     }));
+  } catch (error) {
+    return next(error);
+  }
+});
+
+lexiconRouter.get("/evidence/coverage", async (_request, response, next) => {
+  try {
+    return response.status(200).json(
+      await getDictionaryRootLexicalEvidenceCoverage(),
+    );
+  } catch (error) {
+    return next(error);
+  }
+});
+
+lexiconRouter.get("/evidence/sources", async (_request, response, next) => {
+  try {
+    return response.status(200).json(
+      await listDictionaryRootLexicalEvidenceSources(),
+    );
   } catch (error) {
     return next(error);
   }

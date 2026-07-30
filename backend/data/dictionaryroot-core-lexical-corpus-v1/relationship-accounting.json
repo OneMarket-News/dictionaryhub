@@ -1,0 +1,22 @@
+{
+  "datasetId": "dictionaryroot-core-lexical-corpus-v1",
+  "version": "1.0.0",
+  "relationshipCount": 722,
+  "evidenceCount": 722,
+  "directionality": {
+    "directional": 486,
+    "symmetric": 236
+  },
+  "types": {
+    "antonym": 29,
+    "broader": 243,
+    "derivationally_related": 138,
+    "narrower": 243,
+    "related": 52,
+    "substantially_equivalent": 17
+  },
+  "orphanRelationships": 0,
+  "orphanEvidence": 0,
+  "duplicateRelationships": 0,
+  "duplicateEvidence": 0
+}
