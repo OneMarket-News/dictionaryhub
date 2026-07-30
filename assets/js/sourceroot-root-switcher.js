@@ -47,6 +47,17 @@
       description: "Historical records, evidence, and interpretation.",
       icon: "H",
       order: 40
+    }),
+    Object.freeze({
+      id: "BibleRoot",
+      displayName: "BibleRoot",
+      canonicalUrl: "bibleroot.html",
+      available: true,
+      destinationType: "root",
+      group: "Roots",
+      description: "Biblical text, stable citations, and exact provenance.",
+      icon: "B",
+      order: 50
     })
   ]);
 
@@ -69,6 +80,9 @@
     }
     if (file === "historyroot.html" || /^history-.+-v1\.html$/.test(file)) {
       return "HistoryRoot";
+    }
+    if (file === "bibleroot.html" || file === "bibleroot-passage.html") {
+      return "BibleRoot";
     }
     return "";
   }

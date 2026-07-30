@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "1.0.0",
+  "datasetId": "bibleroot-foundation-v1",
+  "version": "1.0.0",
+  "status": "foundation-alpha",
+  "canonId": "br-canon-kjv-66",
+  "editionId": "br-edition-kjv-pg10-2024",
+  "sourceId": "bibleroot-source-project-gutenberg-ebook-10",
+  "publicationId": "br-publication-project-gutenberg-ebook-10",
+  "artifactId": "br-artifact-pg10-10-0-txt-sha256-0f1a83cb",
+  "expectedCounts": {
+    "canons": 1,
+    "books": 66,
+    "populatedChapters": 4,
+    "verses": 110,
+    "phrases": 9,
+    "phraseOccurrences": 13
+  },
+  "featuredReferences": [
+    "Genesis 1",
+    "John 1",
+    "Psalm 23",
+    "Ecclesiastes 3"
+  ],
+  "normalizedTextSha256": "BD71CDBB98C44A9DBEC0A2B6D59E83CB93290FB04CFA1BAC5022E4F8B88818FF",
+  "files": {
+    "source-metadata.json": "8E33AC74A114328DC2D9D788833ED69369412F4445FF40C614918E77AE34DB3F",
+    "canon.json": "DFB0ACF96707C8859439E8D534A0D11EE5126C93A97083F0402CEB4B387EB9EB",
+    "edition.json": "B8C1C1CAF12DE541E746033FEF6E367FD875636539ADAA6E23F42F7A00E05838",
+    "verses.json": "C3E5E50EEE4935B319493B349B05B79BAA4718A8B3FB1AE6368ED93EFEF0B474",
+    "phrases.json": "EC2E3F8969FF13A91136C53D02B72A9C66D41220E54CF637EE9BC31346089F76",
+    "raw/project-gutenberg-ebook-10-10-0.txt": "0F1A83CBCDC1D3FAE6BCC3DAAA496D4FA723FCCE9526E84E20DF12AE33FDA986"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "datasetId": "bibleroot-foundation-v1",
+  "datasetVersion": "1.0.0",
+  "source": {
+    "sourceId": "bibleroot-source-project-gutenberg-ebook-10",
+    "publicationId": "br-publication-project-gutenberg-ebook-10",
+    "artifactId": "br-artifact-pg10-10-0-txt-sha256-0f1a83cb",
+    "provider": "Project Gutenberg",
+    "title": "The King James Version of the Bible",
+    "stableIdentifier": "Project Gutenberg eBook 10",
+    "catalogUrl": "https://www.gutenberg.org/ebooks/10",
+    "downloadUrl": "https://www.gutenberg.org/files/10/10-0.txt",
+    "artifactFilename": "project-gutenberg-ebook-10-10-0.txt",
+    "mediaType": "text/plain; charset=utf-8",
+    "retrievedAt": "2026-07-30T16:37:08.5943420Z",
+    "byteLength": 4436268,
+    "sha256": "0F1A83CBCDC1D3FAE6BCC3DAAA496D4FA723FCCE9526E84E20DF12AE33FDA986",
+    "catalogReleaseDate": "1989-08-01",
+    "catalogLastUpdate": "2024-04-06",
+    "rightsStatus": "public-domain-usa",
+    "rightsStatement": "Project Gutenberg's eBook 10 catalog identifies this work as public domain in the USA.",
+    "territorialLimitation": "Copyright status can differ outside the United States; users outside the USA must check local law.",
+    "parsingRules": "Decode the official UTF-8 plain-text artifact; locate exact book headings; extract only Genesis 1, John 1, Psalm 23, and Ecclesiastes 3; join source-wrapped lines with one space; preserve spelling, punctuation, capitalization, and wording."
+  },
+  "publication": {
+    "title": "Project Gutenberg eBook 10: The King James Version of the Bible",
+    "provider": "Project Gutenberg",
+    "description": "A Project Gutenberg electronic publication distributed as the official UTF-8 plain-text artifact.",
+    "publicationDate": "1989-08-01"
+  }
+}

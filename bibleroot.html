@@ -1,261 +1,153 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>BibleRoot Alpha</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f7f4ee;
-      color: #1f2933;
-      margin: 0;
-      padding: 0;
-    }
-
-    header {
-      background: #111827;
-      color: white;
-      padding: 28px 20px;
-    }
-
-    main {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 24px 20px 60px;
-    }
-
-    .eyebrow {
-      color: #d6b36a;
-      font-size: 14px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: 34px;
-    }
-
-    .subtitle {
-      margin-top: 10px;
-      max-width: 780px;
-      color: #d1d5db;
-      line-height: 1.5;
-    }
-
-    .notice {
-      background: #fff8e6;
-      border: 1px solid #ead59a;
-      border-radius: 12px;
-      padding: 16px;
-      margin: 24px 0;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 16px;
-    }
-
-    .card {
-      background: white;
-      border: 1px solid #ddd6c8;
-      border-radius: 14px;
-      padding: 18px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    }
-
-    .card h2 {
-      margin-top: 0;
-      font-size: 22px;
-    }
-
-    .meta {
-      color: #6b7280;
-      font-size: 14px;
-      margin-bottom: 10px;
-    }
-
-    .tag {
-      display: inline-block;
-      background: #efe7d3;
-      color: #4b3b16;
-      padding: 5px 8px;
-      border-radius: 999px;
-      font-size: 12px;
-      margin: 3px 4px 3px 0;
-    }
-
-    .section-title {
-      margin-top: 34px;
-      margin-bottom: 12px;
-    }
-
-    code {
-      background: #eee;
-      padding: 2px 5px;
-      border-radius: 4px;
-    }
-
-    footer {
-      border-top: 1px solid #ddd6c8;
-      margin-top: 40px;
-      padding-top: 20px;
-      color: #6b7280;
-      font-size: 14px;
-    }
-  </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Read the King James Version foundation text with stable citations and exact SourceRoot provenance.">
+  <title>BibleRoot | Text with a source trail</title>
+  <link rel="icon" href="assets/brand/dictionaryroot-mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/bibleroot.css?v=foundation-v1">
+  <link rel="stylesheet" href="assets/css/sourceroot-root-switcher.css?v=shared-root-switcher-v1" data-sourceroot-root-switcher-styles="v1">
+  <link rel="stylesheet" href="assets/css/sourceroot-user-menu.css?v=shared-user-menu-v1" data-sourceroot-user-menu-styles="v1">
 </head>
-
-<body>
-  <header>
-    <div class="eyebrow">SourceRoot Alpha App</div>
-    <h1>BibleRoot</h1>
-    <p class="subtitle">
-      A public-domain-first Bible meaning engine for phrases, passages, themes,
-      interpretation layers, cross-references, and source trails.
-    </p>
+<body class="br-page">
+  <a class="br-skip-link" href="#main-content">Skip to BibleRoot</a>
+  <header class="br-site-header">
+    <div class="br-header-inner">
+      <a class="br-wordmark" href="bibleroot.html" aria-label="BibleRoot home">
+        <span class="br-wordmark-mark" aria-hidden="true">BR</span>
+        <span><strong>BibleRoot</strong><small>Text with a source trail</small></span>
+      </a>
+      <nav class="br-public-nav" aria-label="BibleRoot">
+        <a aria-current="page" href="bibleroot.html">Home</a>
+        <a href="bibleroot-passage.html?reference=Genesis%201">Read a passage</a>
+        <a href="#source-and-rights">Source &amp; rights</a>
+      </nav>
+      <div class="br-shared-actions" role="group" aria-label="Account and product navigation">
+        <div data-sourceroot-user-menu data-user-menu-id-prefix="bibleRootHomeUserMenu"></div>
+        <div data-sourceroot-root-switcher data-current-root="BibleRoot"></div>
+      </div>
+    </div>
   </header>
 
-  <main>
-    <div class="notice">
-      <strong>Alpha Scope:</strong>
-      BibleRoot is starting small with phrase-level entries from Genesis 1,
-      John 1, Psalm 23, and Ecclesiastes 3. This Alpha uses KJV/public-domain-first assumptions.
-    </div>
+  <nav class="br-breadcrumbs" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="sourceroot.html">SourceRoot</a></li>
+      <li aria-current="page">BibleRoot</li>
+    </ol>
+  </nav>
 
-    <h2 class="section-title">Phrase Nodes</h2>
-    <div id="phraseGrid" class="grid"></div>
+  <main id="main-content">
+    <section class="br-hero" aria-labelledby="br-home-title">
+      <div class="br-hero-copy">
+        <p class="br-eyebrow">Foundation alpha · exact text · inspectable provenance</p>
+        <h1 id="br-home-title">Read the text. Verify its path here.</h1>
+        <p class="br-lede">
+          BibleRoot keeps biblical text, edition identity, publication
+          identity, and source evidence distinct—so a citation can be checked
+          without mistaking later commentary for the text itself.
+        </p>
+        <form class="br-reference-form" id="bibleRootHomeReferenceForm" role="search">
+          <label for="bibleRootHomeReference">Passage reference</label>
+          <div class="br-input-row">
+            <input id="bibleRootHomeReference" name="reference" value="Genesis 1" autocomplete="off" spellcheck="false" aria-describedby="br-reference-help">
+            <button type="submit">Read passage</button>
+          </div>
+          <p id="br-reference-help">Try Genesis 1, Gen 1:1, John 1:1-5, Psalm 23, or Ecclesiastes 3:1-8.</p>
+        </form>
+      </div>
+      <aside class="br-edition-card" aria-labelledby="br-edition-title">
+        <div class="br-live-line">
+          <span class="br-live-dot" aria-hidden="true"></span>
+          <span id="bibleRootHomeServiceState">Connecting to SourceRoot</span>
+        </div>
+        <p class="br-kicker">Current text identity</p>
+        <h2 id="br-edition-title">King James Version</h2>
+        <p id="bibleRootHomeEditionDescription">Loading the verified edition record…</p>
+        <dl class="br-facts">
+          <div><dt>Edition</dt><dd id="bibleRootHomeEditionId">—</dd></div>
+          <div><dt>Dataset</dt><dd id="bibleRootHomeDatasetVersion">—</dd></div>
+          <div><dt>Rights</dt><dd id="bibleRootHomeRights">—</dd></div>
+        </dl>
+      </aside>
+    </section>
 
-    <h2 class="section-title">Meaning Nodes</h2>
-    <div id="meaningNodeGrid" class="grid"></div>
+    <section class="br-section" aria-labelledby="br-featured-title">
+      <header class="br-section-heading">
+        <p class="br-kicker">Four verified starting points</p>
+        <h2 id="br-featured-title">Featured alpha passages</h2>
+        <p>Only these chapters contain text in this bounded foundation dataset.</p>
+      </header>
+      <div class="br-passage-grid">
+        <a class="br-passage-card" href="bibleroot-passage.html?reference=Genesis%201">
+          <span class="br-card-code">GEN · 01</span>
+          <strong>Genesis 1</strong>
+          <span>31 verses</span>
+        </a>
+        <a class="br-passage-card" href="bibleroot-passage.html?reference=John%201">
+          <span class="br-card-code">JOHN · 01</span>
+          <strong>John 1</strong>
+          <span>51 verses</span>
+        </a>
+        <a class="br-passage-card" href="bibleroot-passage.html?reference=Psalm%2023">
+          <span class="br-card-code">PS · 23</span>
+          <strong>Psalm 23</strong>
+          <span>6 verses</span>
+        </a>
+        <a class="br-passage-card" href="bibleroot-passage.html?reference=Ecclesiastes%203">
+          <span class="br-card-code">ECCL · 03</span>
+          <strong>Ecclesiastes 3</strong>
+          <span>22 verses</span>
+        </a>
+      </div>
+    </section>
 
-    <h2 class="section-title">Assertions</h2>
-    <div id="assertionGrid" class="grid"></div>
+    <section class="br-section br-layer-section" aria-labelledby="br-layers-title">
+      <div>
+        <p class="br-kicker">What is here—and what is not</p>
+        <h2 id="br-layers-title">The text is not the interpretation.</h2>
+      </div>
+      <div class="br-layer-grid">
+        <article data-state="available">
+          <span>01</span><h3>Biblical text</h3>
+          <p>Exact selected KJV text linked to canonical references and an edition.</p>
+        </article>
+        <article data-state="available">
+          <span>02</span><h3>Source metadata</h3>
+          <p>Publication, artifact checksum, acquisition, rights, and normalization records.</p>
+        </article>
+        <article data-state="future">
+          <span>Later</span><h3>Commentary &amp; interpretation</h3>
+          <p>Not populated in this foundation alpha. No theological conclusion is presented as text.</p>
+        </article>
+      </div>
+    </section>
 
-    <h2 class="section-title">Relationship Engine</h2>
-    <div id="relationshipGrid" class="grid"></div>
-
-    <h2 class="section-title">Source Registry</h2>
-    <div id="sourceGrid" class="grid"></div>
-
-    <footer>
-      BibleRoot Alpha is powered by SourceRoot. This page does not replace Bible publishers,
-      scholars, churches, or traditions. It cites sources, tracks interpretation, and explains meaning.
-    </footer>
+    <section class="br-section br-source-section" id="source-and-rights" aria-labelledby="br-source-title">
+      <div>
+        <p class="br-kicker">Source &amp; rights</p>
+        <h2 id="br-source-title">Project Gutenberg eBook 10</h2>
+        <p>
+          The selected KJV text is extracted from the official UTF-8 plain-text
+          artifact. Project Gutenberg’s catalog identifies the work as public
+          domain in the USA; status can differ elsewhere.
+        </p>
+      </div>
+      <dl class="br-source-list">
+        <div><dt>Artifact SHA-256</dt><dd id="bibleRootHomeArtifactHash">Loading…</dd></div>
+        <div><dt>Normalized text SHA-256</dt><dd id="bibleRootHomeNormalizedHash">Loading…</dd></div>
+        <div><dt>Scope</dt><dd>66 book records · 4 chapters · 110 verses</dd></div>
+      </dl>
+    </section>
   </main>
 
-  <script>
-    async function loadBibleRoot() {
-      const phraseGrid = document.getElementById("phraseGrid");
-      const meaningNodeGrid = document.getElementById("meaningNodeGrid");
-      const assertionGrid = document.getElementById("assertionGrid");
-      const relationshipGrid = document.getElementById("relationshipGrid");
-      const sourceGrid = document.getElementById("sourceGrid");
-
-      try {
-        const [
-          phrasesResponse,
-          sourcesResponse,
-          relationshipsResponse,
-          meaningNodesResponse,
-          assertionsResponse
-        ] = await Promise.all([
-          fetch("data/bible-root-phrases.json"),
-          fetch("data/bible-root-sources.json"),
-          fetch("data/bible-root-relationships.json"),
-          fetch("data/bible-root-meaning-nodes.json"),
-          fetch("data/bible-root-assertions.json")
-        ]);
-
-        const phrases = await phrasesResponse.json();
-        const sources = await sourcesResponse.json();
-        const relationships = await relationshipsResponse.json();
-        const meaningNodes = await meaningNodesResponse.json();
-        const assertions = await assertionsResponse.json();
-
-        phraseGrid.innerHTML = phrases.map(phrase => `
-          <article class="card">
-            <h2>${phrase.phrase}</h2>
-            <div class="meta">
-              ${phrase.book} ${phrase.chapter}:${phrase.verseStart}${phrase.verseEnd !== phrase.verseStart ? "-" + phrase.verseEnd : ""}
-              · ${phrase.translation}
-            </div>
-            <p><strong>Text:</strong> ${phrase.passageText}</p>
-            <p><strong>Plain Meaning:</strong> ${phrase.plainMeaning}</p>
-            <p><strong>Symbolic Meaning:</strong> ${phrase.symbolicMeaning}</p>
-            <div>
-              ${(phrase.theologicalThemes || []).map(theme => `<span class="tag">${theme}</span>`).join("")}
-            </div>
-            <p><strong>Cross References:</strong> ${(phrase.crossReferences || []).join(", ") || "None yet"}</p>
-            <p><strong>Source IDs:</strong> ${(phrase.sourceIds || []).map(id => `<code>${id}</code>`).join(" ")}</p>
-          </article>
-        `).join("");
-
-        meaningNodeGrid.innerHTML = meaningNodes.map(node => `
-          <article class="card">
-            <h2>${node.title}</h2>
-            <div class="meta">${node.type} · ${node.domain}</div>
-            <p><strong>Summary:</strong> ${node.summary}</p>
-            <p>${node.description}</p>
-            <p><strong>Connected Phrases:</strong> ${(node.connectedPhrases || []).map(id => `<code>${id}</code>`).join(" ") || "None yet"}</p>
-            <p><strong>Related Nodes:</strong></p>
-            <div>
-              ${(node.relatedNodes || []).map(id => `<span class="tag">${id}</span>`).join("")}
-            </div>
-            <p><strong>Source IDs:</strong> ${(node.sourceIds || []).map(id => `<code>${id}</code>`).join(" ")}</p>
-          </article>
-        `).join("");
-
-        assertionGrid.innerHTML = assertions.map(assertion => `
-          <article class="card">
-            <h2>${assertion.label}</h2>
-            <div class="meta">${assertion.assertionType} · ${assertion.status} · ${assertion.confidence}</div>
-            <p><strong>Node ID:</strong> <code>${assertion.nodeId}</code></p>
-            <p><strong>Summary:</strong> ${assertion.summary}</p>
-            <p>${assertion.body}</p>
-            <p><strong>Source IDs:</strong> ${(assertion.sourceIds || []).map(id => `<code>${id}</code>`).join(" ")}</p>
-          </article>
-        `).join("");
-
-        relationshipGrid.innerHTML = relationships.map(relationship => `
-          <article class="card">
-            <h2>${relationship.label}</h2>
-            <div class="meta">${relationship.type}</div>
-            <p>${relationship.description}</p>
-            <p><strong>Concepts:</strong></p>
-            <div>
-              ${(relationship.concepts || []).map(concept => `<span class="tag">${concept}</span>`).join("")}
-            </div>
-            <p><strong>Connected Phrase IDs:</strong> ${(relationship.phraseIds || []).map(id => `<code>${id}</code>`).join(" ")}</p>
-            <p><strong>Source IDs:</strong> ${(relationship.sourceIds || []).map(id => `<code>${id}</code>`).join(" ")}</p>
-          </article>
-        `).join("");
-
-        sourceGrid.innerHTML = sources.map(source => `
-          <article class="card">
-            <h2>${source.name}</h2>
-            <div class="meta">${source.type} · ${source.qualityTier}</div>
-            <p>${source.notes}</p>
-            <p><strong>Supports Fields:</strong> ${(source.supportsFields || []).join(", ")}</p>
-            ${source.url ? `<p><a href="${source.url}" target="_blank" rel="noopener">Open source</a></p>` : ""}
-          </article>
-        `).join("");
-
-      } catch (error) {
-        phraseGrid.innerHTML = "<p>Could not load BibleRoot Alpha data.</p>";
-        meaningNodeGrid.innerHTML = "";
-        assertionGrid.innerHTML = "";
-        relationshipGrid.innerHTML = "";
-        sourceGrid.innerHTML = "";
-        console.error(error);
-      }
-    }
-
-    loadBibleRoot();
-  </script>
+  <footer class="br-footer">
+    <p>BibleRoot is a SourceRoot foundation alpha. Machines may discover; humans must be able to verify.</p>
+  </footer>
+  <script src="assets/js/sourceroot-root-switcher.js?v=shared-root-switcher-v1"></script>
+  <script src="assets/js/sourceroot-user-menu.js?v=shared-user-menu-v1"></script>
+  <script src="assets/js/sourceroot-api.js"></script>
+  <script src="assets/js/bibleroot-api.js?v=foundation-v1"></script>
+  <script src="assets/js/bibleroot-home.js?v=foundation-v1"></script>
 </body>
 </html>

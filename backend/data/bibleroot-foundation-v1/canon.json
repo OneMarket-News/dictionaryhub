@@ -1,0 +1,996 @@
+{
+  "canonId": "br-canon-kjv-66",
+  "displayName": "KJV source 66-book Protestant canon order",
+  "description": "The 66-book order represented by the selected Project Gutenberg KJV source artifact.",
+  "scopeNote": "This is one explicit canon identity and does not imply that it is the only Christian biblical canon.",
+  "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10",
+  "books": [
+    {
+      "bookId": "br-book-gen",
+      "machineCode": "gen",
+      "displayName": "Genesis",
+      "aliases": [
+        "Genesis",
+        "Gen",
+        "Ge",
+        "Gn"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 50,
+      "canonicalOrder": 1,
+      "availabilityStatus": "text_available",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-exod",
+      "machineCode": "exod",
+      "displayName": "Exodus",
+      "aliases": [
+        "Exodus",
+        "Exod",
+        "Ex",
+        "Exo"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 40,
+      "canonicalOrder": 2,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-lev",
+      "machineCode": "lev",
+      "displayName": "Leviticus",
+      "aliases": [
+        "Leviticus",
+        "Lev",
+        "Le",
+        "Lv"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 27,
+      "canonicalOrder": 3,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-num",
+      "machineCode": "num",
+      "displayName": "Numbers",
+      "aliases": [
+        "Numbers",
+        "Num",
+        "Nu",
+        "Nm"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 36,
+      "canonicalOrder": 4,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-deut",
+      "machineCode": "deut",
+      "displayName": "Deuteronomy",
+      "aliases": [
+        "Deuteronomy",
+        "Deut",
+        "Dt",
+        "Deu"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 34,
+      "canonicalOrder": 5,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-josh",
+      "machineCode": "josh",
+      "displayName": "Joshua",
+      "aliases": [
+        "Joshua",
+        "Josh",
+        "Jos"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 24,
+      "canonicalOrder": 6,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-judg",
+      "machineCode": "judg",
+      "displayName": "Judges",
+      "aliases": [
+        "Judges",
+        "Judg",
+        "Jdg",
+        "Jgs"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 21,
+      "canonicalOrder": 7,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-ruth",
+      "machineCode": "ruth",
+      "displayName": "Ruth",
+      "aliases": [
+        "Ruth",
+        "Ru",
+        "Rth"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 4,
+      "canonicalOrder": 8,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-1sam",
+      "machineCode": "1sam",
+      "displayName": "1 Samuel",
+      "aliases": [
+        "1 Samuel",
+        "1 Sam",
+        "1Sa"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 31,
+      "canonicalOrder": 9,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-2sam",
+      "machineCode": "2sam",
+      "displayName": "2 Samuel",
+      "aliases": [
+        "2 Samuel",
+        "2 Sam",
+        "2Sa"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 24,
+      "canonicalOrder": 10,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-1kgs",
+      "machineCode": "1kgs",
+      "displayName": "1 Kings",
+      "aliases": [
+        "1 Kings",
+        "1 Kgs",
+        "1Ki"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 22,
+      "canonicalOrder": 11,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-2kgs",
+      "machineCode": "2kgs",
+      "displayName": "2 Kings",
+      "aliases": [
+        "2 Kings",
+        "2 Kgs",
+        "2Ki"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 25,
+      "canonicalOrder": 12,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-1chr",
+      "machineCode": "1chr",
+      "displayName": "1 Chronicles",
+      "aliases": [
+        "1 Chronicles",
+        "1 Chr",
+        "1Ch"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 29,
+      "canonicalOrder": 13,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-2chr",
+      "machineCode": "2chr",
+      "displayName": "2 Chronicles",
+      "aliases": [
+        "2 Chronicles",
+        "2 Chr",
+        "2Ch"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 36,
+      "canonicalOrder": 14,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-ezra",
+      "machineCode": "ezra",
+      "displayName": "Ezra",
+      "aliases": [
+        "Ezra",
+        "Ezr"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 10,
+      "canonicalOrder": 15,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-neh",
+      "machineCode": "neh",
+      "displayName": "Nehemiah",
+      "aliases": [
+        "Nehemiah",
+        "Neh",
+        "Ne"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 13,
+      "canonicalOrder": 16,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-esth",
+      "machineCode": "esth",
+      "displayName": "Esther",
+      "aliases": [
+        "Esther",
+        "Esth",
+        "Est"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 10,
+      "canonicalOrder": 17,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-job",
+      "machineCode": "job",
+      "displayName": "Job",
+      "aliases": [
+        "Job",
+        "Jb"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 42,
+      "canonicalOrder": 18,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-ps",
+      "machineCode": "ps",
+      "displayName": "Psalm",
+      "aliases": [
+        "Psalm",
+        "Ps",
+        "Psa",
+        "Psalms"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 150,
+      "canonicalOrder": 19,
+      "availabilityStatus": "text_available",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-prov",
+      "machineCode": "prov",
+      "displayName": "Proverbs",
+      "aliases": [
+        "Proverbs",
+        "Prov",
+        "Pr",
+        "Prv"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 31,
+      "canonicalOrder": 20,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-eccl",
+      "machineCode": "eccl",
+      "displayName": "Ecclesiastes",
+      "aliases": [
+        "Ecclesiastes",
+        "Eccl",
+        "Ecc",
+        "Qoheleth"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 12,
+      "canonicalOrder": 21,
+      "availabilityStatus": "text_available",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-song",
+      "machineCode": "song",
+      "displayName": "Song of Solomon",
+      "aliases": [
+        "Song of Solomon",
+        "Song",
+        "Song of Songs",
+        "SOS"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 8,
+      "canonicalOrder": 22,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-isa",
+      "machineCode": "isa",
+      "displayName": "Isaiah",
+      "aliases": [
+        "Isaiah",
+        "Isa",
+        "Is"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 66,
+      "canonicalOrder": 23,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-jer",
+      "machineCode": "jer",
+      "displayName": "Jeremiah",
+      "aliases": [
+        "Jeremiah",
+        "Jer",
+        "Je"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 52,
+      "canonicalOrder": 24,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-lam",
+      "machineCode": "lam",
+      "displayName": "Lamentations",
+      "aliases": [
+        "Lamentations",
+        "Lam",
+        "La"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 5,
+      "canonicalOrder": 25,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-ezek",
+      "machineCode": "ezek",
+      "displayName": "Ezekiel",
+      "aliases": [
+        "Ezekiel",
+        "Ezek",
+        "Eze"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 48,
+      "canonicalOrder": 26,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-dan",
+      "machineCode": "dan",
+      "displayName": "Daniel",
+      "aliases": [
+        "Daniel",
+        "Dan",
+        "Da"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 12,
+      "canonicalOrder": 27,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-hos",
+      "machineCode": "hos",
+      "displayName": "Hosea",
+      "aliases": [
+        "Hosea",
+        "Hos",
+        "Ho"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 14,
+      "canonicalOrder": 28,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-joel",
+      "machineCode": "joel",
+      "displayName": "Joel",
+      "aliases": [
+        "Joel",
+        "Joe"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 3,
+      "canonicalOrder": 29,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-amos",
+      "machineCode": "amos",
+      "displayName": "Amos",
+      "aliases": [
+        "Amos",
+        "Am"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 9,
+      "canonicalOrder": 30,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-obad",
+      "machineCode": "obad",
+      "displayName": "Obadiah",
+      "aliases": [
+        "Obadiah",
+        "Obad",
+        "Ob"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 1,
+      "canonicalOrder": 31,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-jonah",
+      "machineCode": "jonah",
+      "displayName": "Jonah",
+      "aliases": [
+        "Jonah",
+        "Jon"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 4,
+      "canonicalOrder": 32,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-mic",
+      "machineCode": "mic",
+      "displayName": "Micah",
+      "aliases": [
+        "Micah",
+        "Mic",
+        "Mi"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 7,
+      "canonicalOrder": 33,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-nah",
+      "machineCode": "nah",
+      "displayName": "Nahum",
+      "aliases": [
+        "Nahum",
+        "Nah",
+        "Na"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 3,
+      "canonicalOrder": 34,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-hab",
+      "machineCode": "hab",
+      "displayName": "Habakkuk",
+      "aliases": [
+        "Habakkuk",
+        "Hab"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 3,
+      "canonicalOrder": 35,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-zeph",
+      "machineCode": "zeph",
+      "displayName": "Zephaniah",
+      "aliases": [
+        "Zephaniah",
+        "Zeph",
+        "Zep"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 3,
+      "canonicalOrder": 36,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-hag",
+      "machineCode": "hag",
+      "displayName": "Haggai",
+      "aliases": [
+        "Haggai",
+        "Hag"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 2,
+      "canonicalOrder": 37,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-zech",
+      "machineCode": "zech",
+      "displayName": "Zechariah",
+      "aliases": [
+        "Zechariah",
+        "Zech",
+        "Zec"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 14,
+      "canonicalOrder": 38,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-mal",
+      "machineCode": "mal",
+      "displayName": "Malachi",
+      "aliases": [
+        "Malachi",
+        "Mal"
+      ],
+      "broadCollection": "Old Testament",
+      "chapterCount": 4,
+      "canonicalOrder": 39,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-matt",
+      "machineCode": "matt",
+      "displayName": "Matthew",
+      "aliases": [
+        "Matthew",
+        "Matt",
+        "Mt"
+      ],
+      "broadCollection": "New Testament",
+      "chapterCount": 28,
+      "canonicalOrder": 40,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-mark",
+      "machineCode": "mark",
+      "displayName": "Mark",
+      "aliases": [
+        "Mark",
+        "Mk",
+        "Mrk"
+      ],
+      "broadCollection": "New Testament",
+      "chapterCount": 16,
+      "canonicalOrder": 41,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-luke",
+      "machineCode": "luke",
+      "displayName": "Luke",
+      "aliases": [
+        "Luke",
+        "Lk",
+        "Luk"
+      ],
+      "broadCollection": "New Testament",
+      "chapterCount": 24,
+      "canonicalOrder": 42,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-john",
+      "machineCode": "john",
+      "displayName": "John",
+      "aliases": [
+        "John",
+        "Jn",
+        "Jhn"
+      ],
+      "broadCollection": "New Testament",
+      "chapterCount": 21,
+      "canonicalOrder": 43,
+      "availabilityStatus": "text_available",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-acts",
+      "machineCode": "acts",
+      "displayName": "Acts",
+      "aliases": [
+        "Acts",
+        "Ac",
+        "Act"
+      ],
+      "broadCollection": "New Testament",
+      "chapterCount": 28,
+      "canonicalOrder": 44,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-rom",
+      "machineCode": "rom",
+      "displayName": "Romans",
+      "aliases": [
+        "Romans",
+        "Rom",
+        "Ro"
+      ],
+      "broadCollection": "New Testament",
+      "chapterCount": 16,
+      "canonicalOrder": 45,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-1cor",
+      "machineCode": "1cor",
+      "displayName": "1 Corinthians",
+      "aliases": [
+        "1 Corinthians",
+        "1 Cor",
+        "1Co"
+      ],
+      "broadCollection": "New Testament",
+      "chapterCount": 16,
+      "canonicalOrder": 46,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-2cor",
+      "machineCode": "2cor",
+      "displayName": "2 Corinthians",
+      "aliases": [
+        "2 Corinthians",
+        "2 Cor",
+        "2Co"
+      ],
+      "broadCollection": "New Testament",
+      "chapterCount": 13,
+      "canonicalOrder": 47,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-gal",
+      "machineCode": "gal",
+      "displayName": "Galatians",
+      "aliases": [
+        "Galatians",
+        "Gal",
+        "Ga"
+      ],
+      "broadCollection": "New Testament",
+      "chapterCount": 6,
+      "canonicalOrder": 48,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-eph",
+      "machineCode": "eph",
+      "displayName": "Ephesians",
+      "aliases": [
+        "Ephesians",
+        "Eph"
+      ],
+      "broadCollection": "New Testament",
+      "chapterCount": 6,
+      "canonicalOrder": 49,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-phil",
+      "machineCode": "phil",
+      "displayName": "Philippians",
+      "aliases": [
+        "Philippians",
+        "Phil",
+        "Php"
+      ],
+      "broadCollection": "New Testament",
+      "chapterCount": 4,
+      "canonicalOrder": 50,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-col",
+      "machineCode": "col",
+      "displayName": "Colossians",
+      "aliases": [
+        "Colossians",
+        "Col"
+      ],
+      "broadCollection": "New Testament",
+      "chapterCount": 4,
+      "canonicalOrder": 51,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-1thess",
+      "machineCode": "1thess",
+      "displayName": "1 Thessalonians",
+      "aliases": [
+        "1 Thessalonians",
+        "1 Thess",
+        "1Th"
+      ],
+      "broadCollection": "New Testament",
+      "chapterCount": 5,
+      "canonicalOrder": 52,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-2thess",
+      "machineCode": "2thess",
+      "displayName": "2 Thessalonians",
+      "aliases": [
+        "2 Thessalonians",
+        "2 Thess",
+        "2Th"
+      ],
+      "broadCollection": "New Testament",
+      "chapterCount": 3,
+      "canonicalOrder": 53,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-1tim",
+      "machineCode": "1tim",
+      "displayName": "1 Timothy",
+      "aliases": [
+        "1 Timothy",
+        "1 Tim",
+        "1Ti"
+      ],
+      "broadCollection": "New Testament",
+      "chapterCount": 6,
+      "canonicalOrder": 54,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-2tim",
+      "machineCode": "2tim",
+      "displayName": "2 Timothy",
+      "aliases": [
+        "2 Timothy",
+        "2 Tim",
+        "2Ti"
+      ],
+      "broadCollection": "New Testament",
+      "chapterCount": 4,
+      "canonicalOrder": 55,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-titus",
+      "machineCode": "titus",
+      "displayName": "Titus",
+      "aliases": [
+        "Titus",
+        "Tit"
+      ],
+      "broadCollection": "New Testament",
+      "chapterCount": 3,
+      "canonicalOrder": 56,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-phlm",
+      "machineCode": "phlm",
+      "displayName": "Philemon",
+      "aliases": [
+        "Philemon",
+        "Phlm",
+        "Phm"
+      ],
+      "broadCollection": "New Testament",
+      "chapterCount": 1,
+      "canonicalOrder": 57,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-heb",
+      "machineCode": "heb",
+      "displayName": "Hebrews",
+      "aliases": [
+        "Hebrews",
+        "Heb"
+      ],
+      "broadCollection": "New Testament",
+      "chapterCount": 13,
+      "canonicalOrder": 58,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-jas",
+      "machineCode": "jas",
+      "displayName": "James",
+      "aliases": [
+        "James",
+        "Jas",
+        "Jm"
+      ],
+      "broadCollection": "New Testament",
+      "chapterCount": 5,
+      "canonicalOrder": 59,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-1pet",
+      "machineCode": "1pet",
+      "displayName": "1 Peter",
+      "aliases": [
+        "1 Peter",
+        "1 Pet",
+        "1Pe"
+      ],
+      "broadCollection": "New Testament",
+      "chapterCount": 5,
+      "canonicalOrder": 60,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-2pet",
+      "machineCode": "2pet",
+      "displayName": "2 Peter",
+      "aliases": [
+        "2 Peter",
+        "2 Pet",
+        "2Pe"
+      ],
+      "broadCollection": "New Testament",
+      "chapterCount": 3,
+      "canonicalOrder": 61,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-1john",
+      "machineCode": "1john",
+      "displayName": "1 John",
+      "aliases": [
+        "1 John",
+        "1 Jn",
+        "1Jo"
+      ],
+      "broadCollection": "New Testament",
+      "chapterCount": 5,
+      "canonicalOrder": 62,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-2john",
+      "machineCode": "2john",
+      "displayName": "2 John",
+      "aliases": [
+        "2 John",
+        "2 Jn",
+        "2Jo"
+      ],
+      "broadCollection": "New Testament",
+      "chapterCount": 1,
+      "canonicalOrder": 63,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-3john",
+      "machineCode": "3john",
+      "displayName": "3 John",
+      "aliases": [
+        "3 John",
+        "3 Jn",
+        "3Jo"
+      ],
+      "broadCollection": "New Testament",
+      "chapterCount": 1,
+      "canonicalOrder": 64,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-jude",
+      "machineCode": "jude",
+      "displayName": "Jude",
+      "aliases": [
+        "Jude",
+        "Jud"
+      ],
+      "broadCollection": "New Testament",
+      "chapterCount": 1,
+      "canonicalOrder": 65,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    },
+    {
+      "bookId": "br-book-rev",
+      "machineCode": "rev",
+      "displayName": "Revelation",
+      "aliases": [
+        "Revelation",
+        "Rev",
+        "Re"
+      ],
+      "broadCollection": "New Testament",
+      "chapterCount": 22,
+      "canonicalOrder": 66,
+      "availabilityStatus": "metadata_only",
+      "authoritySourceId": "bibleroot-source-project-gutenberg-ebook-10"
+    }
+  ]
+}

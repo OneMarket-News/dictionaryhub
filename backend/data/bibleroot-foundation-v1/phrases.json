@@ -1,0 +1,187 @@
+[
+  {
+    "phraseId": "br-phrase-in-the-beginning",
+    "displayText": "In the beginning",
+    "normalizedLookupText": "in the beginning",
+    "editionId": "br-edition-kjv-pg10-2024",
+    "provenanceNote": "Exact textual occurrence in the acquired Project Gutenberg eBook 10 artifact; no interpretation is asserted.",
+    "occurrences": [
+      {
+        "occurrenceId": "br-occurrence-in-the-beginning-gen-001-001-000",
+        "editionTextId": "br-text-kjv-pg10-gen-001-001",
+        "canonicalReferenceId": "br-ref-gen-001-001",
+        "startOffset": 0,
+        "endOffset": 16,
+        "exactText": "In the beginning"
+      },
+      {
+        "occurrenceId": "br-occurrence-in-the-beginning-john-001-001-000",
+        "editionTextId": "br-text-kjv-pg10-john-001-001",
+        "canonicalReferenceId": "br-ref-john-001-001",
+        "startOffset": 0,
+        "endOffset": 16,
+        "exactText": "In the beginning"
+      }
+    ]
+  },
+  {
+    "phraseId": "br-phrase-let-there-be-light",
+    "displayText": "Let there be light",
+    "normalizedLookupText": "let there be light",
+    "editionId": "br-edition-kjv-pg10-2024",
+    "provenanceNote": "Exact textual occurrence in the acquired Project Gutenberg eBook 10 artifact; no interpretation is asserted.",
+    "occurrences": [
+      {
+        "occurrenceId": "br-occurrence-let-there-be-light-gen-001-003-014",
+        "editionTextId": "br-text-kjv-pg10-gen-001-003",
+        "canonicalReferenceId": "br-ref-gen-001-003",
+        "startOffset": 14,
+        "endOffset": 32,
+        "exactText": "Let there be light"
+      }
+    ]
+  },
+  {
+    "phraseId": "br-phrase-the-word",
+    "displayText": "the Word",
+    "normalizedLookupText": "the word",
+    "editionId": "br-edition-kjv-pg10-2024",
+    "provenanceNote": "Exact textual occurrence in the acquired Project Gutenberg eBook 10 artifact; no interpretation is asserted.",
+    "occurrences": [
+      {
+        "occurrenceId": "br-occurrence-the-word-john-001-001-021",
+        "editionTextId": "br-text-kjv-pg10-john-001-001",
+        "canonicalReferenceId": "br-ref-john-001-001",
+        "startOffset": 21,
+        "endOffset": 29,
+        "exactText": "the Word"
+      },
+      {
+        "occurrenceId": "br-occurrence-the-word-john-001-001-035",
+        "editionTextId": "br-text-kjv-pg10-john-001-001",
+        "canonicalReferenceId": "br-ref-john-001-001",
+        "startOffset": 35,
+        "endOffset": 43,
+        "exactText": "the Word"
+      },
+      {
+        "occurrenceId": "br-occurrence-the-word-john-001-001-062",
+        "editionTextId": "br-text-kjv-pg10-john-001-001",
+        "canonicalReferenceId": "br-ref-john-001-001",
+        "startOffset": 62,
+        "endOffset": 70,
+        "exactText": "the Word"
+      },
+      {
+        "occurrenceId": "br-occurrence-the-word-john-001-014-004",
+        "editionTextId": "br-text-kjv-pg10-john-001-014",
+        "canonicalReferenceId": "br-ref-john-001-014",
+        "startOffset": 4,
+        "endOffset": 12,
+        "exactText": "the Word"
+      }
+    ]
+  },
+  {
+    "phraseId": "br-phrase-the-word-was-with-god",
+    "displayText": "the Word was with God",
+    "normalizedLookupText": "the word was with god",
+    "editionId": "br-edition-kjv-pg10-2024",
+    "provenanceNote": "Exact textual occurrence in the acquired Project Gutenberg eBook 10 artifact; no interpretation is asserted.",
+    "occurrences": [
+      {
+        "occurrenceId": "br-occurrence-the-word-was-with-god-john-001-001-035",
+        "editionTextId": "br-text-kjv-pg10-john-001-001",
+        "canonicalReferenceId": "br-ref-john-001-001",
+        "startOffset": 35,
+        "endOffset": 56,
+        "exactText": "the Word was with God"
+      }
+    ]
+  },
+  {
+    "phraseId": "br-phrase-the-word-was-god",
+    "displayText": "the Word was God",
+    "normalizedLookupText": "the word was god",
+    "editionId": "br-edition-kjv-pg10-2024",
+    "provenanceNote": "Exact textual occurrence in the acquired Project Gutenberg eBook 10 artifact; no interpretation is asserted.",
+    "occurrences": [
+      {
+        "occurrenceId": "br-occurrence-the-word-was-god-john-001-001-062",
+        "editionTextId": "br-text-kjv-pg10-john-001-001",
+        "canonicalReferenceId": "br-ref-john-001-001",
+        "startOffset": 62,
+        "endOffset": 78,
+        "exactText": "the Word was God"
+      }
+    ]
+  },
+  {
+    "phraseId": "br-phrase-still-waters",
+    "displayText": "still waters",
+    "normalizedLookupText": "still waters",
+    "editionId": "br-edition-kjv-pg10-2024",
+    "provenanceNote": "Exact textual occurrence in the acquired Project Gutenberg eBook 10 artifact; no interpretation is asserted.",
+    "occurrences": [
+      {
+        "occurrenceId": "br-occurrence-still-waters-ps-023-002-069",
+        "editionTextId": "br-text-kjv-pg10-ps-023-002",
+        "canonicalReferenceId": "br-ref-ps-023-002",
+        "startOffset": 69,
+        "endOffset": 81,
+        "exactText": "still waters"
+      }
+    ]
+  },
+  {
+    "phraseId": "br-phrase-valley-of-the-shadow-of-death",
+    "displayText": "valley of the shadow of death",
+    "normalizedLookupText": "valley of the shadow of death",
+    "editionId": "br-edition-kjv-pg10-2024",
+    "provenanceNote": "Exact textual occurrence in the acquired Project Gutenberg eBook 10 artifact; no interpretation is asserted.",
+    "occurrences": [
+      {
+        "occurrenceId": "br-occurrence-valley-of-the-shadow-of-death-ps-023-004-031",
+        "editionTextId": "br-text-kjv-pg10-ps-023-004",
+        "canonicalReferenceId": "br-ref-ps-023-004",
+        "startOffset": 31,
+        "endOffset": 60,
+        "exactText": "valley of the shadow of death"
+      }
+    ]
+  },
+  {
+    "phraseId": "br-phrase-a-time-to-be-born",
+    "displayText": "A time to be born",
+    "normalizedLookupText": "a time to be born",
+    "editionId": "br-edition-kjv-pg10-2024",
+    "provenanceNote": "Exact textual occurrence in the acquired Project Gutenberg eBook 10 artifact; no interpretation is asserted.",
+    "occurrences": [
+      {
+        "occurrenceId": "br-occurrence-a-time-to-be-born-eccl-003-002-000",
+        "editionTextId": "br-text-kjv-pg10-eccl-003-002",
+        "canonicalReferenceId": "br-ref-eccl-003-002",
+        "startOffset": 0,
+        "endOffset": 17,
+        "exactText": "A time to be born"
+      }
+    ]
+  },
+  {
+    "phraseId": "br-phrase-a-time-to-die",
+    "displayText": "a time to die",
+    "normalizedLookupText": "a time to die",
+    "editionId": "br-edition-kjv-pg10-2024",
+    "provenanceNote": "Exact textual occurrence in the acquired Project Gutenberg eBook 10 artifact; no interpretation is asserted.",
+    "occurrences": [
+      {
+        "occurrenceId": "br-occurrence-a-time-to-die-eccl-003-002-023",
+        "editionTextId": "br-text-kjv-pg10-eccl-003-002",
+        "canonicalReferenceId": "br-ref-eccl-003-002",
+        "startOffset": 23,
+        "endOffset": 36,
+        "exactText": "a time to die"
+      }
+    ]
+  }
+]

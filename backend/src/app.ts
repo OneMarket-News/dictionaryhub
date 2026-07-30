@@ -13,6 +13,7 @@ import { requestLoggingMiddleware } from "./middleware/request-logging.js";
 import { accountRouter } from "./routes/account.js";
 import { adminRouter } from "./routes/admin.js";
 import { assertionsRouter } from "./routes/assertions.js";
+import { bibleRootRouter } from "./routes/bibleroot.js";
 import { authRouter } from "./routes/auth.js";
 import { bundlesRouter } from "./routes/bundles.js";
 import { contextRouter } from "./routes/context.js";
@@ -143,6 +144,7 @@ export function createApp(options: CreateAppOptions = {}) {
   app.use("/api/v1/import", importRouter);
   app.use("/api/v1/dictionaryroot/lexicon", lexiconRouter);
   app.use("/api/v1/dictionaryroot/editorial", editorialRouter);
+  app.use("/api/v1/bibleroot", bibleRootRouter);
   app.use("/api/v1/search/unified", unifiedSearchRouter);
   app.use("/api/v1/search", searchRouter);
   app.use("/api/v1/bundles", bundlesRouter);

@@ -1,0 +1,17 @@
+{
+  "editionId": "br-edition-kjv-pg10-2024",
+  "displayTitle": "King James Version — Project Gutenberg eBook 10 text",
+  "abbreviation": "KJV",
+  "language": "en",
+  "translationName": "King James Version",
+  "editionDescription": "The text supplied by Project Gutenberg eBook 10, without an unsupported 1611 or 1769 edition claim.",
+  "publisherOrDistributor": "Project Gutenberg",
+  "publicationOrReleaseDate": "1989-08-01",
+  "rightsStatus": "public-domain-usa",
+  "territorialLimitation": "Copyright status can differ outside the United States; check local law.",
+  "publicationId": "br-publication-project-gutenberg-ebook-10",
+  "artifactId": "br-artifact-pg10-10-0-txt-sha256-0f1a83cb",
+  "datasetVersion": "1.0.0",
+  "normalizedTextSha256": "BD71CDBB98C44A9DBEC0A2B6D59E83CB93290FB04CFA1BAC5022E4F8B88818FF",
+  "provenanceNotes": "Only source line wrapping was normalized; spelling, punctuation, capitalization, pronouns, and wording were preserved."
+}

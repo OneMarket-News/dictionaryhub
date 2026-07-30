@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Read a BibleRoot passage with stable verse anchors, citations, and exact source provenance.">
+  <title>Passage | BibleRoot</title>
+  <link rel="icon" href="assets/brand/dictionaryroot-mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/bibleroot.css?v=foundation-v1">
+  <link rel="stylesheet" href="assets/css/sourceroot-root-switcher.css?v=shared-root-switcher-v1" data-sourceroot-root-switcher-styles="v1">
+  <link rel="stylesheet" href="assets/css/sourceroot-user-menu.css?v=shared-user-menu-v1" data-sourceroot-user-menu-styles="v1">
+</head>
+<body class="br-page br-passage-page">
+  <a class="br-skip-link" href="#main-content">Skip to passage</a>
+  <header class="br-site-header">
+    <div class="br-header-inner">
+      <a class="br-wordmark" href="bibleroot.html" aria-label="BibleRoot home">
+        <span class="br-wordmark-mark" aria-hidden="true">BR</span>
+        <span><strong>BibleRoot</strong><small>Text with a source trail</small></span>
+      </a>
+      <nav class="br-public-nav" aria-label="BibleRoot">
+        <a href="bibleroot.html">Home</a>
+        <a aria-current="page" href="bibleroot-passage.html?reference=Genesis%201">Read a passage</a>
+        <a href="#passage-provenance">Source &amp; rights</a>
+      </nav>
+      <div class="br-shared-actions" role="group" aria-label="Account and product navigation">
+        <div data-sourceroot-user-menu data-user-menu-id-prefix="bibleRootPassageUserMenu"></div>
+        <div data-sourceroot-root-switcher data-current-root="BibleRoot"></div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="br-breadcrumbs" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="sourceroot.html">SourceRoot</a></li>
+      <li><a href="bibleroot.html">BibleRoot</a></li>
+      <li id="bibleRootPassageBreadcrumb" aria-current="page">Passage</li>
+    </ol>
+  </nav>
+
+  <main id="main-content" class="br-reader-shell">
+    <aside class="br-reader-tools" aria-labelledby="br-reader-tools-title">
+      <p class="br-kicker">Passage lookup</p>
+      <h1 id="br-reader-tools-title">Read by reference</h1>
+      <form class="br-reference-form" id="bibleRootPassageForm" role="search">
+        <label for="bibleRootPassageReference">Reference</label>
+        <input id="bibleRootPassageReference" name="reference" autocomplete="off" spellcheck="false">
+        <button type="submit">Open passage</button>
+      </form>
+      <div class="br-quick-links" aria-label="Featured passages">
+        <a href="?reference=Genesis%201">Genesis 1</a>
+        <a href="?reference=John%201">John 1</a>
+        <a href="?reference=Psalm%2023">Psalm 23</a>
+        <a href="?reference=Ecclesiastes%203">Ecclesiastes 3</a>
+      </div>
+      <p class="br-tool-note">
+        References are parsed deterministically. BibleRoot does not guess an
+        ambiguous book or silently substitute unavailable text.
+      </p>
+    </aside>
+
+    <section class="br-reader" aria-labelledby="bibleRootPassageTitle">
+      <header class="br-reader-header">
+        <div>
+          <p class="br-eyebrow">Biblical text</p>
+          <h2 id="bibleRootPassageTitle">Loading passage…</h2>
+          <p id="bibleRootPassageCitation" class="br-citation"></p>
+        </div>
+        <span id="bibleRootPassageEdition" class="br-edition-pill">KJV</span>
+      </header>
+      <div id="bibleRootPassageStatus" class="br-state-panel" data-state="loading" role="status" aria-live="polite">
+        <span class="br-spinner" aria-hidden="true"></span>
+        <div><strong>Loading exact text</strong><p>Contacting the SourceRoot BibleRoot API.</p></div>
+      </div>
+      <div id="bibleRootPassageVerses" class="br-verses" aria-live="polite" aria-busy="true"></div>
+
+      <section id="passage-provenance" class="br-provenance" aria-labelledby="br-provenance-title" hidden>
+        <header>
+          <div><p class="br-kicker">Verify this text</p><h3 id="br-provenance-title">Source &amp; provenance</h3></div>
+          <a id="bibleRootStableLink" href="#">Stable passage link</a>
+        </header>
+        <dl class="br-provenance-grid">
+          <div><dt>Edition</dt><dd id="bibleRootProvenanceEdition">—</dd></div>
+          <div><dt>Publication</dt><dd id="bibleRootProvenancePublication">—</dd></div>
+          <div><dt>Source artifact</dt><dd id="bibleRootProvenanceArtifact">—</dd></div>
+          <div><dt>Artifact SHA-256</dt><dd id="bibleRootProvenanceHash">—</dd></div>
+          <div><dt>Rights</dt><dd id="bibleRootProvenanceRights">—</dd></div>
+          <div><dt>Normalized text SHA-256</dt><dd id="bibleRootProvenanceNormalizedHash">—</dd></div>
+        </dl>
+        <p id="bibleRootProvenanceTerritory" class="br-rights-note"></p>
+      </section>
+
+      <section id="bibleRootFutureLayers" class="br-future-layer" hidden>
+        <p class="br-kicker">Separate content layers</p>
+        <h3>Commentary and interpretation are not populated.</h3>
+        <p>
+          Phrase highlights mark exact textual occurrences only. They do not
+          assert theological equivalence, historical interpretation, or a
+          SourceRoot project inference.
+        </p>
+      </section>
+    </section>
+  </main>
+
+  <footer class="br-footer">
+    <p>BibleRoot foundation alpha · exact KJV text · no fabricated commentary</p>
+  </footer>
+  <script src="assets/js/sourceroot-root-switcher.js?v=shared-root-switcher-v1"></script>
+  <script src="assets/js/sourceroot-user-menu.js?v=shared-user-menu-v1"></script>
+  <script src="assets/js/sourceroot-api.js"></script>
+  <script src="assets/js/bibleroot-api.js?v=foundation-v1"></script>
+  <script src="assets/js/bibleroot-passage.js?v=foundation-v1"></script>
+</body>
+</html>

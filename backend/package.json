@@ -57,6 +57,10 @@
     "historyroot:wampanoag-regional:generate": "node --import ./scripts/register-tsx.mjs src/scripts/generate-historyroot-wampanoag-regional-corpus.ts",
     "historyroot:wampanoag-regional:import": "node --env-file=.env.test --import ./scripts/register-tsx.mjs src/scripts/import-historyroot-wampanoag-regional-corpus.ts",
     "test:historyroot:wampanoag-regional": "node --env-file=.env.test --import ./scripts/register-tsx.mjs --test --test-concurrency=1 test/historyroot-wampanoag-regional-corpus.test.ts",
+    "bibleroot:foundation:prepare": "node --import ./scripts/register-tsx.mjs src/scripts/prepare-bibleroot-foundation.ts",
+    "bibleroot:foundation:import": "node --env-file=.env.test --import ./scripts/register-tsx.mjs src/scripts/import-bibleroot-foundation.ts",
+    "test:bibleroot:foundation": "node --env-file=.env.test --import ./scripts/register-tsx.mjs --test --test-concurrency=1 test/bibleroot-foundation.test.ts",
+    "test:bibleroot:frontend": "node --test ../verification/bibleroot-foundation.test.cjs",
     "verify:fresh-install": "node scripts/verify-fresh-install.mjs"
   },
   "dependencies": {
