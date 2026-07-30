@@ -181,6 +181,7 @@
                             "VERIFY-SOURCEROOT-HISTORYROOT-CORPUS-EXPANSION-QUALITY.ps1",
                             "VERIFY-SOURCEROOT-HISTORYROOT-REGIONAL-EXPANSION-ACQUISITION-GATE.ps1",
                             "VERIFY-SOURCEROOT-HISTORYROOT-WAMPANOAG-REGIONAL-CORPUS.ps1",
+                            "VERIFY-SOURCEROOT-UNIFIED-CROSS-EXPERIENCE-SEARCH-NAVIGATION.ps1",
                             "VERIFY-SOURCEROOT-REGISTRY-API-CONTRACT.ps1"
                         ],
     "known_installers":  [

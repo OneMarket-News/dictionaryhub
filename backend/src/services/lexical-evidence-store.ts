@@ -362,13 +362,21 @@ export async function searchDictionaryRootLexicalEvidence(options: {
   page: number;
   limit: number;
   total: number;
+  exactTotal: number;
   totalPages: number;
   items: Row[];
 }> {
   const database = requireDatabase();
   const normalized = options.query.trim().toLowerCase().replace(/\s+/gu, " ");
   if (!normalized) {
-    return { page: options.page, limit: options.limit, total: 0, totalPages: 0, items: [] };
+    return {
+      page: options.page,
+      limit: options.limit,
+      total: 0,
+      exactTotal: 0,
+      totalPages: 0,
+      items: [],
+    };
   }
   const result = await database.query<Row>(
     `WITH matched_lemmas AS (
@@ -383,7 +391,9 @@ export async function searchDictionaryRootLexicalEvidence(options: {
        s.sense_id, s.part_of_speech, s.lexical_category, s.review_status,
        COALESCE(c.exact_wording, c.normalized_definition) AS definition,
        c.uncertainty, c.domain_label, c.register_label,
-       COUNT(*) OVER()::INTEGER AS total_count
+       COUNT(*) OVER()::INTEGER AS total_count,
+       COUNT(*) FILTER (WHERE l.normalized_form = $1)
+         OVER()::INTEGER AS exact_count
      FROM matched_lemmas m
      JOIN dictionaryroot_lexical_lemmas l ON l.lemma_id = m.lemma_id
      JOIN dictionaryroot_lexical_lemma_senses ls ON ls.lemma_id = l.lemma_id
@@ -401,14 +411,17 @@ export async function searchDictionaryRootLexicalEvidence(options: {
     [normalized, options.limit, (options.page - 1) * options.limit],
   );
   const total = Number(result.rows[0]?.total_count ?? 0);
+  const exactTotal = Number(result.rows[0]?.exact_count ?? 0);
   return {
     page: options.page,
     limit: options.limit,
     total,
+    exactTotal,
     totalPages: total === 0 ? 0 : Math.ceil(total / options.limit),
     items: result.rows.map((row) => {
       const mapped = mapKeys(row);
       delete mapped.totalCount;
+      delete mapped.exactCount;
       return mapped;
     }),
   };

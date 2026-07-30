@@ -19,6 +19,16 @@
     { key: "graph", label: "Knowledge Graph", href: "history-graph-v1.html" }
   ];
 
+  const PAGE_LABELS = {
+    home: "Home",
+    explore: "Search and explore",
+    timeline: "Timeline",
+    record: "Record",
+    "context-review": "Context review",
+    sources: "Sources",
+    graph: "Knowledge Graph"
+  };
+
   const TYPE_LABELS = {
     person: "Person",
     group: "Group",
@@ -564,6 +574,27 @@
     append(brand, logo, brandCopy);
 
     const navWrap = element("div", { className: "historyroot-nav-wrap" });
+    const rootSwitcher = element("nav", {
+      className: "sr-hr-root-switcher",
+      attributes: { "aria-label": "SourceRoot products" }
+    });
+    [
+      ["SourceRoot", "sourceroot.html"],
+      ["Search all Roots", "sourceroot-search.html"],
+      ["DictionaryRoot", "index.html"],
+      ["HistoryRoot", "historyroot.html", "page"]
+    ].forEach((item) => {
+      append(
+        rootSwitcher,
+        element("a", {
+          text: item[0],
+          attributes: Object.assign(
+            { href: item[1] },
+            item[2] ? { "aria-current": item[2], "data-active-root": "HistoryRoot" } : {}
+          )
+        })
+      );
+    });
     const nav = element("nav", {
       className: "historyroot-nav",
       id: "historyrootNavigation",
@@ -609,10 +640,51 @@
       header.dataset.menuOpen = "false";
       menuButton.setAttribute("aria-expanded", "false");
     });
-    append(navWrap, nav, familyLink, menuButton);
+    append(navWrap, rootSwitcher, nav, familyLink, menuButton);
     append(inner, brand, navWrap);
     append(header, inner);
     return header;
+  }
+
+  function injectBreadcrumb(header) {
+    const existing = document.querySelector(".sr-historyroot-breadcrumbs");
+    if (existing) return existing;
+    const breadcrumb = element("nav", {
+      className: "sr-hr-breadcrumbs sr-historyroot-breadcrumbs",
+      attributes: { "aria-label": "Breadcrumb" }
+    });
+    const list = element("ol");
+    const sourceRoot = element("li");
+    append(sourceRoot, element("a", {
+      text: "SourceRoot",
+      attributes: { href: "sourceroot.html" }
+    }));
+    const historyRoot = element("li");
+    append(historyRoot, element("a", {
+      text: "HistoryRoot",
+      attributes: { href: "historyroot.html" }
+    }));
+    append(list, sourceRoot, historyRoot);
+    const page = currentPage();
+    if (page && page !== "home") {
+      const pageItem = element("li", {
+        text: PAGE_LABELS[page] || humanize(page),
+        attributes: { "aria-current": "page" }
+      });
+      append(list, pageItem);
+    }
+    const query = clean(new URLSearchParams(global.location.search).get("q"));
+    if (query) {
+      const current = list.querySelector('[aria-current="page"]');
+      if (current) current.removeAttribute("aria-current");
+      append(list, element("li", {
+        text: query,
+        attributes: { "aria-current": "page" }
+      }));
+    }
+    append(breadcrumb, list);
+    header.insertAdjacentElement("afterend", breadcrumb);
+    return breadcrumb;
   }
 
   function injectSkipLink() {
@@ -652,6 +724,10 @@
       element("a", {
         text: "DictionaryRoot",
         attributes: { href: "index.html" }
+      }),
+      element("a", {
+        text: "Search all Roots",
+        attributes: { href: "sourceroot-search.html" }
       }),
       element("span", { text: "Powered by SourceRoot" })
     );
@@ -758,6 +834,7 @@
     injectSkipLink();
     const header = createNavigation(manifest);
     document.body.insertBefore(header, document.body.firstChild);
+    injectBreadcrumb(header);
     injectFooter(manifest);
     document.dispatchEvent(
       new CustomEvent("historyroot:ready", {

@@ -37,6 +37,8 @@
     "test:dictionaryroot:lexical-evidence": "node --env-file=.env.test --import ./scripts/register-tsx.mjs --test --test-concurrency=1 test/dictionaryroot-lexical-evidence-architecture.test.ts",
     "test:dictionaryroot:lexical-relationships": "node --env-file=.env.test --import ./scripts/register-tsx.mjs --test --test-concurrency=1 test/dictionaryroot-lexical-relationship-architecture.test.ts",
     "test:dictionaryroot:lexical-relationships:frontend": "node --test ../verification/dictionaryroot-lexical-relationship-architecture.test.cjs",
+    "test:unified-search": "node --env-file=.env.test --import ./scripts/register-tsx.mjs --test --test-concurrency=1 test/unified-search.test.ts",
+    "test:unified-search:frontend": "node --test ../verification/sourceroot-unified-search-navigation.test.cjs",
     "historyroot:plymouth:generate": "tsx src/scripts/generate-historyroot-plymouth.ts",
     "historyroot:plymouth:validate": "tsx src/scripts/validate-historyroot-plymouth.ts",
     "historyroot:plymouth:import": "tsx src/scripts/import-historyroot-plymouth.ts",

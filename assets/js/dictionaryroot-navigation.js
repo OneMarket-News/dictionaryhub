@@ -33,6 +33,19 @@
     "admin-v1.html": "admin"
   };
 
+  const PAGE_LABELS = {
+    home: "Home",
+    concept: "Concept",
+    graph: "Knowledge Sphere",
+    sources: "Sources",
+    history: "History",
+    coverage: "Coverage",
+    editorial: "Editorial",
+    workflow: "Workflow",
+    account: "Account",
+    admin: "Administration"
+  };
+
   const state = {
     brand: Object.assign({}, DEFAULT_BRAND),
     manifest: null,
@@ -209,6 +222,36 @@
     return `<span class="dictionaryroot-unified-context" data-dr-context${label ? "" : " hidden"}><span>Context</span><strong title="${escapeHtml(label)}">${escapeHtml(label)}</strong></span>`;
   }
 
+  function rootSwitcherMarkup() {
+    return `<nav class="sr-dr-root-switcher" aria-label="SourceRoot products">
+      <a href="sourceroot.html">SourceRoot</a>
+      <a href="sourceroot-search.html">Search all Roots</a>
+      <a href="index.html" aria-current="page" data-active-root="DictionaryRoot">DictionaryRoot</a>
+      <a href="historyroot.html">HistoryRoot</a>
+    </nav>`;
+  }
+
+  function breadcrumbMarkup() {
+    const context = readContext();
+    const pageLabel = PAGE_LABELS[context.page] || "DictionaryRoot";
+    const term = context.meaning || context.sourceSearch || context.coverageSearch || context.editorialSearch;
+    return `<ol>
+      <li><a href="sourceroot.html">SourceRoot</a></li>
+      <li><a href="${escapeHtml(buildHref("index.html"))}">DictionaryRoot</a></li>
+      ${context.page !== "home" ? `<li${term ? "" : ' aria-current="page"'}>${escapeHtml(pageLabel)}</li>` : ""}
+      ${term ? `<li aria-current="page">${escapeHtml(term)}</li>` : ""}
+    </ol>`;
+  }
+
+  function createBreadcrumb(header) {
+    const breadcrumb = document.createElement("nav");
+    breadcrumb.className = "sr-shared-breadcrumbs sr-dictionaryroot-breadcrumbs";
+    breadcrumb.setAttribute("aria-label", "Breadcrumb");
+    breadcrumb.innerHTML = breadcrumbMarkup();
+    header.insertAdjacentElement("afterend", breadcrumb);
+    return breadcrumb;
+  }
+
   function createHeader(brand) {
     let header = document.querySelector(".dictionaryroot-product-bar");
     if (!header) {
@@ -236,6 +279,7 @@
         </section>
       </div>
       <div class="dictionaryroot-unified-nav-wrap">
+        ${rootSwitcherMarkup()}
         <nav class="dictionaryroot-product-nav" aria-label="DictionaryRoot experiences">${navMarkup()}</nav>
         ${contextMarkup()}
         <a class="dictionaryroot-account-chip" href="account-v1.html" data-dr-account-chip><span class="dictionaryroot-account-dot" aria-hidden="true"></span><span data-dr-account-label>Sign in</span></a>
@@ -263,6 +307,7 @@
     elements.context = header.querySelector("[data-dr-context]");
     elements.accountChip = header.querySelector("[data-dr-account-chip]");
     elements.accountLabel = header.querySelector("[data-dr-account-label]");
+    elements.breadcrumb = document.querySelector(".sr-dictionaryroot-breadcrumbs");
   }
 
   function updateAccountChip(detail) {
@@ -543,6 +588,7 @@
       const item = NAV_ITEMS.find((candidate) => candidate.key === anchor.dataset.drNavPage);
       if (item) anchor.href = buildNavHref(item);
     });
+    if (elements.breadcrumb) elements.breadcrumb.innerHTML = breadcrumbMarkup();
   }
 
   function updateBrand(brand) {
@@ -559,6 +605,7 @@
     if (state.initialized) return;
     state.initialized = true;
     const header = createHeader(state.brand);
+    createBreadcrumb(header);
     cacheElements(header);
     const context = readContext();
     if (context.meaning || context.editorialSearch || context.coverageSearch) elements.input.value = context.meaning || context.editorialSearch || context.coverageSearch;

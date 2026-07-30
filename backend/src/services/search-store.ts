@@ -23,6 +23,8 @@ export interface SearchOptions {
   page: number;
   limit: number;
   type?: SearchResultType;
+  types?: SearchResultType[];
+  unifiedOrdering?: boolean;
   bundleId?: string;
   domain?: string;
 }
@@ -49,6 +51,10 @@ export interface SearchResponse {
   total: number;
   totalPages: number;
   results: SearchResult[];
+  matchCounts?: {
+    exact: number;
+    related: number;
+  };
   coverage?: DictionaryRootLemmaCoverage;
   exactSensePolicy?: "complete-lemma" | "registry-only";
 }
@@ -558,22 +564,53 @@ async function searchRegistryKnowledge(
 
   const parameters = [
     searchPattern,
-    options.type ?? null,
+    options.types ?? (options.type ? [options.type] : null),
     options.bundleId ?? null,
     options.domain ?? null,
   ];
 
   const [countResult, searchResult] =
     await Promise.all([
-      database.query<{ count: string }>(
+      database.query<{ count: string; exact_count: string }>(
         `
           ${searchRecordsCte}
-          SELECT COUNT(*) AS count
+          SELECT COUNT(*) AS count,
+            COUNT(*) FILTER (
+              WHERE LOWER(title) = LOWER($5)
+                OR (
+                  result_type = 'context-entity'
+                  AND EXISTS (
+                    SELECT 1
+                    FROM JSONB_ARRAY_ELEMENTS_TEXT(
+                      CASE
+                        WHEN JSONB_TYPEOF(metadata -> 'alternateNames') = 'array'
+                          THEN metadata -> 'alternateNames'
+                        ELSE '[]'::JSONB
+                      END
+                    ) AS alternate_name(value)
+                    WHERE LOWER(alternate_name.value) = LOWER($5)
+                  )
+                )
+                OR (
+                  result_type = 'context-entity'
+                  AND EXISTS (
+                    SELECT 1
+                    FROM JSONB_ARRAY_ELEMENTS(
+                      CASE
+                        WHEN JSONB_TYPEOF(metadata -> 'externalIdentifiers') = 'array'
+                          THEN metadata -> 'externalIdentifiers'
+                        ELSE '[]'::JSONB
+                      END
+                    ) AS identifier(value)
+                    WHERE LOWER(identifier.value ->> 'value') = LOWER($5)
+                  )
+                )
+            ) AS exact_count
           FROM search_records
           WHERE searchable_text ILIKE $1
             AND (
-              $2::TEXT IS NULL
-              OR result_type = $2
+              $2::TEXT[] IS NULL
+              OR result_type = ANY($2)
             )
             AND (
               $3::TEXT IS NULL
@@ -584,7 +621,7 @@ async function searchRegistryKnowledge(
               OR domain = $4
             );
         `,
-        parameters,
+        [...parameters, options.query],
       ),
       database.query<SearchRow>(
         `
@@ -603,8 +640,8 @@ async function searchRegistryKnowledge(
           FROM search_records
           WHERE searchable_text ILIKE $1
             AND (
-              $2::TEXT IS NULL
-              OR result_type = $2
+              $2::TEXT[] IS NULL
+              OR result_type = ANY($2)
             )
             AND (
               $3::TEXT IS NULL
@@ -687,6 +724,20 @@ async function searchRegistryKnowledge(
                 THEN 3
               ELSE 4
             END,
+            CASE
+              WHEN $9::BOOLEAN THEN CASE result_type
+                WHEN 'context-entity' THEN 0
+                WHEN 'context-claim' THEN 1
+                WHEN 'context-evidence' THEN 2
+                WHEN 'context-interpretation' THEN 3
+                WHEN 'context-relationship' THEN 4
+                WHEN 'context-account' THEN 5
+                WHEN 'context-claim-version' THEN 6
+                WHEN 'source' THEN 7
+                ELSE 8
+              END
+              ELSE 0
+            END,
             title ASC,
             result_type ASC,
             id ASC
@@ -699,12 +750,16 @@ async function searchRegistryKnowledge(
           prefixPattern,
           options.limit,
           offset,
+          options.unifiedOrdering ?? false,
         ],
       ),
     ]);
 
   const total = Number(
     countResult.rows[0]?.count ?? 0,
+  );
+  const exact = Number(
+    countResult.rows[0]?.exact_count ?? 0,
   );
 
   return {
@@ -720,11 +775,19 @@ async function searchRegistryKnowledge(
           ),
     results:
       searchResult.rows.map(mapSearchRow),
+    matchCounts: {
+      exact,
+      related: Math.max(0, total - exact),
+    },
   };
 }
 
 function isDictionaryRootNodeSearch(options: SearchOptions): boolean {
-  const nodeCompatible = options.type === undefined || options.type === "node";
+  const requestedTypes = options.types
+    ?? (options.type ? [options.type] : undefined);
+  const nodeCompatible = requestedTypes === undefined
+    || (requestedTypes.length > 0
+      && requestedTypes.every((type) => type === "node"));
   const dictionaryRootDomain = options.domain === undefined
     || options.domain.toLowerCase() === "dictionaryroot";
   return nodeCompatible && dictionaryRootDomain;

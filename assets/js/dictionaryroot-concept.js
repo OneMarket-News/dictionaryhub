@@ -481,6 +481,21 @@
       </section>`;
   }
 
+  function renderHistoryRootDiscovery(displayTitle) {
+    const params = new URLSearchParams({
+      q: displayTitle,
+      roots: "HistoryRoot",
+      page: "1"
+    });
+    return `
+      <section class="dr-cross-root-discovery" aria-labelledby="dictionaryrootHistoryDiscoveryTitle">
+        <p class="dr-concept-kicker">Cross-Root discovery</p>
+        <h2 id="dictionaryrootHistoryDiscoveryTitle">Explore this term in HistoryRoot</h2>
+        <p>Search live historical records for <strong>${escapeHtml(displayTitle)}</strong>. A matching term does not prove that this DictionaryRoot sense was intended in a historical source; evaluate every occurrence in its own source context.</p>
+        <a class="dr-live-button-secondary" href="sourceroot-search.html?${escapeHtml(params.toString())}">Search this term in HistoryRoot</a>
+      </section>`;
+  }
+
   function evidenceLabel(value) {
     return String(value || "").replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
   }
@@ -658,6 +673,7 @@
         ${renderLexicalEvidenceSections(concept.lexicalEvidence)}
         ${renderRelationshipSections(relations, neighborMap)}
         ${renderSourcesSection(concept)}
+        ${renderHistoryRootDiscovery(displayTitle)}
         <details class="dr-live-advanced">
           <summary>Advanced SourceRoot record</summary>
           <pre>${escapeHtml(JSON.stringify(concept, null, 2))}</pre>

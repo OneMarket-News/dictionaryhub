@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Search DictionaryRoot meanings and HistoryRoot records through one evidence-preserving SourceRoot experience.">
+  <title>Search all Roots | SourceRoot</title>
+  <link rel="icon" href="assets/brand/dictionaryroot-mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/sourceroot-unified-search.css">
+</head>
+<body class="sr-search-page">
+  <a class="sr-skip-link" href="#main-content">Skip to search results</a>
+
+  <header class="sr-site-header">
+    <div class="sr-site-header-inner">
+      <a class="sr-wordmark" href="sourceroot.html" aria-label="SourceRoot home">
+        <span class="sr-wordmark-mark" aria-hidden="true">SR</span>
+        <span><strong>SourceRoot</strong><small>Inspect the source. Keep the context.</small></span>
+      </a>
+      <nav class="sr-root-switcher" aria-label="SourceRoot products">
+        <a href="sourceroot.html">SourceRoot home</a>
+        <a href="sourceroot-search.html" aria-current="page">Search all Roots</a>
+        <a href="index.html">DictionaryRoot</a>
+        <a href="historyroot.html">HistoryRoot</a>
+      </nav>
+    </div>
+  </header>
+
+  <nav class="sr-breadcrumbs" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="sourceroot.html">SourceRoot</a></li>
+      <li aria-current="page">Search</li>
+    </ol>
+  </nav>
+
+  <main id="main-content" class="sr-search-main">
+    <section class="sr-search-hero" aria-labelledby="srSearchTitle">
+      <p class="sr-eyebrow">Unified discovery · canonical detail</p>
+      <h1 id="srSearchTitle">Search across SourceRoot experiences.</h1>
+      <p class="sr-search-lede">
+        Find DictionaryRoot meanings and HistoryRoot records together, then
+        inspect each result in the Root and dataset that owns it.
+      </p>
+      <form id="srUnifiedSearchForm" class="sr-search-form" role="search">
+        <label for="srUnifiedSearchInput">Search DictionaryRoot and HistoryRoot</label>
+        <div class="sr-search-input-row">
+          <input id="srUnifiedSearchInput" name="q" type="search" autocomplete="off" spellcheck="false" placeholder="Try community, Plymouth, bank, or treaty">
+          <button id="srUnifiedSearchButton" type="submit">Search SourceRoot</button>
+        </div>
+      </form>
+      <p class="sr-overlap-notice">
+        Search overlap is a discovery aid, not a verified semantic
+        relationship. Open every result to evaluate its own evidence and
+        historical or lexical context.
+      </p>
+    </section>
+
+    <div class="sr-search-layout">
+      <aside class="sr-filter-panel" aria-labelledby="srFilterTitle">
+        <div class="sr-filter-heading">
+          <h2 id="srFilterTitle">Filter results</h2>
+          <button id="srClearFilters" type="button">Reset</button>
+        </div>
+        <fieldset>
+          <legend>Roots</legend>
+          <label><input type="checkbox" name="roots" value="DictionaryRoot" checked> <span>DictionaryRoot</span></label>
+          <label><input type="checkbox" name="roots" value="HistoryRoot" checked> <span>HistoryRoot</span></label>
+        </fieldset>
+        <fieldset>
+          <legend>Result types</legend>
+          <p>Select none to include every supported type.</p>
+          <label><input type="checkbox" name="resultTypes" value="lexical-sense"> <span>Lexical senses</span></label>
+          <label><input type="checkbox" name="resultTypes" value="context-entity"> <span>Historical entities</span></label>
+          <label><input type="checkbox" name="resultTypes" value="context-claim"> <span>Historical claims</span></label>
+          <label><input type="checkbox" name="resultTypes" value="context-evidence"> <span>Historical evidence</span></label>
+          <label><input type="checkbox" name="resultTypes" value="context-interpretation"> <span>Interpretations</span></label>
+          <label><input type="checkbox" name="resultTypes" value="context-relationship"> <span>Historical relationships</span></label>
+          <label><input type="checkbox" name="resultTypes" value="source"> <span>Sources</span></label>
+        </fieldset>
+      </aside>
+
+      <section class="sr-results-region" aria-labelledby="srResultsTitle">
+        <header class="sr-results-header">
+          <div>
+            <p class="sr-eyebrow">Live canonical search</p>
+            <h2 id="srResultsTitle">Results</h2>
+          </div>
+          <p id="srSearchStatus" class="sr-search-status" role="status" aria-live="polite">Enter a term to begin.</p>
+        </header>
+
+        <section id="srAvailability" class="sr-availability" aria-label="Root availability" hidden></section>
+        <section id="srCounts" class="sr-count-grid" aria-label="Search result counts" hidden></section>
+        <div id="srUnifiedResults" class="sr-result-list" aria-live="polite" aria-busy="false"></div>
+        <nav id="srPagination" class="sr-pagination" aria-label="Search result pages" hidden>
+          <button id="srPreviousPage" type="button">Previous page</button>
+          <span id="srPageStatus">Page 1</span>
+          <button id="srNextPage" type="button">Next page</button>
+        </nav>
+      </section>
+    </div>
+  </main>
+
+  <footer class="sr-site-footer">
+    <p>SourceRoot unifies discovery while DictionaryRoot and HistoryRoot retain their own identity, evidence, and customer pages.</p>
+  </footer>
+
+  <script src="assets/js/sourceroot-api.js"></script>
+  <script src="assets/js/sourceroot-unified-search.js"></script>
+</body>
+</html>

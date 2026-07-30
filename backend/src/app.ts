@@ -26,6 +26,7 @@ import { nodesRouter } from "./routes/nodes.js";
 import { revisionsRouter } from "./routes/revisions.js";
 import { searchRouter } from "./routes/search.js";
 import { sourcesRouter } from "./routes/sources.js";
+import { unifiedSearchRouter } from "./routes/unified-search.js";
 import { validateRouter } from "./routes/validate.js";
 import { workflowRouter } from "./routes/workflow.js";
 
@@ -142,6 +143,7 @@ export function createApp(options: CreateAppOptions = {}) {
   app.use("/api/v1/import", importRouter);
   app.use("/api/v1/dictionaryroot/lexicon", lexiconRouter);
   app.use("/api/v1/dictionaryroot/editorial", editorialRouter);
+  app.use("/api/v1/search/unified", unifiedSearchRouter);
   app.use("/api/v1/search", searchRouter);
   app.use("/api/v1/bundles", bundlesRouter);
   app.use("/api/v1/context", contextRouter);

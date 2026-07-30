@@ -381,6 +381,69 @@
     return card;
   }
 
+  function dictionaryDiscoveryPanel() {
+    const panel = ui.element("section", {
+      className: "hr-cross-root-discovery",
+      attributes: { "aria-labelledby": "historyrootDictionaryDiscoveryTitle" }
+    });
+    const title = ui.element("h2", {
+      id: "historyrootDictionaryDiscoveryTitle",
+      text: "Compare possible meanings in DictionaryRoot"
+    });
+    const explanation = ui.element("p", {
+      text:
+        "Choose a word from this historical record to inspect possible lexical senses. A modern DictionaryRoot definition does not establish what a historical speaker or source intended."
+    });
+    const form = ui.element("form", {
+      className: "hr-cross-root-form",
+      attributes: {
+        action: "sourceroot-search.html",
+        method: "get",
+        role: "search",
+        "aria-label": "Look up a term from this record in DictionaryRoot"
+      }
+    });
+    const label = ui.element("label", {
+      className: "hr-sr-only",
+      text: "Word to look up",
+      attributes: { for: "historyrootDictionaryDiscoveryTerm" }
+    });
+    const input = ui.element("input", {
+      id: "historyrootDictionaryDiscoveryTerm",
+      attributes: {
+        name: "q",
+        type: "search",
+        autocomplete: "off",
+        required: "required",
+        placeholder: "Enter a word from this record"
+      }
+    });
+    const roots = ui.element("input", {
+      attributes: {
+        name: "roots",
+        type: "hidden",
+        value: "DictionaryRoot"
+      }
+    });
+    const resultTypes = ui.element("input", {
+      attributes: {
+        name: "resultTypes",
+        type: "hidden",
+        value: "lexical-sense"
+      }
+    });
+    const page = ui.element("input", {
+      attributes: { name: "page", type: "hidden", value: "1" }
+    });
+    const button = ui.element("button", {
+      text: "Look up possible meanings",
+      attributes: { type: "submit" }
+    });
+    ui.append(form, label, input, roots, resultTypes, page, button);
+    ui.append(panel, title, explanation, form);
+    return panel;
+  }
+
   async function start() {
     const { client } = await ui.initialize();
     const state = document.querySelector("#historyrootRecordState");
@@ -703,6 +766,7 @@
           ui.append(node, grid);
           ui.append(sections, node);
         }
+        ui.append(sections, dictionaryDiscoveryPanel());
 
         ui.clear(metadataList);
         const metadataRows = [

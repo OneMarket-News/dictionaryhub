@@ -9,6 +9,25 @@
   --dr-refine-focus: rgba(103, 232, 249, 0.72);
 }
 
+/* SourceRoot Chunk 11: query-derived discovery, never a persisted claim. */
+.dr-cross-root-discovery {
+  margin-top: 1rem;
+  padding: 1.15rem;
+  border: 1px solid rgba(103, 232, 249, 0.3);
+  border-radius: 16px;
+  background: rgba(103, 232, 249, 0.07);
+}
+
+.dr-cross-root-discovery h2 {
+  margin: 0 0 0.55rem;
+}
+
+.dr-cross-root-discovery p:not(.dr-concept-kicker) {
+  max-width: 72ch;
+  color: var(--dr-muted, #9fb0c7);
+  line-height: 1.6;
+}
+
 /* Wider reading and work surfaces without changing page routing or component structure. */
 .dictionaryroot-concept-page .dictionaryroot-product-bar-inner,
 .dictionaryroot-concept-page .dictionaryroot-page-intro,

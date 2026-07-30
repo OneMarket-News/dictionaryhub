@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <title>SourceRoot Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="assets/css/sourceroot-unified-search.css" />
 
   <style>
     body {
@@ -383,6 +384,19 @@
       <div class="subtitle">
         A live provenance engine connecting imported knowledge, claims, relationships, sources, credibility, identity, revisions, and validation through PostgreSQL and the SourceRoot API. SourceRoot turns separate knowledge systems into one inspectable, source-aware graph.
       </div>
+
+      <nav class="sr-root-nav" aria-label="SourceRoot products">
+        <a href="sourceroot.html" aria-current="page">SourceRoot home</a>
+        <a href="sourceroot-search.html">Search all Roots</a>
+        <a href="index.html">DictionaryRoot</a>
+        <a href="historyroot.html">HistoryRoot</a>
+      </nav>
+
+      <form class="sr-home-search" action="sourceroot-search.html" method="get" role="search" aria-label="Search DictionaryRoot and HistoryRoot">
+        <label for="sourceRootHomeSearch">Search all Roots</label>
+        <input id="sourceRootHomeSearch" name="q" type="search" autocomplete="off" placeholder="Search meanings and historical records">
+        <button type="submit">Search all Roots</button>
+      </form>
 
       <div class="badge-row">
         <span class="badge">Node Registry</span>
