@@ -2,6 +2,7 @@
   "use strict";
 
   const STYLESHEET = "assets/css/sourceroot-root-switcher.css?v=shared-root-switcher-v1";
+  const NAVIGATION_OPEN_EVENT = "sourceroot:navigation-menu-open";
   const REGISTRY = Object.freeze([
     Object.freeze({
       id: "SourceRoot",
@@ -183,7 +184,12 @@
       panel.hidden = !open;
       trigger.setAttribute("aria-expanded", String(open));
       mount.dataset.open = String(open);
-      if (open) positionPanel();
+      if (open) {
+        positionPanel();
+        global.dispatchEvent(new CustomEvent(NAVIGATION_OPEN_EVENT, {
+          detail: { owner: mount, menu: "root-switcher" }
+        }));
+      }
       if (!open && returnFocus) trigger.focus();
     }
 
@@ -223,6 +229,9 @@
         event.preventDefault();
         close(true);
       }
+    });
+    global.addEventListener(NAVIGATION_OPEN_EVENT, (event) => {
+      if (!event.detail || event.detail.owner !== mount) close(false);
     });
     global.addEventListener("resize", () => {
       if (trigger.getAttribute("aria-expanded") === "true") positionPanel();

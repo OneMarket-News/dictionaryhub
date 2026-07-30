@@ -554,6 +554,31 @@
     script.addEventListener("load", render, { once: true });
   }
 
+  function initializeUserMenu(mount) {
+    if (!mount) return;
+    const render = () => {
+      if (global.SourceRootUserMenu) {
+        global.SourceRootUserMenu.init({
+          mount,
+          currentItemId: global.SourceRootUserMenu.detectCurrentItemId(),
+          idPrefix: "historyRootUserMenu"
+        });
+      }
+    };
+    if (global.SourceRootUserMenu) {
+      render();
+      return;
+    }
+    let script = document.querySelector("script[data-sourceroot-user-menu-loader]");
+    if (!script) {
+      script = document.createElement("script");
+      script.src = "assets/js/sourceroot-user-menu.js?v=shared-user-menu-v1";
+      script.dataset.sourcerootUserMenuLoader = "v1";
+      document.head.appendChild(script);
+    }
+    script.addEventListener("load", render, { once: true });
+  }
+
   function createNavigation(manifest) {
     const header = element("header", {
       className:
@@ -618,10 +643,26 @@
     });
     const rootSwitcherMount = element("div", {
       attributes: {
+        role: "group",
+        "aria-label": "SourceRoot products",
         "data-sourceroot-root-switcher": "",
         "data-current-root": "HistoryRoot"
       }
     });
+    const userMenuMount = element("div", {
+      attributes: {
+        "data-sourceroot-user-menu": "",
+        "data-user-menu-id-prefix": "historyRootUserMenu"
+      }
+    });
+    const sharedNavigationActions = element("div", {
+      className: "sr-shared-navigation-actions",
+      attributes: {
+        role: "group",
+        "aria-label": "SourceRoot account and product navigation"
+      }
+    });
+    append(sharedNavigationActions, userMenuMount, rootSwitcherMount);
     const menuButton = element("button", {
       className: "historyroot-menu-button",
       id: "historyrootMenuButton",
@@ -641,9 +682,10 @@
       header.dataset.menuOpen = "false";
       menuButton.setAttribute("aria-expanded", "false");
     });
-    append(navWrap, nav, rootSwitcherMount, menuButton);
+    append(navWrap, nav, sharedNavigationActions, menuButton);
     append(inner, brand, navWrap);
     append(header, inner);
+    initializeUserMenu(userMenuMount);
     initializeRootSwitcher(rootSwitcherMount);
     return header;
   }

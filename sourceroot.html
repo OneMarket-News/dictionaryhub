@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="assets/css/sourceroot-unified-search.css" />
   <link rel="stylesheet" href="assets/css/sourceroot-root-switcher.css?v=shared-root-switcher-v1" data-sourceroot-root-switcher-styles="v1" />
+  <link rel="stylesheet" href="assets/css/sourceroot-user-menu.css?v=shared-user-menu-v1" data-sourceroot-user-menu-styles="v1" />
 
   <style>
     body {
@@ -386,7 +387,10 @@
         A live provenance engine connecting imported knowledge, claims, relationships, sources, credibility, identity, revisions, and validation through PostgreSQL and the SourceRoot API. SourceRoot turns separate knowledge systems into one inspectable, source-aware graph.
       </div>
 
-      <div role="group" aria-label="SourceRoot products" data-sourceroot-root-switcher data-current-root="SourceRoot"></div>
+      <div class="sr-shared-navigation-actions" role="group" aria-label="SourceRoot account and product navigation">
+        <div data-sourceroot-user-menu data-user-menu-id-prefix="sourceRootHomeUserMenu"></div>
+        <div role="group" aria-label="SourceRoot products" data-sourceroot-root-switcher data-current-root="SourceRoot"></div>
+      </div>
 
       <form class="sr-home-search" action="sourceroot-search.html" method="get" role="search" aria-label="Search DictionaryRoot and HistoryRoot">
         <label for="sourceRootHomeSearch">Search all Roots</label>
@@ -928,6 +932,7 @@ DictionaryHub / BibleRoot / Wiki / Future Hubs</code>
   </footer>
 
   <script src="assets/js/sourceroot-root-switcher.js?v=shared-root-switcher-v1"></script>
+  <script src="assets/js/sourceroot-user-menu.js?v=shared-user-menu-v1"></script>
   <script>
     const SOURCE_ROOT_API = "http://localhost:3000/api/v1";
     const SOURCE_ROOT_ORIGIN = "http://localhost:3000";

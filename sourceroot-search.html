@@ -8,6 +8,7 @@
   <link rel="icon" href="assets/brand/dictionaryroot-mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/css/sourceroot-unified-search.css">
   <link rel="stylesheet" href="assets/css/sourceroot-root-switcher.css?v=shared-root-switcher-v1" data-sourceroot-root-switcher-styles="v1">
+  <link rel="stylesheet" href="assets/css/sourceroot-user-menu.css?v=shared-user-menu-v1" data-sourceroot-user-menu-styles="v1">
 </head>
 <body class="sr-search-page">
   <a class="sr-skip-link" href="#main-content">Skip to search results</a>
@@ -18,7 +19,10 @@
         <span class="sr-wordmark-mark" aria-hidden="true">SR</span>
         <span><strong>SourceRoot</strong><small>Inspect the source. Keep the context.</small></span>
       </a>
-      <div role="group" aria-label="SourceRoot products" data-sourceroot-root-switcher data-current-root="SourceRootSearch"></div>
+      <div class="sr-shared-navigation-actions" role="group" aria-label="SourceRoot account and product navigation">
+        <div data-sourceroot-user-menu data-user-menu-id-prefix="sourceRootSearchUserMenu"></div>
+        <div role="group" aria-label="SourceRoot products" data-sourceroot-root-switcher data-current-root="SourceRootSearch"></div>
+      </div>
     </div>
   </header>
 
@@ -101,6 +105,7 @@
   </footer>
 
   <script src="assets/js/sourceroot-root-switcher.js?v=shared-root-switcher-v1"></script>
+  <script src="assets/js/sourceroot-user-menu.js?v=shared-user-menu-v1"></script>
   <script src="assets/js/sourceroot-api.js"></script>
   <script src="assets/js/sourceroot-unified-search.js"></script>
 </body>

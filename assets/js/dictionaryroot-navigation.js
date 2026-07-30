@@ -14,10 +14,7 @@
     { key: "graph", label: "Knowledge Sphere", href: "graph-v2.html" },
     { key: "sources", label: "Sources", href: "sources-v2.html" },
     { key: "history", label: "History", href: "history-v2.html" },
-    { key: "coverage", label: "Coverage", href: "coverage-v2.html" },
-    { key: "editorial", label: "Editorial", href: "editorial-v2.html" },
-    { key: "workflow", label: "Workflow", href: "workflow-v1.html" },
-    { key: "account", label: "Account", href: "account-v1.html" }
+    { key: "coverage", label: "Coverage", href: "coverage-v2.html" }
   ];
 
   const PAGE_KEYS = {
@@ -246,6 +243,31 @@
     script.addEventListener("load", render, { once: true });
   }
 
+  function initializeUserMenu(mount) {
+    if (!mount) return;
+    const render = () => {
+      if (global.SourceRootUserMenu) {
+        global.SourceRootUserMenu.init({
+          mount,
+          currentItemId: global.SourceRootUserMenu.detectCurrentItemId(),
+          idPrefix: "dictionaryRootUserMenu"
+        });
+      }
+    };
+    if (global.SourceRootUserMenu) {
+      render();
+      return;
+    }
+    let script = document.querySelector("script[data-sourceroot-user-menu-loader]");
+    if (!script) {
+      script = document.createElement("script");
+      script.src = "assets/js/sourceroot-user-menu.js?v=shared-user-menu-v1";
+      script.dataset.sourcerootUserMenuLoader = "v1";
+      document.head.appendChild(script);
+    }
+    script.addEventListener("load", render, { once: true });
+  }
+
   function breadcrumbMarkup() {
     const context = readContext();
     const pageLabel = PAGE_LABELS[context.page] || "DictionaryRoot";
@@ -296,15 +318,18 @@
       <div class="dictionaryroot-unified-nav-wrap">
         <nav class="dictionaryroot-product-nav" aria-label="DictionaryRoot experiences">${navMarkup()}</nav>
         ${contextMarkup()}
-        <a class="dictionaryroot-account-chip" href="account-v1.html" data-dr-account-chip><span class="dictionaryroot-account-dot" aria-hidden="true"></span><span data-dr-account-label>Sign in</span></a>
         <span class="dictionaryroot-powered-by">Powered by <strong>${escapeHtml(brand.poweredBy)}</strong></span>
-        <div data-sourceroot-root-switcher data-current-root="DictionaryRoot"></div>
+        <div class="sr-shared-navigation-actions" role="group" aria-label="SourceRoot account and product navigation">
+          <div data-sourceroot-user-menu data-user-menu-id-prefix="dictionaryRootUserMenu"></div>
+          <div role="group" aria-label="SourceRoot products" data-sourceroot-root-switcher data-current-root="DictionaryRoot"></div>
+        </div>
         <button class="dictionaryroot-mobile-menu-button" type="button" aria-expanded="false" aria-controls="dictionaryrootUnifiedNavigation">Menu</button>
       </div>
     </div>`;
 
     const nav = header.querySelector(".dictionaryroot-product-nav");
     nav.id = "dictionaryrootUnifiedNavigation";
+    initializeUserMenu(header.querySelector("[data-sourceroot-user-menu]"));
     initializeRootSwitcher(header.querySelector("[data-sourceroot-root-switcher]"));
     return header;
   }
@@ -321,18 +346,7 @@
     elements.menuButton = header.querySelector(".dictionaryroot-mobile-menu-button");
     elements.nav = header.querySelector(".dictionaryroot-product-nav");
     elements.context = header.querySelector("[data-dr-context]");
-    elements.accountChip = header.querySelector("[data-dr-account-chip]");
-    elements.accountLabel = header.querySelector("[data-dr-account-label]");
     elements.breadcrumb = document.querySelector(".sr-dictionaryroot-breadcrumbs");
-  }
-
-  function updateAccountChip(detail) {
-    if (!elements.accountChip || !elements.accountLabel) return;
-    const auth = detail || (global.DictionaryRootAuth && global.DictionaryRootAuth.session);
-    const signedIn = Boolean(auth && auth.authenticated && auth.user);
-    elements.accountChip.dataset.signedIn = signedIn ? "true" : "false";
-    elements.accountLabel.textContent = signedIn ? (auth.user.displayName || auth.user.primaryEmail || "Account") : "Sign in";
-    elements.accountChip.title = signedIn ? "Open your DictionaryRoot account" : "Sign in to DictionaryRoot";
   }
 
   function showPanel() {
@@ -625,8 +639,6 @@
     cacheElements(header);
     const context = readContext();
     if (context.meaning || context.editorialSearch || context.coverageSearch) elements.input.value = context.meaning || context.editorialSearch || context.coverageSearch;
-    updateAccountChip();
-    global.addEventListener("dictionaryroot:auth-change", (event) => updateAccountChip(event.detail));
     installHistoryEvents();
     bindEvents();
     refreshContextLinks(document);
