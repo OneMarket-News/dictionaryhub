@@ -148,6 +148,63 @@ export interface LexicalFieldProvenance {
   versionContext?: string;
 }
 
+export type LexicalRelationshipDirectionality = "directional" | "symmetric";
+
+export type LexicalRelationshipType =
+  | "substantially_equivalent"
+  | "antonym"
+  | "broader"
+  | "narrower"
+  | "related"
+  | "derivationally_related"
+  | "historical_predecessor"
+  | "historical_successor"
+  | "technical_specialization"
+  | "generalization"
+  | "translation_related"
+  | "disputed"
+  | "unresolved";
+
+export interface LexicalRelationship {
+  relationshipId: string;
+  sourceSenseId: string;
+  targetSenseId: string;
+  relationshipType: LexicalRelationshipType;
+  directionality: LexicalRelationshipDirectionality;
+  relationshipStatus: "asserted" | "qualified" | "disputed" | "unresolved";
+  reviewStatus: "reviewed" | "needs_review" | "disputed" | "unresolved";
+  qualification?: string;
+  uncertainty?: string;
+  chronologyContext?: string;
+  domainContext?: string;
+  recordVersion: number;
+}
+
+export interface LexicalRelationshipEvidence {
+  evidenceId: string;
+  relationshipId: string;
+  sourceId: string;
+  provenanceIdentity: string;
+  evidenceRole: string;
+  sourceWording?: string;
+  normalizedSummary?: string;
+  normalizationLabel?: string;
+  reviewStatus: string;
+  uncertainty?: string;
+  qualification?: string;
+  editionContext?: string;
+  versionContext?: string;
+  page?: string;
+  entryHeadword?: string;
+  senseNumber?: string;
+  section?: string;
+  paragraph?: string;
+  datasetRecordId?: string;
+  stableFragment?: string;
+  canonicalUrl?: string;
+  recordVersion: number;
+}
+
 export interface DictionaryRootLexicalEvidenceFixture {
   schemaVersion: "1.0.0";
   dataset: {
@@ -168,6 +225,8 @@ export interface DictionaryRootLexicalEvidenceFixture {
   sourceComparisons: LexicalSourceComparison[];
   locators: LexicalSourceLocator[];
   fieldProvenance: LexicalFieldProvenance[];
+  relationships: LexicalRelationship[];
+  relationshipEvidence: LexicalRelationshipEvidence[];
 }
 
 export interface LexicalEvidenceInventory {
@@ -185,6 +244,8 @@ export interface LexicalEvidenceInventory {
     unresolvedComparisons: number;
     locators: number;
     fieldProvenance: number;
+    relationships: number;
+    relationshipEvidence: number;
   };
   rightsDistribution: Record<string, number>;
   sourceDistribution: Record<string, number>;

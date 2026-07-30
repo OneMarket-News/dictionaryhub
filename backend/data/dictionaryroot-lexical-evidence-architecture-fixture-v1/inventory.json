@@ -12,7 +12,9 @@
     "sourceComparisons": 4,
     "unresolvedComparisons": 1,
     "locators": 40,
-    "fieldProvenance": 72
+    "fieldProvenance": 72,
+    "relationships": 12,
+    "relationshipEvidence": 13
   },
   "rightsDistribution": {
     "synthetic_test_only": 5

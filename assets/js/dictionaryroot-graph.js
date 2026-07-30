@@ -67,6 +67,11 @@
     return String(source && (source.sourceId || source.id) || "").trim();
   }
 
+  function isLexicalEvidenceId(nodeId) {
+    return /^lex-(lemma|sense|claim|form|etymology|comparison|locator|provenance|relationship)/.test(String(nodeId || ""))
+      || /^fixture-source-/.test(String(nodeId || ""));
+  }
+
   function experienceHref(page, nodeId, label, sourceId) {
     if (global.DictionaryRootNavigation) {
       return global.DictionaryRootNavigation.buildHref(page, {
@@ -939,10 +944,15 @@
 
     try {
       const requestLimit = Math.max(2, Math.min(100, available + 1));
-      const response = await state.client.dynamicNeighborhood(nodeId, {
+      const response = await (isLexicalEvidenceId(nodeId)
+        ? state.client.lexicalEvidenceGraphNeighborhood(nodeId, {
+          depth: state.expansionDepth,
+          limit: requestLimit
+        })
+        : state.client.dynamicNeighborhood(nodeId, {
         depth: state.expansionDepth,
         limit: requestLimit
-      });
+        }));
       if (centerAtStart !== state.centerId || loadTokenAtStart !== state.loadToken) return;
       const payload = response.data || {};
       const items = Array.isArray(payload.items) ? payload.items : Array.isArray(payload.nodes) ? payload.nodes : [];
@@ -1055,7 +1065,60 @@
 
   async function conceptFor(nodeId) {
     if (state.conceptCache.has(nodeId)) return state.conceptCache.get(nodeId);
-    const concept = await state.client.concept(nodeId);
+    let concept;
+    if (String(nodeId).startsWith("lex-sense-")) {
+      concept = await state.client.lexicalEvidenceConcept(nodeId);
+    } else if (String(nodeId).startsWith("lex-relationship-")
+      && !String(nodeId).startsWith("lex-relationship-evidence-")) {
+      const [detail, evidence] = await Promise.all([
+        state.client.lexicalEvidenceRelationship(nodeId),
+        state.client.lexicalEvidenceRelationshipEvidence(nodeId, { page: 1, limit: 100 })
+      ]);
+      const relationship = detail.data || {};
+      const evidenceItems = DictionaryRootApi.extractItems(evidence.data);
+      concept = {
+        node: (state.nodes.get(nodeId) || {}).node || {
+          nodeId,
+          title: relationship.display_name || relationship.relationship_type || nodeId,
+          summary: relationship.qualification || relationship.uncertainty || "",
+          nodeType: "lexical-evidence-relationship",
+          objectType: "lexical-evidence-relationship",
+          metadata: relationship
+        },
+        assertions: evidenceItems.map((item) => ({
+          assertionId: item.evidence_id,
+          assertionType: "relationship-evidence",
+          body: item.source_wording || item.normalized_summary || "",
+          summary: item.source_wording || item.normalized_summary || "",
+          sourceIds: [item.source_id].filter(Boolean),
+          metadata: Object.assign({}, item, {
+            provenanceIdentity: item.provenance_identity
+          })
+        })),
+        edges: Array.from(state.edges.values()).filter((item) =>
+          item.fromNodeId === nodeId || item.toNodeId === nodeId),
+        sources: evidenceItems.map((item) => ({
+          sourceId: item.source_id,
+          name: item.source_name,
+          edition: item.source_edition,
+          rightsClass: item.rights_class,
+          license: item.license
+        })),
+        lexicalRelationship: relationship,
+        relationshipEvidence: evidenceItems
+      };
+    } else if (isLexicalEvidenceId(nodeId)) {
+      const item = state.nodes.get(nodeId);
+      concept = {
+        node: item ? item.node : { nodeId, title: nodeId, summary: "" },
+        assertions: [],
+        edges: Array.from(state.edges.values()).filter((edgeItem) =>
+          edgeItem.fromNodeId === nodeId || edgeItem.toNodeId === nodeId),
+        sources: []
+      };
+    } else {
+      concept = await state.client.concept(nodeId);
+    }
     state.conceptCache.set(nodeId, concept);
     return concept;
   }
@@ -1086,14 +1149,22 @@
 
     try {
       const concept = await conceptFor(nodeId);
-      const definition = (concept.assertions || []).find((entry) => entry.assertionType === "definition");
+      const definition = (concept.assertions || []).find((entry) =>
+        entry.assertionType === "definition"
+        || entry.assertionType === "relationship-evidence");
+      const definitionMetadata = metadataFrom(definition || {});
+      const detailUncertainty = metadataFrom(concept.node).uncertainty
+        || definitionMetadata.uncertainty;
+      const detailQualification = metadataFrom(concept.node).qualification
+        || definitionMetadata.qualification;
       const usage = (concept.assertions || []).find((entry) => entry.assertionType === "usage-example");
       const examples = usage && (usage.body || usage.summary)
         ? String(usage.body || usage.summary).split(/\r?\n|\s*\|\s*/).filter(Boolean)
         : [];
 
       const preferred = displayLabel(item);
-      const canonical = preferred.toLocaleLowerCase() !== String(concept.node.title || "").toLocaleLowerCase()
+      const canonical = !isLexicalEvidenceId(nodeId)
+        && preferred.toLocaleLowerCase() !== String(concept.node.title || "").toLocaleLowerCase()
         ? concept.node.title
         : "";
 
@@ -1131,11 +1202,13 @@
         <h2 class="dr-live-concept-title dr-sphere-selected-title">${escapeHtml(preferred)}</h2>
         ${canonical ? `<p class="dr-live-canonical">Open English WordNet groups this sense under <strong>${escapeHtml(canonical)}</strong>.</p>` : ""}
         <p class="dr-live-definition dr-sphere-definition">${escapeHtml((definition && (definition.body || definition.summary)) || concept.node.summary || "No definition is available.")}</p>
+        ${detailUncertainty ? `<p class="dr-live-canonical"><strong>Uncertainty:</strong> ${escapeHtml(detailUncertainty)}</p>` : ""}
+        ${detailQualification ? `<p class="dr-live-canonical"><strong>Qualification:</strong> ${escapeHtml(detailQualification)}</p>` : ""}
         <div class="dr-live-actions">
           <button class="dr-live-button" type="button" data-expand-selected>${state.expandedNodeIds.has(nodeId) ? "Branch expanded" : `Expand ${state.expansionDepth} hop${state.expansionDepth === 1 ? "" : "s"}`}</button>
           ${state.expandedNodeIds.has(nodeId) ? '<button class="dr-live-button-secondary" type="button" data-collapse-selected>Collapse branch</button>' : ""}
           <button class="dr-live-button-secondary" type="button" data-center-selected>Make center</button>
-          <a class="dr-live-button-secondary dr-sphere-link-button" href="${escapeHtml(experienceHref("concept-v2.html", nodeId, preferred, sourceRecordId((concept.sources || [])[0])))}">Full concept page</a>
+          ${String(nodeId).startsWith("lex-sense-") || !isLexicalEvidenceId(nodeId) ? `<a class="dr-live-button-secondary dr-sphere-link-button" href="${escapeHtml(experienceHref("concept-v2.html", nodeId, preferred, sourceRecordId((concept.sources || [])[0])))}">Full concept page</a>` : ""}
         </div>
       </section>
       ${edgeDetailHtml()}
@@ -1193,7 +1266,19 @@
     elements.details.innerHTML = '<div class="dr-live-empty"><strong>Loading center concept...</strong>Preparing the source-backed sphere.</div>';
 
     try {
-      const nodeResult = await state.client.node(nodeId);
+      const lexicalResponse = isLexicalEvidenceId(nodeId)
+        ? await state.client.lexicalEvidenceGraphNeighborhood(nodeId, {
+          depth: Math.min(2, state.depth),
+          limit: Math.min(100, maximumNodesForDepth(state.depth))
+        })
+        : null;
+      const lexicalPayload = lexicalResponse && lexicalResponse.data || null;
+      const lexicalSeed = lexicalPayload
+        && (lexicalPayload.items || []).find((item) =>
+          (item.node || item).nodeId === nodeId);
+      const nodeResult = lexicalSeed
+        ? { data: lexicalSeed.node || lexicalSeed }
+        : await state.client.node(nodeId);
       if (token !== state.loadToken) return;
 
       state.nodes.clear();
@@ -1219,7 +1304,19 @@
       elements.results.innerHTML = "";
 
       renderGraphStructure();
-      await buildNeighborhood(nodeId, token);
+      if (lexicalPayload) {
+        (lexicalPayload.items || []).forEach((record) => {
+          const lexicalNode = record.node || record;
+          if (!lexicalNode || !lexicalNode.nodeId) return;
+          addNode(lexicalNode, Number(record.distance || 0), nodeId, {
+            loadOrigin: "lexical-evidence",
+            membership: "dynamic"
+          });
+        });
+        (lexicalPayload.edges || []).forEach(addEdge);
+      } else {
+        await buildNeighborhood(nodeId, token);
+      }
       if (token !== state.loadToken) return;
 
       updateDomainFilter();
@@ -1305,14 +1402,19 @@
     elements.results.innerHTML = "";
 
     try {
-      const response = await state.client.searchNodes(clean, { limit: 100 });
-      const raw = DictionaryRootApi.extractItems(response.data).filter((item) => item.resultType === "node" || !item.resultType);
+      const [response, lexicalResponse] = await Promise.all([
+        state.client.searchNodes(clean, { limit: 100 }),
+        state.client.lexicalEvidenceGraphSeeds(clean, { limit: 100 })
+      ]);
+      const raw = DictionaryRootApi.extractItems(response.data)
+        .concat(DictionaryRootApi.extractItems(lexicalResponse.data))
+        .filter((item) => item.resultType === "node" || !item.resultType);
       const exact = DictionaryRootApi.exactMeaningResults(raw, clean);
 
       if (autoOpen && exact.length === 1) {
         await openCenter(exact[0].id, DictionaryRootApi.preferredMeaningLabel(exact[0], clean), { resetTrail: true, history: settings.history });
       } else {
-        renderSearchResults(clean, response.data);
+        renderSearchResults(clean, { items: raw, total: raw.length });
         updateHistory(null, clean, settings.history);
       }
     } catch (error) {

@@ -180,3 +180,20 @@ corpus. Customer scripts may combine its live API results with OEWN results,
 but may not embed it as fallback knowledge. Etymology alternatives and source
 comparisons preserve uncertainty and review status rather than collapsing
 them into an automatic truth or similarity score.
+
+## DictionaryRoot lexical relationship architecture
+
+Migration 014 adds canonical sense relationships beside migration 013:
+
+```text
+sense --> canonical relationship --> sense
+                     |
+                     +--> independently inspectable evidence --> source
+```
+
+Relationship types govern symmetry, direction, and inverse semantics.
+Symmetric endpoints have one deterministic order; directional endpoints keep
+their asserted order. Composite ownership constraints and cascades make
+fixture replacement safe. The Knowledge Sphere graph is derived at read time
+from normalized lexical objects and never persisted as duplicate generic
+nodes.

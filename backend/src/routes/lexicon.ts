@@ -1,6 +1,12 @@
 import { Router } from "express";
 
 import {
+  getLexicalEvidenceGraphNeighborhood,
+  getLexicalEvidenceRelationship,
+  listLexicalEvidenceRelationshipEvidence,
+  lookupLexicalEvidenceGraphSeeds,
+} from "../dictionaryroot/lexical-evidence-graph.js";
+import {
   getQueryString,
   isQueryParameterError,
   parsePagination,
@@ -54,6 +60,105 @@ const reviewFilters = new Set<DictionaryRootReviewCoverageFilter>([
   "reviewed",
   "needs-review",
 ]);
+
+lexiconRouter.get("/evidence/graph/seeds", async (request, response, next) => {
+  try {
+    const query = getQueryString(request.query.q);
+    if (query === undefined) {
+      return response.status(400).json({
+        error: "INVALID_QUERY",
+        message: "q must contain a lexical form to use as a graph seed.",
+      });
+    }
+    const pagination = parsePagination(request.query.page, request.query.limit, {
+      limit: 25,
+      maxLimit: 100,
+    });
+    if (isQueryParameterError(pagination)) {
+      return response.status(400).json(pagination);
+    }
+    return response.status(200).json(await lookupLexicalEvidenceGraphSeeds({
+      query,
+      page: pagination.page,
+      limit: pagination.limit,
+    }));
+  } catch (error) {
+    return next(error);
+  }
+});
+
+lexiconRouter.get(
+  "/evidence/graph/neighborhood/:seedId",
+  async (request, response, next) => {
+    try {
+      const depth = Number(getQueryString(request.query.depth) || "1");
+      const limit = Number(getQueryString(request.query.limit) || "40");
+      if (![1, 2].includes(depth) || !Number.isInteger(limit)
+        || limit < 2 || limit > 100) {
+        return response.status(400).json({
+          error: "INVALID_LEXICAL_GRAPH_EXPANSION",
+          message: "depth must be 1 or 2 and limit must be an integer from 2 through 100.",
+        });
+      }
+      const result = await getLexicalEvidenceGraphNeighborhood({
+        seedId: request.params.seedId,
+        depth: depth as 1 | 2,
+        limit,
+      });
+      return result
+        ? response.status(200).json(result)
+        : response.status(404).json({
+          error: "LEXICAL_GRAPH_SEED_NOT_FOUND",
+          message: `No lexical-evidence graph object found with ID ${request.params.seedId}.`,
+        });
+    } catch (error) {
+      return next(error);
+    }
+  },
+);
+
+lexiconRouter.get(
+  "/evidence/relationships/:relationshipId",
+  async (request, response, next) => {
+    try {
+      const result = await getLexicalEvidenceRelationship(
+        request.params.relationshipId,
+      );
+      return result
+        ? response.status(200).json(result)
+        : response.status(404).json({
+          error: "LEXICAL_RELATIONSHIP_NOT_FOUND",
+          message: `No lexical relationship found with ID ${request.params.relationshipId}.`,
+        });
+    } catch (error) {
+      return next(error);
+    }
+  },
+);
+
+lexiconRouter.get(
+  "/evidence/relationships/:relationshipId/evidence",
+  async (request, response, next) => {
+    try {
+      const pagination = parsePagination(request.query.page, request.query.limit, {
+        limit: 25,
+        maxLimit: 100,
+      });
+      if (isQueryParameterError(pagination)) {
+        return response.status(400).json(pagination);
+      }
+      return response.status(200).json(
+        await listLexicalEvidenceRelationshipEvidence(
+          request.params.relationshipId,
+          pagination.page,
+          pagination.limit,
+        ),
+      );
+    } catch (error) {
+      return next(error);
+    }
+  },
+);
 const coverageSorts = new Set<DictionaryRootLemmaCoverageSort>([
   "gaps",
   "coverage",

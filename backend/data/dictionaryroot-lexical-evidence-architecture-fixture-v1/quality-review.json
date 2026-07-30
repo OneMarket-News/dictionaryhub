@@ -10,7 +10,9 @@
     "etymologyProposals": 0,
     "locators": 0,
     "fieldProvenance": 0,
-    "sourceComparisons": 0
+    "sourceComparisons": 0,
+    "relationships": 0,
+    "relationshipEvidence": 0
   },
   "duplicateIdentityCounts": {
     "sources": 0,
@@ -21,14 +23,17 @@
     "etymologyProposals": 0,
     "locators": 0,
     "fieldProvenance": 0,
-    "sourceComparisons": 0
+    "sourceComparisons": 0,
+    "relationships": 0,
+    "relationshipEvidence": 0
   },
   "unsupportedCounts": {
     "labelsWithoutClaims": 0,
     "chronologyWithoutQualification": 0,
     "originClaimsWithoutQualification": 0,
     "claimsWithoutLocators": 0,
-    "objectsWithoutProvenance": 0
+    "objectsWithoutProvenance": 0,
+    "relationshipsWithoutEvidence": 0
   },
   "cases": {
     "highlyPolysemous": [
@@ -68,6 +73,26 @@
     ],
     "futureBibleRootTerms": [
       "lex-lemma-logos"
+    ],
+    "symmetricRelationships": [
+      "lex-relationship-algorithm-connection-equivalent",
+      "lex-relationship-bank-tilt-compact-small-antonym",
+      "lex-relationship-bank-finance-evidence-related",
+      "lex-relationship-walk-derivational",
+      "lex-relationship-logos-translation",
+      "lex-relationship-compact-disputed",
+      "lex-relationship-bank-unresolved"
+    ],
+    "directionalRelationships": [
+      "lex-relationship-island-bank-river-broader",
+      "lex-relationship-bank-river-color-narrower",
+      "lex-relationship-connection-compact-historical",
+      "lex-relationship-mouse-device-technical",
+      "lex-relationship-evidence-algorithm-generalization"
+    ],
+    "disputedOrUnresolvedRelationships": [
+      "lex-relationship-compact-disputed",
+      "lex-relationship-bank-unresolved"
     ]
   },
   "productionCorpusGenerated": false

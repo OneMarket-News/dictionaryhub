@@ -96,3 +96,21 @@ These routes currently expose only the bounded synthetic architecture fixture.
 They do not replace the complete OEWN index or authorize a production corpus.
 A customer page must show live empty or unavailable states rather than embed
 fixture records as fallback data.
+
+## Lexical relationship graph inspection
+
+Migration 014 adds four bounded read-only operations without changing the
+existing search, concept, or evidence contracts:
+
+| Customer need | SourceRoot operation |
+|---|---|
+| Find lexical graph seeds | `GET /dictionaryroot/lexicon/evidence/graph/seeds?q=...&page=...&limit=...` |
+| Read a typed neighborhood | `GET /dictionaryroot/lexicon/evidence/graph/neighborhood/:seedId?depth=...&limit=...` |
+| Inspect a canonical relationship | `GET /dictionaryroot/lexicon/evidence/relationships/:relationshipId` |
+| Inspect relationship support | `GET /dictionaryroot/lexicon/evidence/relationships/:relationshipId/evidence?page=...&limit=...` |
+
+Depth is 1 or 2 and limits are at most 100. Graph objects have stable IDs,
+explicit lexical-evidence object types, dataset identity, and deterministic
+order. Evidence stays separate from its relationship and preserves source,
+locator, provenance, review, qualification, and version context. Empty lists
+are explicit; no write operation or static fallback is available.

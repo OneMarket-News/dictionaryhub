@@ -481,3 +481,24 @@ manually managed backend was corrected to use `backend/.env.test`, live
 desktop and 390-by-844 smoke passed for fixture search, part-of-speech
 grouping, claims, locators, forms, provenance, comparisons, competing
 etymologies, uncertainty, result handling, overflow, and console output.
+
+## DictionaryRoot Lexical Relationship Architecture
+
+Migration 014 extends the migration-013 layer with governed relationship
+types, canonical dataset-owned sense relationships, and independent evidence.
+The bounded fixture now contains 12 relationships and 13 evidence rows while
+retaining all Chunk 10A counts and its fixture-only identity. Symmetric pairs
+use immutable endpoint ordering; directional rows preserve source/target
+semantics.
+
+The read-only lexical graph adapter derives typed graph objects directly from
+the normalized tables. Knowledge Sphere combines canonical lexical seed
+lookup with its existing SourceRoot search and can inspect relationship
+evidence without persisting duplicate generic nodes. No production corpus,
+migration 015, legacy lexicon writes, or HistoryRoot changes are introduced.
+
+Live Knowledge Sphere smoke passed at 1280 by 720 and 390 by 844. Bank exposed
+three distinct senses and typed forms/relationships; relationship evidence
+was inspectable; island kept two etymology proposals separate; and logos
+displayed explicit uncertainty. Both viewports had no duplicate node/edge
+IDs, horizontal overflow, console errors, or attributable console warnings.

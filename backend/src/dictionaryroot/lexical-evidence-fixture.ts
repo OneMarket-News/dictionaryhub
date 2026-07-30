@@ -7,6 +7,8 @@ import {
   type LexicalEvidenceInventory,
   type LexicalEvidenceQualityReview,
   type LexicalFieldProvenance,
+  type LexicalRelationship,
+  type LexicalRelationshipEvidence,
   type LexicalSourceLocator,
 } from "./lexical-evidence-types.js";
 
@@ -92,6 +94,191 @@ const definitionClaims: LexicalDefinitionClaim[] = [
     "A device used to point at and select items on a screen.",
     { domainLabel: "computing" }),
 ];
+
+const relationshipQualification =
+  "Synthetic test-only relationship for architecture verification; no production lexical assertion.";
+
+const relationships: LexicalRelationship[] = [
+  {
+    relationshipId: "lex-relationship-algorithm-connection-equivalent",
+    sourceSenseId: "lex-sense-algorithm-procedure",
+    targetSenseId: "lex-sense-connection-link",
+    relationshipType: "substantially_equivalent",
+    directionality: "symmetric",
+    relationshipStatus: "qualified",
+    reviewStatus: "reviewed",
+    qualification: relationshipQualification,
+    recordVersion,
+  },
+  {
+    relationshipId: "lex-relationship-bank-tilt-compact-small-antonym",
+    sourceSenseId: "lex-sense-bank-tilt",
+    targetSenseId: "lex-sense-compact-small",
+    relationshipType: "antonym",
+    directionality: "symmetric",
+    relationshipStatus: "qualified",
+    reviewStatus: "reviewed",
+    qualification: relationshipQualification,
+    recordVersion,
+  },
+  {
+    relationshipId: "lex-relationship-island-bank-river-broader",
+    sourceSenseId: "lex-sense-island-land",
+    targetSenseId: "lex-sense-bank-river",
+    relationshipType: "broader",
+    directionality: "directional",
+    relationshipStatus: "qualified",
+    reviewStatus: "reviewed",
+    qualification: relationshipQualification,
+    domainContext: "fixture landform taxonomy",
+    recordVersion,
+  },
+  {
+    relationshipId: "lex-relationship-bank-river-color-narrower",
+    sourceSenseId: "lex-sense-bank-river",
+    targetSenseId: "lex-sense-color-property",
+    relationshipType: "narrower",
+    directionality: "directional",
+    relationshipStatus: "qualified",
+    reviewStatus: "reviewed",
+    qualification: relationshipQualification,
+    recordVersion,
+  },
+  {
+    relationshipId: "lex-relationship-bank-finance-evidence-related",
+    sourceSenseId: "lex-sense-bank-finance",
+    targetSenseId: "lex-sense-evidence-support",
+    relationshipType: "related",
+    directionality: "symmetric",
+    relationshipStatus: "qualified",
+    reviewStatus: "reviewed",
+    qualification: relationshipQualification,
+    recordVersion,
+  },
+  {
+    relationshipId: "lex-relationship-walk-derivational",
+    sourceSenseId: "lex-sense-walk-journey",
+    targetSenseId: "lex-sense-walk-move",
+    relationshipType: "derivationally_related",
+    directionality: "symmetric",
+    relationshipStatus: "asserted",
+    reviewStatus: "reviewed",
+    qualification: relationshipQualification,
+    recordVersion,
+  },
+  {
+    relationshipId: "lex-relationship-connection-compact-historical",
+    sourceSenseId: "lex-sense-connection-link",
+    targetSenseId: "lex-sense-compact-agreement",
+    relationshipType: "historical_predecessor",
+    directionality: "directional",
+    relationshipStatus: "qualified",
+    reviewStatus: "reviewed",
+    qualification: relationshipQualification,
+    chronologyContext: "synthetic fixture chronology",
+    recordVersion,
+  },
+  {
+    relationshipId: "lex-relationship-mouse-device-technical",
+    sourceSenseId: "lex-sense-mouse-device",
+    targetSenseId: "lex-sense-mouse-animal",
+    relationshipType: "technical_specialization",
+    directionality: "directional",
+    relationshipStatus: "qualified",
+    reviewStatus: "reviewed",
+    qualification: relationshipQualification,
+    domainContext: "computing fixture",
+    recordVersion,
+  },
+  {
+    relationshipId: "lex-relationship-evidence-algorithm-generalization",
+    sourceSenseId: "lex-sense-evidence-support",
+    targetSenseId: "lex-sense-algorithm-procedure",
+    relationshipType: "generalization",
+    directionality: "directional",
+    relationshipStatus: "qualified",
+    reviewStatus: "reviewed",
+    qualification: relationshipQualification,
+    recordVersion,
+  },
+  {
+    relationshipId: "lex-relationship-logos-translation",
+    sourceSenseId: "lex-sense-logos-principle",
+    targetSenseId: "lex-sense-logos-word",
+    relationshipType: "translation_related",
+    directionality: "symmetric",
+    relationshipStatus: "qualified",
+    reviewStatus: "needs_review",
+    qualification: "Synthetic fixture preserves translation range without selecting an equivalence.",
+    uncertainty: "Translation depends on source context and period.",
+    recordVersion,
+  },
+  {
+    relationshipId: "lex-relationship-compact-disputed",
+    sourceSenseId: "lex-sense-compact-agreement",
+    targetSenseId: "lex-sense-compact-small",
+    relationshipType: "disputed",
+    directionality: "symmetric",
+    relationshipStatus: "disputed",
+    reviewStatus: "disputed",
+    qualification: relationshipQualification,
+    uncertainty: "The fixture deliberately disputes this candidate.",
+    recordVersion,
+  },
+  {
+    relationshipId: "lex-relationship-bank-unresolved",
+    sourceSenseId: "lex-sense-bank-finance",
+    targetSenseId: "lex-sense-bank-river",
+    relationshipType: "unresolved",
+    directionality: "symmetric",
+    relationshipStatus: "unresolved",
+    reviewStatus: "unresolved",
+    qualification: relationshipQualification,
+    uncertainty: "No semantic relationship is selected by the fixture.",
+    recordVersion,
+  },
+];
+
+const relationshipEvidence: LexicalRelationshipEvidence[] = relationships.map(
+  (item, index) => ({
+    evidenceId: `lex-relationship-evidence-${String(index + 1).padStart(3, "0")}`,
+    relationshipId: item.relationshipId,
+    sourceId: item.relationshipType === "technical_specialization"
+      ? sourceIds.technical
+      : item.relationshipType === "historical_predecessor"
+        ? sourceIds.historical
+        : sourceIds.general,
+    provenanceIdentity: `fixture-relationship-review-${String(index + 1).padStart(3, "0")}`,
+    evidenceRole: item.reviewStatus === "unresolved" ? "qualifies" : "supports",
+    normalizedSummary: `Fixture evidence for ${item.relationshipType.replaceAll("_", " ")}.`,
+    normalizationLabel: "SourceRoot synthetic fixture normalization",
+    reviewStatus: item.reviewStatus,
+    ...(item.uncertainty ? { uncertainty: item.uncertainty } : {}),
+    ...(item.qualification ? { qualification: item.qualification } : {}),
+    editionContext: "Architecture fixture v1",
+    versionContext: DICTIONARYROOT_LEXICAL_EVIDENCE_FIXTURE_VERSION,
+    datasetRecordId: `fixture-relationship-${String(index + 1).padStart(3, "0")}`,
+    stableFragment: item.relationshipId,
+    recordVersion,
+  }),
+);
+
+relationshipEvidence.push({
+  evidenceId: "lex-relationship-evidence-equivalent-secondary",
+  relationshipId: "lex-relationship-algorithm-connection-equivalent",
+  sourceId: sourceIds.comparison,
+  provenanceIdentity: "fixture-relationship-review-equivalent-secondary",
+  evidenceRole: "corroborates",
+  normalizedSummary: "Independent synthetic fixture support for canonical multi-source evidence.",
+  normalizationLabel: "SourceRoot synthetic fixture normalization",
+  reviewStatus: "reviewed",
+  qualification: relationshipQualification,
+  editionContext: "Architecture fixture v1",
+  versionContext: DICTIONARYROOT_LEXICAL_EVIDENCE_FIXTURE_VERSION,
+  datasetRecordId: "fixture-relationship-001-secondary",
+  stableFragment: "lex-relationship-algorithm-connection-equivalent-secondary",
+  recordVersion,
+});
 
 const fixture: DictionaryRootLexicalEvidenceFixture = {
   schemaVersion: "1.0.0",
@@ -323,6 +510,8 @@ const fixture: DictionaryRootLexicalEvidenceFixture = {
   ],
   locators: [],
   fieldProvenance: [],
+  relationships,
+  relationshipEvidence,
 };
 
 function buildLocators(value: DictionaryRootLexicalEvidenceFixture): LexicalSourceLocator[] {
@@ -468,6 +657,8 @@ export function buildLexicalEvidenceInventory(
         item.reviewStatus === "unresolved").length,
       locators: value.locators.length,
       fieldProvenance: value.fieldProvenance.length,
+      relationships: value.relationships.length,
+      relationshipEvidence: value.relationshipEvidence.length,
     },
     rightsDistribution,
     sourceDistribution,
@@ -485,6 +676,8 @@ export function buildLexicalEvidenceQualityReview(
   const comparisonIds = new Set(value.sourceComparisons.map((item) => item.comparisonId));
   const locatorIds = new Set(value.locators.map((item) => item.locatorId));
   const sourceSet = new Set(value.sources.map((item) => item.sourceId));
+  const relationshipIds = new Set(value.relationships.map((item) =>
+    item.relationshipId));
   const orphanCounts = {
     lemmas: value.lemmas.filter((lemma) =>
       !value.senses.some((sense) => sense.lemmaIds.includes(lemma.lemmaId))).length,
@@ -511,6 +704,17 @@ export function buildLexicalEvidenceQualityReview(
       !senseIds.has(item.senseId)
       || !claimIds.has(item.leftClaimId)
       || !claimIds.has(item.rightClaimId)).length,
+    relationships: value.relationships.filter((item) =>
+      !senseIds.has(item.sourceSenseId)
+      || !senseIds.has(item.targetSenseId)
+      || item.sourceSenseId === item.targetSenseId
+      || (item.directionality === "symmetric"
+        && item.sourceSenseId >= item.targetSenseId)).length,
+    relationshipEvidence: value.relationshipEvidence.filter((item) =>
+      !relationshipIds.has(item.relationshipId)
+      || !sourceSet.has(item.sourceId)
+      || (!item.sourceWording && !item.normalizedSummary)
+      || (!item.datasetRecordId && !item.stableFragment)).length,
   };
   const duplicateIdentityCounts = {
     sources: duplicates(value.sources.map((item) => item.sourceId)),
@@ -525,6 +729,10 @@ export function buildLexicalEvidenceQualityReview(
       item.provenanceId)),
     sourceComparisons: duplicates(value.sourceComparisons.map((item) =>
       item.comparisonId)),
+    relationships: duplicates(value.relationships.map((item) =>
+      item.relationshipId)),
+    relationshipEvidence: duplicates(value.relationshipEvidence.map((item) =>
+      item.evidenceId)),
   };
   const unsupportedCounts = {
     labelsWithoutClaims: 0,
@@ -537,6 +745,9 @@ export function buildLexicalEvidenceQualityReview(
     objectsWithoutProvenance: value.definitionClaims.filter((item) =>
       !value.fieldProvenance.some((record) =>
         "claimId" in record.subject && record.subject.claimId === item.claimId)).length,
+    relationshipsWithoutEvidence: value.relationships.filter((item) =>
+      !value.relationshipEvidence.some((record) =>
+        record.relationshipId === item.relationshipId)).length,
   };
   const blockerCount = Object.values(orphanCounts).reduce((sum, count) => sum + count, 0)
     + Object.values(duplicateIdentityCounts).reduce((sum, count) => sum + count, 0)
@@ -565,6 +776,13 @@ export function buildLexicalEvidenceQualityReview(
       unresolvedComparisons: ["lex-comparison-logos-unresolved"],
       historyRootTerms: ["lex-lemma-compact", "lex-lemma-evidence"],
       futureBibleRootTerms: ["lex-lemma-logos"],
+      symmetricRelationships: value.relationships.filter((item) =>
+        item.directionality === "symmetric").map((item) => item.relationshipId),
+      directionalRelationships: value.relationships.filter((item) =>
+        item.directionality === "directional").map((item) => item.relationshipId),
+      disputedOrUnresolvedRelationships: value.relationships.filter((item) =>
+        ["disputed", "unresolved"].includes(item.reviewStatus)).map((item) =>
+        item.relationshipId),
     },
     productionCorpusGenerated: false,
   };

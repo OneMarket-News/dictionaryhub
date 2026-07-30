@@ -209,3 +209,18 @@ The architecture fixture importer is separately restricted to
 `sourceroot_test`, deletes only the exact fixture dataset inside a
 transaction, and rolls back failed replacement. A production corpus requires
 a later reviewed acquisition, rights, generation, import, and migration plan.
+
+## Migration 014 — DictionaryRoot lexical relationships
+
+`014_create_dictionaryroot_lexical_relationships.sql` adds a governed
+relationship-type registry, canonical dataset-owned sense relationships, and
+separate relationship evidence. Composite foreign keys keep senses and
+sources inside the owning migration-013 dataset. Dataset deletion cascades
+through relationships and evidence for atomic replacement.
+
+Symmetric types require ascending sense-ID endpoint order and therefore have
+one deterministic pair representation. Directional types retain source and
+target order and declare their inverse vocabulary. Self-links, unsupported
+type/direction combinations, empty evidence, imprecise locators, and
+non-positive versions are rejected. Migration 015 is not part of this
+checkpoint.

@@ -395,6 +395,32 @@
       }, normalizeParams(params)))}`);
     }
 
+    lexicalEvidenceGraphSeeds(query, params) {
+      return this.request(`/dictionaryroot/lexicon/evidence/graph/seeds${buildQuery(Object.assign({
+        q: query,
+        page: 1,
+        limit: 25
+      }, normalizeParams(params)))}`);
+    }
+
+    lexicalEvidenceGraphNeighborhood(seedId, params) {
+      return this.request(`/dictionaryroot/lexicon/evidence/graph/neighborhood/${encodeURIComponent(seedId)}${buildQuery(Object.assign({
+        depth: 1,
+        limit: 40
+      }, normalizeParams(params)))}`);
+    }
+
+    lexicalEvidenceRelationship(relationshipId) {
+      return this.request(`/dictionaryroot/lexicon/evidence/relationships/${encodeURIComponent(relationshipId)}`);
+    }
+
+    lexicalEvidenceRelationshipEvidence(relationshipId, params) {
+      return this.request(`/dictionaryroot/lexicon/evidence/relationships/${encodeURIComponent(relationshipId)}/evidence${buildQuery(Object.assign({
+        page: 1,
+        limit: 25
+      }, normalizeParams(params)))}`);
+    }
+
     async lexicalEvidenceSearchAll(query, options) {
       const settings = Object.assign({ limit: 25, maxPages: 20 }, options || {});
       const first = await this.lexicalEvidenceSearch(query, {

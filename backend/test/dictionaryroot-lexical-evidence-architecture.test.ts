@@ -139,14 +139,18 @@ test("6. migration 013 builds all normalized tables in an isolated fresh schema"
   }
 });
 
-test("7. migration ledger ends at exact migration 013", async () => {
+test("7. migration ledger preserves 013 and ends at exact migration 014", async () => {
   const result = await database().query<{ migration_name: string }>(
     `SELECT migration_name FROM schema_migrations
      WHERE migration_name LIKE '013%' OR migration_name LIKE '014%'
+       OR migration_name LIKE '015%'
      ORDER BY migration_name`,
   );
   assert.deepEqual(result.rows.map((row) => row.migration_name),
-    ["013_create_dictionaryroot_lexical_evidence.sql"]);
+    [
+      "013_create_dictionaryroot_lexical_evidence.sql",
+      "014_create_dictionaryroot_lexical_relationships.sql",
+    ]);
 });
 
 test("8. fixture import and duplicate reimport are replacement-safe", async () => {
@@ -165,6 +169,8 @@ test("8. fixture import and duplicate reimport are replacement-safe", async () =
     sourceComparisons: 4,
     locators: 40,
     fieldProvenance: 72,
+    relationships: 12,
+    relationshipEvidence: 13,
   });
 });
 

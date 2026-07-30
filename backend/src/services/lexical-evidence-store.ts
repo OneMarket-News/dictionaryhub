@@ -240,6 +240,52 @@ export async function saveDictionaryRootLexicalEvidenceFixture(
         ],
       );
     }
+    for (const relationship of fixture.relationships) {
+      await client.query(
+        `INSERT INTO dictionaryroot_lexical_relationships
+          (relationship_id, dataset_id, source_sense_id, target_sense_id,
+           relationship_type, directionality, relationship_status,
+           review_status, qualification, uncertainty, chronology_context,
+           domain_context, record_version)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
+        [
+          relationship.relationshipId, fixture.dataset.datasetId,
+          relationship.sourceSenseId, relationship.targetSenseId,
+          relationship.relationshipType, relationship.directionality,
+          relationship.relationshipStatus, relationship.reviewStatus,
+          relationship.qualification ?? null, relationship.uncertainty ?? null,
+          relationship.chronologyContext ?? null,
+          relationship.domainContext ?? null, relationship.recordVersion,
+        ],
+      );
+    }
+    for (const evidence of fixture.relationshipEvidence) {
+      await client.query(
+        `INSERT INTO dictionaryroot_lexical_relationship_evidence
+          (evidence_id, dataset_id, relationship_id, source_id,
+           provenance_identity, evidence_role, source_wording,
+           normalized_summary, normalization_label, review_status,
+           uncertainty, qualification, edition_context, version_context,
+           page, entry_headword, sense_number, section, paragraph,
+           dataset_record_id, stable_fragment, canonical_url, record_version)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,
+                 $17,$18,$19,$20,$21,$22,$23)`,
+        [
+          evidence.evidenceId, fixture.dataset.datasetId,
+          evidence.relationshipId, evidence.sourceId,
+          evidence.provenanceIdentity, evidence.evidenceRole,
+          evidence.sourceWording ?? null, evidence.normalizedSummary ?? null,
+          evidence.normalizationLabel ?? null, evidence.reviewStatus,
+          evidence.uncertainty ?? null, evidence.qualification ?? null,
+          evidence.editionContext ?? null, evidence.versionContext ?? null,
+          evidence.page ?? null, evidence.entryHeadword ?? null,
+          evidence.senseNumber ?? null, evidence.section ?? null,
+          evidence.paragraph ?? null, evidence.datasetRecordId ?? null,
+          evidence.stableFragment ?? null, evidence.canonicalUrl ?? null,
+          evidence.recordVersion,
+        ],
+      );
+    }
     await client.query("COMMIT");
   } catch (error) {
     await client.query("ROLLBACK");
@@ -341,7 +387,10 @@ export async function getDictionaryRootLexicalEvidenceSense(
   const sense = senseResult.rows[0];
   if (!sense) return undefined;
   const lemmaId = String(sense.lemma_id);
-  const [claims, forms, etymologies, comparisons, locators, provenance, sources] =
+  const [
+    claims, forms, etymologies, comparisons, locators, provenance, sources,
+    relationships,
+  ] =
     await Promise.all([
       rows(database,
         `SELECT * FROM dictionaryroot_lexical_definition_claims
@@ -393,6 +442,20 @@ export async function getDictionaryRootLexicalEvidenceSense(
          JOIN dictionaryroot_lexical_definition_claims c
            ON c.source_id=source.source_id
          WHERE c.sense_id=$1 ORDER BY source.source_id`, [senseId]),
+      rows(database,
+        `SELECT relationship.*,
+          COALESCE(evidence.evidence_count, 0)::INTEGER AS evidence_count
+         FROM dictionaryroot_lexical_relationships relationship
+         LEFT JOIN LATERAL (
+           SELECT COUNT(*) AS evidence_count
+           FROM dictionaryroot_lexical_relationship_evidence
+           WHERE relationship_id=relationship.relationship_id
+         ) evidence ON TRUE
+         WHERE (relationship.source_sense_id=$1
+           OR relationship.target_sense_id=$1)
+           AND relationship.archived_at IS NULL
+         ORDER BY relationship.relationship_type,
+           relationship.relationship_id`, [senseId]),
     ]);
   return {
     sense: mapKeys(sense),
@@ -403,6 +466,7 @@ export async function getDictionaryRootLexicalEvidenceSense(
     locators,
     fieldProvenance: provenance,
     sources,
+    relationships,
   };
 }
 
@@ -472,7 +536,12 @@ export async function getLexicalEvidenceFixtureCounts(): Promise<Row> {
       (SELECT COUNT(*)::INTEGER FROM dictionaryroot_lexical_source_locators
         WHERE dataset_id=$1) AS locators,
       (SELECT COUNT(*)::INTEGER FROM dictionaryroot_lexical_field_provenance
-        WHERE dataset_id=$1) AS field_provenance`,
+        WHERE dataset_id=$1) AS field_provenance,
+      (SELECT COUNT(*)::INTEGER FROM dictionaryroot_lexical_relationships
+        WHERE dataset_id=$1) AS relationships,
+      (SELECT COUNT(*)::INTEGER
+        FROM dictionaryroot_lexical_relationship_evidence
+        WHERE dataset_id=$1) AS relationship_evidence`,
     [DICTIONARYROOT_LEXICAL_EVIDENCE_FIXTURE_ID],
   );
   return mapKeys(result.rows[0] ?? {});

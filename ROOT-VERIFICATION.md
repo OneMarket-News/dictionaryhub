@@ -133,3 +133,18 @@ It must inspect fixture search and detail content, result handling, horizontal
 overflow, console output, an existing OEWN concept, and HistoryRoot. A healthy
 `/health` response does not prove the evidence routes are connected to the
 database containing migration 013 and the fixture.
+
+## Chunk 10B prerequisite lexical relationship verification
+
+`VERIFY-SOURCEROOT-DICTIONARYROOT-LEXICAL-RELATIONSHIP-ARCHITECTURE.ps1`
+checks migration 014, the fixture relationship/evidence counts, canonical
+symmetry markers, graph routes and customer integration, typecheck, the
+15-check focused backend suite, the 8-check targeted frontend suite, and the
+17-check Chunk 10A backend suite.
+
+Database tests cover fresh-schema migration, exact migration ledger,
+cross-dataset rejection, self and reverse-symmetric rejection, evidence
+support, duplicate-safe replacement, rollback, APIs, graph determinism,
+bank/island/logos behavior, HistoryRoot 1.3.0, and empty legacy lexicon
+tables. Browser acceptance remains separate and must probe both managed
+services before desktop and mobile smoke.
