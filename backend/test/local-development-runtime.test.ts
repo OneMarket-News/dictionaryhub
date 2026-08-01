@@ -15,6 +15,7 @@ const migrationNames = [
   "014_create_dictionaryroot_lexical_relationships.sql",
   "015_create_bibleroot_foundation.sql",
   "016_create_bibleroot_original_language_foundation.sql",
+  "017_create_bibleroot_commentary_provenance.sql",
 ];
 
 function fakeClient(overrides: Record<string, unknown> = {}): PoolClient {
@@ -23,7 +24,7 @@ function fakeClient(overrides: Record<string, unknown> = {}): PoolClient {
     server_address: "127.0.0.1",
     server_port: 5432,
     migrations: migrationNames,
-    migration_017_count: 0,
+    migration_018_count: 0,
     ...overrides,
   };
   return {
@@ -83,20 +84,20 @@ test("4. remote URL hosts and non-loopback connected servers are rejected", asyn
   );
 });
 
-test("5. migration mismatch and migration 017 are rejected", async () => {
+test("5. migration 017 is required and migration 018 is rejected", async () => {
   await assert.rejects(
-    authorizeLocalDevelopmentDatabase(fakeClient({ migrations: migrationNames.slice(0, 3) }), {
+    authorizeLocalDevelopmentDatabase(fakeClient({ migrations: migrationNames.slice(0, 4) }), {
       nodeEnvironment: "development",
       databaseUrl: "postgresql://local-user:redacted@localhost/sourceroot",
     }),
-    /016_create_bibleroot_original_language_foundation/,
+    /017_create_bibleroot_commentary_provenance/,
   );
   await assert.rejects(
-    authorizeLocalDevelopmentDatabase(fakeClient({ migration_017_count: 1 }), {
+    authorizeLocalDevelopmentDatabase(fakeClient({ migration_018_count: 1 }), {
       nodeEnvironment: "development",
       databaseUrl: "postgresql://local-user:redacted@localhost/sourceroot",
     }),
-    /Migration 017/,
+    /Migration 018/,
   );
 });
 
@@ -139,8 +140,14 @@ test("9. historical BibleRoot CLIs remain sourceroot_test by default", async () 
     "../src/scripts/import-bibleroot-original-language-foundation.ts",
     import.meta.url,
   ), "utf8");
+  const commentary = await readFile(new URL(
+    "../src/scripts/import-bibleroot-commentary-provenance.ts",
+    import.meta.url,
+  ), "utf8");
   assert.match(foundation, /restricted to sourceroot_test/);
   assert.match(original, /restricted to sourceroot_test/);
   assert.match(foundation, /assertLocalDevelopmentImportAuthorized/);
   assert.match(original, /assertLocalDevelopmentImportAuthorized/);
+  assert.match(commentary, /restricted to sourceroot_test/);
+  assert.match(commentary, /assertLocalDevelopmentImportAuthorized/);
 });

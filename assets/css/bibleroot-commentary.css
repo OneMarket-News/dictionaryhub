@@ -1,0 +1,54 @@
+.br-commentary-shell { width: min(100% - 2rem, 1500px); margin: 0 auto; padding: 2rem 0 4rem; }
+.br-commentary-intro { max-width: 940px; }
+.br-commentary-intro h1 { max-width: 840px; }
+.br-commentary-disclaimer, .br-placement-notice { padding: 1rem 1.1rem; border-left: .3rem solid var(--br-gold, #b97818); background: #fff9ea; color: #382a16; }
+.br-placement-notice { border-left-color: #365f55; background: #eef7f3; }
+.br-commentary-controls { display: grid; grid-template-columns: minmax(10rem, 15rem) 1fr auto; gap: 1rem 1.25rem; align-items: end; margin: 2rem 0 1rem; padding: 1.25rem; border: 1px solid #d8d2c4; border-radius: 1rem; background: #fff; }
+.br-commentary-controls > label:first-child, .br-commentary-controls select { grid-column: 1; }
+.br-commentary-controls select, .br-commentary-controls button { min-height: 2.75rem; }
+.br-commentary-controls fieldset { grid-column: 2; grid-row: 1 / span 2; min-width: 0; margin: 0; padding: .7rem 1rem 1rem; border: 1px solid #d8d2c4; border-radius: .75rem; }
+.br-commentary-controls > button { grid-column: 3; grid-row: 1 / span 2; }
+#bibleRootCommentarySelectionHelp { grid-column: 1 / -1; margin: 0; color: #655f55; font-size: .9rem; }
+.br-commentary-work-options { display: grid; gap: .55rem; }
+.br-commentary-work-options label { display: flex; gap: .5rem; align-items: start; }
+.br-layer-links { display: flex; flex-wrap: wrap; gap: .65rem; margin: 0 0 2rem; }
+.br-layer-links a { padding: .55rem .8rem; border: 1px solid #b9b1a0; border-radius: 999px; background: #fff; }
+.br-commentary-results-heading { display: flex; justify-content: space-between; gap: 1rem; align-items: end; }
+.br-commentary-results-heading p { overflow-wrap: anywhere; }
+.br-commentary-columns { display: grid; grid-template-columns: repeat(var(--work-count, 2), minmax(0, 1fr)); gap: 1.25rem; align-items: start; }
+.br-commentary-work { min-width: 0; padding: 1rem; border: 1px solid #d8d2c4; border-radius: 1rem; background: #f9f7f1; }
+.br-commentary-work > header { position: sticky; top: .5rem; z-index: 2; padding: .9rem; border: 1px solid #d8d2c4; border-radius: .8rem; background: #fff; box-shadow: 0 .25rem .75rem rgb(28 34 31 / .08); }
+.br-commentary-work h3 { margin: .2rem 0; }
+.br-commentary-attribution { margin: .2rem 0 .6rem; color: #514b41; }
+.br-commentary-source-actions { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.br-commentary-source-actions button { font-size: .85rem; }
+.br-commentary-section { margin-top: 1rem; padding: 1rem; border: 1px solid #ddd7ca; border-radius: .8rem; background: #fff; }
+.br-commentary-section h4 { margin: 0 0 .3rem; }
+.br-commentary-anchor { margin: 0 0 .75rem; color: #4f5e58; font-size: .9rem; }
+.br-commentary-text { max-width: 76ch; margin: 0; line-height: 1.68; white-space: pre-wrap; overflow-wrap: anywhere; }
+.br-statement-index { margin-top: 1rem; border-top: 1px dashed #cbc4b7; padding-top: .75rem; }
+.br-statement-index summary { cursor: pointer; font-weight: 700; }
+.br-statement-list { display: grid; gap: .55rem; max-height: 28rem; overflow: auto; margin: .75rem 0 0; padding: 0 .25rem 0 1.5rem; }
+.br-statement-list li { padding-left: .25rem; }
+.br-statement-list p { margin: 0; line-height: 1.5; }
+.br-statement-meta { display: block; margin-top: .2rem; color: #686157; font: .76rem/1.35 ui-monospace, SFMono-Regular, Consolas, monospace; overflow-wrap: anywhere; }
+.br-coverage-gaps { margin-top: 1rem; padding: .85rem; border: 1px solid #c6932d; border-radius: .7rem; background: #fff9ea; }
+.br-coverage-gaps h4 { margin: 0 0 .4rem; }
+.br-commentary-dialog { width: min(92vw, 780px); max-height: 86vh; border: 0; border-radius: 1rem; box-shadow: 0 1rem 4rem rgb(0 0 0 / .28); }
+.br-commentary-dialog::backdrop { background: rgb(15 20 18 / .6); }
+.br-dialog-close { float: right; }
+.br-commentary-dialog dl { display: grid; grid-template-columns: minmax(10rem, .35fr) 1fr; gap: .7rem 1rem; }
+.br-commentary-dialog dt { font-weight: 700; }
+.br-commentary-dialog dd { margin: 0; overflow-wrap: anywhere; }
+.br-commentary-dialog a[rel~="external"]::after { content: " (external)"; font-size: .82em; }
+@media (max-width: 760px) {
+  .br-commentary-shell { width: min(100% - 1rem, 1500px); padding-top: 1rem; }
+  .br-commentary-controls { grid-template-columns: 1fr; align-items: stretch; }
+  .br-commentary-controls > label:first-child, .br-commentary-controls select, .br-commentary-controls fieldset, .br-commentary-controls > button, #bibleRootCommentarySelectionHelp { grid-column: 1; grid-row: auto; }
+  .br-commentary-results-heading { display: block; }
+  .br-commentary-columns { grid-template-columns: 1fr; }
+  .br-commentary-work > header { position: static; }
+  .br-commentary-dialog dl { grid-template-columns: 1fr; }
+  .br-commentary-dialog dd { margin-bottom: .55rem; }
+}
+@media (prefers-reduced-motion: reduce) { .br-commentary-page *, .br-commentary-page *::before, .br-commentary-page *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; transition-duration: .001ms !important; } }

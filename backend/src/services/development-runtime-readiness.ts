@@ -11,6 +11,10 @@ import {
   TRANSLATION_COMPARISON_DATASET_VERSION,
 } from "../bibleroot/translation-comparison.js";
 import {
+  COMMENTARY_DATASET_ID,
+  COMMENTARY_DATASET_VERSION,
+} from "../bibleroot/commentary-provenance.js";
+import {
   CORE_LEXICAL_CORPUS_ID,
   CORE_LEXICAL_CORPUS_VERSION,
 } from "../dictionaryroot/core-lexical-corpus.js";
@@ -24,7 +28,7 @@ export interface RuntimeRootReadiness {
 }
 
 export interface DevelopmentRuntimeReadiness {
-  contractVersion: "1.1.0";
+  contractVersion: "1.2.0";
   roots: {
     DictionaryRoot: RuntimeRootReadiness;
     HistoryRoot: RuntimeRootReadiness;
@@ -32,6 +36,7 @@ export interface DevelopmentRuntimeReadiness {
       foundationReady: boolean;
       originalLanguageReady: boolean;
       translationComparisonReady: boolean;
+      commentaryProvenanceReady: boolean;
     };
   };
 }
@@ -65,6 +70,13 @@ interface CountRow {
   comparison_artifacts: number;
   comparison_rights: number;
   comparison_verses: number;
+  commentary_dataset: number;
+  commentary_works: number;
+  commentary_sections: number;
+  commentary_statements: number;
+  commentary_anchors: number;
+  commentary_artifacts: number;
+  commentary_rights: number;
   history_bundles: number;
   history_records: number;
 }
@@ -102,6 +114,13 @@ export async function getDevelopmentRuntimeReadiness(): Promise<DevelopmentRunti
       (SELECT COUNT(*)::integer FROM bibleroot_source_artifacts WHERE dataset_id = '${TRANSLATION_COMPARISON_DATASET_ID}') AS comparison_artifacts,
       (SELECT COUNT(*)::integer FROM bibleroot_source_artifact_rights_components WHERE dataset_id = '${TRANSLATION_COMPARISON_DATASET_ID}') AS comparison_rights,
       (SELECT COUNT(*)::integer FROM bibleroot_verse_texts WHERE dataset_id = '${TRANSLATION_COMPARISON_DATASET_ID}') AS comparison_verses,
+      (SELECT COUNT(*)::integer FROM imported_bundles WHERE bundle_id = '${COMMENTARY_DATASET_ID}' AND version = '${COMMENTARY_DATASET_VERSION}') AS commentary_dataset,
+      (SELECT COUNT(*)::integer FROM bibleroot_commentary_works WHERE dataset_id = '${COMMENTARY_DATASET_ID}') AS commentary_works,
+      (SELECT COUNT(*)::integer FROM bibleroot_commentary_sections WHERE dataset_id = '${COMMENTARY_DATASET_ID}') AS commentary_sections,
+      (SELECT COUNT(*)::integer FROM bibleroot_commentary_statements WHERE dataset_id = '${COMMENTARY_DATASET_ID}') AS commentary_statements,
+      (SELECT COUNT(*)::integer FROM bibleroot_commentary_section_anchors WHERE dataset_id = '${COMMENTARY_DATASET_ID}') AS commentary_anchors,
+      (SELECT COUNT(*)::integer FROM bibleroot_source_artifacts WHERE dataset_id = '${COMMENTARY_DATASET_ID}') AS commentary_artifacts,
+      (SELECT COUNT(*)::integer FROM bibleroot_source_artifact_rights_components WHERE dataset_id = '${COMMENTARY_DATASET_ID}') AS commentary_rights,
       (SELECT COUNT(*)::integer FROM imported_bundles WHERE domain = 'HistoryRoot') AS history_bundles,
       (SELECT COUNT(*)::integer FROM context_records WHERE domain = 'HistoryRoot') AS history_records;
   `);
@@ -150,13 +169,24 @@ export async function getDevelopmentRuntimeReadiness(): Promise<DevelopmentRunti
   };
   const translationComparisonReady = JSON.stringify(Object.values(comparisonCounts))
     === JSON.stringify([1, 3, 3, 3, 330]);
+  const commentaryCounts = {
+    datasets: row.commentary_dataset,
+    works: row.commentary_works,
+    sections: row.commentary_sections,
+    statements: row.commentary_statements,
+    anchors: row.commentary_anchors,
+    sourceArtifacts: row.commentary_artifacts,
+    rightsRecords: row.commentary_rights,
+  };
+  const commentaryProvenanceReady = JSON.stringify(Object.values(commentaryCounts))
+    === JSON.stringify([1, 2, 96, 3450, 96, 2, 2]);
   const historyCounts = {
     bundles: row.history_bundles,
     contextRecords: row.history_records,
   };
   const historyReady = row.history_bundles > 0 && row.history_records > 0;
   return {
-    contractVersion: "1.1.0",
+    contractVersion: "1.2.0",
     roots: {
       DictionaryRoot: {
         ready: dictionaryReady,
@@ -173,17 +203,21 @@ export async function getDevelopmentRuntimeReadiness(): Promise<DevelopmentRunti
       BibleRoot: {
         ready: foundationReady && originalLanguageReady,
         status: foundationReady && originalLanguageReady ? "ready" : "awaiting-data",
-        datasetIds: translationComparisonReady
-          ? [BIBLEROOT_DATASET_ID, ORIGINAL_LANGUAGE_DATASET_ID, TRANSLATION_COMPARISON_DATASET_ID]
+        datasetIds: commentaryProvenanceReady
+          ? [BIBLEROOT_DATASET_ID, ORIGINAL_LANGUAGE_DATASET_ID, TRANSLATION_COMPARISON_DATASET_ID, COMMENTARY_DATASET_ID]
+          : translationComparisonReady
+            ? [BIBLEROOT_DATASET_ID, ORIGINAL_LANGUAGE_DATASET_ID, TRANSLATION_COMPARISON_DATASET_ID]
           : [BIBLEROOT_DATASET_ID, ORIGINAL_LANGUAGE_DATASET_ID],
         counts: {
           ...foundationCounts,
           ...Object.fromEntries(Object.entries(originalCounts).map(([key, value]) => [`original${key[0]!.toUpperCase()}${key.slice(1)}`, value])),
           ...Object.fromEntries(Object.entries(comparisonCounts).map(([key, value]) => [`translationComparison${key[0]!.toUpperCase()}${key.slice(1)}`, value])),
+          ...Object.fromEntries(Object.entries(commentaryCounts).map(([key, value]) => [`commentary${key[0]!.toUpperCase()}${key.slice(1)}`, value])),
         },
         foundationReady,
         originalLanguageReady,
         translationComparisonReady,
+        commentaryProvenanceReady,
       },
     },
   };

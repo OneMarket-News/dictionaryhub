@@ -168,11 +168,11 @@ test("9. difference classification and token spans are deterministic and non-int
   assert.match(comparison.disclaimer, /do not determine meaning, accuracy, doctrine, or translation quality/i);
 });
 
-test("10. direct importer safety, no migration 017, and no commentary corpus are explicit", async () => {
+test("10. direct importer safety and translation-comparison boundaries remain explicit", async () => {
   const importer = await readFile(new URL("../src/scripts/import-bibleroot-translation-comparison.ts", import.meta.url), "utf8");
   assert.match(importer, /restricted to sourceroot_test/);
   assert.match(importer, /assertLocalDevelopmentImportAuthorized/);
-  await assert.rejects(stat(new URL("../db/migrations/017_create_bibleroot_translation_comparison.sql", import.meta.url)), /ENOENT/);
+  await assert.rejects(stat(new URL("../db/migrations/018_create_bibleroot_translation_comparison.sql", import.meta.url)), /ENOENT/);
   assert.doesNotMatch(JSON.stringify(dataset), /\bNIV\b|\bESV\b|theological conclusion|translation-quality ranking/i);
   assert.equal(TRANSLATION_COMPARISON_DATA_DIRECTORY.endsWith("bibleroot-translation-comparison-v1"), true);
 });

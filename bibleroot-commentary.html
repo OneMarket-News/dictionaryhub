@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Read attributed historical commentary with exact source, rights, section, statement, and canonical-anchor provenance.">
+  <title>Commentary Provenance | BibleRoot</title>
+  <link rel="icon" href="assets/brand/dictionaryroot-mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/bibleroot.css?v=commentary-provenance-v1">
+  <link rel="stylesheet" href="assets/css/bibleroot-commentary.css?v=commentary-provenance-v1">
+  <link rel="stylesheet" href="assets/css/sourceroot-root-switcher.css?v=shared-root-switcher-v1" data-sourceroot-root-switcher-styles="v1">
+  <link rel="stylesheet" href="assets/css/sourceroot-user-menu.css?v=shared-user-menu-v1" data-sourceroot-user-menu-styles="v1">
+</head>
+<body class="br-page br-commentary-page">
+  <a class="br-skip-link" href="#main-content">Skip to commentary provenance</a>
+  <header class="br-site-header">
+    <div class="br-header-inner">
+      <a class="br-wordmark" href="bibleroot.html" aria-label="BibleRoot home">
+        <span class="br-wordmark-mark" aria-hidden="true">BR</span>
+        <span><strong>BibleRoot</strong><small>Text with a source trail</small></span>
+      </a>
+      <nav class="br-public-nav" aria-label="BibleRoot">
+        <a href="bibleroot.html">Home</a>
+        <a href="bibleroot-passage.html?reference=Genesis%201">Read a passage</a>
+        <a href="bibleroot-compare.html">Compare translations</a>
+        <a aria-current="page" href="bibleroot-commentary.html">Commentary provenance</a>
+      </nav>
+      <div class="br-shared-actions" role="group" aria-label="Account and product navigation">
+        <div data-sourceroot-user-menu data-user-menu-id-prefix="bibleRootCommentaryUserMenu"></div>
+        <div data-sourceroot-root-switcher data-current-root="BibleRoot"></div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="br-breadcrumbs" aria-label="Breadcrumb">
+    <ol><li><a href="sourceroot.html">SourceRoot</a></li><li><a href="bibleroot.html">BibleRoot</a></li><li aria-current="page">Commentary Provenance</li></ol>
+  </nav>
+
+  <main id="main-content" class="br-commentary-shell">
+    <section class="br-commentary-intro" aria-labelledby="bibleRootCommentaryTitle">
+      <p class="br-kicker">Commentary and Interpretation Provenance v1</p>
+      <h1 id="bibleRootCommentaryTitle">Historical interpretations, kept with their source trail.</h1>
+      <p id="bibleRootCommentaryDisclaimer" class="br-commentary-disclaimer">These are attributed historical interpretations from named sources. SourceRoot organizes their provenance but does not endorse, reconcile, rank, or determine their theological accuracy.</p>
+      <p id="bibleRootCommentaryPlacement" class="br-placement-notice"><strong>Placement boundary:</strong> Shared passage placement does not mean the sources agree. Absence is not evidence against a view, and corpus inclusion is not a quality ranking.</p>
+    </section>
+
+    <form id="bibleRootCommentaryForm" class="br-commentary-controls" aria-describedby="bibleRootCommentarySelectionHelp">
+      <label for="bibleRootCommentaryReference">Passage</label>
+      <select id="bibleRootCommentaryReference" name="reference">
+        <option>Genesis 1</option><option>Psalm 23</option><option>Ecclesiastes 3</option><option>John 1</option>
+      </select>
+      <fieldset>
+        <legend>Historical commentary works</legend>
+        <div id="bibleRootCommentaryWorks" class="br-commentary-work-options" aria-live="polite"></div>
+      </fieldset>
+      <button type="submit">Update commentary</button>
+      <p id="bibleRootCommentarySelectionHelp">Both accepted works are selected initially. Source inclusion is not a ranking.</p>
+    </form>
+
+    <nav id="bibleRootCommentaryLayerLinks" class="br-layer-links" aria-label="Open the same passage in other BibleRoot layers">
+      <a id="bibleRootCommentaryPassageLink" href="bibleroot-passage.html?reference=Genesis%201">Bible text</a>
+      <a id="bibleRootCommentaryComparisonLink" href="bibleroot-compare.html?reference=Genesis%201">Translation Comparison</a>
+      <a id="bibleRootCommentaryOriginalLink" href="bibleroot-passage.html?reference=Genesis%201#bibleRootOriginalLanguage">Original Language</a>
+    </nav>
+
+    <section aria-labelledby="bibleRootCommentaryResultsTitle">
+      <header class="br-commentary-results-heading">
+        <div><p class="br-kicker">Shared canonical placement</p><h2 id="bibleRootCommentaryResultsTitle">Genesis 1</h2></div>
+        <p id="bibleRootCommentaryDataset">Dataset identity loading...</p>
+      </header>
+      <div id="bibleRootCommentaryStatus" class="br-state-panel" data-state="loading" role="status" aria-live="polite">
+        <span class="br-spinner" aria-hidden="true"></span><div><strong>Loading attributed commentary</strong><p>Contacting the SourceRoot BibleRoot API.</p></div>
+      </div>
+      <div id="bibleRootCommentaryResults" class="br-commentary-results" aria-live="polite" aria-busy="true"></div>
+    </section>
+  </main>
+
+  <dialog id="bibleRootCommentaryProvenance" class="br-commentary-dialog" aria-labelledby="bibleRootCommentaryProvenanceTitle">
+    <form method="dialog"><button class="br-dialog-close" value="close" aria-label="Close provenance details">Close</button></form>
+    <div id="bibleRootCommentaryProvenanceBody"></div>
+  </dialog>
+
+  <footer class="br-footer"><p>BibleRoot Commentary Provenance - attributed source text - no endorsement, synthesis, ranking, or generated interpretation</p></footer>
+  <script src="assets/js/sourceroot-root-switcher.js?v=shared-root-switcher-v1"></script>
+  <script src="assets/js/sourceroot-user-menu.js?v=shared-user-menu-v1"></script>
+  <script src="assets/js/sourceroot-api.js"></script>
+  <script src="assets/js/bibleroot-api.js?v=commentary-provenance-v1"></script>
+  <script src="assets/js/bibleroot-commentary.js?v=commentary-provenance-v1"></script>
+</body>
+</html>

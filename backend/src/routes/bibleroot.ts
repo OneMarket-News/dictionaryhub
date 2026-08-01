@@ -5,16 +5,19 @@ import { createApiError } from "../lib/api-contract.js";
 import {
   BibleRootOriginalLanguageUnavailableError,
   BibleRootComparisonRequestError,
+  BibleRootCommentaryRequestError,
   BibleRootResourceNotFoundError,
   getBibleRootPassage,
   getBibleRootOriginalLanguagePassage,
   getBibleRootPhrase,
   getBibleRootVerse,
   getBibleRootTranslationComparison,
+  getBibleRootCommentary,
   listBibleRootBooks,
   listBibleRootEditions,
   listBibleRootOriginalLanguageEditions,
   listBibleRootTranslationEditions,
+  listBibleRootCommentaries,
 } from "../services/bibleroot-store.js";
 
 export const bibleRootRouter = Router();
@@ -87,6 +90,20 @@ function handleBibleRootError(
       ),
     );
   }
+  if (error instanceof BibleRootCommentaryRequestError) {
+    return response.status(error.status).json(
+      createApiError(
+        error.code.toUpperCase().replaceAll("-", "_"),
+        error.message,
+        error.status,
+        {
+          category: error.status === 503 ? "conflict" : "validation-failure",
+          ...(error.status === 503 ? { details: { readiness: "awaiting-data" } } : {}),
+          requestId: response.locals.requestId,
+        },
+      ),
+    );
+  }
   return next(error);
 }
 
@@ -126,6 +143,37 @@ bibleRootRouter.get("/comparison", async (request, response, next) => {
     return response.status(200).json(
       await getBibleRootTranslationComparison(reference, editions),
     );
+  } catch (error) {
+    return handleBibleRootError(error, response, next);
+  }
+});
+
+bibleRootRouter.get("/commentaries", async (_request, response, next) => {
+  try {
+    return response.status(200).json(await listBibleRootCommentaries());
+  } catch (error) {
+    return handleBibleRootError(error, response, next);
+  }
+});
+
+bibleRootRouter.get("/commentary", async (request, response, next) => {
+  const reference = queryString(request.query.reference);
+  if (!reference) {
+    return response.status(400).json(
+      createApiError("REFERENCE_REQUIRED", "The reference query parameter is required.", 400, {
+        category: "validation-failure",
+        field: "reference",
+        requestId: response.locals.requestId,
+      }),
+    );
+  }
+  const works = queryString(request.query.works)
+    ?.split(",")
+    .map((workId) => workId.trim())
+    .filter(Boolean)
+    ?? [];
+  try {
+    return response.status(200).json(await getBibleRootCommentary(reference, works));
   } catch (error) {
     return handleBibleRootError(error, response, next);
   }

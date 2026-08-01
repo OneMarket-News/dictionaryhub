@@ -5,6 +5,7 @@ const REQUIRED_MIGRATIONS = Object.freeze([
   "014_create_dictionaryroot_lexical_relationships.sql",
   "015_create_bibleroot_foundation.sql",
   "016_create_bibleroot_original_language_foundation.sql",
+  "017_create_bibleroot_commentary_provenance.sql",
 ]);
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
 const LOCAL_SERVER_ADDRESSES = new Set(["127.0.0.1", "::1"]);
@@ -74,13 +75,13 @@ export async function authorizeLocalDevelopmentDatabase(
     server_address: string;
     server_port: number;
     migrations: string[];
-    migration_017_count: number;
+    migration_018_count: number;
   }>(`
     SELECT current_database() AS database_name,
       inet_server_addr()::text AS server_address,
       inet_server_port() AS server_port,
       ARRAY(SELECT migration_name FROM schema_migrations ORDER BY migration_name) AS migrations,
-      (SELECT COUNT(*)::integer FROM schema_migrations WHERE migration_name LIKE '017%') AS migration_017_count;
+      (SELECT COUNT(*)::integer FROM schema_migrations WHERE migration_name LIKE '018%') AS migration_018_count;
   `);
   const row = result.rows[0];
   if (row?.database_name !== "sourceroot") {
@@ -95,8 +96,8 @@ export async function authorizeLocalDevelopmentDatabase(
       throw new Error(`Required migration is not applied: ${migration}`);
     }
   }
-  if (row.migration_017_count !== 0) {
-    throw new Error("Migration 017 is outside the local runtime recovery boundary.");
+  if (row.migration_018_count !== 0) {
+    throw new Error("Migration 018 is outside the local runtime recovery boundary.");
   }
 
   const authorization = Object.freeze({

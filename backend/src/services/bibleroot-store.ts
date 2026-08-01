@@ -11,6 +11,14 @@ import {
   TRANSLATION_COMPARISON_REFERENCES,
   mechanicalTextComparison,
 } from "../bibleroot/translation-comparison.js";
+import {
+  COMMENTARY_DATASET_ID,
+  COMMENTARY_DATASET_VERSION,
+  COMMENTARY_DISCLAIMER,
+  COMMENTARY_PLACEMENT_NOTICE,
+  COMMENTARY_REFERENCES,
+  COMMENTARY_WORK_IDS,
+} from "../bibleroot/commentary-provenance.js";
 import { getPool } from "../lib/database.js";
 
 let datasetPromise: Promise<BibleRootFoundationDataset> | undefined;
@@ -58,6 +66,22 @@ export class BibleRootComparisonRequestError extends Error {
   ) {
     super(message);
     this.name = "BibleRootComparisonRequestError";
+  }
+}
+
+export class BibleRootCommentaryRequestError extends Error {
+  constructor(
+    public readonly code:
+      | "commentary-unavailable"
+      | "unsupported-commentary-reference"
+      | "invalid-commentary-work"
+      | "duplicate-commentary-work"
+      | "commentary-work-limit",
+    message: string,
+    public readonly status: 400 | 503,
+  ) {
+    super(message);
+    this.name = "BibleRootCommentaryRequestError";
   }
 }
 
@@ -611,6 +635,378 @@ export async function getBibleRootTranslationComparison(
     comparisonBoundary: {
       method: "deterministic-token-level-textual-difference",
       disclaimer: "Highlights show textual differences only. They do not determine meaning, accuracy, doctrine, or translation quality.",
+    },
+  };
+}
+
+interface CommentaryCountRow {
+  dataset: number;
+  works: number;
+  sections: number;
+  statements: number;
+  anchors: number;
+  artifacts: number;
+  rights: number;
+}
+
+const expectedCommentaryCounts = {
+  datasets: 1,
+  works: 2,
+  sections: 96,
+  statements: 3450,
+  anchors: 96,
+  sourceArtifacts: 2,
+  rightsRecords: 2,
+};
+
+async function commentaryReadiness() {
+  const row = (await database().query<CommentaryCountRow>(`
+    SELECT
+      (SELECT COUNT(*)::integer FROM imported_bundles WHERE bundle_id = $1 AND version = $2) AS dataset,
+      (SELECT COUNT(*)::integer FROM bibleroot_commentary_works WHERE dataset_id = $1) AS works,
+      (SELECT COUNT(*)::integer FROM bibleroot_commentary_sections WHERE dataset_id = $1) AS sections,
+      (SELECT COUNT(*)::integer FROM bibleroot_commentary_statements WHERE dataset_id = $1) AS statements,
+      (SELECT COUNT(*)::integer FROM bibleroot_commentary_section_anchors WHERE dataset_id = $1) AS anchors,
+      (SELECT COUNT(*)::integer FROM bibleroot_source_artifacts WHERE dataset_id = $1) AS artifacts,
+      (SELECT COUNT(*)::integer FROM bibleroot_source_artifact_rights_components WHERE dataset_id = $1) AS rights;
+  `, [COMMENTARY_DATASET_ID, COMMENTARY_DATASET_VERSION])).rows[0]!;
+  const counts = {
+    datasets: row.dataset,
+    works: row.works,
+    sections: row.sections,
+    statements: row.statements,
+    anchors: row.anchors,
+    sourceArtifacts: row.artifacts,
+    rightsRecords: row.rights,
+  };
+  return {
+    ready: JSON.stringify(counts) === JSON.stringify(expectedCommentaryCounts),
+    counts,
+  };
+}
+
+interface CommentaryWorkRow {
+  work_id: string;
+  title: string;
+  attribution: string;
+  work_date_identity: string;
+  edition_identity: string;
+  description: string;
+  display_order: number;
+  publication_id: string;
+  publication_title: string;
+  publication_date: Date | string | null;
+  stable_identifier: string;
+  provider: string;
+  source_id: string;
+  source_url: string | null;
+  artifact_id: string;
+  filename: string;
+  media_type: string;
+  byte_length: string;
+  sha256: string;
+  artifact_source_url: string;
+  retrieval_timestamp: Date | string;
+  rights_component_id: string;
+  rights_status: string;
+  license_name: string | null;
+  license_url: string | null;
+  rights_statement: string;
+  rights_attribution: string;
+  territorial_limitation: string;
+  evidence_document: string;
+}
+
+interface CommentaryAnchorCoverageRow {
+  work_id: string;
+  book_name: string;
+  chapter_number: number;
+  start_verse: number;
+  end_verse: number;
+}
+
+async function commentaryWorkRows(workIds?: string[]) {
+  return (await database().query<CommentaryWorkRow>(`
+    SELECT w.work_id, w.title, w.attribution, w.work_date_identity,
+      w.edition_identity, w.description, w.display_order,
+      p.publication_id, p.title AS publication_title, p.publication_date,
+      p.stable_identifier, p.provider, s.source_id, s.url AS source_url,
+      a.artifact_id, a.filename, a.media_type, a.byte_length, a.sha256,
+      a.source_url AS artifact_source_url, a.retrieval_timestamp,
+      r.component_id AS rights_component_id, r.rights_status, r.license_name,
+      r.license_url, r.rights_statement, r.attribution AS rights_attribution,
+      r.territorial_limitation, r.evidence_document
+    FROM bibleroot_commentary_works w
+    JOIN bibleroot_source_publications p ON p.publication_id = w.publication_id
+    JOIN sources s ON s.source_id = p.source_id
+    JOIN bibleroot_source_artifacts a ON a.artifact_id = w.artifact_id
+    JOIN bibleroot_source_artifact_rights_components r ON r.component_id = w.rights_component_id
+    WHERE w.dataset_id = $1
+      AND ($2::text[] IS NULL OR w.work_id = ANY($2::text[]))
+    ORDER BY w.display_order, w.work_id;
+  `, [COMMENTARY_DATASET_ID, workIds ?? null])).rows;
+}
+
+async function commentaryCoverageRows(workIds?: string[]) {
+  return (await database().query<CommentaryAnchorCoverageRow>(`
+    SELECT s.work_id, b.display_name AS book_name,
+      cv_start.chapter_number, cv_start.verse_number AS start_verse,
+      cv_end.verse_number AS end_verse
+    FROM bibleroot_commentary_sections s
+    JOIN bibleroot_commentary_section_anchors a ON a.section_id = s.section_id
+    JOIN bibleroot_canonical_verses cv_start ON cv_start.canonical_reference_id = a.canonical_start_reference_id
+    JOIN bibleroot_canonical_verses cv_end ON cv_end.canonical_reference_id = a.canonical_end_reference_id
+    JOIN bibleroot_books b ON b.book_id = cv_start.book_id
+    WHERE s.dataset_id = $1
+      AND ($2::text[] IS NULL OR s.work_id = ANY($2::text[]))
+    ORDER BY s.work_id, b.display_name, cv_start.chapter_number, cv_start.verse_number;
+  `, [COMMENTARY_DATASET_ID, workIds ?? null])).rows;
+}
+
+function mapCommentaryWork(row: CommentaryWorkRow, coverageRows: CommentaryAnchorCoverageRow[]) {
+  const coverage = COMMENTARY_REFERENCES.map((reference) => {
+    const [bookName, chapterText] = reference.split(/ (?=\d+$)/);
+    const chapterNumber = Number(chapterText);
+    const intervals = coverageRows
+      .filter((item) => item.work_id === row.work_id && item.book_name === bookName && item.chapter_number === chapterNumber)
+      .map((item) => ({ startVerse: item.start_verse, endVerse: item.end_verse }));
+    return { reference, intervals, available: intervals.length > 0 };
+  });
+  return {
+    workId: row.work_id,
+    title: row.title,
+    attribution: row.attribution,
+    workDateIdentity: row.work_date_identity,
+    editionIdentity: row.edition_identity,
+    description: row.description,
+    datasetId: COMMENTARY_DATASET_ID,
+    datasetVersion: COMMENTARY_DATASET_VERSION,
+    publication: {
+      publicationId: row.publication_id,
+      title: row.publication_title,
+      publicationDate: dateValue(row.publication_date),
+      stableIdentifier: row.stable_identifier,
+      provider: row.provider,
+    },
+    source: { sourceId: row.source_id, detailsUrl: row.source_url },
+    artifact: {
+      artifactId: row.artifact_id,
+      filename: row.filename,
+      mediaType: row.media_type,
+      byteLength: Number(row.byte_length),
+      sha256: row.sha256,
+      sourceUrl: row.artifact_source_url,
+      retrievedAt: instantValue(row.retrieval_timestamp),
+    },
+    rights: {
+      rightsId: row.rights_component_id,
+      status: row.rights_status,
+      licenseName: row.license_name,
+      licenseUrl: row.license_url,
+      statement: row.rights_statement,
+      attribution: row.rights_attribution,
+      territorialLimitation: row.territorial_limitation,
+      evidenceDocument: row.evidence_document,
+    },
+    selectedPassageCoverage: coverage,
+  };
+}
+
+export async function listBibleRootCommentaries() {
+  const readiness = await commentaryReadiness();
+  if (!readiness.ready) {
+    return {
+      ready: false,
+      status: "awaiting-data",
+      datasetId: COMMENTARY_DATASET_ID,
+      datasetVersion: COMMENTARY_DATASET_VERSION,
+      counts: readiness.counts,
+      items: [],
+      disclaimer: COMMENTARY_DISCLAIMER,
+      sharedPlacementNotice: COMMENTARY_PLACEMENT_NOTICE,
+    };
+  }
+  const [workRows, coverageRows] = await Promise.all([commentaryWorkRows(), commentaryCoverageRows()]);
+  return {
+    ready: true,
+    status: "ready",
+    datasetId: COMMENTARY_DATASET_ID,
+    datasetVersion: COMMENTARY_DATASET_VERSION,
+    counts: readiness.counts,
+    items: workRows.map((row) => mapCommentaryWork(row, coverageRows)),
+    disclaimer: COMMENTARY_DISCLAIMER,
+    sharedPlacementNotice: COMMENTARY_PLACEMENT_NOTICE,
+  };
+}
+
+interface CommentarySectionRow {
+  section_id: string;
+  work_id: string;
+  section_order: number;
+  heading: string | null;
+  exact_text: string;
+  source_locator: string;
+  source_text_sha256: string;
+  source_markup_sha256: string;
+  publication_id: string;
+  artifact_id: string;
+  rights_component_id: string;
+  anchor_id: string;
+  anchor_type: string;
+  start_reference_id: string;
+  end_reference_id: string;
+  start_book_name: string;
+  start_chapter: number;
+  start_verse: number;
+  end_book_name: string;
+  end_chapter: number;
+  end_verse: number;
+  source_supplied_marker: string | null;
+  mapping_status: string;
+  mapping_note: string;
+}
+
+interface CommentaryStatementRow {
+  statement_id: string;
+  section_id: string;
+  statement_order: number;
+  start_offset: number;
+  end_offset: number;
+  exact_text: string;
+  content_sha256: string;
+}
+
+export async function getBibleRootCommentary(reference: string, requestedWorkIds: string[]) {
+  if (requestedWorkIds.length > 3) throw new BibleRootCommentaryRequestError("commentary-work-limit", "Select no more than three commentary works.", 400);
+  if (new Set(requestedWorkIds).size !== requestedWorkIds.length) throw new BibleRootCommentaryRequestError("duplicate-commentary-work", "Each commentary work ID may appear only once.", 400);
+  const invalidIds = requestedWorkIds.filter((workId) => !COMMENTARY_WORK_IDS.includes(workId as (typeof COMMENTARY_WORK_IDS)[number]));
+  if (invalidIds.length > 0) throw new BibleRootCommentaryRequestError("invalid-commentary-work", `Unknown or unsupported commentary work ID: ${invalidIds.join(", ")}.`, 400);
+  const parsed = parseBibleRootReference(reference, await foundation());
+  if (!parsed.wholeChapter || !COMMENTARY_REFERENCES.includes(parsed.normalizedReference as (typeof COMMENTARY_REFERENCES)[number])) {
+    throw new BibleRootCommentaryRequestError("unsupported-commentary-reference", `Commentary Provenance supports only ${COMMENTARY_REFERENCES.join(", ")}.`, 400);
+  }
+  const workIds = requestedWorkIds.length > 0 ? [...requestedWorkIds].sort((left, right) => COMMENTARY_WORK_IDS.indexOf(left as (typeof COMMENTARY_WORK_IDS)[number]) - COMMENTARY_WORK_IDS.indexOf(right as (typeof COMMENTARY_WORK_IDS)[number])) : [...COMMENTARY_WORK_IDS];
+  const readiness = await commentaryReadiness();
+  if (!readiness.ready) throw new BibleRootCommentaryRequestError("commentary-unavailable", "The commentary provenance dataset is awaiting local provisioning.", 503);
+  const [workRows, coverageRows, sectionResult] = await Promise.all([
+    commentaryWorkRows(workIds),
+    commentaryCoverageRows(workIds),
+    database().query<CommentarySectionRow>(`
+      SELECT s.section_id, s.work_id, s.section_order, s.heading, s.exact_text,
+        s.source_locator, s.source_text_sha256, s.source_markup_sha256,
+        s.publication_id, s.artifact_id, s.rights_component_id,
+        a.anchor_id, a.anchor_type,
+        a.canonical_start_reference_id AS start_reference_id,
+        a.canonical_end_reference_id AS end_reference_id,
+        bs.display_name AS start_book_name, cs.chapter_number AS start_chapter,
+        cs.verse_number AS start_verse, be.display_name AS end_book_name,
+        ce.chapter_number AS end_chapter, ce.verse_number AS end_verse,
+        a.source_supplied_marker, a.mapping_status, a.mapping_note
+      FROM bibleroot_commentary_sections s
+      JOIN bibleroot_commentary_section_anchors a ON a.section_id = s.section_id
+      JOIN bibleroot_canonical_verses cs ON cs.canonical_reference_id = a.canonical_start_reference_id
+      JOIN bibleroot_canonical_verses ce ON ce.canonical_reference_id = a.canonical_end_reference_id
+      JOIN bibleroot_books bs ON bs.book_id = cs.book_id
+      JOIN bibleroot_books be ON be.book_id = ce.book_id
+      JOIN bibleroot_commentary_works w ON w.work_id = s.work_id
+      WHERE s.dataset_id = $1 AND s.work_id = ANY($2::text[])
+        AND cs.book_id = $3 AND cs.chapter_number = $4
+      ORDER BY w.display_order, s.section_order, s.section_id;
+    `, [COMMENTARY_DATASET_ID, workIds, parsed.book.bookId, parsed.chapterNumber]),
+  ]);
+  const sectionIds = sectionResult.rows.map((row) => row.section_id);
+  const statements = sectionIds.length === 0 ? [] : (await database().query<CommentaryStatementRow>(`
+    SELECT statement_id, section_id, statement_order, start_offset,
+      end_offset, exact_text, content_sha256
+    FROM bibleroot_commentary_statements
+    WHERE section_id = ANY($1::text[])
+    ORDER BY section_id, statement_order;
+  `, [sectionIds])).rows;
+  const works = workRows.map((row) => {
+    const metadata = mapCommentaryWork(row, coverageRows);
+    const workSections = sectionResult.rows.filter((section) => section.work_id === row.work_id);
+    const covered = new Set<number>();
+    for (const section of workSections) for (let verse = section.start_verse; verse <= section.end_verse; verse += 1) covered.add(verse);
+    const gaps: Array<{ startVerse: number; endVerse: number; normalizedStartReference: string; normalizedEndReference: string; note: string }> = [];
+    for (let verse = 1; verse <= parsed.canonicalReferenceIds.length; verse += 1) {
+      if (covered.has(verse)) continue;
+      const previous = gaps.at(-1);
+      if (previous && previous.endVerse + 1 === verse) {
+        previous.endVerse = verse;
+        previous.normalizedEndReference = `${parsed.book.displayName} ${parsed.chapterNumber}:${verse}`;
+      } else gaps.push({
+        startVerse: verse,
+        endVerse: verse,
+        normalizedStartReference: `${parsed.book.displayName} ${parsed.chapterNumber}:${verse}`,
+        normalizedEndReference: `${parsed.book.displayName} ${parsed.chapterNumber}:${verse}`,
+        note: "No source section is indexed at this position; no fallback or inferred commentary was added.",
+      });
+    }
+    return {
+      ...metadata,
+      coverageGaps: gaps,
+      sections: workSections.map((section) => ({
+        sectionId: section.section_id,
+        sectionOrder: section.section_order,
+        heading: section.heading,
+        exactText: section.exact_text,
+        sourceLocator: section.source_locator,
+        sourceTextHash: section.source_text_sha256,
+        sourceMarkupHash: section.source_markup_sha256,
+        datasetId: COMMENTARY_DATASET_ID,
+        datasetVersion: COMMENTARY_DATASET_VERSION,
+        provenance: { workId: section.work_id, publicationId: section.publication_id, artifactId: section.artifact_id, rightsId: section.rights_component_id },
+        anchor: {
+          anchorId: section.anchor_id,
+          anchorType: section.anchor_type,
+          canonicalStartReferenceId: section.start_reference_id,
+          canonicalEndReferenceId: section.end_reference_id,
+          normalizedStartReference: `${section.start_book_name} ${section.start_chapter}:${section.start_verse}`,
+          normalizedEndReference: `${section.end_book_name} ${section.end_chapter}:${section.end_verse}`,
+          sourceSuppliedMarker: section.source_supplied_marker,
+          mappingStatus: section.mapping_status,
+          mappingNote: section.mapping_note,
+        },
+        statements: statements.filter((statement) => statement.section_id === section.section_id).map((statement) => ({
+          statementId: statement.statement_id,
+          statementOrder: statement.statement_order,
+          startOffset: statement.start_offset,
+          endOffset: statement.end_offset,
+          exactText: statement.exact_text,
+          contentHash: statement.content_sha256,
+          parentSectionId: section.section_id,
+          anchorId: section.anchor_id,
+          provenance: { workId: section.work_id, publicationId: section.publication_id, artifactId: section.artifact_id, rightsId: section.rights_component_id },
+        })),
+      })),
+    };
+  });
+  return {
+    ready: true,
+    status: "ready",
+    datasetId: COMMENTARY_DATASET_ID,
+    datasetVersion: COMMENTARY_DATASET_VERSION,
+    normalizedReference: parsed.normalizedReference,
+    canonicalReferenceIds: parsed.canonicalReferenceIds,
+    selectedWorkIds: workIds,
+    works,
+    links: {
+      passage: `bibleroot-passage.html?reference=${encodeURIComponent(parsed.normalizedReference)}`,
+      translationComparison: `bibleroot-compare.html?reference=${encodeURIComponent(parsed.normalizedReference)}`,
+      originalLanguage: `bibleroot-passage.html?reference=${encodeURIComponent(parsed.normalizedReference)}#bibleRootOriginalLanguage`,
+    },
+    primaryTextLayers: { biblicalText: true, translationComparison: true, originalLanguage: true },
+    disclaimer: COMMENTARY_DISCLAIMER,
+    sharedPlacementNotice: COMMENTARY_PLACEMENT_NOTICE,
+    interpretationBoundary: {
+      sourceAuthored: true,
+      sourceRootEndorsement: false,
+      reconciliation: false,
+      ranking: false,
+      theologicalAccuracyDecision: false,
+      generatedSummary: false,
+      inferredAgreement: false,
+      wordAlignment: false,
     },
   };
 }

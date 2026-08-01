@@ -36,6 +36,11 @@
       reference,
       editions: Array.isArray(editions) ? editions.join(",") : undefined
     }),
+    commentaries: () => get("/commentaries"),
+    commentary: (reference, works) => get("/commentary", {
+      reference,
+      works: Array.isArray(works) ? works.join(",") : undefined
+    }),
     books: () => get("/books"),
     passage: (reference, edition) => get("/passages", {
       reference,

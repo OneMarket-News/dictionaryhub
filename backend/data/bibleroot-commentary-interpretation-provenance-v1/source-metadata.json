@@ -1,0 +1,88 @@
+{
+  "schemaVersion": "1.0.0",
+  "datasetId": "bibleroot-commentary-interpretation-provenance-v1",
+  "datasetVersion": "1.0.0",
+  "retrievedAt": "2026-08-01T19:13:18.087Z",
+  "provider": "CrossWire Bible Society",
+  "artifacts": [
+    {
+      "workId": "br-commentary-work-mhc-complete",
+      "workCode": "mhc",
+      "sourceId": "br-source-crosswire-mhc-2-2",
+      "publicationId": "br-publication-crosswire-mhc-2-2",
+      "artifactId": "br-artifact-crosswire-mhc-2-2",
+      "rightsId": "br-rights-commentary-mhc-2-2",
+      "title": "Matthew Henry's Complete Commentary on the Whole Bible",
+      "attribution": "Matthew Henry",
+      "workDateIdentity": "Historical work; the CrossWire module does not state an original publication date range.",
+      "editionIdentity": "CrossWire SWORD module MHC version 2.2 (2022-08-29), prepared from the CCEL text",
+      "description": "Attributed historical commentary distributed as the CrossWire MHC zCom4 module.",
+      "provider": "CrossWire Bible Society",
+      "stableIdentifier": "crosswire:sword:MHC:2.2",
+      "moduleVersion": "2.2",
+      "moduleVersionDate": "2022-08-29",
+      "detailsUrl": "https://www.crosswire.org/sword/modules/ModInfo.jsp?modName=MHC",
+      "sourceUrl": "https://www.crosswire.org/ftpmirror/pub/sword/packages/rawzip/MHC.zip",
+      "filename": "MHC.zip",
+      "mediaType": "application/zip",
+      "byteLength": 15195123,
+      "sha256": "6BCB936873CA144E317805E5C1677940FD86E2403F7C14517752E44F25C8882B",
+      "gitBlob": "0a90099a27190e9ae728f1abd60b87b2ecbb0ef8",
+      "normalizedFile": "normalized/mhc.json",
+      "configurationEntry": "mods.d/mhc.conf",
+      "dataDirectory": "modules/comments/zcom4/mhc",
+      "normalizationNotes": "CrossWire KJV-versified zCom4 book blocks are read locally. Identical consecutive index tuples retain their source range; OSIS container markup is preserved separately from display text."
+    },
+    {
+      "workId": "br-commentary-work-jfb",
+      "workCode": "jfb",
+      "sourceId": "br-source-crosswire-jfb-3-0",
+      "publicationId": "br-publication-crosswire-jfb-3-0",
+      "artifactId": "br-artifact-crosswire-jfb-3-0",
+      "rightsId": "br-rights-commentary-jfb-3-0",
+      "title": "Commentary Critical and Explanatory on the Whole Bible",
+      "attribution": "Robert Jamieson, A. R. Fausset, and David Brown",
+      "workDateIdentity": "1871",
+      "editionIdentity": "CrossWire SWORD module JFB version 3.0 (2021-02-15), new source from CCEL",
+      "description": "Attributed historical commentary distributed as the CrossWire JFB zCom4 module.",
+      "provider": "CrossWire Bible Society",
+      "stableIdentifier": "crosswire:sword:JFB:3.0",
+      "moduleVersion": "3.0",
+      "moduleVersionDate": "2021-02-15",
+      "detailsUrl": "https://www.crosswire.org/sword/modules/ModInfo.jsp?modName=JFB",
+      "sourceUrl": "https://www.crosswire.org/ftpmirror/pub/sword/packages/rawzip/JFB.zip",
+      "filename": "JFB.zip",
+      "mediaType": "application/zip",
+      "byteLength": 5687741,
+      "sha256": "CF44DFD25A9038087569C355FB48134154CFF469C05704904020DF038235F56F",
+      "gitBlob": "2cd0741e4a231846f552ab40ad4e56558d9cdabf",
+      "normalizedFile": "normalized/jfb.json",
+      "configurationEntry": "mods.d/jfb.conf",
+      "dataDirectory": "modules/comments/zcom/jfb",
+      "normalizationNotes": "CrossWire KJV-versified zCom4 book blocks are read locally. Identical consecutive index tuples retain their source range; zero-length index entries become explicit coverage gaps; OSIS container markup is preserved separately from display text."
+    }
+  ],
+  "documents": [
+    {
+      "filename": "crosswire-mhc-module.html",
+      "sourceUrl": "https://www.crosswire.org/sword/modules/ModInfo.jsp?modName=MHC",
+      "byteLength": 4416,
+      "sha256": "4DDED2840F7734DD6CBE9C5FEF6E101EB81F8D1CE573538F775C5759C05D6A3B",
+      "gitBlob": "068314ff01ecee5e55dc935d4ca2f25b0da2e78e"
+    },
+    {
+      "filename": "crosswire-jfb-module.html",
+      "sourceUrl": "https://www.crosswire.org/sword/modules/ModInfo.jsp?modName=JFB",
+      "byteLength": 4173,
+      "sha256": "5A32E751F195695FD3BC33F6337CBABF09107D4185BA9AA0B9429A64D205C607",
+      "gitBlob": "22b6e91aef73c83acc66360a1f74c5dcc102a64e"
+    },
+    {
+      "filename": "crosswire-rawzip-index.html",
+      "sourceUrl": "https://www.crosswire.org/ftpmirror/pub/sword/packages/rawzip/",
+      "byteLength": 97115,
+      "sha256": "EF1D9AF46E6D8D4EBF6481F3ECFED4163DBDA898C555E9CC7FD135E4027D795C",
+      "gitBlob": "9a59e1c97ab6e4ec4c267883c09bc4acb319745c"
+    }
+  ]
+}

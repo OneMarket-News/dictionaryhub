@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "1.0.0",
+  "datasetId": "bibleroot-commentary-interpretation-provenance-v1",
+  "version": "1.0.0",
+  "files": {
+    "raw/MHC.zip": {
+      "byteLength": 15195123,
+      "sha256": "6BCB936873CA144E317805E5C1677940FD86E2403F7C14517752E44F25C8882B",
+      "gitBlob": "0a90099a27190e9ae728f1abd60b87b2ecbb0ef8"
+    },
+    "raw/JFB.zip": {
+      "byteLength": 5687741,
+      "sha256": "CF44DFD25A9038087569C355FB48134154CFF469C05704904020DF038235F56F",
+      "gitBlob": "2cd0741e4a231846f552ab40ad4e56558d9cdabf"
+    },
+    "source-docs/crosswire-mhc-module.html": {
+      "byteLength": 4416,
+      "sha256": "4DDED2840F7734DD6CBE9C5FEF6E101EB81F8D1CE573538F775C5759C05D6A3B",
+      "gitBlob": "068314ff01ecee5e55dc935d4ca2f25b0da2e78e"
+    },
+    "source-docs/crosswire-jfb-module.html": {
+      "byteLength": 4173,
+      "sha256": "5A32E751F195695FD3BC33F6337CBABF09107D4185BA9AA0B9429A64D205C607",
+      "gitBlob": "22b6e91aef73c83acc66360a1f74c5dcc102a64e"
+    },
+    "source-docs/crosswire-rawzip-index.html": {
+      "byteLength": 97115,
+      "sha256": "EF1D9AF46E6D8D4EBF6481F3ECFED4163DBDA898C555E9CC7FD135E4027D795C",
+      "gitBlob": "9a59e1c97ab6e4ec4c267883c09bc4acb319745c"
+    },
+    "source-metadata.json": {
+      "byteLength": 4587,
+      "sha256": "45BA89DEACEB3B0595A92CE576DDB44FCFA105E535EC7DADC6FCB04DAC797A6A"
+    },
+    "rights-metadata.json": {
+      "byteLength": 1804,
+      "sha256": "C91D0E533DCC520C69C1A24D488EF832D76D06F4E49C0545DB2EA9EFE7C71F65"
+    },
+    "normalized/mhc.json": {
+      "byteLength": 3004404,
+      "sha256": "38D64BB3B19B1A7DD16E37DB37CB2CA118C759FB5C36458D55EBA845BFBFE569"
+    },
+    "normalized/jfb.json": {
+      "byteLength": 1269436,
+      "sha256": "37FD73213C8E11B71243F5058249BE35EB9331746A09B629A36B37EEA559628F"
+    }
+  }
+}

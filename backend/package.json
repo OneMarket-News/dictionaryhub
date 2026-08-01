@@ -25,7 +25,7 @@
     "test:frontend-observability": "node --test ../verification/frontend-api-observability.test.cjs",
     "test:historyroot:plymouth": "node --env-file=.env.test --import ./scripts/register-tsx.mjs --test --test-concurrency=1 test/historyroot-plymouth.test.ts",
     "test:governance:historyroot": "node --env-file=.env.test --import ./scripts/register-tsx.mjs --test --test-concurrency=1 test/governed-historyroot.test.ts",
-    "db:migrate": "tsx src/scripts/migrate.ts",
+    "db:migrate": "node --env-file=.env --import ./scripts/register-tsx.mjs src/scripts/migrate.ts",
     "db:migrate:test": "node --env-file=.env.test --import ./scripts/register-tsx.mjs src/scripts/migrate.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "dictionaryroot:pilot": "tsx src/scripts/build-dictionaryroot-pilot.ts",
@@ -71,6 +71,10 @@
     "bibleroot:translations:import": "node --env-file=.env.test --import ./scripts/register-tsx.mjs src/scripts/import-bibleroot-translation-comparison.ts",
     "test:bibleroot:translations": "node --env-file=.env.test --import ./scripts/register-tsx.mjs --test --test-concurrency=1 test/bibleroot-translation-comparison.test.ts",
     "test:bibleroot:translations:frontend": "node --test ../verification/bibleroot-translation-comparison.test.cjs",
+    "bibleroot:commentary:prepare": "node --import ./scripts/register-tsx.mjs src/scripts/prepare-bibleroot-commentary-provenance.ts",
+    "bibleroot:commentary:import": "node --env-file=.env.test --import ./scripts/register-tsx.mjs src/scripts/import-bibleroot-commentary-provenance.ts",
+    "test:bibleroot:commentary": "node --env-file=.env.test --import ./scripts/register-tsx.mjs --test --test-concurrency=1 test/bibleroot-commentary-provenance.test.ts",
+    "test:bibleroot:commentary:frontend": "node --test ../verification/bibleroot-commentary-provenance.test.cjs",
     "verify:fresh-install": "node scripts/verify-fresh-install.mjs"
   },
   "dependencies": {

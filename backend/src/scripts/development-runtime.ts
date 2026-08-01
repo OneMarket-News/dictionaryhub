@@ -19,6 +19,10 @@ import {
   type TranslationComparisonDataset,
 } from "../bibleroot/translation-comparison.js";
 import {
+  validateCommentaryDataset,
+  type CommentaryDataset,
+} from "../bibleroot/commentary-provenance.js";
+import {
   CORE_LEXICAL_CORPUS_ID,
   CORE_LEXICAL_CORPUS_VERSION,
 } from "../dictionaryroot/core-lexical-corpus.js";
@@ -32,6 +36,7 @@ import {
 import { importBibleRootFoundation } from "./import-bibleroot-foundation.js";
 import { importBibleRootOriginalLanguageFoundation } from "./import-bibleroot-original-language-foundation.js";
 import { importBibleRootTranslationComparison } from "./import-bibleroot-translation-comparison.js";
+import { importBibleRootCommentaryProvenance } from "./import-bibleroot-commentary-provenance.js";
 import { getDevelopmentRuntimeReadiness } from "../services/development-runtime-readiness.js";
 import { saveDictionaryRootCoreLexicalCorpus } from "../services/lexical-evidence-store.js";
 
@@ -53,6 +58,7 @@ export interface ValidatedDevelopmentDatasets {
   bibleRootFoundation: BibleRootFoundationDataset;
   bibleRootOriginalLanguage: OriginalLanguageDataset;
   bibleRootTranslationComparison: TranslationComparisonDataset;
+  bibleRootCommentaryProvenance: CommentaryDataset;
 }
 
 function sha256(bytes: Uint8Array | string): string {
@@ -104,13 +110,14 @@ export async function validateDictionaryRootCoreCorpus(): Promise<DictionaryRoot
 }
 
 export async function validateDevelopmentDatasets(): Promise<ValidatedDevelopmentDatasets> {
-  const [dictionaryRoot, bibleRootFoundation, bibleRootOriginalLanguage, bibleRootTranslationComparison] = await Promise.all([
+  const [dictionaryRoot, bibleRootFoundation, bibleRootOriginalLanguage, bibleRootTranslationComparison, bibleRootCommentaryProvenance] = await Promise.all([
     validateDictionaryRootCoreCorpus(),
     validateBibleRootFoundation(),
     loadOriginalLanguageDataset(),
     validateTranslationComparisonDataset(),
+    validateCommentaryDataset(),
   ]);
-  return { dictionaryRoot, bibleRootFoundation, bibleRootOriginalLanguage, bibleRootTranslationComparison };
+  return { dictionaryRoot, bibleRootFoundation, bibleRootOriginalLanguage, bibleRootTranslationComparison, bibleRootCommentaryProvenance };
 }
 
 async function historyRows(client: PoolClient, table: string, idColumn: string) {
@@ -234,8 +241,18 @@ export async function provisionDevelopmentRuntime() {
     });
   }
 
+  const commentaryAction = before.roots.BibleRoot.commentaryProvenanceReady
+    ? "skipped"
+    : (before.roots.BibleRoot.counts.commentaryDatasets ?? 0) > 0 ? "updated" : "imported";
+  if (commentaryAction !== "skipped") {
+    await importBibleRootCommentaryProvenance({
+      dataset: datasets.bibleRootCommentaryProvenance,
+      developmentAuthorization: authorization,
+    });
+  }
+
   const after = await getDevelopmentRuntimeReadiness();
-  if (!after.roots.DictionaryRoot.ready || !after.roots.BibleRoot.ready || !after.roots.BibleRoot.translationComparisonReady) {
+  if (!after.roots.DictionaryRoot.ready || !after.roots.BibleRoot.ready || !after.roots.BibleRoot.translationComparisonReady || !after.roots.BibleRoot.commentaryProvenanceReady) {
     throw new Error("Development provisioning completed without achieving released-dataset readiness.");
   }
   const finalClient = await pool.connect();
@@ -261,6 +278,9 @@ export async function provisionDevelopmentRuntime() {
     + originalCounts.sourceVerses + originalCounts.tokens + originalCounts.lemmas
     + originalCounts.morphologies + originalCounts.mappings;
   const comparisonRecords = 345;
+  const commentaryCounts = datasets.bibleRootCommentaryProvenance.manifest.expectedCounts;
+  const commentaryRecords = 1 + (commentaryCounts.works * 5)
+    + commentaryCounts.sections + commentaryCounts.anchors + commentaryCounts.statements;
   return {
     command: "dev:provision",
     target,
@@ -269,12 +289,14 @@ export async function provisionDevelopmentRuntime() {
       bibleRootFoundation: { datasetId: datasets.bibleRootFoundation.manifest.datasetId, version: datasets.bibleRootFoundation.manifest.version },
       bibleRootOriginalLanguage: { datasetId: datasets.bibleRootOriginalLanguage.manifest.datasetId, version: datasets.bibleRootOriginalLanguage.manifest.version },
       bibleRootTranslationComparison: { datasetId: datasets.bibleRootTranslationComparison.manifest.datasetId, version: datasets.bibleRootTranslationComparison.manifest.version },
+      bibleRootCommentaryProvenance: { datasetId: datasets.bibleRootCommentaryProvenance.manifest.datasetId, version: datasets.bibleRootCommentaryProvenance.manifest.version },
     },
     datasets: {
       DictionaryRoot: operationResult(dictionaryAction, dictionaryRecords),
       BibleRootFoundation: operationResult(foundationAction, foundationRecords),
       BibleRootOriginalLanguage: operationResult(originalAction, originalRecords),
       BibleRootTranslationComparison: operationResult(comparisonAction, comparisonRecords),
+      BibleRootCommentaryProvenance: operationResult(commentaryAction, commentaryRecords),
     },
     historyRoot: {
       preserved: true,
