@@ -1,0 +1,3 @@
+# Preserve immutable upstream artifacts byte-for-byte.
+backend/data/**/raw/** -text
+backend/data/**/source-docs/** -text
