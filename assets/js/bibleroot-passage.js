@@ -46,6 +46,133 @@
     }
   }
 
+  function setOriginalStatus(state, title, message, retry) {
+    const panel = byId("bibleRootOriginalLanguageStatus");
+    clear(panel);
+    panel.dataset.state = state;
+    panel.hidden = false;
+    const icon = append(panel, "span", "br-state-icon", state === "loading" ? "···" : "!");
+    icon.setAttribute("aria-hidden", "true");
+    const copy = append(panel, "div", "", undefined);
+    append(copy, "strong", "", title);
+    append(copy, "p", "", message);
+    if (retry) {
+      const button = append(copy, "button", "br-retry-button", "Retry language layer");
+      button.type = "button";
+      button.addEventListener("click", () => {
+        loadOriginalLanguage(referenceFromUrl(), requestSequence);
+      });
+    }
+  }
+
+  function resetOriginalLanguage() {
+    byId("bibleRootOriginalLanguage").hidden = false;
+    clear(byId("bibleRootOriginalLanguageVerses"));
+    clear(byId("bibleRootOriginalLanguageArtifacts"));
+    byId("bibleRootOriginalLanguageVerses").setAttribute("aria-busy", "true");
+    byId("bibleRootOriginalLanguageProvenance").hidden = true;
+    byId("bibleRootOriginalLanguageEdition").textContent = "";
+    byId("bibleRootOriginalLanguageBadge").textContent = "Source";
+    setOriginalStatus(
+      "loading",
+      "Loading original-language tokens",
+      "Contacting the live SourceRoot BibleRoot API. No fallback language data is used.",
+      false
+    );
+  }
+
+  function renderOriginalArtifacts(edition) {
+    const container = byId("bibleRootOriginalLanguageArtifacts");
+    clear(container);
+    edition.artifacts.forEach((artifact) => {
+      const article = append(container, "article", "br-original-artifact", undefined);
+      append(article, "h5", "", artifact.filename);
+      append(article, "p", "", `${artifact.byteLength.toLocaleString()} bytes · SHA-256 ${artifact.sha256}`);
+      append(article, "p", "", `Immutable retrieval: ${artifact.sourceUrl}`);
+      const rights = append(article, "ul", "br-original-rights", undefined);
+      artifact.rightsComponents.forEach((component) => {
+        const item = append(rights, "li", "", undefined);
+        append(item, "strong", "", component.componentType.replaceAll("-", " "));
+        append(item, "span", "", `${component.rightsStatus}: ${component.rightsStatement}`);
+        if (component.attribution) append(item, "span", "", ` Attribution: ${component.attribution}`);
+      });
+    });
+    byId("bibleRootOriginalLanguageProvenance").hidden = false;
+  }
+
+  function renderOriginalLanguage(payload) {
+    const edition = payload.edition;
+    byId("bibleRootOriginalLanguageEdition").textContent =
+      `${edition.displayTitle} · ${edition.versionIdentity}`;
+    byId("bibleRootOriginalLanguageBadge").textContent =
+      payload.direction === "rtl" ? "Hebrew" : "Greek";
+    const container = byId("bibleRootOriginalLanguageVerses");
+    clear(container);
+    payload.verses.forEach((verse) => {
+      const article = append(container, "article", "br-original-verse", undefined);
+      article.dir = payload.direction;
+      article.dataset.sourceVerseId = verse.sourceVerseId;
+      const header = append(article, "header", "br-original-verse-header", undefined);
+      append(header, "h4", "", verse.sourceNativeCitation);
+      const mapping = append(header, "p", "br-original-mapping", undefined);
+      mapping.dataset.mappingType = verse.mapping.mappingType;
+      mapping.textContent = verse.mapping.mappingType === "one_to_one"
+        ? `Maps to ${verse.mapping.targetCanonicalReferenceId}`
+        : verse.mapping.factualExplanation;
+      const tokenList = append(article, "div", "br-original-token-list", undefined);
+      tokenList.setAttribute("role", "list");
+      tokenList.setAttribute("aria-label", `Ordered source tokens for ${verse.sourceNativeCitation}`);
+      verse.tokens.forEach((token) => {
+        const item = append(tokenList, "span", "br-original-token", undefined);
+        item.setAttribute("role", "listitem");
+        item.dataset.sequencePosition = String(token.sequencePosition);
+        if (token.sourceNativeTokenId) {
+          item.dataset.sourceNativeTokenId = token.sourceNativeTokenId;
+          item.title = `Source-native word ID ${token.sourceNativeTokenId}`;
+        }
+        const surface = append(item, "span", "br-original-surface", token.surfaceForm);
+        surface.lang = edition.language;
+        surface.dir = payload.direction;
+        const analysis = append(item, "span", "br-original-analysis", undefined);
+        append(analysis, "span", "", "Lemma ");
+        append(analysis, "code", "", token.lemma.verbatim || "not yet analyzed");
+        token.morphologies.forEach((morphology, index) => {
+          append(analysis, "span", "", `${index === 0 ? " · Morph " : " / "}`);
+          append(analysis, "code", "", morphology.verbatimCode || "not yet analyzed");
+        });
+        const states = new Set(token.morphologies.map((morphology) => morphology.analysisStatus));
+        if (token.lemma.analysisStatus !== "analyzed") states.add(token.lemma.analysisStatus);
+        states.delete("analyzed");
+        states.forEach((state) => {
+          append(analysis, "span", "br-analysis-state", state.replaceAll("_", " "));
+        });
+      });
+    });
+    container.setAttribute("aria-busy", "false");
+    byId("bibleRootOriginalLanguageStatus").hidden = true;
+    renderOriginalArtifacts(edition);
+  }
+
+  async function loadOriginalLanguage(reference, sequence) {
+    try {
+      const payload = await global.BibleRootApi.originalLanguagePassage(reference);
+      if (sequence !== requestSequence) return;
+      renderOriginalLanguage(payload);
+    } catch (error) {
+      if (sequence !== requestSequence) return;
+      byId("bibleRootOriginalLanguageVerses").setAttribute("aria-busy", "false");
+      const unavailable = String(error && error.code || "") === "ORIGINAL_LANGUAGE_UNAVAILABLE";
+      setOriginalStatus(
+        unavailable ? "unavailable" : "offline",
+        unavailable ? "Original-language data not available" : "Original-language API unavailable",
+        unavailable
+          ? error.message
+          : "The live SourceRoot service could not return source-language tokens. No fallback or substitute data was displayed.",
+        !unavailable
+      );
+    }
+  }
+
   function selectedOccurrences(occurrences) {
     const candidates = (occurrences || []).slice().sort((left, right) =>
       left.startOffset - right.startOffset
@@ -172,6 +299,7 @@
     clear(byId("bibleRootPassageVerses"));
     byId("passage-provenance").hidden = true;
     byId("bibleRootFutureLayers").hidden = true;
+    resetOriginalLanguage();
     setStatus("loading", "Loading exact text", "Contacting the SourceRoot BibleRoot API.", false);
     try {
       const payload = await global.BibleRootApi.passage(
@@ -189,6 +317,7 @@
       byId("bibleRootPassageStatus").hidden = true;
       renderVerses(payload);
       renderProvenance(payload);
+      loadOriginalLanguage(cleanReference, sequence);
     } catch (error) {
       if (sequence !== requestSequence) return;
       const state = errorState(error);
@@ -196,6 +325,7 @@
       byId("bibleRootPassageCitation").textContent = cleanReference;
       byId("bibleRootPassageBreadcrumb").textContent = "Unavailable passage";
       byId("bibleRootPassageVerses").setAttribute("aria-busy", "false");
+      byId("bibleRootOriginalLanguage").hidden = true;
       setStatus(state[0], state[1], state[2], state[3]);
     }
   }

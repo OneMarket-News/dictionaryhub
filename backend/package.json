@@ -61,6 +61,10 @@
     "bibleroot:foundation:import": "node --env-file=.env.test --import ./scripts/register-tsx.mjs src/scripts/import-bibleroot-foundation.ts",
     "test:bibleroot:foundation": "node --env-file=.env.test --import ./scripts/register-tsx.mjs --test --test-concurrency=1 test/bibleroot-foundation.test.ts",
     "test:bibleroot:frontend": "node --test ../verification/bibleroot-foundation.test.cjs",
+    "bibleroot:original-languages:prepare": "node --import ./scripts/register-tsx.mjs src/scripts/prepare-bibleroot-original-language-foundation.ts",
+    "bibleroot:original-languages:import": "node --env-file=.env.test --import ./scripts/register-tsx.mjs src/scripts/import-bibleroot-original-language-foundation.ts",
+    "test:bibleroot:original-languages": "node --env-file=.env.test --import ./scripts/register-tsx.mjs --test --test-concurrency=1 test/bibleroot-original-language-foundation.test.ts",
+    "test:bibleroot:original-languages:frontend": "node --test ../verification/bibleroot-original-language-foundation.test.cjs",
     "verify:fresh-install": "node scripts/verify-fresh-install.mjs"
   },
   "dependencies": {

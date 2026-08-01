@@ -74,6 +74,29 @@
       </div>
       <div id="bibleRootPassageVerses" class="br-verses" aria-live="polite" aria-busy="true"></div>
 
+      <section id="bibleRootOriginalLanguage" class="br-original-language" aria-labelledby="bibleRootOriginalLanguageTitle" hidden>
+        <header class="br-original-language-header">
+          <div>
+            <p class="br-kicker">Source-language layer</p>
+            <h3 id="bibleRootOriginalLanguageTitle">Original language</h3>
+            <p id="bibleRootOriginalLanguageEdition" class="br-original-language-edition"></p>
+          </div>
+          <span id="bibleRootOriginalLanguageBadge" class="br-edition-pill">Source</span>
+        </header>
+        <p class="br-layer-boundary">
+          This panel is subordinate to the verified KJV passage. It presents
+          source tokens and source analysis without translation, gloss,
+          transliteration, English alignment, commentary, or theology.
+        </p>
+        <div id="bibleRootOriginalLanguageStatus" class="br-state-panel" data-state="loading" role="status" aria-live="polite"></div>
+        <div id="bibleRootOriginalLanguageVerses" class="br-original-language-verses" aria-live="polite" aria-busy="true"></div>
+        <section id="bibleRootOriginalLanguageProvenance" class="br-original-provenance" aria-labelledby="bibleRootOriginalLanguageProvenanceTitle" hidden>
+          <h4 id="bibleRootOriginalLanguageProvenanceTitle">Original-language provenance and rights</h4>
+          <div id="bibleRootOriginalLanguageArtifacts"></div>
+          <p class="br-search-boundary">This language layer is not indexed by unified search in this stage.</p>
+        </section>
+      </section>
+
       <section id="passage-provenance" class="br-provenance" aria-labelledby="br-provenance-title" hidden>
         <header>
           <div><p class="br-kicker">Verify this text</p><h3 id="br-provenance-title">Source &amp; provenance</h3></div>
@@ -108,7 +131,7 @@
   <script src="assets/js/sourceroot-root-switcher.js?v=shared-root-switcher-v1"></script>
   <script src="assets/js/sourceroot-user-menu.js?v=shared-user-menu-v1"></script>
   <script src="assets/js/sourceroot-api.js"></script>
-  <script src="assets/js/bibleroot-api.js?v=foundation-v1"></script>
-  <script src="assets/js/bibleroot-passage.js?v=foundation-v1"></script>
+  <script src="assets/js/bibleroot-api.js?v=original-language-foundation-v1"></script>
+  <script src="assets/js/bibleroot-passage.js?v=original-language-foundation-v1"></script>
 </body>
 </html>

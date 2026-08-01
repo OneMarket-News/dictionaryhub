@@ -1,0 +1,30 @@
+[
+  {
+    "editionId": "br-ol-edition-oshb-wlc-v2-2",
+    "language": "he",
+    "displayTitle": "Open Scriptures Hebrew Bible — Westminster Leningrad Codex",
+    "abbreviation": "OSHB WLC",
+    "versionIdentity": "v.2.2",
+    "immutableSourceRef": "v.2.2@6a5db284c715c18b239422e57bb89684e6a19f00",
+    "publicationId": "br-publication-oshb-v2-2",
+    "artifactIds": [
+      "br-artifact-oshb-gen-v2-2",
+      "br-artifact-oshb-ps-v2-2",
+      "br-artifact-oshb-eccl-v2-2"
+    ],
+    "description": "Hebrew source text with verbatim OSHB lemma and morphology fields; not a translation."
+  },
+  {
+    "editionId": "br-ol-edition-nestle1904-rel-1-3",
+    "language": "grc",
+    "displayTitle": "Nestle 1904 Greek New Testament with analysis",
+    "abbreviation": "Nestle 1904",
+    "versionIdentity": "rel-1-3 / version 1.3",
+    "immutableSourceRef": "rel-1-3@f2e8fef56eeea892697b5d511a87b8545d6c3dda",
+    "publicationId": "br-publication-nestle1904-rel-1-3",
+    "artifactIds": [
+      "br-artifact-nestle1904-rel-1-3"
+    ],
+    "description": "Greek source edition with verbatim functional/form morphology, lemma, and Strong's fields; it is not the source text underlying the KJV."
+  }
+]

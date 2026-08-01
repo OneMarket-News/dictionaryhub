@@ -1,0 +1,167 @@
+{
+  "schemaVersion": "1.0.0",
+  "datasetId": "br-dataset-original-language-foundation-v1",
+  "retrievedAt": "2026-08-01",
+  "sources": [
+    {
+      "sourceId": "br-source-oshb-v2-2",
+      "publicationId": "br-publication-oshb-v2-2",
+      "title": "Open Scriptures Hebrew Bible v.2.2",
+      "provider": "Open Scriptures Hebrew Bible Project",
+      "stableIdentifier": "github:openscriptures/morphhb@v.2.2",
+      "publicationDate": null,
+      "description": "Tag-pinned WLC text with OSHB lemma and morphology analysis.",
+      "repository": "https://github.com/openscriptures/morphhb.git",
+      "immutableRef": "v.2.2",
+      "commitSha": "6a5db284c715c18b239422e57bb89684e6a19f00",
+      "documentation": [
+        "source-docs/oshb-README.md",
+        "source-docs/oshb-LICENSE.md",
+        "source-docs/oshb-parsing-README.md",
+        "source-docs/oshb-HebrewMorphologyCodes.html"
+      ]
+    },
+    {
+      "sourceId": "br-source-nestle1904-rel-1-3",
+      "publicationId": "br-publication-nestle1904-rel-1-3",
+      "title": "Nestle 1904 Greek New Testament with analysis, version 1.3",
+      "provider": "Biblical Humanities",
+      "stableIdentifier": "github:biblicalhumanities/Nestle1904@rel-1-3",
+      "publicationDate": "2017-04-15",
+      "description": "Tag-pinned Nestle 1904 text with morphology, lemmatization, and Strong's-number fields.",
+      "repository": "https://github.com/biblicalhumanities/Nestle1904.git",
+      "immutableRef": "rel-1-3",
+      "commitSha": "f2e8fef56eeea892697b5d511a87b8545d6c3dda",
+      "documentation": [
+        "source-docs/nestle1904-README.md",
+        "source-docs/nestle1904-parsing.txt"
+      ]
+    }
+  ],
+  "documents": [
+    {
+      "sourceId": "br-source-oshb-v2-2",
+      "repositoryPath": "README.md",
+      "preservedPath": "source-docs/oshb-README.md",
+      "byteLength": 5124,
+      "sha256": "D0BE8DBBF3BDBA685B1C7C0E6E3C12265D4D113867E43DDA3D9746E6E6BB0F05"
+    },
+    {
+      "sourceId": "br-source-oshb-v2-2",
+      "repositoryPath": "LICENSE.md",
+      "preservedPath": "source-docs/oshb-LICENSE.md",
+      "byteLength": 1505,
+      "sha256": "A3572C65155CE4FD7C482F635A7E3A903B69F28051961D1E9CC92AA8A657152C"
+    },
+    {
+      "sourceId": "br-source-oshb-v2-2",
+      "repositoryPath": "parsing/README.md",
+      "preservedPath": "source-docs/oshb-parsing-README.md",
+      "byteLength": 7642,
+      "sha256": "EB804C6C7245E323EF451DF0BF5DBD51511F72AFE4DCB48537708C2A43D8515B"
+    },
+    {
+      "sourceId": "br-source-oshb-v2-2",
+      "repositoryPath": "parsing/HebrewMorphologyCodes.html",
+      "preservedPath": "source-docs/oshb-HebrewMorphologyCodes.html",
+      "byteLength": 18944,
+      "sha256": "4EF067CD9F2508DE19D81AAB93BF2D7E24D1687A7664C5168DE1411ADAF4EE1D"
+    },
+    {
+      "sourceId": "br-source-nestle1904-rel-1-3",
+      "repositoryPath": "README.md",
+      "preservedPath": "source-docs/nestle1904-README.md",
+      "byteLength": 8789,
+      "sha256": "6B657411F03DA73738C7FF09576AD34BD3BB5575CB4218E1D3445C923C40C710"
+    },
+    {
+      "sourceId": "br-source-nestle1904-rel-1-3",
+      "repositoryPath": "parsing.txt",
+      "preservedPath": "source-docs/nestle1904-parsing.txt",
+      "byteLength": 5330,
+      "sha256": "777B2B93ACDDB162DAD0CFA9AD83C1DBA5064FD5930163704E7DA02F7EEEDDB8"
+    }
+  ],
+  "artifacts": [
+    {
+      "artifactId": "br-artifact-oshb-gen-v2-2",
+      "publicationId": "br-publication-oshb-v2-2",
+      "sourceId": "br-source-oshb-v2-2",
+      "sourceRepository": "https://github.com/openscriptures/morphhb.git",
+      "immutableRef": "v.2.2",
+      "commitSha": "6a5db284c715c18b239422e57bb89684e6a19f00",
+      "repositoryPath": "wlc/Gen.xml",
+      "retrievalMethod": "git clone --depth 1 --branch v.2.2",
+      "rawFilename": "Gen.xml",
+      "mediaType": "application/xml",
+      "byteLength": 1881356,
+      "sha256": "87B6221B89CCD308A96B287EFB4520397912A16FE0F8CE4F788A3B4C09D8F2A4",
+      "sourceUrl": "https://raw.githubusercontent.com/openscriptures/morphhb/v.2.2/wlc/Gen.xml",
+      "retrievedAt": "2026-08-01T00:00:00-05:00",
+      "rightsStatus": "mixed-component-rights",
+      "rightsStatement": "WLC text and OSHB analysis have separate rights components.",
+      "territorialLimitation": "No broader territorial conclusion is asserted beyond the pinned project documentation.",
+      "parsingRules": "Parse only chapter Gen.1; preserve XML word text, lemma, morph, id, and order without Unicode normalization."
+    },
+    {
+      "artifactId": "br-artifact-oshb-ps-v2-2",
+      "publicationId": "br-publication-oshb-v2-2",
+      "sourceId": "br-source-oshb-v2-2",
+      "sourceRepository": "https://github.com/openscriptures/morphhb.git",
+      "immutableRef": "v.2.2",
+      "commitSha": "6a5db284c715c18b239422e57bb89684e6a19f00",
+      "repositoryPath": "wlc/Ps.xml",
+      "retrievalMethod": "git clone --depth 1 --branch v.2.2",
+      "rawFilename": "Ps.xml",
+      "mediaType": "application/xml",
+      "byteLength": 1949574,
+      "sha256": "6B4BC0EAFFF4787FC5DD10F5F3D4F753B132C71DC3D681818D8E73D95E74A6DB",
+      "sourceUrl": "https://raw.githubusercontent.com/openscriptures/morphhb/v.2.2/wlc/Ps.xml",
+      "retrievedAt": "2026-08-01T00:00:00-05:00",
+      "rightsStatus": "mixed-component-rights",
+      "rightsStatement": "WLC text and OSHB analysis have separate rights components.",
+      "territorialLimitation": "No broader territorial conclusion is asserted beyond the pinned project documentation.",
+      "parsingRules": "Parse only chapter Ps.23; split the title segment at the preserved KJV note; preserve XML word values and order."
+    },
+    {
+      "artifactId": "br-artifact-oshb-eccl-v2-2",
+      "publicationId": "br-publication-oshb-v2-2",
+      "sourceId": "br-source-oshb-v2-2",
+      "sourceRepository": "https://github.com/openscriptures/morphhb.git",
+      "immutableRef": "v.2.2",
+      "commitSha": "6a5db284c715c18b239422e57bb89684e6a19f00",
+      "repositoryPath": "wlc/Eccl.xml",
+      "retrievalMethod": "git clone --depth 1 --branch v.2.2",
+      "rawFilename": "Eccl.xml",
+      "mediaType": "application/xml",
+      "byteLength": 288538,
+      "sha256": "28599B243D236813C5F4407CE477E9DF1019CBBEA88BA39AD4A95F1AEC8CECCF",
+      "sourceUrl": "https://raw.githubusercontent.com/openscriptures/morphhb/v.2.2/wlc/Eccl.xml",
+      "retrievedAt": "2026-08-01T00:00:00-05:00",
+      "rightsStatus": "mixed-component-rights",
+      "rightsStatement": "WLC text and OSHB analysis have separate rights components.",
+      "territorialLimitation": "No broader territorial conclusion is asserted beyond the pinned project documentation.",
+      "parsingRules": "Parse only chapter Eccl.3; preserve XML word text, lemma, morph, id, and order without Unicode normalization."
+    },
+    {
+      "artifactId": "br-artifact-nestle1904-rel-1-3",
+      "publicationId": "br-publication-nestle1904-rel-1-3",
+      "sourceId": "br-source-nestle1904-rel-1-3",
+      "sourceRepository": "https://github.com/biblicalhumanities/Nestle1904.git",
+      "immutableRef": "rel-1-3",
+      "commitSha": "f2e8fef56eeea892697b5d511a87b8545d6c3dda",
+      "repositoryPath": "Nestle1904.csv",
+      "retrievalMethod": "git clone --depth 1 --branch rel-1-3",
+      "rawFilename": "Nestle1904.csv",
+      "mediaType": "text/tab-separated-values; charset=utf-8",
+      "byteLength": 9098651,
+      "sha256": "F239AA40669138EED4BDA0BD4BDC7B2071687CAC26752FA5A1FD468F7FD0ABF0",
+      "sourceUrl": "https://raw.githubusercontent.com/biblicalhumanities/Nestle1904/rel-1-3/Nestle1904.csv",
+      "retrievedAt": "2026-08-01T00:00:00-05:00",
+      "rightsStatus": "project-documentation-public-domain-statement",
+      "rightsStatement": "The tag-pinned project README states that the total work is in the Public Domain; components are recorded separately.",
+      "territorialLimitation": "SourceRoot records the project statement and makes no independent global legal determination.",
+      "parsingRules": "Parse only rows whose first field begins John 1:; require seven documented fields plus the artifact's empty trailing field."
+    }
+  ]
+}

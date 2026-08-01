@@ -40,6 +40,11 @@
       `/verses/${encodeURIComponent(verseId)}`,
       { edition: edition || DEFAULT_EDITION }
     ),
-    phrase: (phraseId) => get(`/phrases/${encodeURIComponent(phraseId)}`)
+    phrase: (phraseId) => get(`/phrases/${encodeURIComponent(phraseId)}`),
+    originalLanguageEditions: () => get("/original-language/editions"),
+    originalLanguagePassage: (reference, edition) => get(
+      "/original-language/passages",
+      { reference, edition: edition || undefined }
+    )
   });
 })(window);

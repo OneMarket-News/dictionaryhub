@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "1.0.0",
+  "datasetId": "br-dataset-original-language-foundation-v1",
+  "version": "1.0.0",
+  "status": "bounded-read-only",
+  "normalizedDatasetSha256": "474D7338BD57A8AD8C725B32E9BAA6B540ED4F327A3AAB6D0B009D773303F779",
+  "expectedCounts": {
+    "editions": 2,
+    "sourceArtifacts": 4,
+    "sourceVerses": 111,
+    "tokens": 1592,
+    "tokensByLanguage": {
+      "he": 764,
+      "grc": 828
+    },
+    "tokensByChapter": {
+      "he:Gen.1": 434,
+      "he:Ps.23": 57,
+      "he:Eccl.3": 273,
+      "grc:John.1": 828
+    },
+    "lemmas": 1592,
+    "morphologies": 2420,
+    "missingAnalysis": 0,
+    "ambiguousAnalysis": 7,
+    "mappings": 111,
+    "mappingTypes": {
+      "one_to_one": 110,
+      "omitted_or_untranslated": 1
+    }
+  },
+  "files": {
+    "source-docs/oshb-README.md": "D0BE8DBBF3BDBA685B1C7C0E6E3C12265D4D113867E43DDA3D9746E6E6BB0F05",
+    "source-docs/oshb-LICENSE.md": "A3572C65155CE4FD7C482F635A7E3A903B69F28051961D1E9CC92AA8A657152C",
+    "source-docs/oshb-parsing-README.md": "EB804C6C7245E323EF451DF0BF5DBD51511F72AFE4DCB48537708C2A43D8515B",
+    "source-docs/oshb-HebrewMorphologyCodes.html": "4EF067CD9F2508DE19D81AAB93BF2D7E24D1687A7664C5168DE1411ADAF4EE1D",
+    "source-docs/nestle1904-README.md": "6B657411F03DA73738C7FF09576AD34BD3BB5575CB4218E1D3445C923C40C710",
+    "source-docs/nestle1904-parsing.txt": "777B2B93ACDDB162DAD0CFA9AD83C1DBA5064FD5930163704E7DA02F7EEEDDB8",
+    "source-metadata.json": "272E12318819F5C2E1F892BF2158C86997EF7291A74A64E503DD8B2C1A8E948E",
+    "editions.json": "C8D4AEB9BB609D6753D421F5D7D5CF2933551C1FAF64A77450FD946E4874D051",
+    "verses.json": "F203EA9BEA3C4BC2137F8E8371DCEF81F04A3FF5ECBA1F027CB24D4C8570B411",
+    "tokens.json": "2AE64FA32AE96ACFEC061C3C209903D80EAE36E86B70372AD7400A7253B53275",
+    "mappings.json": "54E81D5BE4456101127BE5637CC5C3DA6D2A108BF1828E08D705DF09C17FE7FC",
+    "rights-components.json": "F384A8D2E360E6476C09DBA69D301EBF21ABDA2337939439CB3CF45F7C41DEEB"
+  }
+}

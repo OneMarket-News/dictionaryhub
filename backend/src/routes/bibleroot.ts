@@ -3,12 +3,15 @@ import { Router } from "express";
 import { BibleRootReferenceError } from "../bibleroot/foundation.js";
 import { createApiError } from "../lib/api-contract.js";
 import {
+  BibleRootOriginalLanguageUnavailableError,
   BibleRootResourceNotFoundError,
   getBibleRootPassage,
+  getBibleRootOriginalLanguagePassage,
   getBibleRootPhrase,
   getBibleRootVerse,
   listBibleRootBooks,
   listBibleRootEditions,
+  listBibleRootOriginalLanguageEditions,
 } from "../services/bibleroot-store.js";
 
 export const bibleRootRouter = Router();
@@ -45,6 +48,19 @@ function handleBibleRootError(
     return response.status(404).json(
       createApiError(
         error.code.toUpperCase().replaceAll("-", "_"),
+        error.message,
+        404,
+        {
+          category: "not-found",
+          requestId: response.locals.requestId,
+        },
+      ),
+    );
+  }
+  if (error instanceof BibleRootOriginalLanguageUnavailableError) {
+    return response.status(404).json(
+      createApiError(
+        "ORIGINAL_LANGUAGE_UNAVAILABLE",
         error.message,
         404,
         {
@@ -118,6 +134,44 @@ bibleRootRouter.get("/phrases/:phraseId", async (request, response, next) => {
   try {
     return response.status(200).json(
       await getBibleRootPhrase(request.params.phraseId),
+    );
+  } catch (error) {
+    return handleBibleRootError(error, response, next);
+  }
+});
+
+bibleRootRouter.get("/original-language/editions", async (_request, response, next) => {
+  try {
+    return response.status(200).json(
+      await listBibleRootOriginalLanguageEditions(),
+    );
+  } catch (error) {
+    return handleBibleRootError(error, response, next);
+  }
+});
+
+bibleRootRouter.get("/original-language/passages", async (request, response, next) => {
+  const reference = queryString(request.query.reference);
+  if (!reference) {
+    return response.status(400).json(
+      createApiError(
+        "REFERENCE_REQUIRED",
+        "The reference query parameter is required.",
+        400,
+        {
+          category: "validation-failure",
+          field: "reference",
+          requestId: response.locals.requestId,
+        },
+      ),
+    );
+  }
+  try {
+    return response.status(200).json(
+      await getBibleRootOriginalLanguagePassage(
+        reference,
+        queryString(request.query.edition),
+      ),
     );
   } catch (error) {
     return handleBibleRootError(error, response, next);

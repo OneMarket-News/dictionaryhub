@@ -30,6 +30,15 @@ export class BibleRootResourceNotFoundError extends Error {
   }
 }
 
+export class BibleRootOriginalLanguageUnavailableError extends Error {
+  readonly code = "original-language-unavailable";
+
+  constructor(message: string) {
+    super(message);
+    this.name = "BibleRootOriginalLanguageUnavailableError";
+  }
+}
+
 interface EditionRow {
   edition_id: string;
   display_title: string;
@@ -500,5 +509,331 @@ export async function getBibleRootPhrase(phraseId: string) {
       endOffset: row.end_offset,
       exactText: row.exact_text,
     })),
+  };
+}
+
+interface OriginalEditionRow {
+  original_edition_id: string;
+  language_code: string;
+  display_title: string;
+  abbreviation: string;
+  version_identity: string;
+  immutable_source_ref: string;
+  description: string;
+  publication_id: string;
+  publication_title: string;
+  provider: string;
+  stable_identifier: string;
+}
+
+interface OriginalArtifactRow {
+  original_edition_id: string;
+  artifact_id: string;
+  filename: string;
+  byte_length: string;
+  sha256: string;
+  source_url: string;
+  retrieval_timestamp: Date | string;
+  rights_status: string;
+  rights_statement: string;
+  territorial_limitation: string;
+  source_id: string;
+}
+
+interface RightsComponentRow {
+  artifact_id: string;
+  component_id: string;
+  component_type: string;
+  rights_status: string;
+  license_name: string | null;
+  license_url: string | null;
+  rights_statement: string;
+  attribution: string;
+  territorial_limitation: string;
+  evidence_document: string;
+}
+
+async function originalEditionDetails(editionId?: string) {
+  const editionResult = await database().query<OriginalEditionRow>(`
+    SELECT e.original_edition_id, e.language_code, e.display_title,
+      e.abbreviation, e.version_identity, e.immutable_source_ref,
+      e.description, p.publication_id, p.title AS publication_title,
+      p.provider, p.stable_identifier
+    FROM bibleroot_original_language_editions e
+    JOIN bibleroot_source_publications p ON p.publication_id = e.publication_id
+    WHERE ($1::text IS NULL OR e.original_edition_id = $1)
+    ORDER BY e.language_code DESC, e.original_edition_id;
+  `, [editionId ?? null]);
+  const editionIds = editionResult.rows.map((row) => row.original_edition_id);
+  if (editionId && editionIds.length === 0) {
+    throw new BibleRootOriginalLanguageUnavailableError(
+      `Original-language edition is unavailable: ${editionId}.`,
+    );
+  }
+  if (editionIds.length === 0) return [];
+  const artifactResult = await database().query<OriginalArtifactRow>(`
+    SELECT ea.original_edition_id, a.artifact_id, a.filename, a.byte_length,
+      a.sha256, a.source_url, a.retrieval_timestamp, a.rights_status,
+      a.rights_statement, a.territorial_limitation, a.source_id
+    FROM bibleroot_original_language_edition_artifacts ea
+    JOIN bibleroot_source_artifacts a ON a.artifact_id = ea.artifact_id
+    WHERE ea.original_edition_id = ANY($1::text[])
+    ORDER BY ea.original_edition_id, a.filename;
+  `, [editionIds]);
+  const artifactIds = artifactResult.rows.map((row) => row.artifact_id);
+  const rightsResult = await database().query<RightsComponentRow>(`
+    SELECT artifact_id, component_id, component_type, rights_status,
+      license_name, license_url, rights_statement, attribution,
+      territorial_limitation, evidence_document
+    FROM bibleroot_source_artifact_rights_components
+    WHERE artifact_id = ANY($1::text[])
+    ORDER BY artifact_id, component_type;
+  `, [artifactIds]);
+  return editionResult.rows.map((row) => ({
+    editionId: row.original_edition_id,
+    language: row.language_code,
+    displayTitle: row.display_title,
+    abbreviation: row.abbreviation,
+    versionIdentity: row.version_identity,
+    immutableSourceRef: row.immutable_source_ref,
+    description: row.description,
+    publication: {
+      publicationId: row.publication_id,
+      title: row.publication_title,
+      provider: row.provider,
+      stableIdentifier: row.stable_identifier,
+    },
+    artifacts: artifactResult.rows
+      .filter((artifact) => artifact.original_edition_id === row.original_edition_id)
+      .map((artifact) => ({
+        artifactId: artifact.artifact_id,
+        sourceId: artifact.source_id,
+        filename: artifact.filename,
+        byteLength: Number(artifact.byte_length),
+        sha256: artifact.sha256,
+        sourceUrl: artifact.source_url,
+        retrievedAt: instantValue(artifact.retrieval_timestamp),
+        rightsStatus: artifact.rights_status,
+        rightsStatement: artifact.rights_statement,
+        territorialLimitation: artifact.territorial_limitation,
+        rightsComponents: rightsResult.rows
+          .filter((component) => component.artifact_id === artifact.artifact_id)
+          .map((component) => ({
+            componentId: component.component_id,
+            componentType: component.component_type,
+            rightsStatus: component.rights_status,
+            licenseName: component.license_name,
+            licenseUrl: component.license_url,
+            rightsStatement: component.rights_statement,
+            attribution: component.attribution,
+            territorialLimitation: component.territorial_limitation,
+            evidenceDocument: component.evidence_document,
+          })),
+      })),
+  }));
+}
+
+export async function listBibleRootOriginalLanguageEditions() {
+  const items = await originalEditionDetails();
+  return {
+    items,
+    total: items.length,
+    availabilityBoundary:
+      "Only Genesis 1, Psalm 23, Ecclesiastes 3, and John 1 are populated; original-language records are not a unified-search provider in this stage.",
+  };
+}
+
+interface OriginalTokenRow {
+  source_verse_id: string;
+  original_edition_id: string;
+  artifact_id: string;
+  source_book: string;
+  source_chapter: number;
+  source_verse_identifier: string;
+  source_native_citation: string;
+  source_native_versification: string;
+  surface_text: string;
+  sourceroot_identity: string;
+  mapping_id: string;
+  target_canonical_reference_id: string | null;
+  mapping_type: string;
+  factual_explanation: string;
+  evidence_source: string;
+  review_status: string;
+  token_id: string;
+  source_native_token_id: string | null;
+  sequence_position: number;
+  surface_form: string;
+  verbatim_lemma: string | null;
+  source_native_lemma_identifier: string | null;
+  lemma_analysis_status: string;
+  morphology_id: string;
+  morphology_ordinal: number;
+  verbatim_morphology_code: string | null;
+  morphology_system: string;
+  morphology_analysis_status: string;
+}
+
+const originalBookByCanonicalCode: Record<string, string> = {
+  gen: "Gen",
+  ps: "Ps",
+  eccl: "Eccl",
+  john: "John",
+};
+
+export async function getBibleRootOriginalLanguagePassage(
+  reference: string,
+  editionId?: string,
+) {
+  const dataset = await foundation();
+  const parsed = parseBibleRootReference(reference, dataset);
+  const sourceBook = originalBookByCanonicalCode[parsed.book.machineCode];
+  if (!sourceBook) {
+    throw new BibleRootOriginalLanguageUnavailableError(
+      `${parsed.normalizedReference} has no original-language data in this bounded foundation.`,
+    );
+  }
+  const expectedLanguage = sourceBook === "John" ? "grc" : "he";
+  const editions = await originalEditionDetails(editionId);
+  const matchingEdition = editions.find((edition) => edition.language === expectedLanguage);
+  if (!matchingEdition) {
+    throw new BibleRootOriginalLanguageUnavailableError(
+      `${parsed.normalizedReference} is not available in ${editionId ?? "the requested original-language edition"}.`,
+    );
+  }
+  const includeSuperscription =
+    sourceBook === "Ps" && parsed.chapterNumber === 23 && parsed.startVerse === 1;
+  const result = await database().query<OriginalTokenRow>(`
+    SELECT v.source_verse_id, v.original_edition_id, v.artifact_id,
+      v.source_book, v.source_chapter, v.source_verse_identifier,
+      v.source_native_citation, v.source_native_versification, v.surface_text,
+      v.sourceroot_identity, m.mapping_id, m.target_canonical_reference_id,
+      m.mapping_type, m.factual_explanation, m.evidence_source,
+      m.review_status, t.token_id, t.source_native_token_id,
+      t.sequence_position, t.surface_form, l.verbatim_lemma,
+      l.source_native_lemma_identifier,
+      l.analysis_status AS lemma_analysis_status, tm.morphology_id,
+      tm.morphology_ordinal, tm.verbatim_morphology_code,
+      tm.morphology_system, tm.analysis_status AS morphology_analysis_status
+    FROM bibleroot_original_language_verses v
+    JOIN bibleroot_original_language_verse_mappings m
+      ON m.source_verse_id = v.source_verse_id
+    JOIN bibleroot_original_language_tokens t
+      ON t.source_verse_id = v.source_verse_id
+    JOIN bibleroot_original_language_token_lemmas l ON l.token_id = t.token_id
+    JOIN bibleroot_original_language_token_morphologies tm ON tm.token_id = t.token_id
+    WHERE v.original_edition_id = $1
+      AND v.source_book = $2
+      AND v.source_chapter = $3
+      AND (
+        m.target_canonical_reference_id = ANY($4::text[])
+        OR ($5::boolean AND m.mapping_type = 'omitted_or_untranslated')
+      )
+    ORDER BY
+      CASE WHEN v.source_verse_identifier = 'title' THEN 0
+        ELSE v.source_verse_identifier::integer END,
+      t.sequence_position, tm.morphology_ordinal;
+  `, [
+    matchingEdition.editionId,
+    sourceBook,
+    parsed.chapterNumber,
+    parsed.canonicalReferenceIds,
+    includeSuperscription,
+  ]);
+  if (result.rows.length === 0) {
+    throw new BibleRootOriginalLanguageUnavailableError(
+      `${parsed.normalizedReference} has no original-language data in this bounded foundation.`,
+    );
+  }
+  const verseMap = new Map<string, {
+    sourceVerseId: string;
+    sourceBook: string;
+    sourceChapter: number;
+    sourceVerseIdentifier: string;
+    sourceNativeCitation: string;
+    sourceNativeVersification: string;
+    surfaceText: string;
+    sourcerootIdentity: string;
+    artifactId: string;
+    mapping: unknown;
+    tokens: Array<{
+      tokenId: string;
+      sourceNativeTokenId: string | null;
+      sequencePosition: number;
+      surfaceForm: string;
+      lemma: unknown;
+      morphologies: unknown[];
+    }>;
+  }>();
+  const tokenMap = new Map<string, {
+    tokenId: string;
+    sourceNativeTokenId: string | null;
+    sequencePosition: number;
+    surfaceForm: string;
+    lemma: unknown;
+    morphologies: unknown[];
+  }>();
+  for (const row of result.rows) {
+    let verse = verseMap.get(row.source_verse_id);
+    if (!verse) {
+      verse = {
+        sourceVerseId: row.source_verse_id,
+        sourceBook: row.source_book,
+        sourceChapter: row.source_chapter,
+        sourceVerseIdentifier: row.source_verse_identifier,
+        sourceNativeCitation: row.source_native_citation,
+        sourceNativeVersification: row.source_native_versification,
+        surfaceText: row.surface_text,
+        sourcerootIdentity: row.sourceroot_identity,
+        artifactId: row.artifact_id,
+        mapping: {
+          mappingId: row.mapping_id,
+          targetCanonicalReferenceId: row.target_canonical_reference_id,
+          mappingType: row.mapping_type,
+          factualExplanation: row.factual_explanation,
+          evidenceSource: row.evidence_source,
+          reviewStatus: row.review_status,
+        },
+        tokens: [],
+      };
+      verseMap.set(row.source_verse_id, verse);
+    }
+    let token = tokenMap.get(row.token_id);
+    if (!token) {
+      token = {
+        tokenId: row.token_id,
+        sourceNativeTokenId: row.source_native_token_id,
+        sequencePosition: row.sequence_position,
+        surfaceForm: row.surface_form,
+        lemma: {
+          verbatim: row.verbatim_lemma,
+          sourceNativeIdentifier: row.source_native_lemma_identifier,
+          analysisStatus: row.lemma_analysis_status,
+        },
+        morphologies: [],
+      };
+      tokenMap.set(row.token_id, token);
+      verse.tokens.push(token);
+    }
+    token.morphologies.push({
+      morphologyId: row.morphology_id,
+      ordinal: row.morphology_ordinal,
+      verbatimCode: row.verbatim_morphology_code,
+      morphologySystem: row.morphology_system,
+      analysisStatus: row.morphology_analysis_status,
+    });
+  }
+  return {
+    availability: "populated",
+    normalizedReference: parsed.normalizedReference,
+    targetCanonicalReferenceIds: parsed.canonicalReferenceIds,
+    edition: matchingEdition,
+    direction: expectedLanguage === "he" ? "rtl" : "ltr",
+    verses: [...verseMap.values()],
+    boundaries: {
+      translation: "The KJV remains the primary verified passage; no word-level alignment is asserted.",
+      interpretation: "No transliteration, lexical gloss, commentary, theology, or SourceRoot inference is supplied.",
+      search: "Original-language data is not a unified-search provider in this stage.",
+    },
   };
 }
