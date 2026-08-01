@@ -31,6 +31,11 @@
   global.BibleRootApi = Object.freeze({
     defaultEdition: DEFAULT_EDITION,
     editions: () => get("/editions"),
+    translations: () => get("/translations"),
+    comparison: (reference, editions) => get("/comparison", {
+      reference,
+      editions: Array.isArray(editions) ? editions.join(",") : undefined
+    }),
     books: () => get("/books"),
     passage: (reference, edition) => get("/passages", {
       reference,

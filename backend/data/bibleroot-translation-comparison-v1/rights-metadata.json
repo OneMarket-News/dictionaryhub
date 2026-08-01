@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0.0",
+  "datasetId": "bibleroot-translation-comparison-v1",
+  "rightsEvidenceUrl": "https://ebible.org/publicdomain.htm",
+  "records": [
+    {
+      "editionId": "br-edition-asv-1901-ebible-20260611",
+      "rightsId": "br-rights-asv-1901-public-domain",
+      "status": "public-domain",
+      "territorialLimitation": "Public-domain status is recorded from eBible.org for the United States; users outside the United States must verify local law.",
+      "statement": "eBible.org identifies the American Standard Version (1901) as public domain and permits free copying.",
+      "evidenceDocuments": ["source-docs/details-eng-asv.html", "source-docs/ebible-public-domain.html", "raw/eng-asv_usfm.zip#copr.htm"]
+    },
+    {
+      "editionId": "br-edition-webp-2020-ebible-20260724",
+      "rightsId": "br-rights-webp-public-domain",
+      "status": "public-domain-dedication",
+      "territorialLimitation": "No copyright territorial limitation is asserted by the provider; the World English Bible name is a trademark and may identify only faithful copies of the eBible.org text.",
+      "statement": "The World English Bible text is dedicated to the public domain. The World English Bible name remains an eBible.org trademark.",
+      "evidenceDocuments": ["source-docs/details-engwebp.html", "source-docs/ebible-public-domain.html", "raw/engwebp_usfm.zip#copr.htm"]
+    },
+    {
+      "editionId": "br-edition-ylt-1898-ebible-20191020",
+      "rightsId": "br-rights-ylt-1898-public-domain",
+      "status": "public-domain",
+      "territorialLimitation": "Public-domain status is recorded from eBible.org for a work published in 1898; users must verify local law where terms differ.",
+      "statement": "eBible.org identifies Young's Literal Translation as public domain; this dataset records the 1898 edition identity.",
+      "evidenceDocuments": ["source-docs/details-engylt.html", "source-docs/ebible-public-domain.html", "raw/engylt_usfm.zip#copr.htm"]
+    }
+  ]
+}

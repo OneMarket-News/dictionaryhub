@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "1.0.0",
+  "datasetId": "bibleroot-translation-comparison-v1",
+  "version": "1.0.0",
+  "files": {
+    "raw/eng-asv_usfm.zip": {
+      "byteLength": 2875147,
+      "sha256": "712B44107EC98A5B8CA339751B37A593061EE630390C6A6D2EDC54E334E1D6E4",
+      "gitBlob": "bbe3ab7308909b948087f172592f08f8d01de93c"
+    },
+    "raw/engwebp_usfm.zip": {
+      "byteLength": 2903202,
+      "sha256": "9B4330BA6BAF9BD5FA8EA63A8FF255C9AB326DA8C843F0355C23734E61EE6276",
+      "gitBlob": "5df9329eac902ae8e2318222107efa638509d2a4"
+    },
+    "raw/engylt_usfm.zip": {
+      "byteLength": 1385550,
+      "sha256": "1A7F889C412B03C04DC65BE386C83D4E3BAFB4C58FD5F4E35584240DAFE09831",
+      "gitBlob": "3c950249a9a20e26bc114ca6abb3ed539f50c2b4"
+    },
+    "source-docs/details-eng-asv.html": {
+      "byteLength": 5735,
+      "sha256": "3F0206A3853B0052DA8D109C4717441E7860612959C67B4E3414B5B3BA3090D5"
+    },
+    "source-docs/details-engwebp.html": {
+      "byteLength": 6680,
+      "sha256": "4C5B03A89DDE302B7F900BFCC94A9FC12C86A37FA4FF7D8EC95CAC572FF328A6"
+    },
+    "source-docs/details-engylt.html": {
+      "byteLength": 5667,
+      "sha256": "FAECA2D80101202D8B3F8E65BD8793669FD01157B0CD95D1A58220ECA7194D0E"
+    },
+    "source-docs/ebible-public-domain.html": {
+      "byteLength": 5924,
+      "sha256": "315F3425C58BFBB95372BFFB31FB50E49300DA38A75DFFDEB6FB0718739E7569"
+    },
+    "source-metadata.json": {
+      "byteLength": 4127,
+      "sha256": "EF2EBAAB9062AF72DDECDDCA0A9FB065836882705003360CBAEE71096E4809C9"
+    },
+    "rights-metadata.json": {
+      "byteLength": 1997,
+      "sha256": "742EB5493070A9E9155CDBE834CB23F1BF3CDD604B379B1A56560566E6E76C35"
+    },
+    "normalized/asv.json": {
+      "byteLength": 108892,
+      "sha256": "A6DDB4D17823A1C1FEC8D31327442F780C8255C9A11611DDB15F98C77EF40D22"
+    },
+    "normalized/web.json": {
+      "byteLength": 108243,
+      "sha256": "EB935287E44519DCCF11FAE96ED415695D3B965711622F154ECA481679FF888D"
+    },
+    "normalized/ylt.json": {
+      "byteLength": 108813,
+      "sha256": "D7F56CF9F152C6F28007C0B3284DDC63E9BD82C1696FD175CDF77940FF91120C"
+    }
+  }
+}

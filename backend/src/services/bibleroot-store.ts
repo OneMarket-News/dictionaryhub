@@ -5,6 +5,12 @@ import {
   parseBibleRootReference,
   type BibleRootFoundationDataset,
 } from "../bibleroot/foundation.js";
+import {
+  TRANSLATION_COMPARISON_DATASET_ID,
+  TRANSLATION_COMPARISON_EDITION_IDS,
+  TRANSLATION_COMPARISON_REFERENCES,
+  mechanicalTextComparison,
+} from "../bibleroot/translation-comparison.js";
 import { getPool } from "../lib/database.js";
 
 let datasetPromise: Promise<BibleRootFoundationDataset> | undefined;
@@ -39,7 +45,24 @@ export class BibleRootOriginalLanguageUnavailableError extends Error {
   }
 }
 
+export class BibleRootComparisonRequestError extends Error {
+  constructor(
+    public readonly code:
+      | "translation-comparison-unavailable"
+      | "unsupported-comparison-reference"
+      | "invalid-comparison-edition"
+      | "duplicate-comparison-edition"
+      | "comparison-edition-limit",
+    message: string,
+    public readonly status: 400 | 503,
+  ) {
+    super(message);
+    this.name = "BibleRootComparisonRequestError";
+  }
+}
+
 interface EditionRow {
+  dataset_id: string;
   edition_id: string;
   display_title: string;
   abbreviation: string;
@@ -65,6 +88,9 @@ interface EditionRow {
   source_url: string;
   retrieval_timestamp: Date | string;
   rights_statement: string;
+  artifact_territorial_limitation: string;
+  parsing_rules: string;
+  source_details_url: string | null;
 }
 
 function dateValue(value: Date | string | null): string | null {
@@ -91,6 +117,7 @@ function mapEdition(row: EditionRow) {
     rightsStatus: row.rights_status,
     territorialLimitation: row.territorial_limitation,
     datasetVersion: row.dataset_version,
+    datasetId: row.dataset_id,
     normalizedTextSha256: row.normalized_text_sha256,
     provenanceNotes: row.provenance_notes,
     publication: {
@@ -101,6 +128,7 @@ function mapEdition(row: EditionRow) {
     },
     source: {
       sourceId: row.source_id,
+      detailsUrl: row.source_details_url,
     },
     artifact: {
       artifactId: row.artifact_id,
@@ -110,12 +138,15 @@ function mapEdition(row: EditionRow) {
       sourceUrl: row.source_url,
       retrievedAt: instantValue(row.retrieval_timestamp),
       rightsStatement: row.rights_statement,
+      territorialLimitation: row.artifact_territorial_limitation,
+      normalizationNotes: row.parsing_rules,
     },
   };
 }
 
 const editionSelect = `
   SELECT
+    e.dataset_id,
     e.edition_id,
     e.display_title,
     e.abbreviation,
@@ -140,12 +171,17 @@ const editionSelect = `
     a.sha256 AS artifact_sha256,
     a.source_url,
     a.retrieval_timestamp,
-    a.rights_statement
+    a.rights_statement,
+    a.territorial_limitation AS artifact_territorial_limitation,
+    a.parsing_rules,
+    s.url AS source_details_url
   FROM bibleroot_editions e
   JOIN bibleroot_source_publications p
     ON p.publication_id = e.publication_id
   JOIN bibleroot_source_artifacts a
     ON a.artifact_id = e.artifact_id
+  JOIN sources s
+    ON s.source_id = a.source_id
 `;
 
 async function requireEdition(editionId: string): Promise<EditionRow> {
@@ -170,6 +206,24 @@ export async function listBibleRootEditions() {
   return {
     items: result.rows.map(mapEdition),
     total: result.rows.length,
+  };
+}
+
+export async function listBibleRootTranslationEditions() {
+  const result = await database().query<EditionRow>(
+    `${editionSelect} WHERE e.edition_id = ANY($1::text[]) ORDER BY array_position($1::text[], e.edition_id);`,
+    [[...TRANSLATION_COMPARISON_EDITION_IDS]],
+  );
+  const availableIds = new Set(result.rows.map((row) => row.edition_id));
+  const ready = TRANSLATION_COMPARISON_EDITION_IDS.every((editionId) => availableIds.has(editionId));
+  return {
+    datasetId: TRANSLATION_COMPARISON_DATASET_ID,
+    datasetVersion: "1.0.0",
+    ready,
+    status: ready ? "ready" : "awaiting-data",
+    maximumEditions: 4,
+    items: result.rows.map((row) => ({ ...mapEdition(row), availability: "available" })),
+    unavailableEditionIds: TRANSLATION_COMPARISON_EDITION_IDS.filter((editionId) => !availableIds.has(editionId)),
   };
 }
 
@@ -395,6 +449,168 @@ export async function getBibleRootPassage(
       historicalInterpretation: "not-populated",
       theologicalInterpretation: "not-populated",
       sourceRootInference: "not-populated",
+    },
+  };
+}
+
+interface ComparisonVerseRow {
+  canonical_reference_id: string;
+  book_id: string;
+  machine_code: string;
+  book_name: string;
+  chapter_number: number;
+  verse_number: number;
+  edition_id: string | null;
+  edition_text_id: string | null;
+  exact_text: string | null;
+  artifact_id: string | null;
+  dataset_id: string | null;
+  source_observation: string | null;
+  original_language_available: boolean;
+}
+
+export async function getBibleRootTranslationComparison(
+  reference: string,
+  requestedEditionIds: string[],
+) {
+  if (requestedEditionIds.length > 4) {
+    throw new BibleRootComparisonRequestError(
+      "comparison-edition-limit",
+      "Compare no more than four editions at once.",
+      400,
+    );
+  }
+  if (new Set(requestedEditionIds).size !== requestedEditionIds.length) {
+    throw new BibleRootComparisonRequestError(
+      "duplicate-comparison-edition",
+      "Each comparison edition ID may appear only once.",
+      400,
+    );
+  }
+  const invalidIds = requestedEditionIds.filter(
+    (editionId) => !TRANSLATION_COMPARISON_EDITION_IDS.includes(
+      editionId as (typeof TRANSLATION_COMPARISON_EDITION_IDS)[number],
+    ),
+  );
+  if (invalidIds.length > 0) {
+    throw new BibleRootComparisonRequestError(
+      "invalid-comparison-edition",
+      `Unknown or unsupported comparison edition ID: ${invalidIds.join(", ")}.`,
+      400,
+    );
+  }
+  const editionIds = [...requestedEditionIds].sort(
+    (left, right) => TRANSLATION_COMPARISON_EDITION_IDS.indexOf(
+      left as (typeof TRANSLATION_COMPARISON_EDITION_IDS)[number],
+    ) - TRANSLATION_COMPARISON_EDITION_IDS.indexOf(
+      right as (typeof TRANSLATION_COMPARISON_EDITION_IDS)[number],
+    ),
+  );
+  if (editionIds.length === 0) editionIds.push(BIBLEROOT_EDITION_ID);
+  const parsed = parseBibleRootReference(reference, await foundation());
+  if (
+    !parsed.wholeChapter
+    || !TRANSLATION_COMPARISON_REFERENCES.includes(
+      parsed.normalizedReference as (typeof TRANSLATION_COMPARISON_REFERENCES)[number],
+    )
+  ) {
+    throw new BibleRootComparisonRequestError(
+      "unsupported-comparison-reference",
+      `Translation Comparison supports only ${TRANSLATION_COMPARISON_REFERENCES.join(", ")}.`,
+      400,
+    );
+  }
+  const editionRows = await Promise.all(editionIds.map(requireEdition).map((promise) => promise.catch(() => undefined)));
+  if (editionRows.some((row) => row === undefined)) {
+    throw new BibleRootComparisonRequestError(
+      "translation-comparison-unavailable",
+      "Translation Comparison is awaiting its provisioned dataset.",
+      503,
+    );
+  }
+  const result = await database().query<ComparisonVerseRow>(`
+    SELECT
+      cv.canonical_reference_id,
+      cv.book_id,
+      b.machine_code,
+      b.display_name AS book_name,
+      cv.chapter_number,
+      cv.verse_number,
+      vt.edition_id,
+      vt.edition_text_id,
+      vt.exact_text,
+      vt.artifact_id,
+      vt.dataset_id,
+      vt.source_observation,
+      EXISTS (
+        SELECT 1 FROM bibleroot_original_language_verse_mappings olm
+        WHERE olm.target_canonical_reference_id = cv.canonical_reference_id
+      ) AS original_language_available
+    FROM bibleroot_canonical_verses cv
+    JOIN bibleroot_books b ON b.book_id = cv.book_id
+    LEFT JOIN bibleroot_verse_texts vt
+      ON vt.canonical_reference_id = cv.canonical_reference_id
+      AND vt.edition_id = ANY($2::text[])
+    WHERE cv.canonical_reference_id = ANY($1::text[])
+    ORDER BY cv.verse_number ASC, array_position($2::text[], vt.edition_id);
+  `, [parsed.canonicalReferenceIds, editionIds]);
+  const rowsByReference = new Map<string, ComparisonVerseRow[]>();
+  for (const row of result.rows) {
+    const rows = rowsByReference.get(row.canonical_reference_id) ?? [];
+    rows.push(row);
+    rowsByReference.set(row.canonical_reference_id, rows);
+  }
+  const verses = parsed.canonicalReferenceIds.map((canonicalReferenceId) => {
+    const rows = rowsByReference.get(canonicalReferenceId) ?? [];
+    const identity = rows[0];
+    if (!identity) throw new BibleRootReferenceError("passage-unavailable", `${parsed.normalizedReference} is unavailable.`);
+    const textByEdition = Object.fromEntries(editionIds.map((editionId) => [
+      editionId,
+      rows.find((row) => row.edition_id === editionId)?.exact_text ?? null,
+    ]));
+    return {
+      canonicalReferenceId,
+      normalizedReference: `${identity.book_name} ${identity.chapter_number}:${identity.verse_number}`,
+      bookId: identity.book_id,
+      bookCode: identity.machine_code,
+      bookName: identity.book_name,
+      chapterNumber: identity.chapter_number,
+      verseNumber: identity.verse_number,
+      editions: Object.fromEntries(editionIds.map((editionId) => {
+        const row = rows.find((candidate) => candidate.edition_id === editionId);
+        return [editionId, row ? {
+          state: "available",
+          editionTextId: row.edition_text_id,
+          exactText: row.exact_text,
+          source: {
+            artifactId: row.artifact_id,
+            datasetId: row.dataset_id,
+            sourceObservation: row.source_observation,
+          },
+        } : { state: "missing-text", editionTextId: null, exactText: null }];
+      })),
+      comparison: mechanicalTextComparison(textByEdition),
+      originalLanguage: {
+        available: identity.original_language_available,
+        canonicalReferenceId,
+        href: identity.original_language_available
+          ? `bibleroot-passage.html?reference=${encodeURIComponent(`${identity.book_name} ${identity.chapter_number}`)}#${encodeURIComponent(canonicalReferenceId)}`
+          : null,
+      },
+    };
+  });
+  return {
+    datasetId: TRANSLATION_COMPARISON_DATASET_ID,
+    datasetVersion: "1.0.0",
+    status: "ready",
+    normalizedReference: parsed.normalizedReference,
+    canonicalReferenceIds: parsed.canonicalReferenceIds,
+    selectedEditionIds: editionIds,
+    editions: editionRows.map((row) => mapEdition(row!)),
+    verses,
+    comparisonBoundary: {
+      method: "deterministic-token-level-textual-difference",
+      disclaimer: "Highlights show textual differences only. They do not determine meaning, accuracy, doctrine, or translation quality.",
     },
   };
 }

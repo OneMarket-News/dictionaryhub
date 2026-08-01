@@ -12,10 +12,11 @@ From `backend/`:
 6. Inspect readiness with `npm.cmd run dev:status`.
 
 `dev:provision` imports DictionaryRoot Core Lexical Corpus v1.0.0,
-BibleRoot Foundation v1.0.0, and BibleRoot Original Language Foundation
-v1.0.0. It validates repository hashes first, imports only missing or partial
-targets, skips exact targets, and verifies that HistoryRoot is unchanged.
-Repeated successful runs do not duplicate rows.
+BibleRoot Foundation v1.0.0, BibleRoot Original Language Foundation v1.0.0,
+and BibleRoot Translation Comparison v1.0.0. It validates repository hashes
+first, imports only missing or partial targets, skips exact targets, and
+verifies that HistoryRoot is unchanged. Repeated successful runs do not
+duplicate rows.
 
 ## Safety refusals
 
@@ -44,6 +45,22 @@ For BibleRoot, verify:
 - `/api/v1/bibleroot/original-language/editions`
 - `/api/v1/bibleroot/original-language/passages?reference=Genesis%201`
 - `/api/v1/bibleroot/original-language/passages?reference=John%201`
+- `/api/v1/bibleroot/translations`
+- `/api/v1/bibleroot/comparison?reference=Genesis%201&editions=br-edition-kjv-pg10-2024,br-edition-asv-1901-ebible-20260611`
+
+Translation Comparison readiness is separate from Foundation and Original
+Language readiness. Before comparison provisioning,
+`translationComparisonReady` is false while the earlier feature fields may
+remain true. After provisioning, expect one comparison dataset, three new
+editions, three source artifacts, three rights records, and 330 new verse
+texts. Across KJV and the three new editions the UI exposes 440 positions over
+110 canonical verses.
+
+Open `bibleroot-compare.html` from the frontend server and verify Genesis 1,
+Psalm 23, Ecclesiastes 3, and John 1. Check the source-and-rights dialog, the
+mechanical highlight toggle and disclaimer, Original Language passage links,
+desktop 1280×720 layout, mobile 390×844 stacking, horizontal overflow, and the
+browser console. No verse text is embedded as an offline fallback.
 
 For DictionaryRoot, inspect
 `/api/v1/dictionaryroot/lexicon/evidence/coverage`; a ready corpus reports

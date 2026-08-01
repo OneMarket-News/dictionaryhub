@@ -1,0 +1,49 @@
+.br-compare-shell { width: min(100% - 2rem, 1500px); margin: 0 auto; padding: 2rem 0 4rem; }
+.br-compare-intro { max-width: 880px; }
+.br-compare-intro h1 { max-width: 780px; }
+.br-compare-disclaimer { padding: 1rem 1.1rem; border-left: .3rem solid var(--br-gold, #b97818); background: #fff9ea; color: #382a16; }
+.br-compare-controls { display: grid; grid-template-columns: minmax(10rem, 15rem) 1fr auto; gap: 1rem 1.25rem; align-items: end; margin: 2rem 0; padding: 1.25rem; border: 1px solid #d8d2c4; border-radius: 1rem; background: #fff; }
+.br-compare-controls > label:first-child { grid-column: 1; }
+.br-compare-controls select { grid-column: 1; min-height: 2.75rem; }
+.br-compare-controls fieldset { grid-column: 2; grid-row: 1 / span 2; min-width: 0; margin: 0; padding: .7rem 1rem 1rem; border: 1px solid #d8d2c4; border-radius: .75rem; }
+.br-edition-options { display: flex; flex-wrap: wrap; gap: .55rem 1rem; }
+.br-edition-options label, .br-toggle { display: inline-flex; gap: .45rem; align-items: center; }
+.br-compare-controls button { grid-column: 3; grid-row: 1 / span 2; min-height: 2.75rem; }
+#bibleRootCompareSelectionHelp { grid-column: 1 / -1; margin: 0; color: #655f55; font-size: .9rem; }
+.br-compare-results-heading { display: flex; justify-content: space-between; gap: 1rem; align-items: end; }
+.br-compare-results-heading p { overflow-wrap: anywhere; }
+.br-comparison { display: grid; gap: 1rem; }
+.br-verse-comparison { border: 1px solid #d8d2c4; border-radius: 1rem; background: #fff; overflow: hidden; }
+.br-verse-identity { display: flex; justify-content: space-between; gap: 1rem; align-items: center; padding: .65rem 1rem; background: #f4f0e6; }
+.br-verse-identity h3 { margin: 0; font-size: 1rem; }
+.br-verse-identity a { font-size: .86rem; }
+.br-edition-columns { display: grid; grid-template-columns: repeat(var(--edition-count, 2), minmax(0, 1fr)); }
+.br-translation-cell { min-width: 0; padding: 1rem; border-right: 1px solid #e3ded3; }
+.br-translation-cell:last-child { border-right: 0; }
+.br-translation-cell header { display: flex; justify-content: space-between; gap: .5rem; align-items: start; margin-bottom: .7rem; }
+.br-translation-cell h4 { margin: 0; }
+.br-translation-cell p { margin: 0; line-height: 1.58; overflow-wrap: anywhere; }
+.br-source-button { padding: .25rem .5rem; font-size: .78rem; white-space: nowrap; }
+.br-token-diff { display: flex; flex-wrap: wrap; gap: .25rem; margin-top: .75rem; padding-top: .65rem; border-top: 1px dashed #d8d2c4; }
+.br-token-diff[hidden] { display: none; }
+.br-token-diff span { padding: .05rem .2rem; border-radius: .2rem; }
+.br-token-diff span[data-different="true"] { background: #fff0a6; outline: 1px solid #d7ad2b; }
+.br-provenance-dialog { width: min(92vw, 760px); max-height: 86vh; border: 0; border-radius: 1rem; box-shadow: 0 1rem 4rem rgb(0 0 0 / .28); }
+.br-provenance-dialog::backdrop { background: rgb(15 20 18 / .6); }
+.br-dialog-close { float: right; }
+.br-provenance-dialog dl { display: grid; grid-template-columns: minmax(9rem, .35fr) 1fr; gap: .7rem 1rem; }
+.br-provenance-dialog dt { font-weight: 700; }
+.br-provenance-dialog dd { margin: 0; overflow-wrap: anywhere; }
+@media (max-width: 760px) {
+  .br-compare-shell { width: min(100% - 1rem, 1500px); padding-top: 1rem; }
+  .br-compare-controls { grid-template-columns: 1fr; align-items: stretch; }
+  .br-compare-controls > label:first-child, .br-compare-controls select, .br-compare-controls fieldset, .br-compare-controls button, #bibleRootCompareSelectionHelp { grid-column: 1; grid-row: auto; }
+  .br-compare-results-heading { display: block; }
+  .br-edition-columns { grid-template-columns: 1fr; }
+  .br-translation-cell { border-right: 0; border-bottom: 1px solid #e3ded3; }
+  .br-translation-cell:last-child { border-bottom: 0; }
+  .br-verse-identity { align-items: start; }
+  .br-provenance-dialog dl { grid-template-columns: 1fr; }
+  .br-provenance-dialog dd { margin-bottom: .55rem; }
+}
+@media (prefers-reduced-motion: reduce) { .br-compare-page *, .br-compare-page *::before, .br-compare-page *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; transition-duration: .001ms !important; } }

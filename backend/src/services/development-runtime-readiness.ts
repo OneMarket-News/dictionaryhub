@@ -7,6 +7,10 @@ import {
   ORIGINAL_LANGUAGE_DATASET_VERSION,
 } from "../bibleroot/original-languages.js";
 import {
+  TRANSLATION_COMPARISON_DATASET_ID,
+  TRANSLATION_COMPARISON_DATASET_VERSION,
+} from "../bibleroot/translation-comparison.js";
+import {
   CORE_LEXICAL_CORPUS_ID,
   CORE_LEXICAL_CORPUS_VERSION,
 } from "../dictionaryroot/core-lexical-corpus.js";
@@ -20,13 +24,14 @@ export interface RuntimeRootReadiness {
 }
 
 export interface DevelopmentRuntimeReadiness {
-  contractVersion: "1.0.0";
+  contractVersion: "1.1.0";
   roots: {
     DictionaryRoot: RuntimeRootReadiness;
     HistoryRoot: RuntimeRootReadiness;
     BibleRoot: RuntimeRootReadiness & {
       foundationReady: boolean;
       originalLanguageReady: boolean;
+      translationComparisonReady: boolean;
     };
   };
 }
@@ -55,6 +60,11 @@ interface CountRow {
   original_lemmas: number;
   original_morphologies: number;
   original_mappings: number;
+  comparison_dataset: number;
+  comparison_editions: number;
+  comparison_artifacts: number;
+  comparison_rights: number;
+  comparison_verses: number;
   history_bundles: number;
   history_records: number;
 }
@@ -87,6 +97,11 @@ export async function getDevelopmentRuntimeReadiness(): Promise<DevelopmentRunti
       (SELECT COUNT(*)::integer FROM bibleroot_original_language_token_lemmas WHERE dataset_id = '${ORIGINAL_LANGUAGE_DATASET_ID}') AS original_lemmas,
       (SELECT COUNT(*)::integer FROM bibleroot_original_language_token_morphologies WHERE dataset_id = '${ORIGINAL_LANGUAGE_DATASET_ID}') AS original_morphologies,
       (SELECT COUNT(*)::integer FROM bibleroot_original_language_verse_mappings WHERE dataset_id = '${ORIGINAL_LANGUAGE_DATASET_ID}') AS original_mappings,
+      (SELECT COUNT(*)::integer FROM imported_bundles WHERE bundle_id = '${TRANSLATION_COMPARISON_DATASET_ID}' AND version = '${TRANSLATION_COMPARISON_DATASET_VERSION}') AS comparison_dataset,
+      (SELECT COUNT(*)::integer FROM bibleroot_editions WHERE dataset_id = '${TRANSLATION_COMPARISON_DATASET_ID}') AS comparison_editions,
+      (SELECT COUNT(*)::integer FROM bibleroot_source_artifacts WHERE dataset_id = '${TRANSLATION_COMPARISON_DATASET_ID}') AS comparison_artifacts,
+      (SELECT COUNT(*)::integer FROM bibleroot_source_artifact_rights_components WHERE dataset_id = '${TRANSLATION_COMPARISON_DATASET_ID}') AS comparison_rights,
+      (SELECT COUNT(*)::integer FROM bibleroot_verse_texts WHERE dataset_id = '${TRANSLATION_COMPARISON_DATASET_ID}') AS comparison_verses,
       (SELECT COUNT(*)::integer FROM imported_bundles WHERE domain = 'HistoryRoot') AS history_bundles,
       (SELECT COUNT(*)::integer FROM context_records WHERE domain = 'HistoryRoot') AS history_records;
   `);
@@ -126,13 +141,22 @@ export async function getDevelopmentRuntimeReadiness(): Promise<DevelopmentRunti
   };
   const originalLanguageReady = JSON.stringify(Object.values(originalCounts))
     === JSON.stringify([1, 2, 4, 111, 1592, 1592, 2420, 111]);
+  const comparisonCounts = {
+    datasets: row.comparison_dataset,
+    editions: row.comparison_editions,
+    sourceArtifacts: row.comparison_artifacts,
+    rightsRecords: row.comparison_rights,
+    verseTexts: row.comparison_verses,
+  };
+  const translationComparisonReady = JSON.stringify(Object.values(comparisonCounts))
+    === JSON.stringify([1, 3, 3, 3, 330]);
   const historyCounts = {
     bundles: row.history_bundles,
     contextRecords: row.history_records,
   };
   const historyReady = row.history_bundles > 0 && row.history_records > 0;
   return {
-    contractVersion: "1.0.0",
+    contractVersion: "1.1.0",
     roots: {
       DictionaryRoot: {
         ready: dictionaryReady,
@@ -149,10 +173,17 @@ export async function getDevelopmentRuntimeReadiness(): Promise<DevelopmentRunti
       BibleRoot: {
         ready: foundationReady && originalLanguageReady,
         status: foundationReady && originalLanguageReady ? "ready" : "awaiting-data",
-        datasetIds: [BIBLEROOT_DATASET_ID, ORIGINAL_LANGUAGE_DATASET_ID],
-        counts: { ...foundationCounts, ...Object.fromEntries(Object.entries(originalCounts).map(([key, value]) => [`original${key[0]!.toUpperCase()}${key.slice(1)}`, value])) },
+        datasetIds: translationComparisonReady
+          ? [BIBLEROOT_DATASET_ID, ORIGINAL_LANGUAGE_DATASET_ID, TRANSLATION_COMPARISON_DATASET_ID]
+          : [BIBLEROOT_DATASET_ID, ORIGINAL_LANGUAGE_DATASET_ID],
+        counts: {
+          ...foundationCounts,
+          ...Object.fromEntries(Object.entries(originalCounts).map(([key, value]) => [`original${key[0]!.toUpperCase()}${key.slice(1)}`, value])),
+          ...Object.fromEntries(Object.entries(comparisonCounts).map(([key, value]) => [`translationComparison${key[0]!.toUpperCase()}${key.slice(1)}`, value])),
+        },
         foundationReady,
         originalLanguageReady,
+        translationComparisonReady,
       },
     },
   };

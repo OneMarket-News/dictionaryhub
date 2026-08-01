@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Compare four source-recorded public-domain Bible editions across the bounded BibleRoot corpus.">
+  <title>Translation Comparison | BibleRoot</title>
+  <link rel="icon" href="assets/brand/dictionaryroot-mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/bibleroot.css?v=translation-comparison-v1">
+  <link rel="stylesheet" href="assets/css/bibleroot-compare.css?v=translation-comparison-v1">
+  <link rel="stylesheet" href="assets/css/sourceroot-root-switcher.css?v=shared-root-switcher-v1" data-sourceroot-root-switcher-styles="v1">
+  <link rel="stylesheet" href="assets/css/sourceroot-user-menu.css?v=shared-user-menu-v1" data-sourceroot-user-menu-styles="v1">
+</head>
+<body class="br-page br-compare-page">
+  <a class="br-skip-link" href="#main-content">Skip to translation comparison</a>
+  <header class="br-site-header">
+    <div class="br-header-inner">
+      <a class="br-wordmark" href="bibleroot.html" aria-label="BibleRoot home">
+        <span class="br-wordmark-mark" aria-hidden="true">BR</span>
+        <span><strong>BibleRoot</strong><small>Text with a source trail</small></span>
+      </a>
+      <nav class="br-public-nav" aria-label="BibleRoot">
+        <a href="bibleroot.html">Home</a>
+        <a href="bibleroot-passage.html?reference=Genesis%201">Read a passage</a>
+        <a aria-current="page" href="bibleroot-compare.html">Compare translations</a>
+      </nav>
+      <div class="br-shared-actions" role="group" aria-label="Account and product navigation">
+        <div data-sourceroot-user-menu data-user-menu-id-prefix="bibleRootCompareUserMenu"></div>
+        <div data-sourceroot-root-switcher data-current-root="BibleRoot"></div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="br-breadcrumbs" aria-label="Breadcrumb">
+    <ol><li><a href="sourceroot.html">SourceRoot</a></li><li><a href="bibleroot.html">BibleRoot</a></li><li aria-current="page">Translation Comparison</li></ol>
+  </nav>
+
+  <main id="main-content" class="br-compare-shell">
+    <section class="br-compare-intro" aria-labelledby="br-compare-title">
+      <p class="br-kicker">Translation Comparison v1 · four public-domain editions</p>
+      <h1 id="br-compare-title">Compare wording. Inspect every source trail.</h1>
+      <p>Each synchronized row shares one canonical verse identity. Edition, artifact, checksum, rights, and dataset records remain visible and distinct.</p>
+      <p class="br-compare-disclaimer"><strong>Textual comparison boundary:</strong> Highlights show textual differences only. They do not determine meaning, accuracy, doctrine, or translation quality.</p>
+    </section>
+
+    <form id="bibleRootCompareForm" class="br-compare-controls" aria-describedby="bibleRootCompareSelectionHelp">
+      <label for="bibleRootCompareReference">Passage</label>
+      <select id="bibleRootCompareReference" name="reference">
+        <option>Genesis 1</option><option>Psalm 23</option><option>Ecclesiastes 3</option><option>John 1</option>
+      </select>
+      <fieldset>
+        <legend>English editions</legend>
+        <div id="bibleRootCompareEditions" class="br-edition-options" aria-live="polite"></div>
+      </fieldset>
+      <label class="br-toggle"><input id="bibleRootCompareHighlights" type="checkbox"> Show mechanical token differences</label>
+      <p id="bibleRootCompareSelectionHelp">Select one to four editions. KJV and the first available additional edition are selected initially.</p>
+      <button type="submit">Update comparison</button>
+    </form>
+
+    <section aria-labelledby="bibleRootCompareResultsTitle">
+      <div class="br-compare-results-heading">
+        <div><p class="br-kicker">Synchronized canonical rows</p><h2 id="bibleRootCompareResultsTitle">Genesis 1</h2></div>
+        <p id="bibleRootCompareDataset">Dataset identity loading…</p>
+      </div>
+      <div id="bibleRootCompareStatus" class="br-state-panel" data-state="loading" role="status" aria-live="polite">
+        <span class="br-spinner" aria-hidden="true"></span><div><strong>Loading translation records</strong><p>Contacting the SourceRoot BibleRoot API.</p></div>
+      </div>
+      <div id="bibleRootCompareResults" class="br-comparison" aria-live="polite" aria-busy="true"></div>
+    </section>
+  </main>
+
+  <dialog id="bibleRootCompareProvenance" class="br-provenance-dialog" aria-labelledby="bibleRootCompareProvenanceTitle">
+    <form method="dialog"><button class="br-dialog-close" value="close" aria-label="Close source details">Close</button></form>
+    <div id="bibleRootCompareProvenanceBody"></div>
+  </dialog>
+
+  <footer class="br-footer"><p>BibleRoot Translation Comparison · exact display text · mechanical differences only · no commentary or ranking</p></footer>
+  <script src="assets/js/sourceroot-root-switcher.js?v=shared-root-switcher-v1"></script>
+  <script src="assets/js/sourceroot-user-menu.js?v=shared-user-menu-v1"></script>
+  <script src="assets/js/sourceroot-api.js"></script>
+  <script src="assets/js/bibleroot-api.js?v=translation-comparison-v1"></script>
+  <script src="assets/js/bibleroot-compare.js?v=translation-comparison-v1"></script>
+</body>
+</html>

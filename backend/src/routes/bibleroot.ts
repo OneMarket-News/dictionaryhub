@@ -4,14 +4,17 @@ import { BibleRootReferenceError } from "../bibleroot/foundation.js";
 import { createApiError } from "../lib/api-contract.js";
 import {
   BibleRootOriginalLanguageUnavailableError,
+  BibleRootComparisonRequestError,
   BibleRootResourceNotFoundError,
   getBibleRootPassage,
   getBibleRootOriginalLanguagePassage,
   getBibleRootPhrase,
   getBibleRootVerse,
+  getBibleRootTranslationComparison,
   listBibleRootBooks,
   listBibleRootEditions,
   listBibleRootOriginalLanguageEditions,
+  listBibleRootTranslationEditions,
 } from "../services/bibleroot-store.js";
 
 export const bibleRootRouter = Router();
@@ -70,12 +73,59 @@ function handleBibleRootError(
       ),
     );
   }
+  if (error instanceof BibleRootComparisonRequestError) {
+    return response.status(error.status).json(
+      createApiError(
+        error.code.toUpperCase().replaceAll("-", "_"),
+        error.message,
+        error.status,
+        {
+          category: error.status === 503 ? "conflict" : "validation-failure",
+          ...(error.status === 503 ? { details: { readiness: "awaiting-data" } } : {}),
+          requestId: response.locals.requestId,
+        },
+      ),
+    );
+  }
   return next(error);
 }
 
 bibleRootRouter.get("/editions", async (_request, response, next) => {
   try {
     return response.status(200).json(await listBibleRootEditions());
+  } catch (error) {
+    return handleBibleRootError(error, response, next);
+  }
+});
+
+bibleRootRouter.get("/translations", async (_request, response, next) => {
+  try {
+    return response.status(200).json(await listBibleRootTranslationEditions());
+  } catch (error) {
+    return handleBibleRootError(error, response, next);
+  }
+});
+
+bibleRootRouter.get("/comparison", async (request, response, next) => {
+  const reference = queryString(request.query.reference);
+  if (!reference) {
+    return response.status(400).json(
+      createApiError("REFERENCE_REQUIRED", "The reference query parameter is required.", 400, {
+        category: "validation-failure",
+        field: "reference",
+        requestId: response.locals.requestId,
+      }),
+    );
+  }
+  const editions = queryString(request.query.editions)
+    ?.split(",")
+    .map((editionId) => editionId.trim())
+    .filter(Boolean)
+    ?? ["br-edition-kjv-pg10-2024", "br-edition-asv-1901-ebible-20260611"];
+  try {
+    return response.status(200).json(
+      await getBibleRootTranslationComparison(reference, editions),
+    );
   } catch (error) {
     return handleBibleRootError(error, response, next);
   }

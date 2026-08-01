@@ -223,14 +223,7 @@ test("11. parser distinguishes malformed, unknown, invalid, reversed, and unavai
 });
 
 test("12. migration 015 installed the complete BibleRoot table family", async () => {
-  const result = await database().query<{ table_name: string }>(`
-    SELECT table_name
-    FROM information_schema.tables
-    WHERE table_schema = 'public'
-      AND table_name LIKE 'bibleroot_%'
-    ORDER BY table_name;
-  `);
-  assert.deepEqual(result.rows.map((row) => row.table_name), [
+  const migration015Tables = [
     "bibleroot_books",
     "bibleroot_canon_books",
     "bibleroot_canonical_verses",
@@ -242,7 +235,15 @@ test("12. migration 015 installed the complete BibleRoot table family", async ()
     "bibleroot_source_artifacts",
     "bibleroot_source_publications",
     "bibleroot_verse_texts",
-  ]);
+  ];
+  const result = await database().query<{ table_name: string }>(`
+    SELECT table_name
+    FROM information_schema.tables
+    WHERE table_schema = 'public'
+      AND table_name = ANY($1::text[])
+    ORDER BY table_name;
+  `, [migration015Tables]);
+  assert.deepEqual(result.rows.map((row) => row.table_name), migration015Tables);
 });
 
 test("13. database foreign keys reject disconnected provenance", async () => {
