@@ -1,0 +1,31 @@
+{
+  "datasetId": "sourceroot-cross-root-lexical-evidence-v1",
+  "version": "1.0.0",
+  "files": [
+    {
+      "filename": "dataset-manifest.json",
+      "byteLength": 2066,
+      "sha256": "9C748D20F80134335F98DC3444B58B1C6229118A0319538795BE88B4CC62E504"
+    },
+    {
+      "filename": "input-fingerprints.json",
+      "byteLength": 2753,
+      "sha256": "66D5E8ECB2BB7B2C1251A37D16FF7A1FB1B8EEBAD862601F9093EA0B01B80891"
+    },
+    {
+      "filename": "resource-registry.json",
+      "byteLength": 1619809,
+      "sha256": "697B12782E6175B022D5C7B633D807CE7466B2410450E9F266478A5358A1F7D0"
+    },
+    {
+      "filename": "links.json",
+      "byteLength": 1442043,
+      "sha256": "BC27E3B95891B350065AAAF82F3377ACAA65CB1F1863954EE942FD4BDEE2469C"
+    },
+    {
+      "filename": "evidence.json",
+      "byteLength": 1947560,
+      "sha256": "FB5AAABEC55D08F199F24295F8CDD36E22738A38C327AE4FD9429E70E247CA19"
+    }
+  ]
+}

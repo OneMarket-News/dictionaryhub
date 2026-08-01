@@ -381,7 +381,7 @@
     return card;
   }
 
-  function dictionaryDiscoveryPanel() {
+  function dictionaryDiscoveryPanel(record) {
     const panel = ui.element("section", {
       className: "hr-cross-root-discovery",
       attributes: { "aria-labelledby": "historyrootDictionaryDiscoveryTitle" }
@@ -441,6 +441,18 @@
     });
     ui.append(form, label, input, roots, resultTypes, page, button);
     ui.append(panel, title, explanation, form);
+    if (record && record.bundleId === "historyroot-plymouth-knowledge-dataset-v1") {
+      const href = `cross-root-links.html?${new URLSearchParams({
+        root: "HistoryRoot",
+        resourceType: "accepted-contextual-record",
+        resourceId: record.id
+      }).toString()}`;
+      ui.append(panel, ui.element("a", {
+        className: "hr-button-secondary",
+        text: "Verify exact Cross-Root wording",
+        attributes: { href }
+      }));
+    }
     return panel;
   }
 
@@ -766,7 +778,7 @@
           ui.append(node, grid);
           ui.append(sections, node);
         }
-        ui.append(sections, dictionaryDiscoveryPanel());
+        ui.append(sections, dictionaryDiscoveryPanel(record));
 
         ui.clear(metadataList);
         const metadataRows = [

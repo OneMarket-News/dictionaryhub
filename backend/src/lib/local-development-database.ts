@@ -6,6 +6,7 @@ const REQUIRED_MIGRATIONS = Object.freeze([
   "015_create_bibleroot_foundation.sql",
   "016_create_bibleroot_original_language_foundation.sql",
   "017_create_bibleroot_commentary_provenance.sql",
+  "018_create_cross_root_link_foundation.sql",
 ]);
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
 const LOCAL_SERVER_ADDRESSES = new Set(["127.0.0.1", "::1"]);
@@ -96,8 +97,8 @@ export async function authorizeLocalDevelopmentDatabase(
       throw new Error(`Required migration is not applied: ${migration}`);
     }
   }
-  if (row.migration_018_count !== 0) {
-    throw new Error("Migration 018 is outside the local runtime recovery boundary.");
+  if (row.migration_018_count !== 1) {
+    throw new Error("Exactly one governed migration 018 must be applied.");
   }
 
   const authorization = Object.freeze({

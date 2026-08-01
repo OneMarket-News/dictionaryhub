@@ -102,3 +102,17 @@ shortcut.
 Exact hashes are required because source identity, rights, provenance, stable
 IDs, normalized text, and mapping evidence are part of the released product
 contract. Semantically similar bytes are not interchangeable evidence.
+# Cross-Root lexical evidence (Chunk 14A)
+
+After the three released Roots and all BibleRoot layers are available:
+
+1. Run `npm.cmd run db:migrate` from `backend/`.
+2. Run `npm.cmd run cross-root:lexical-evidence:prepare` (offline and deterministic).
+3. Run `npm.cmd run test:cross-root:lexical-evidence` and `npm.cmd run test:cross-root:frontend`.
+4. Run `npm.cmd run dev:provision`; repeat it to confirm 6,568 unchanged records skip with zero duplicates.
+5. Run `npm.cmd run dev:status` and confirm readiness contract 1.3.0 and `crossRootLinks.ready: true`.
+6. Run `npm.cmd run dev` for the API on port 3000.
+7. Serve the repository frontend on port 5500 without replacing an existing server.
+8. Open `cross-root-links.html` through a canonical DictionaryRoot, HistoryRoot, or BibleRoot entry point and verify desktop/mobile evidence, unavailable/recovery behavior, focus, and zero console errors.
+
+Production coverage is 1,568 resources, 2,233 links, and 2,765 evidence occurrences. Preparation and automated tests use committed inputs and `.env.test`; they never query the mutable development database. No credentials belong in output or documentation.

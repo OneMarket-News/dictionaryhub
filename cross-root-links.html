@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Inspect exact lexical observations linking released DictionaryRoot lemmas to HistoryRoot and BibleRoot records.">
+  <title>Cross-Root lexical links | SourceRoot</title>
+  <link rel="icon" href="assets/brand/dictionaryroot-mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/dictionaryroot-brand.css">
+  <link rel="stylesheet" href="assets/css/cross-root-links.css?v=1">
+</head>
+<body class="cr-page">
+  <a class="cr-skip-link" href="#main-content">Skip to link evidence</a>
+  <header class="cr-header">
+    <a class="cr-brand" href="sourceroot.html"><strong>SourceRoot</strong><span>Cross-Root evidence</span></a>
+    <nav aria-label="Root navigation">
+      <a href="dictionaryroot.html">DictionaryRoot</a>
+      <a href="historyroot.html">HistoryRoot</a>
+      <a href="bibleroot.html">BibleRoot</a>
+    </nav>
+  </header>
+  <main id="main-content" class="cr-main">
+    <header class="cr-hero">
+      <p class="cr-kicker">Chunk 14A · deterministic lexical observation</p>
+      <h1>Verify why records are linked</h1>
+      <p>Inspect the exact wording, source field, UTF-16 offsets, context, dataset identities, and deterministic method behind every link.</p>
+    </header>
+
+    <section class="cr-boundaries" aria-labelledby="crBoundaryTitle">
+      <h2 id="crBoundaryTitle">A textual connection—not a semantic conclusion</h2>
+      <p><strong>Exact wording connects these records.</strong> It does not establish the same meaning, dictionary sense, identity, influence, causation, or significance.</p>
+      <p>These links are deterministic textual observations and have not been accepted through human semantic review.</p>
+    </section>
+
+    <section class="cr-lookup" aria-labelledby="crLookupTitle">
+      <h2 id="crLookupTitle">Open a registered resource</h2>
+      <form id="crossRootLookupForm">
+        <label>Root
+          <select id="crossRootRoot" name="root">
+            <option value="DictionaryRoot">DictionaryRoot</option>
+            <option value="HistoryRoot">HistoryRoot</option>
+            <option value="BibleRoot">BibleRoot</option>
+          </select>
+        </label>
+        <label>Resource type
+          <select id="crossRootResourceType" name="resourceType">
+            <option value="lemma">Lemma</option>
+            <option value="accepted-contextual-record">Accepted contextual record</option>
+            <option value="edition-verse-text">Edition verse text</option>
+          </select>
+        </label>
+        <label>Stable public ID
+          <input id="crossRootResourceId" name="resourceId" required autocomplete="off">
+        </label>
+        <button type="submit">Inspect links</button>
+      </form>
+    </section>
+
+    <div id="crossRootStatus" class="cr-state" role="status" aria-live="polite"></div>
+    <section id="crossRootResults" aria-labelledby="crossRootResultsTitle" hidden>
+      <h2 id="crossRootResultsTitle">Observed links</h2>
+      <div id="crossRootSelected"></div>
+      <div id="crossRootGroups"></div>
+    </section>
+  </main>
+  <footer class="cr-footer">Bounded to released English verse text and released public HistoryRoot record fields. No fallback graph is embedded.</footer>
+  <script src="assets/js/sourceroot-api.js"></script>
+  <script src="assets/js/cross-root-api.js?v=1"></script>
+  <script src="assets/js/cross-root-links.js?v=1"></script>
+</body>
+</html>

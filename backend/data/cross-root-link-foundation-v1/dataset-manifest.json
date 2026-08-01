@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "1.0.0",
+  "datasetId": "sourceroot-cross-root-lexical-evidence-v1",
+  "version": "1.0.0",
+  "title": "Cross-Root Link Foundation and Deterministic Lexical Evidence v1",
+  "algorithmVersion": "exact-lexical-observation-js-utf16-v1",
+  "derivationBoundary": "Exact normalized lexical occurrence only; no sense, equivalence, influence, causation, significance, agreement, or contradiction inference.",
+  "reviewBoundary": "All 14A links are unreviewed deterministic textual observations; automated validation is not human semantic review.",
+  "participatingRoots": [
+    "DictionaryRoot",
+    "HistoryRoot",
+    "BibleRoot"
+  ],
+  "participatingResourceTypes": [
+    "lemma",
+    "accepted-contextual-record",
+    "edition-verse-text"
+  ],
+  "inputDatasetIdentities": [
+    {
+      "datasetId": "dictionaryroot-core-lexical-corpus-v1",
+      "version": "1.0.0",
+      "rootId": "DictionaryRoot"
+    },
+    {
+      "datasetId": "historyroot-plymouth-knowledge-dataset-v1",
+      "version": "1.3.0",
+      "rootId": "HistoryRoot"
+    },
+    {
+      "datasetId": "bibleroot-foundation-v1",
+      "version": "1.0.0",
+      "rootId": "BibleRoot"
+    },
+    {
+      "datasetId": "bibleroot-translation-comparison-v1",
+      "version": "1.0.0",
+      "rootId": "BibleRoot"
+    }
+  ],
+  "expectedCounts": {
+    "resources": 1568,
+    "dictionaryResources": 500,
+    "historyResources": 628,
+    "bibleResources": 440,
+    "links": 2233,
+    "evidence": 2765,
+    "dictionaryToHistoryLinks": 1431,
+    "dictionaryToBibleLinks": 802,
+    "historyOccurrences": 1790,
+    "bibleOccurrences": 975
+  },
+  "excludedLayers": [
+    "DictionaryRoot senses and definition claims",
+    "HistoryRoot drafts, proposals, moderation, audit, IDs, hashes, hidden metadata, and source metadata",
+    "BibleRoot Original Language",
+    "BibleRoot commentary",
+    "BibleRoot rights and provenance metadata",
+    "direct BibleRoot-to-HistoryRoot links",
+    "semantic scores, embeddings, fuzzy matches, stemming, morphology, synonym expansion, and inferred equivalence"
+  ]
+}

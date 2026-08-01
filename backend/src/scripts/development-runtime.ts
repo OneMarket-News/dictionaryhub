@@ -39,6 +39,11 @@ import { importBibleRootTranslationComparison } from "./import-bibleroot-transla
 import { importBibleRootCommentaryProvenance } from "./import-bibleroot-commentary-provenance.js";
 import { getDevelopmentRuntimeReadiness } from "../services/development-runtime-readiness.js";
 import { saveDictionaryRootCoreLexicalCorpus } from "../services/lexical-evidence-store.js";
+import { saveImportedBundle } from "../services/import-store.js";
+import { validateBundle } from "../services/validator.js";
+import type { SourceRootBundle } from "../types.js";
+import { validateCrossRootDataset, type CrossRootDataset } from "../cross-root/lexical-evidence.js";
+import { importCrossRootLexicalEvidence } from "./import-cross-root-lexical-evidence.js";
 
 const BACKEND_ROOT = fileURLToPath(new URL("../../", import.meta.url));
 const CORE_CORPUS_DIRECTORY = path.join(
@@ -46,6 +51,7 @@ const CORE_CORPUS_DIRECTORY = path.join(
   "data",
   "dictionaryroot-core-lexical-corpus-v1",
 );
+const HISTORY_BUNDLE_FILE = path.join(BACKEND_ROOT, "data", "historyroot-wampanoag-regional-corpus-v1", "historyroot-wampanoag-regional-corpus-v1.bundle.json");
 
 interface HashManifest {
   datasetId: string;
@@ -59,6 +65,8 @@ export interface ValidatedDevelopmentDatasets {
   bibleRootOriginalLanguage: OriginalLanguageDataset;
   bibleRootTranslationComparison: TranslationComparisonDataset;
   bibleRootCommentaryProvenance: CommentaryDataset;
+  crossRootLexicalEvidence: CrossRootDataset;
+  historyRoot: SourceRootBundle;
 }
 
 function sha256(bytes: Uint8Array | string): string {
@@ -110,14 +118,20 @@ export async function validateDictionaryRootCoreCorpus(): Promise<DictionaryRoot
 }
 
 export async function validateDevelopmentDatasets(): Promise<ValidatedDevelopmentDatasets> {
-  const [dictionaryRoot, bibleRootFoundation, bibleRootOriginalLanguage, bibleRootTranslationComparison, bibleRootCommentaryProvenance] = await Promise.all([
+  const [dictionaryRoot, bibleRootFoundation, bibleRootOriginalLanguage, bibleRootTranslationComparison, bibleRootCommentaryProvenance, crossRootLexicalEvidence, historyRoot] = await Promise.all([
     validateDictionaryRootCoreCorpus(),
     validateBibleRootFoundation(),
     loadOriginalLanguageDataset(),
     validateTranslationComparisonDataset(),
     validateCommentaryDataset(),
+    validateCrossRootDataset(),
+    readJson<SourceRootBundle>(HISTORY_BUNDLE_FILE),
   ]);
-  return { dictionaryRoot, bibleRootFoundation, bibleRootOriginalLanguage, bibleRootTranslationComparison, bibleRootCommentaryProvenance };
+  const historyValidation = validateBundle(historyRoot);
+  if (!historyValidation.canImport || historyValidation.summary.errors !== 0 || historyValidation.summary.warnings !== 0 || historyRoot.bundleId !== "historyroot-plymouth-knowledge-dataset-v1" || historyRoot.version !== "1.3.0") {
+    throw new Error("Released HistoryRoot 1.3.0 bundle validation failed.");
+  }
+  return { dictionaryRoot, bibleRootFoundation, bibleRootOriginalLanguage, bibleRootTranslationComparison, bibleRootCommentaryProvenance, crossRootLexicalEvidence, historyRoot };
 }
 
 async function historyRows(client: PoolClient, table: string, idColumn: string) {
@@ -204,6 +218,10 @@ export async function provisionDevelopmentRuntime() {
   }
 
   const before = await getDevelopmentRuntimeReadiness();
+  const historyAction = before.roots.HistoryRoot.ready
+    ? "skipped"
+    : (historyBefore.counts.imported_bundles ?? 0) > 0 ? "updated" : "imported";
+  if (historyAction !== "skipped") await saveImportedBundle(datasets.historyRoot);
   const dictionaryAction = before.roots.DictionaryRoot.ready
     ? "skipped"
     : (before.roots.DictionaryRoot.counts.datasets ?? 0) > 0 ? "updated" : "imported";
@@ -251,10 +269,26 @@ export async function provisionDevelopmentRuntime() {
     });
   }
 
-  const after = await getDevelopmentRuntimeReadiness();
-  if (!after.roots.DictionaryRoot.ready || !after.roots.BibleRoot.ready || !after.roots.BibleRoot.translationComparisonReady || !after.roots.BibleRoot.commentaryProvenanceReady) {
+  const rootsReady = await getDevelopmentRuntimeReadiness();
+  if (!rootsReady.roots.DictionaryRoot.ready || !rootsReady.roots.HistoryRoot.ready || !rootsReady.roots.BibleRoot.ready || !rootsReady.roots.BibleRoot.translationComparisonReady || !rootsReady.roots.BibleRoot.commentaryProvenanceReady) {
     throw new Error("Development provisioning completed without achieving released-dataset readiness.");
   }
+  const historyReadyClient = await pool.connect();
+  let historyReadyFingerprint: Awaited<ReturnType<typeof captureHistoryRootFingerprint>>;
+  try { historyReadyFingerprint = await captureHistoryRootFingerprint(historyReadyClient); }
+  finally { historyReadyClient.release(); }
+  const crossRootAction = before.crossRootLinks.ready
+    ? "skipped"
+    : (before.crossRootLinks.counts.datasets ?? 0) > 0 ? "updated" : "imported";
+  const crossRootResult = await importCrossRootLexicalEvidence({
+    dataset: datasets.crossRootLexicalEvidence,
+    developmentAuthorization: authorization,
+  });
+  if (crossRootResult.action !== crossRootAction) {
+    throw new Error("Cross-Root provisioning action did not match readiness state.");
+  }
+  const after = await getDevelopmentRuntimeReadiness();
+  if (!after.crossRootLinks.ready) throw new Error("Cross-Root provisioning did not achieve readiness.");
   const finalClient = await pool.connect();
   let historyAfter: Awaited<ReturnType<typeof captureHistoryRootFingerprint>>;
   try {
@@ -262,8 +296,8 @@ export async function provisionDevelopmentRuntime() {
   } finally {
     finalClient.release();
   }
-  if (historyBefore.sha256 !== historyAfter.sha256) {
-    throw new Error("HistoryRoot data changed during local development provisioning.");
+  if (historyReadyFingerprint.sha256 !== historyAfter.sha256) {
+    throw new Error("HistoryRoot data changed during Cross-Root provisioning.");
   }
 
   const dictionaryRecords = Object.values(datasets.dictionaryRoot)
@@ -286,20 +320,25 @@ export async function provisionDevelopmentRuntime() {
     target,
     sourceValidation: {
       dictionaryRoot: { datasetId: datasets.dictionaryRoot.dataset.datasetId, version: datasets.dictionaryRoot.dataset.version },
+      historyRoot: { datasetId: datasets.historyRoot.bundleId, version: datasets.historyRoot.version },
       bibleRootFoundation: { datasetId: datasets.bibleRootFoundation.manifest.datasetId, version: datasets.bibleRootFoundation.manifest.version },
       bibleRootOriginalLanguage: { datasetId: datasets.bibleRootOriginalLanguage.manifest.datasetId, version: datasets.bibleRootOriginalLanguage.manifest.version },
       bibleRootTranslationComparison: { datasetId: datasets.bibleRootTranslationComparison.manifest.datasetId, version: datasets.bibleRootTranslationComparison.manifest.version },
       bibleRootCommentaryProvenance: { datasetId: datasets.bibleRootCommentaryProvenance.manifest.datasetId, version: datasets.bibleRootCommentaryProvenance.manifest.version },
+      crossRootLexicalEvidence: { datasetId: datasets.crossRootLexicalEvidence.manifest.datasetId, version: datasets.crossRootLexicalEvidence.manifest.version },
     },
     datasets: {
       DictionaryRoot: operationResult(dictionaryAction, dictionaryRecords),
+      HistoryRoot: operationResult(historyAction, 628),
       BibleRootFoundation: operationResult(foundationAction, foundationRecords),
       BibleRootOriginalLanguage: operationResult(originalAction, originalRecords),
       BibleRootTranslationComparison: operationResult(comparisonAction, comparisonRecords),
       BibleRootCommentaryProvenance: operationResult(commentaryAction, commentaryRecords),
+      CrossRootLexicalEvidence: crossRootResult,
     },
     historyRoot: {
       preserved: true,
+      provisionedFromPriorState: historyBefore.sha256 !== historyAfter.sha256,
       fingerprintSha256: historyAfter.sha256,
       counts: historyAfter.counts,
     },

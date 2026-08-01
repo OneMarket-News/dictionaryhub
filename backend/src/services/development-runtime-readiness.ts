@@ -19,6 +19,11 @@ import {
   CORE_LEXICAL_CORPUS_VERSION,
 } from "../dictionaryroot/core-lexical-corpus.js";
 import { getPool } from "../lib/database.js";
+import {
+  CROSS_ROOT_ALGORITHM_VERSION,
+  CROSS_ROOT_DATASET_ID,
+  CROSS_ROOT_DATASET_VERSION,
+} from "../cross-root/lexical-evidence.js";
 
 export interface RuntimeRootReadiness {
   ready: boolean;
@@ -28,7 +33,7 @@ export interface RuntimeRootReadiness {
 }
 
 export interface DevelopmentRuntimeReadiness {
-  contractVersion: "1.2.0";
+  contractVersion: "1.3.0";
   roots: {
     DictionaryRoot: RuntimeRootReadiness;
     HistoryRoot: RuntimeRootReadiness;
@@ -38,6 +43,10 @@ export interface DevelopmentRuntimeReadiness {
       translationComparisonReady: boolean;
       commentaryProvenanceReady: boolean;
     };
+  };
+  crossRootLinks: RuntimeRootReadiness & {
+    contractVersion: "1.0.0";
+    algorithmVersion: string;
   };
 }
 
@@ -79,6 +88,14 @@ interface CountRow {
   commentary_rights: number;
   history_bundles: number;
   history_records: number;
+  cross_root_dataset: number;
+  cross_root_resources: number;
+  cross_root_links: number;
+  cross_root_evidence: number;
+  cross_root_dictionary_bible_links: number;
+  cross_root_dictionary_history_links: number;
+  cross_root_bible_occurrences: number;
+  cross_root_history_occurrences: number;
 }
 
 export async function getDevelopmentRuntimeReadiness(): Promise<DevelopmentRuntimeReadiness> {
@@ -121,8 +138,16 @@ export async function getDevelopmentRuntimeReadiness(): Promise<DevelopmentRunti
       (SELECT COUNT(*)::integer FROM bibleroot_commentary_section_anchors WHERE dataset_id = '${COMMENTARY_DATASET_ID}') AS commentary_anchors,
       (SELECT COUNT(*)::integer FROM bibleroot_source_artifacts WHERE dataset_id = '${COMMENTARY_DATASET_ID}') AS commentary_artifacts,
       (SELECT COUNT(*)::integer FROM bibleroot_source_artifact_rights_components WHERE dataset_id = '${COMMENTARY_DATASET_ID}') AS commentary_rights,
-      (SELECT COUNT(*)::integer FROM imported_bundles WHERE domain = 'HistoryRoot') AS history_bundles,
-      (SELECT COUNT(*)::integer FROM context_records WHERE domain = 'HistoryRoot') AS history_records;
+      (SELECT COUNT(*)::integer FROM imported_bundles WHERE bundle_id = 'historyroot-plymouth-knowledge-dataset-v1' AND version = '1.3.0' AND domain = 'HistoryRoot') AS history_bundles,
+      (SELECT COUNT(*)::integer FROM context_records WHERE bundle_id = 'historyroot-plymouth-knowledge-dataset-v1' AND domain = 'HistoryRoot') AS history_records,
+      (SELECT COUNT(*)::integer FROM cross_root_datasets WHERE dataset_id = '${CROSS_ROOT_DATASET_ID}' AND version = '${CROSS_ROOT_DATASET_VERSION}') AS cross_root_dataset,
+      (SELECT COUNT(*)::integer FROM cross_root_resources WHERE dataset_id = '${CROSS_ROOT_DATASET_ID}') AS cross_root_resources,
+      (SELECT COUNT(*)::integer FROM cross_root_links WHERE dataset_id = '${CROSS_ROOT_DATASET_ID}') AS cross_root_links,
+      (SELECT COUNT(*)::integer FROM cross_root_link_evidence WHERE dataset_id = '${CROSS_ROOT_DATASET_ID}') AS cross_root_evidence,
+      (SELECT COUNT(*)::integer FROM cross_root_links WHERE dataset_id = '${CROSS_ROOT_DATASET_ID}' AND target_root_id = 'BibleRoot') AS cross_root_dictionary_bible_links,
+      (SELECT COUNT(*)::integer FROM cross_root_links WHERE dataset_id = '${CROSS_ROOT_DATASET_ID}' AND target_root_id = 'HistoryRoot') AS cross_root_dictionary_history_links,
+      (SELECT COUNT(*)::integer FROM cross_root_link_evidence e JOIN cross_root_links l ON l.link_id=e.link_id WHERE e.dataset_id = '${CROSS_ROOT_DATASET_ID}' AND l.target_root_id = 'BibleRoot') AS cross_root_bible_occurrences,
+      (SELECT COUNT(*)::integer FROM cross_root_link_evidence e JOIN cross_root_links l ON l.link_id=e.link_id WHERE e.dataset_id = '${CROSS_ROOT_DATASET_ID}' AND l.target_root_id = 'HistoryRoot') AS cross_root_history_occurrences;
   `);
   const row = result.rows[0]!;
   const dictionaryCounts = {
@@ -184,9 +209,21 @@ export async function getDevelopmentRuntimeReadiness(): Promise<DevelopmentRunti
     bundles: row.history_bundles,
     contextRecords: row.history_records,
   };
-  const historyReady = row.history_bundles > 0 && row.history_records > 0;
+  const historyReady = row.history_bundles === 1 && row.history_records === 628;
+  const crossRootCounts = {
+    datasets: row.cross_root_dataset,
+    resources: row.cross_root_resources,
+    links: row.cross_root_links,
+    evidence: row.cross_root_evidence,
+    dictionaryToBibleLinks: row.cross_root_dictionary_bible_links,
+    dictionaryToHistoryLinks: row.cross_root_dictionary_history_links,
+    BibleRootOccurrences: row.cross_root_bible_occurrences,
+    HistoryRootOccurrences: row.cross_root_history_occurrences,
+  };
+  const crossRootReady = JSON.stringify(Object.values(crossRootCounts))
+    === JSON.stringify([1, 1568, 2233, 2765, 802, 1431, 975, 1790]);
   return {
-    contractVersion: "1.2.0",
+    contractVersion: "1.3.0",
     roots: {
       DictionaryRoot: {
         ready: dictionaryReady,
@@ -197,7 +234,7 @@ export async function getDevelopmentRuntimeReadiness(): Promise<DevelopmentRunti
       HistoryRoot: {
         ready: historyReady,
         status: historyReady ? "ready" : "awaiting-data",
-        datasetIds: [],
+        datasetIds: historyReady ? ["historyroot-plymouth-knowledge-dataset-v1"] : [],
         counts: historyCounts,
       },
       BibleRoot: {
@@ -219,6 +256,14 @@ export async function getDevelopmentRuntimeReadiness(): Promise<DevelopmentRunti
         translationComparisonReady,
         commentaryProvenanceReady,
       },
+    },
+    crossRootLinks: {
+      ready: crossRootReady,
+      status: crossRootReady ? "ready" : "awaiting-data",
+      contractVersion: "1.0.0",
+      datasetIds: crossRootReady ? [CROSS_ROOT_DATASET_ID] : [],
+      algorithmVersion: CROSS_ROOT_ALGORITHM_VERSION,
+      counts: crossRootCounts,
     },
   };
 }

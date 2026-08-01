@@ -1,0 +1,66 @@
+[
+  {
+    "filename": "backend/data/dictionaryroot-core-lexical-corpus-v1/corpus.json",
+    "datasetId": "dictionaryroot-core-lexical-corpus-v1",
+    "datasetVersion": "1.0.0",
+    "byteLength": 3624640,
+    "sha256": "D81576A1ABD254EB3479CB638283FD07AB461000C118DB46B4E0DFB3E08A0D16",
+    "gitBlob": "371ca9e1499fa82f29fd55ffd40ad7da2dfbfd8b"
+  },
+  {
+    "filename": "backend/data/historyroot-wampanoag-regional-corpus-v1/historyroot-wampanoag-regional-corpus-v1.bundle.json",
+    "datasetId": "historyroot-plymouth-knowledge-dataset-v1",
+    "datasetVersion": "1.3.0",
+    "byteLength": 860361,
+    "sha256": "E3BFEBD9D98353BB9F05893E2865C838DF04E322F18E0F4E68CE124B32665B02",
+    "gitBlob": "128ac44784d27ae7357b6e44b5451465d3d3021f"
+  },
+  {
+    "filename": "backend/data/bibleroot-foundation-v1/dataset-manifest.json",
+    "datasetId": "bibleroot-foundation-v1",
+    "datasetVersion": "1.0.0",
+    "byteLength": 1312,
+    "sha256": "40DBEC9AE6D826BF38509AB8B6DF48704BD9E934B2918C19E464F47C7A0A8DB0",
+    "gitBlob": "3a4234a8ca28ea4b1b9c7b5f060a1d110e288ad1"
+  },
+  {
+    "filename": "backend/data/bibleroot-foundation-v1/edition.json",
+    "datasetId": "bibleroot-foundation-v1",
+    "datasetVersion": "1.0.0",
+    "byteLength": 962,
+    "sha256": "B8C1C1CAF12DE541E746033FEF6E367FD875636539ADAA6E23F42F7A00E05838",
+    "gitBlob": "6bdcf840af0d96f2f566351a3ee19f2cc39739d4"
+  },
+  {
+    "filename": "backend/data/bibleroot-foundation-v1/verses.json",
+    "datasetId": "bibleroot-foundation-v1",
+    "datasetVersion": "1.0.0",
+    "byteLength": 53949,
+    "sha256": "C3E5E50EEE4935B319493B349B05B79BAA4718A8B3FB1AE6368ED93EFEF0B474",
+    "gitBlob": "8ddf4726d287dcb46adffd30dcf236ea77c5e9ec"
+  },
+  {
+    "filename": "backend/data/bibleroot-translation-comparison-v1/normalized/asv.json",
+    "datasetId": "bibleroot-translation-comparison-v1",
+    "datasetVersion": "1.0.0",
+    "byteLength": 108892,
+    "sha256": "A6DDB4D17823A1C1FEC8D31327442F780C8255C9A11611DDB15F98C77EF40D22",
+    "gitBlob": "1f4dae2dadcb23bbf89d10154b1463796b98274f"
+  },
+  {
+    "filename": "backend/data/bibleroot-translation-comparison-v1/normalized/web.json",
+    "datasetId": "bibleroot-translation-comparison-v1",
+    "datasetVersion": "1.0.0",
+    "byteLength": 108243,
+    "sha256": "EB935287E44519DCCF11FAE96ED415695D3B965711622F154ECA481679FF888D",
+    "gitBlob": "6581561220e35bdc0c559349525fe521c9ab3876"
+  },
+  {
+    "filename": "backend/data/bibleroot-translation-comparison-v1/normalized/ylt.json",
+    "datasetId": "bibleroot-translation-comparison-v1",
+    "datasetVersion": "1.0.0",
+    "byteLength": 108813,
+    "sha256": "D7F56CF9F152C6F28007C0B3284DDC63E9BD82C1696FD175CDF77940FF91120C",
+    "gitBlob": "9bdc1be4a3515e5316847b1bd952a84a8204d1c8"
+  }
+]

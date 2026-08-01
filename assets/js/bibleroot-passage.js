@@ -236,6 +236,12 @@
         .setAttribute("aria-label", "Edition text ID");
       const stable = append(details, "a", "", "Open stable verse link");
       stable.href = verse.deepLink;
+      const crossRoot = append(details, "a", "", "Verify exact Cross-Root wording");
+      crossRoot.href = `cross-root-links.html?${new URLSearchParams({
+        root: "BibleRoot",
+        resourceType: "edition-verse-text",
+        resourceId: verse.editionTextId
+      }).toString()}`;
     });
     container.setAttribute("aria-busy", "false");
   }

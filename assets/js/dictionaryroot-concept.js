@@ -481,18 +481,25 @@
       </section>`;
   }
 
-  function renderHistoryRootDiscovery(displayTitle) {
+  function renderHistoryRootDiscovery(displayTitle, lexicalEvidence) {
     const params = new URLSearchParams({
       q: displayTitle,
       roots: "HistoryRoot",
       page: "1"
     });
+    const lemmaId = lexicalEvidence && lexicalEvidence.sense && lexicalEvidence.sense.lemmaId;
+    const crossRootHref = lemmaId ? `cross-root-links.html?${new URLSearchParams({
+      root: "DictionaryRoot",
+      resourceType: "lemma",
+      resourceId: lemmaId
+    }).toString()}` : "";
     return `
       <section class="dr-cross-root-discovery" aria-labelledby="dictionaryrootHistoryDiscoveryTitle">
         <p class="dr-concept-kicker">Cross-Root discovery</p>
         <h2 id="dictionaryrootHistoryDiscoveryTitle">Explore this term in HistoryRoot</h2>
         <p>Search live historical records for <strong>${escapeHtml(displayTitle)}</strong>. A matching term does not prove that this DictionaryRoot sense was intended in a historical source; evaluate every occurrence in its own source context.</p>
         <a class="dr-live-button-secondary" href="sourceroot-search.html?${escapeHtml(params.toString())}">Search this term in HistoryRoot</a>
+        ${crossRootHref ? `<a class="dr-live-button-secondary" href="${escapeHtml(crossRootHref)}">Verify exact Cross-Root wording</a>` : ""}
       </section>`;
   }
 
@@ -673,7 +680,7 @@
         ${renderLexicalEvidenceSections(concept.lexicalEvidence)}
         ${renderRelationshipSections(relations, neighborMap)}
         ${renderSourcesSection(concept)}
-        ${renderHistoryRootDiscovery(displayTitle)}
+        ${renderHistoryRootDiscovery(displayTitle, concept.lexicalEvidence)}
         <details class="dr-live-advanced">
           <summary>Advanced SourceRoot record</summary>
           <pre>${escapeHtml(JSON.stringify(concept, null, 2))}</pre>

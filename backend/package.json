@@ -75,6 +75,10 @@
     "bibleroot:commentary:import": "node --env-file=.env.test --import ./scripts/register-tsx.mjs src/scripts/import-bibleroot-commentary-provenance.ts",
     "test:bibleroot:commentary": "node --env-file=.env.test --import ./scripts/register-tsx.mjs --test --test-concurrency=1 test/bibleroot-commentary-provenance.test.ts",
     "test:bibleroot:commentary:frontend": "node --test ../verification/bibleroot-commentary-provenance.test.cjs",
+    "cross-root:lexical-evidence:prepare": "node --import ./scripts/register-tsx.mjs src/scripts/prepare-cross-root-lexical-evidence.ts",
+    "cross-root:lexical-evidence:import": "node --env-file=.env.test --import ./scripts/register-tsx.mjs src/scripts/import-cross-root-lexical-evidence.ts",
+    "test:cross-root:lexical-evidence": "node --env-file=.env.test --import ./scripts/register-tsx.mjs --test --test-concurrency=1 test/cross-root-lexical-evidence.test.ts",
+    "test:cross-root:frontend": "node --test ../verification/cross-root-link-foundation.test.cjs",
     "verify:fresh-install": "node scripts/verify-fresh-install.mjs"
   },
   "dependencies": {

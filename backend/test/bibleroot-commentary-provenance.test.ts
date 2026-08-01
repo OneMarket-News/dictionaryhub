@@ -44,6 +44,21 @@ function database() {
   return pool;
 }
 
+async function prepareWithWindowsRetry(): Promise<void> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    try {
+      await prepare();
+      return;
+    } catch (error) {
+      lastError = error;
+      if (!(error instanceof Error) || !/UNKNOWN: unknown error, open/u.test(error.message) || attempt === 3) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 125 * (attempt + 1)));
+    }
+  }
+  throw lastError;
+}
+
 async function protectedFingerprint() {
   const result = await database().query<{ fingerprint: string }>(`
     SELECT md5(jsonb_build_object(
@@ -80,7 +95,7 @@ after(async () => {
   await closeTestDatabase();
 });
 
-test("1. migration 017 adds only commentary provenance structures and migration 018 is absent", async () => {
+test("1. migration 017 commentary structures remain exact after the independent migration 018", async () => {
   const result = await database().query<{ table_name: string }>(`
     SELECT table_name FROM information_schema.tables
     WHERE table_schema = 'public' AND table_name LIKE 'bibleroot_commentary_%'
@@ -92,7 +107,8 @@ test("1. migration 017 adds only commentary provenance structures and migration 
     "bibleroot_commentary_statements",
     "bibleroot_commentary_works",
   ]);
-  await assert.rejects(stat(new URL("../db/migrations/018_create_bibleroot_commentary_provenance.sql", import.meta.url)), /ENOENT/);
+  await assert.doesNotReject(stat(new URL("../db/migrations/018_create_cross_root_link_foundation.sql", import.meta.url)));
+  await assert.rejects(stat(new URL("../db/migrations/019_create_cross_root_link_foundation.sql", import.meta.url)), /ENOENT/);
 });
 
 test("2. exact raw and source-document identities, no-filter blobs, and rights validate", async () => {
@@ -119,9 +135,9 @@ test("2. exact raw and source-document identities, no-filter blobs, and rights v
 test("3. preparation is offline and byte-deterministic", async () => {
   const preparer = await readFile(new URL("../src/scripts/prepare-bibleroot-commentary-provenance.ts", import.meta.url), "utf8");
   assert.doesNotMatch(preparer, /fetch\(|https?:\/\/|Invoke-WebRequest|axios|undici/i);
-  await prepare();
+  await prepareWithWindowsRetry();
   const first = await Promise.all(["mhc.json", "jfb.json"].map(async (name) => sha256(await readFile(new URL(`../data/bibleroot-commentary-interpretation-provenance-v1/normalized/${name}`, import.meta.url)))));
-  await prepare();
+  await prepareWithWindowsRetry();
   const second = await Promise.all(["mhc.json", "jfb.json"].map(async (name) => sha256(await readFile(new URL(`../data/bibleroot-commentary-interpretation-provenance-v1/normalized/${name}`, import.meta.url)))));
   assert.deepEqual(second, first);
   assert.equal(COMMENTARY_DATA_DIRECTORY.endsWith("bibleroot-commentary-interpretation-provenance-v1"), true);
@@ -218,7 +234,7 @@ test("10. awaiting-data is honest and contains no fallback commentary", async ()
 
 test("11. readiness adds commentaryProvenanceReady without redefining prior BibleRoot fields", async () => {
   const readiness = await getDevelopmentRuntimeReadiness();
-  assert.equal(readiness.contractVersion, "1.2.0");
+  assert.equal(readiness.contractVersion, "1.3.0");
   assert.equal(readiness.roots.BibleRoot.ready, true);
   assert.equal(readiness.roots.BibleRoot.foundationReady, true);
   assert.equal(readiness.roots.BibleRoot.originalLanguageReady, true);

@@ -16,6 +16,7 @@ const migrationNames = [
   "015_create_bibleroot_foundation.sql",
   "016_create_bibleroot_original_language_foundation.sql",
   "017_create_bibleroot_commentary_provenance.sql",
+  "018_create_cross_root_link_foundation.sql",
 ];
 
 function fakeClient(overrides: Record<string, unknown> = {}): PoolClient {
@@ -24,7 +25,7 @@ function fakeClient(overrides: Record<string, unknown> = {}): PoolClient {
     server_address: "127.0.0.1",
     server_port: 5432,
     migrations: migrationNames,
-    migration_018_count: 0,
+    migration_018_count: 1,
     ...overrides,
   };
   return {
@@ -84,7 +85,7 @@ test("4. remote URL hosts and non-loopback connected servers are rejected", asyn
   );
 });
 
-test("5. migration 017 is required and migration 018 is rejected", async () => {
+test("5. migrations 017 and 018 are required exactly once", async () => {
   await assert.rejects(
     authorizeLocalDevelopmentDatabase(fakeClient({ migrations: migrationNames.slice(0, 4) }), {
       nodeEnvironment: "development",
@@ -93,11 +94,11 @@ test("5. migration 017 is required and migration 018 is rejected", async () => {
     /017_create_bibleroot_commentary_provenance/,
   );
   await assert.rejects(
-    authorizeLocalDevelopmentDatabase(fakeClient({ migration_018_count: 1 }), {
+    authorizeLocalDevelopmentDatabase(fakeClient({ migration_018_count: 0 }), {
       nodeEnvironment: "development",
       databaseUrl: "postgresql://local-user:redacted@localhost/sourceroot",
     }),
-    /Migration 018/,
+    /migration 018/i,
   );
 });
 
