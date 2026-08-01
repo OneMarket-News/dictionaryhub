@@ -9,6 +9,8 @@
   },
   "scripts": {
     "dev": "tsx watch src/server.ts",
+    "dev:provision": "node --env-file=.env --import ./scripts/register-tsx.mjs src/scripts/development-runtime.ts provision",
+    "dev:status": "node --env-file=.env --import ./scripts/register-tsx.mjs src/scripts/development-runtime.ts status",
     "start": "tsx src/server.ts",
     "build": "tsc -p tsconfig.json",
     "start:compiled": "node dist/server.js",

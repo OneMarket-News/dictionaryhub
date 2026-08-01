@@ -123,8 +123,11 @@ test("22. two-way contextual discovery and disclaimers remain present", () => {
   assert.match(historyRecord, /does not establish what a historical speaker or source intended/);
 });
 
-test("23. the shared component has no backend dependency", () => {
-  assert.doesNotMatch(component, /\/api\/|fetch\(|XMLHttpRequest|WebSocket/);
+test("23. the shared component uses only the narrow runtime-readiness contract", () => {
+  assert.match(component, /\/api\/v1\/runtime-readiness/);
+  assert.match(component, /SourceRootApiLayer\.request/);
+  assert.match(component, /global\.fetch\(runtimeReadinessUrl\(\)/);
+  assert.doesNotMatch(component, /XMLHttpRequest|WebSocket/);
 });
 
 test("24. canonical destination URLs are stable", () => {

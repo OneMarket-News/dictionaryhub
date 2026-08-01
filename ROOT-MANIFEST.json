@@ -187,7 +187,8 @@
                             "VERIFY-SOURCEROOT-REGISTRY-API-CONTRACT.ps1",
                             "VERIFY-BIBLEROOT-FOUNDATION.ps1",
                             "VERIFY-BIBLEROOT-ORIGINAL-LANGUAGE-FOUNDATION.ps1",
-                            "VERIFY-SOURCEROOT-IMMUTABLE-SOURCE-ARTIFACT-PRESERVATION.ps1"
+                            "VERIFY-SOURCEROOT-IMMUTABLE-SOURCE-ARTIFACT-PRESERVATION.ps1",
+                            "VERIFY-SOURCEROOT-LOCAL-DEVELOPMENT-RUNTIME-RECOVERY-AND-PROVISIONING.ps1"
                         ],
     "known_installers":  [
                              "INSTALL-DICTIONARYROOT-GOVERNED-PLATFORM-FOUNDATION.ps1",

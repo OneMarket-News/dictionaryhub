@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { checkDatabase } from "../lib/database.js";
 import { getDeploymentReadiness } from "../lib/runtime-config.js";
+import { getDevelopmentRuntimeReadiness } from "../services/development-runtime-readiness.js";
 
 export const healthRouter = Router();
 
@@ -48,4 +49,12 @@ healthRouter.get("/api/v1/deployment-readiness", async (_request, response) => {
       latencyMs: database.latencyMs,
     },
   });
+});
+
+healthRouter.get("/api/v1/runtime-readiness", async (_request, response, next) => {
+  try {
+    response.status(200).json(await getDevelopmentRuntimeReadiness());
+  } catch (error) {
+    next(error);
+  }
 });

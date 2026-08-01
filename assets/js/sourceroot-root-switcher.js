@@ -63,6 +63,50 @@
 
   const instances = new WeakMap();
   let instanceSequence = 0;
+  let readinessPromise;
+
+  function runtimeReadinessUrl() {
+    const location = global.location || {};
+    const hostname = String(location.hostname || "localhost");
+    const local = new Set(["localhost", "127.0.0.1", "[::1]", "::1"]);
+    if (local.has(hostname)) {
+      const urlHost = hostname.includes(":") && !hostname.startsWith("[")
+        ? `[${hostname}]`
+        : hostname;
+      return `http://${urlHost}:3000/api/v1/runtime-readiness`;
+    }
+    return "/api/v1/runtime-readiness";
+  }
+
+  function loadRuntimeReadiness() {
+    if (!readinessPromise) {
+      readinessPromise = global.SourceRootApiLayer
+        ? global.SourceRootApiLayer.request(runtimeReadinessUrl(), { cache: "no-store" })
+          .then((result) => result.data)
+        : global.fetch(runtimeReadinessUrl(), {
+          method: "GET",
+          cache: "no-store",
+          credentials: "include",
+          headers: { Accept: "application/json" }
+        }).then((response) => {
+          if (!response.ok) throw new Error("Runtime readiness is unavailable.");
+          return response.json();
+        });
+    }
+    return readinessPromise;
+  }
+
+  function applyRuntimeReadiness(panel, readiness) {
+    panel.querySelectorAll("[data-root-runtime-readiness]").forEach((node) => {
+      const rootId = node.dataset.rootRuntimeReadiness;
+      const root = readiness && readiness.roots && readiness.roots[rootId];
+      const state = root ? root.status : "unavailable";
+      node.dataset.state = state;
+      node.textContent = state === "ready"
+        ? "Runtime ready"
+        : state === "awaiting-data" ? "Awaiting provisioned data" : "Readiness unavailable";
+    });
+  }
 
   function currentFile(locationValue) {
     const location = locationValue || global.location || {};
@@ -134,6 +178,16 @@
     copy.className = "sr-root-switcher-copy";
     appendText(copy, "strong", "", destination.displayName);
     appendText(copy, "small", "", destination.description || "");
+    if (destination.destinationType === "root") {
+      const readiness = appendText(
+        copy,
+        "small",
+        "sr-root-switcher-readiness",
+        "Checking runtime readiness",
+      );
+      readiness.dataset.rootRuntimeReadiness = destination.id;
+      readiness.setAttribute("aria-live", "polite");
+    }
     link.appendChild(copy);
     if (isCurrent) appendText(link, "span", "sr-root-switcher-current", "Current");
 
@@ -252,6 +306,9 @@
     });
 
     mount.append(trigger, panel);
+    loadRuntimeReadiness()
+      .then((readiness) => applyRuntimeReadiness(panel, readiness))
+      .catch(() => applyRuntimeReadiness(panel, null));
     const api = Object.freeze({
       mount,
       trigger,

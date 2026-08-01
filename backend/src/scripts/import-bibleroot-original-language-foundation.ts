@@ -10,10 +10,15 @@ import {
   type OriginalLanguageDataset,
 } from "../bibleroot/original-languages.js";
 import { closeDatabase, getPool } from "../lib/database.js";
+import {
+  assertLocalDevelopmentImportAuthorized,
+  type LocalDevelopmentDatabaseAuthorization,
+} from "../lib/local-development-database.js";
 
 export interface ImportOriginalLanguageOptions {
   dataset?: OriginalLanguageDataset;
   simulateFailureAfterDatasetDelete?: boolean;
+  developmentAuthorization?: LocalDevelopmentDatabaseAuthorization;
 }
 
 export interface Chunk12Fingerprint {
@@ -136,8 +141,14 @@ export async function importBibleRootOriginalLanguageFoundation(
       "SELECT current_database() AS database_name;",
     );
     const databaseName = databaseResult.rows[0]?.database_name;
-    if (databaseName !== "sourceroot_test") {
+    if (databaseName !== "sourceroot_test" && !options.developmentAuthorization) {
       throw new Error(`Original-language import is restricted to sourceroot_test; received ${databaseName ?? "unknown"}.`);
+    }
+    if (databaseName !== "sourceroot_test") {
+      assertLocalDevelopmentImportAuthorized(
+        options.developmentAuthorization,
+        databaseName,
+      );
     }
     const chunk12Before = await captureChunk12Fingerprint(client);
     const unrelatedBefore = await captureUnrelatedBundles(client);
