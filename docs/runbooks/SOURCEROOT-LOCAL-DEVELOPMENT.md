@@ -116,3 +116,24 @@ After the three released Roots and all BibleRoot layers are available:
 8. Open `cross-root-links.html` through a canonical DictionaryRoot, HistoryRoot, or BibleRoot entry point and verify desktop/mobile evidence, unavailable/recovery behavior, focus, and zero console errors.
 
 Production coverage is 1,568 resources, 2,233 links, and 2,765 evidence occurrences. Preparation and automated tests use committed inputs and `.env.test`; they never query the mutable development database. No credentials belong in output or documentation.
+
+# Source-backed relationships (Chunk 14B)
+
+After Chunk 14A has provisioned the shared resource registry:
+
+1. Run `npm.cmd run db:migrate` from `backend/`; migration 019 is required and migration 020 must remain absent.
+2. Run `npm.cmd run cross-root:relationships:prepare` twice and confirm byte-identical output.
+3. Run `npm.cmd run test:cross-root:relationships` and `npm.cmd run test:cross-root:relationships:frontend`.
+4. Run `npm.cmd run dev:provision` twice. The first run imports or repairs only the governed relationship dataset; the second skips its exact 323 records (one dataset, 143 assertions, 178 evidence records).
+5. Run `npm.cmd run dev:status` and confirm readiness contract `1.4.0`, all prior capabilities ready, `crossRootLinks.ready: true`, and `crossRootRelationships.ready: true`.
+6. Start the API with `npm.cmd run dev`, retain the existing frontend server, and open `cross-root-relationships.html`.
+
+Production relationship coverage is 143 assertions, 178 evidence records, 101 distinct subjects, 76 distinct objects, 280 reused registry resources, zero additions, 22 causal assertions, 121 non-causal assertions, 143 same-Root assertions, and zero cross-Root semantic assertions. All are directly sourced, unreviewed, uncertain HistoryRoot records. The live endpoints are:
+
+- `/api/v1/cross-root/relationships/coverage`
+- `/api/v1/cross-root/relationships?page=1&pageSize=25`
+- `/api/v1/cross-root/relationships?resourceId={canonicalPublicId}`
+- `/api/v1/cross-root/relationships?relationshipFamily=causation&causal=true`
+- `/api/v1/cross-root/relationships/{assertionId}`
+
+The page contains no fallback assertions. API absence must produce an unavailable state and Retry control. Exact lexical links remain available through the separate Chunk 14A endpoints and never serve as semantic evidence. Registry reuse is not entity identity; association or sequence is not causation; and the released relationship remains an inspectable assertion rather than universal truth.

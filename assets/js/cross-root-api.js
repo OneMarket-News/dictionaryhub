@@ -22,6 +22,9 @@
 
   global.CrossRootApi = Object.freeze({
     coverage: () => get("/coverage"),
-    links: (query) => get("/links", query)
+    links: (query) => get("/links", query),
+    relationshipCoverage: () => get("/relationships/coverage"),
+    relationships: (query) => get("/relationships", query),
+    relationship: (assertionId) => get(`/relationships/${encodeURIComponent(assertionId)}`)
   });
 })(window);

@@ -1,0 +1,26 @@
+{
+  "datasetId": "sourceroot-cross-root-source-backed-relationships-v1",
+  "version": "1.0.0",
+  "files": [
+    {
+      "filename": "dataset-manifest.json",
+      "byteLength": 4118,
+      "sha256": "EDAC9A2DF126301933060ECC2A359BA520026F8B57E59FE83901FD7D069F554D"
+    },
+    {
+      "filename": "input-fingerprints.json",
+      "byteLength": 1727,
+      "sha256": "CDEF38325E7A76386E8D862B1DF87D3B5B588477A79064E6F2CF43FE6DF083FE"
+    },
+    {
+      "filename": "relationship-assertions.json",
+      "byteLength": 255356,
+      "sha256": "DC741AA9727272D5B5328904C1A61D2BDEF6A1509C84946820B244DA505C6DDD"
+    },
+    {
+      "filename": "relationship-evidence.json",
+      "byteLength": 286643,
+      "sha256": "A430DC02510276500BCCB49EA2851AEBC0BB7DD298E234B317C0DE7AED1278FE"
+    }
+  ]
+}

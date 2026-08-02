@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "dev:provision": "node --env-file=.env --import ./scripts/register-tsx.mjs src/scripts/development-runtime.ts provision",
+    "dev:provision": "npm run db:migrate && node --env-file=.env --import ./scripts/register-tsx.mjs src/scripts/development-runtime.ts provision",
     "dev:status": "node --env-file=.env --import ./scripts/register-tsx.mjs src/scripts/development-runtime.ts status",
     "start": "tsx src/server.ts",
     "build": "tsc -p tsconfig.json",
@@ -79,6 +79,10 @@
     "cross-root:lexical-evidence:import": "node --env-file=.env.test --import ./scripts/register-tsx.mjs src/scripts/import-cross-root-lexical-evidence.ts",
     "test:cross-root:lexical-evidence": "node --env-file=.env.test --import ./scripts/register-tsx.mjs --test --test-concurrency=1 test/cross-root-lexical-evidence.test.ts",
     "test:cross-root:frontend": "node --test ../verification/cross-root-link-foundation.test.cjs",
+    "cross-root:relationships:prepare": "node --import ./scripts/register-tsx.mjs src/scripts/prepare-cross-root-source-backed-relationships.ts",
+    "cross-root:relationships:import": "node --env-file=.env.test --import ./scripts/register-tsx.mjs src/scripts/import-cross-root-source-backed-relationships.ts",
+    "test:cross-root:relationships": "node --env-file=.env.test --import ./scripts/register-tsx.mjs --test --test-concurrency=1 test/cross-root-source-backed-relationships.test.ts",
+    "test:cross-root:relationships:frontend": "node --test ../verification/cross-root-source-backed-relationships.test.cjs",
     "verify:fresh-install": "node scripts/verify-fresh-install.mjs"
   },
   "dependencies": {

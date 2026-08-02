@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Inspect source-backed historical relationship assertions, uncertainty, and evidence without turning them into universal truth.">
+  <title>Source-backed relationships | SourceRoot</title>
+  <link rel="icon" href="assets/brand/dictionaryroot-mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/sourceroot-root-switcher.css?v=shared-root-switcher-v1" data-sourceroot-root-switcher-styles="v1">
+  <link rel="stylesheet" href="assets/css/sourceroot-user-menu.css?v=shared-user-menu-v1" data-sourceroot-user-menu-styles="v1">
+  <link rel="stylesheet" href="assets/css/cross-root-relationships.css?v=source-backed-v1">
+</head>
+<body class="crr-page">
+  <a class="crr-skip-link" href="#main-content">Skip to relationship evidence</a>
+  <header class="crr-header">
+    <a class="crr-brand" href="sourceroot.html"><strong>SourceRoot</strong><span>Source-backed relationships</span></a>
+    <nav aria-label="Cross-Root evidence">
+      <a href="cross-root-links.html">Lexical observations</a>
+      <a aria-current="page" href="cross-root-relationships.html">Relationship assertions</a>
+    </nav>
+    <div class="crr-shared-actions" role="group" aria-label="Account and product navigation">
+      <div data-sourceroot-user-menu data-user-menu-id-prefix="crossRootRelationshipUserMenu"></div>
+      <div data-sourceroot-root-switcher data-current-root="SourceRoot"></div>
+    </div>
+  </header>
+  <main id="main-content" class="crr-main">
+    <header class="crr-hero">
+      <p class="crr-kicker">Chunk 14B · released assertions · inspectable evidence</p>
+      <h1>See what the source actually relates.</h1>
+      <p>Follow typed subjects, source-native predicates, objects, uncertainty, review state, provenance, and exact evidence without silently converting a released assertion into universal truth.</p>
+    </header>
+
+    <section class="crr-boundary" aria-labelledby="crrBoundaryTitle">
+      <h2 id="crrBoundaryTitle">Evidence establishes the assertion—not universal identity or proof</h2>
+      <p><strong>A source-backed relationship records what the cited source or accepted record asserts.</strong> It does not create a universal entity identity or prove the relationship beyond that evidence.</p>
+      <p>Matching labels or aliases alone do not establish that two resources are the same entity. Exact lexical overlap is discovery evidence only and is not used here.</p>
+    </section>
+
+    <section class="crr-filters" aria-labelledby="crrFilterTitle">
+      <h2 id="crrFilterTitle">Inspect released relationship assertions</h2>
+      <form id="crossRootRelationshipForm">
+        <label>HistoryRoot public resource ID
+          <input id="crossRootRelationshipResource" name="resourceId" autocomplete="off" placeholder="Optional subject or object ID">
+        </label>
+        <label>Relationship family
+          <select id="crossRootRelationshipFamily" name="relationshipFamily">
+            <option value="">All families</option>
+            <option value="association">Association</option><option value="authorship">Authorship</option>
+            <option value="causation">Causation</option><option value="conflict">Conflict</option>
+            <option value="contribution">Contribution</option><option value="governance">Governance</option>
+            <option value="issuance">Issuance</option><option value="kinship">Kinship</option>
+            <option value="location">Location</option><option value="membership">Membership</option>
+            <option value="participation">Participation</option><option value="source_reference">Source reference</option>
+            <option value="temporal_succession">Temporal succession</option>
+          </select>
+        </label>
+        <label>Causal scope
+          <select id="crossRootRelationshipCausal" name="causal">
+            <option value="">All assertions</option><option value="false">Non-causal only</option><option value="true">Causal only</option>
+          </select>
+        </label>
+        <button type="submit">Inspect relationships</button>
+      </form>
+    </section>
+
+    <div id="crossRootRelationshipStatus" class="crr-state" role="status" aria-live="polite"></div>
+    <section id="crossRootRelationshipResults" aria-labelledby="crossRootRelationshipResultsTitle" hidden>
+      <div class="crr-results-heading"><div><p class="crr-kicker">Live SourceRoot data</p><h2 id="crossRootRelationshipResultsTitle">Relationship assertions</h2></div><p id="crossRootRelationshipCount"></p></div>
+      <div id="crossRootRelationshipCards" class="crr-cards"></div>
+    </section>
+  </main>
+  <footer class="crr-footer">Machines may discover; humans must be able to verify. No fallback relationships are embedded.</footer>
+  <script src="assets/js/sourceroot-root-switcher.js?v=shared-root-switcher-v1"></script>
+  <script src="assets/js/sourceroot-user-menu.js?v=shared-user-menu-v1"></script>
+  <script src="assets/js/sourceroot-api.js"></script>
+  <script src="assets/js/cross-root-api.js?v=source-backed-v1"></script>
+  <script src="assets/js/cross-root-relationships.js?v=source-backed-v1"></script>
+</body>
+</html>

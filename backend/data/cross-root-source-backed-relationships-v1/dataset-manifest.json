@@ -1,0 +1,157 @@
+{
+  "schemaVersion": "1.0.0",
+  "datasetId": "sourceroot-cross-root-source-backed-relationships-v1",
+  "version": "1.0.0",
+  "title": "Cross-Root Source-Backed Entity and Historical Relationships v1",
+  "preparationAlgorithmVersion": "released-historyroot-relationship-projection-v1",
+  "sourceDatasetIdentities": [
+    {
+      "datasetId": "historyroot-plymouth-knowledge-dataset-v1",
+      "version": "1.3.0",
+      "rootId": "HistoryRoot"
+    }
+  ],
+  "participatingRoots": [
+    "HistoryRoot"
+  ],
+  "resourceTypes": [
+    "accepted-contextual-record"
+  ],
+  "relationshipFamilies": [
+    "association",
+    "authorship",
+    "causation",
+    "conflict",
+    "contribution",
+    "governance",
+    "issuance",
+    "kinship",
+    "location",
+    "membership",
+    "participation",
+    "source_reference",
+    "temporal_succession"
+  ],
+  "semanticBoundary": "Released source assertions only. Exact lexical overlap, matching labels, identity inference, geographic inference, and causal strengthening are prohibited.",
+  "reviewMapping": {
+    "pilot-review-required": "unreviewed",
+    "corpus-review-ready": "unreviewed",
+    "disputed": "disputed",
+    "rejected": "excluded"
+  },
+  "expectedCounts": {
+    "assertions": 143,
+    "evidence": 178,
+    "subjectResources": 101,
+    "objectResources": 76,
+    "resourceReuse": 280,
+    "resourceAdditions": 0,
+    "causal": 22,
+    "nonCausal": 121,
+    "sameRoot": 143,
+    "crossRoot": 0,
+    "disputed": 0,
+    "uncertain": 143,
+    "derivationCounts": {
+      "directly_sourced": 143
+    },
+    "reviewStateCounts": {
+      "unreviewed": 143
+    },
+    "relationshipFamilyCounts": {
+      "association": 29,
+      "authorship": 6,
+      "causation": 22,
+      "conflict": 6,
+      "contribution": 5,
+      "governance": 12,
+      "issuance": 1,
+      "kinship": 3,
+      "location": 22,
+      "membership": 9,
+      "participation": 11,
+      "source_reference": 13,
+      "temporal_succession": 4
+    },
+    "predicateCounts": {
+      "affected": 1,
+      "associated_with": 13,
+      "author_of": 4,
+      "catalogs": 1,
+      "causes_or_contributes_to": 22,
+      "community_within": 5,
+      "concerns": 1,
+      "contextualized_by": 1,
+      "contextualizes": 2,
+      "contributor_to": 2,
+      "created_document": 1,
+      "criticized": 1,
+      "documents": 3,
+      "embodied_work": 1,
+      "established": 2,
+      "established_at": 1,
+      "followed_by": 1,
+      "governor_at_transition": 1,
+      "homeland_at": 5,
+      "incorporated_into": 2,
+      "initiated": 1,
+      "interpreter_at": 1,
+      "introduced": 1,
+      "issued_in": 1,
+      "kidnapped": 1,
+      "killed_in": 2,
+      "leader_in": 2,
+      "leader_of": 7,
+      "led": 1,
+      "located_on": 2,
+      "located_within": 2,
+      "major_event_of": 1,
+      "member_of": 1,
+      "negotiated_during": 1,
+      "occurred_at": 10,
+      "opening_event_of": 1,
+      "parallel_mediator": 1,
+      "parent_of": 2,
+      "part_of": 1,
+      "participant_in": 7,
+      "preceded": 2,
+      "published_work": 1,
+      "regional_context": 10,
+      "reported": 1,
+      "reported_in": 2,
+      "settled_at": 2,
+      "sibling_of": 1,
+      "sponsor_of": 1,
+      "subject_of": 2,
+      "targeted_in": 1,
+      "textual_witness_of": 3,
+      "transported_with": 1
+    },
+    "excludedRecordCounts": {
+      "draft": 0,
+      "rejected": 0,
+      "private": 0,
+      "missingEndpoint": 0,
+      "missingProvenance": 0,
+      "unsupportedPredicate": 0
+    },
+    "excludedCategoryCounts": {
+      "lexicalObservations": 2233,
+      "dictionarySenses": 1014,
+      "biblePassages": 440,
+      "crossRootSemanticAssertions": 0,
+      "earthRootRecords": 0,
+      "commentaryRecords": 3450,
+      "originalLanguageTokens": 1592
+    }
+  },
+  "excludedCategories": [
+    "Chunk 14A exact lexical observations",
+    "draft, rejected, private, moderation, and audit records",
+    "name-only identity inference",
+    "unsupported cross-Root assertions",
+    "EarthRoot, coordinates, maps, and geocoding",
+    "BibleRoot commentary and Original Language",
+    "machine similarity and embeddings"
+  ]
+}

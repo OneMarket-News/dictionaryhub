@@ -44,6 +44,11 @@ import { validateBundle } from "../services/validator.js";
 import type { SourceRootBundle } from "../types.js";
 import { validateCrossRootDataset, type CrossRootDataset } from "../cross-root/lexical-evidence.js";
 import { importCrossRootLexicalEvidence } from "./import-cross-root-lexical-evidence.js";
+import {
+  validateSourceBackedRelationshipDataset,
+  type SourceBackedRelationshipDataset,
+} from "../cross-root/source-backed-relationships.js";
+import { importSourceBackedRelationships } from "./import-cross-root-source-backed-relationships.js";
 
 const BACKEND_ROOT = fileURLToPath(new URL("../../", import.meta.url));
 const CORE_CORPUS_DIRECTORY = path.join(
@@ -66,6 +71,7 @@ export interface ValidatedDevelopmentDatasets {
   bibleRootTranslationComparison: TranslationComparisonDataset;
   bibleRootCommentaryProvenance: CommentaryDataset;
   crossRootLexicalEvidence: CrossRootDataset;
+  crossRootSourceBackedRelationships: SourceBackedRelationshipDataset;
   historyRoot: SourceRootBundle;
 }
 
@@ -118,20 +124,21 @@ export async function validateDictionaryRootCoreCorpus(): Promise<DictionaryRoot
 }
 
 export async function validateDevelopmentDatasets(): Promise<ValidatedDevelopmentDatasets> {
-  const [dictionaryRoot, bibleRootFoundation, bibleRootOriginalLanguage, bibleRootTranslationComparison, bibleRootCommentaryProvenance, crossRootLexicalEvidence, historyRoot] = await Promise.all([
+  const [dictionaryRoot, bibleRootFoundation, bibleRootOriginalLanguage, bibleRootTranslationComparison, bibleRootCommentaryProvenance, crossRootLexicalEvidence, crossRootSourceBackedRelationships, historyRoot] = await Promise.all([
     validateDictionaryRootCoreCorpus(),
     validateBibleRootFoundation(),
     loadOriginalLanguageDataset(),
     validateTranslationComparisonDataset(),
     validateCommentaryDataset(),
     validateCrossRootDataset(),
+    validateSourceBackedRelationshipDataset(),
     readJson<SourceRootBundle>(HISTORY_BUNDLE_FILE),
   ]);
   const historyValidation = validateBundle(historyRoot);
   if (!historyValidation.canImport || historyValidation.summary.errors !== 0 || historyValidation.summary.warnings !== 0 || historyRoot.bundleId !== "historyroot-plymouth-knowledge-dataset-v1" || historyRoot.version !== "1.3.0") {
     throw new Error("Released HistoryRoot 1.3.0 bundle validation failed.");
   }
-  return { dictionaryRoot, bibleRootFoundation, bibleRootOriginalLanguage, bibleRootTranslationComparison, bibleRootCommentaryProvenance, crossRootLexicalEvidence, historyRoot };
+  return { dictionaryRoot, bibleRootFoundation, bibleRootOriginalLanguage, bibleRootTranslationComparison, bibleRootCommentaryProvenance, crossRootLexicalEvidence, crossRootSourceBackedRelationships, historyRoot };
 }
 
 async function historyRows(client: PoolClient, table: string, idColumn: string) {
@@ -289,6 +296,20 @@ export async function provisionDevelopmentRuntime() {
   }
   const after = await getDevelopmentRuntimeReadiness();
   if (!after.crossRootLinks.ready) throw new Error("Cross-Root provisioning did not achieve readiness.");
+  const relationshipAction = before.crossRootRelationships.ready
+    ? "skipped"
+    : before.crossRootRelationships.assertionCount > 0 ? "updated" : "imported";
+  const relationshipResult = await importSourceBackedRelationships({
+    dataset:datasets.crossRootSourceBackedRelationships,
+    developmentAuthorization:authorization,
+  });
+  if (relationshipResult.action !== relationshipAction) {
+    throw new Error("Source-backed relationship provisioning action did not match readiness state.");
+  }
+  const finalReadiness = await getDevelopmentRuntimeReadiness();
+  if (!finalReadiness.crossRootRelationships.ready || !finalReadiness.crossRootLinks.ready) {
+    throw new Error("Source-backed relationship provisioning did not achieve readiness.");
+  }
   const finalClient = await pool.connect();
   let historyAfter: Awaited<ReturnType<typeof captureHistoryRootFingerprint>>;
   try {
@@ -326,6 +347,7 @@ export async function provisionDevelopmentRuntime() {
       bibleRootTranslationComparison: { datasetId: datasets.bibleRootTranslationComparison.manifest.datasetId, version: datasets.bibleRootTranslationComparison.manifest.version },
       bibleRootCommentaryProvenance: { datasetId: datasets.bibleRootCommentaryProvenance.manifest.datasetId, version: datasets.bibleRootCommentaryProvenance.manifest.version },
       crossRootLexicalEvidence: { datasetId: datasets.crossRootLexicalEvidence.manifest.datasetId, version: datasets.crossRootLexicalEvidence.manifest.version },
+      crossRootSourceBackedRelationships: { datasetId: datasets.crossRootSourceBackedRelationships.manifest.datasetId, version: datasets.crossRootSourceBackedRelationships.manifest.version },
     },
     datasets: {
       DictionaryRoot: operationResult(dictionaryAction, dictionaryRecords),
@@ -335,6 +357,7 @@ export async function provisionDevelopmentRuntime() {
       BibleRootTranslationComparison: operationResult(comparisonAction, comparisonRecords),
       BibleRootCommentaryProvenance: operationResult(commentaryAction, commentaryRecords),
       CrossRootLexicalEvidence: crossRootResult,
+      CrossRootSourceBackedRelationships: relationshipResult,
     },
     historyRoot: {
       preserved: true,
@@ -342,7 +365,7 @@ export async function provisionDevelopmentRuntime() {
       fingerprintSha256: historyAfter.sha256,
       counts: historyAfter.counts,
     },
-    readiness: after,
+    readiness: finalReadiness,
   };
 }
 

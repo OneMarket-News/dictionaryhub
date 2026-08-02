@@ -452,6 +452,19 @@
         text: "Verify exact Cross-Root wording",
         attributes: { href }
       }));
+      if (global.CrossRootApi && typeof global.CrossRootApi.relationships === "function") {
+        global.CrossRootApi.relationships({ resourceId: record.id, page: 1, pageSize: 1 })
+          .then((payload) => {
+            if (!payload || !Array.isArray(payload.items) || payload.items.length === 0) return;
+            const relationshipHref = `cross-root-relationships.html?${new URLSearchParams({ resourceId: record.id }).toString()}`;
+            ui.append(panel, ui.element("a", {
+              className: "hr-button-secondary",
+              text: "Inspect source-backed relationships",
+              attributes: { href: relationshipHref }
+            }));
+          })
+          .catch(() => {});
+      }
     }
     return panel;
   }

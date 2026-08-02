@@ -7,6 +7,7 @@ const REQUIRED_MIGRATIONS = Object.freeze([
   "016_create_bibleroot_original_language_foundation.sql",
   "017_create_bibleroot_commentary_provenance.sql",
   "018_create_cross_root_link_foundation.sql",
+  "019_create_cross_root_source_backed_relationships.sql",
 ]);
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
 const LOCAL_SERVER_ADDRESSES = new Set(["127.0.0.1", "::1"]);
@@ -77,12 +78,14 @@ export async function authorizeLocalDevelopmentDatabase(
     server_port: number;
     migrations: string[];
     migration_018_count: number;
+    migration_019_count: number;
   }>(`
     SELECT current_database() AS database_name,
       inet_server_addr()::text AS server_address,
       inet_server_port() AS server_port,
       ARRAY(SELECT migration_name FROM schema_migrations ORDER BY migration_name) AS migrations,
-      (SELECT COUNT(*)::integer FROM schema_migrations WHERE migration_name LIKE '018%') AS migration_018_count;
+      (SELECT COUNT(*)::integer FROM schema_migrations WHERE migration_name LIKE '018%') AS migration_018_count,
+      (SELECT COUNT(*)::integer FROM schema_migrations WHERE migration_name LIKE '019%') AS migration_019_count;
   `);
   const row = result.rows[0];
   if (row?.database_name !== "sourceroot") {
@@ -99,6 +102,9 @@ export async function authorizeLocalDevelopmentDatabase(
   }
   if (row.migration_018_count !== 1) {
     throw new Error("Exactly one governed migration 018 must be applied.");
+  }
+  if (row.migration_019_count !== 1) {
+    throw new Error("Exactly one governed migration 019 must be applied.");
   }
 
   const authorization = Object.freeze({

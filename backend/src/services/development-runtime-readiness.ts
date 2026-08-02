@@ -24,6 +24,11 @@ import {
   CROSS_ROOT_DATASET_ID,
   CROSS_ROOT_DATASET_VERSION,
 } from "../cross-root/lexical-evidence.js";
+import {
+  CROSS_ROOT_RELATIONSHIP_ALGORITHM_VERSION,
+  CROSS_ROOT_RELATIONSHIP_DATASET_ID,
+  CROSS_ROOT_RELATIONSHIP_DATASET_VERSION,
+} from "../cross-root/source-backed-relationships.js";
 
 export interface RuntimeRootReadiness {
   ready: boolean;
@@ -33,7 +38,7 @@ export interface RuntimeRootReadiness {
 }
 
 export interface DevelopmentRuntimeReadiness {
-  contractVersion: "1.3.0";
+  contractVersion: "1.4.0";
   roots: {
     DictionaryRoot: RuntimeRootReadiness;
     HistoryRoot: RuntimeRootReadiness;
@@ -47,6 +52,15 @@ export interface DevelopmentRuntimeReadiness {
   crossRootLinks: RuntimeRootReadiness & {
     contractVersion: "1.0.0";
     algorithmVersion: string;
+  };
+  crossRootRelationships: {
+    ready:boolean; status:"ready" | "awaiting-data"; datasetId:string; datasetVersion:string;
+    algorithmVersion:string; assertionCount:number; evidenceCount:number; subjectResourceCount:number;
+    objectResourceCount:number; resourceReuseCount:number; resourceAdditionCount:number;
+    relationshipFamilyCounts:Record<string,number>; causalAssertionCount:number; nonCausalAssertionCount:number;
+    directlySourcedCount:number; acceptedCount:number; disputedCount:number; unreviewedCount:number;
+    uncertainCount:number; sameRootCount:number; crossRootCount:number; participatingRoots:string[];
+    sourceDatasetIdentities:Array<{datasetId:string;version:string}>;
   };
 }
 
@@ -96,6 +110,12 @@ interface CountRow {
   cross_root_dictionary_history_links: number;
   cross_root_bible_occurrences: number;
   cross_root_history_occurrences: number;
+  cross_root_relationship_dataset: number;
+  cross_root_relationship_assertions: number;
+  cross_root_relationship_evidence: number;
+  cross_root_relationship_subjects: number;
+  cross_root_relationship_objects: number;
+  cross_root_relationship_expected_counts: Record<string, unknown> | null;
 }
 
 export async function getDevelopmentRuntimeReadiness(): Promise<DevelopmentRuntimeReadiness> {
@@ -147,7 +167,13 @@ export async function getDevelopmentRuntimeReadiness(): Promise<DevelopmentRunti
       (SELECT COUNT(*)::integer FROM cross_root_links WHERE dataset_id = '${CROSS_ROOT_DATASET_ID}' AND target_root_id = 'BibleRoot') AS cross_root_dictionary_bible_links,
       (SELECT COUNT(*)::integer FROM cross_root_links WHERE dataset_id = '${CROSS_ROOT_DATASET_ID}' AND target_root_id = 'HistoryRoot') AS cross_root_dictionary_history_links,
       (SELECT COUNT(*)::integer FROM cross_root_link_evidence e JOIN cross_root_links l ON l.link_id=e.link_id WHERE e.dataset_id = '${CROSS_ROOT_DATASET_ID}' AND l.target_root_id = 'BibleRoot') AS cross_root_bible_occurrences,
-      (SELECT COUNT(*)::integer FROM cross_root_link_evidence e JOIN cross_root_links l ON l.link_id=e.link_id WHERE e.dataset_id = '${CROSS_ROOT_DATASET_ID}' AND l.target_root_id = 'HistoryRoot') AS cross_root_history_occurrences;
+      (SELECT COUNT(*)::integer FROM cross_root_link_evidence e JOIN cross_root_links l ON l.link_id=e.link_id WHERE e.dataset_id = '${CROSS_ROOT_DATASET_ID}' AND l.target_root_id = 'HistoryRoot') AS cross_root_history_occurrences,
+      (SELECT COUNT(*)::integer FROM cross_root_relationship_datasets WHERE dataset_id='${CROSS_ROOT_RELATIONSHIP_DATASET_ID}' AND version='${CROSS_ROOT_RELATIONSHIP_DATASET_VERSION}') AS cross_root_relationship_dataset,
+      (SELECT COUNT(*)::integer FROM cross_root_relationship_assertions WHERE dataset_id='${CROSS_ROOT_RELATIONSHIP_DATASET_ID}') AS cross_root_relationship_assertions,
+      (SELECT COUNT(*)::integer FROM cross_root_relationship_evidence WHERE dataset_id='${CROSS_ROOT_RELATIONSHIP_DATASET_ID}') AS cross_root_relationship_evidence,
+      (SELECT COUNT(DISTINCT subject_resource_id)::integer FROM cross_root_relationship_assertions WHERE dataset_id='${CROSS_ROOT_RELATIONSHIP_DATASET_ID}') AS cross_root_relationship_subjects,
+      (SELECT COUNT(DISTINCT object_resource_id)::integer FROM cross_root_relationship_assertions WHERE dataset_id='${CROSS_ROOT_RELATIONSHIP_DATASET_ID}') AS cross_root_relationship_objects,
+      (SELECT expected_counts FROM cross_root_relationship_datasets WHERE dataset_id='${CROSS_ROOT_RELATIONSHIP_DATASET_ID}') AS cross_root_relationship_expected_counts;
   `);
   const row = result.rows[0]!;
   const dictionaryCounts = {
@@ -222,8 +248,15 @@ export async function getDevelopmentRuntimeReadiness(): Promise<DevelopmentRunti
   };
   const crossRootReady = JSON.stringify(Object.values(crossRootCounts))
     === JSON.stringify([1, 1568, 2233, 2765, 802, 1431, 975, 1790]);
+  const relationshipExpected = (row.cross_root_relationship_expected_counts ?? {}) as Record<string, unknown>;
+  const relationshipNumber = (key:string) => Number(relationshipExpected[key] ?? 0);
+  const crossRootRelationshipReady = row.cross_root_relationship_dataset === 1
+    && row.cross_root_relationship_assertions === relationshipNumber("assertions")
+    && row.cross_root_relationship_evidence === relationshipNumber("evidence")
+    && row.cross_root_relationship_subjects === relationshipNumber("subjectResources")
+    && row.cross_root_relationship_objects === relationshipNumber("objectResources");
   return {
-    contractVersion: "1.3.0",
+    contractVersion: "1.4.0",
     roots: {
       DictionaryRoot: {
         ready: dictionaryReady,
@@ -264,6 +297,22 @@ export async function getDevelopmentRuntimeReadiness(): Promise<DevelopmentRunti
       datasetIds: crossRootReady ? [CROSS_ROOT_DATASET_ID] : [],
       algorithmVersion: CROSS_ROOT_ALGORITHM_VERSION,
       counts: crossRootCounts,
+    },
+    crossRootRelationships: {
+      ready:crossRootRelationshipReady,status:crossRootRelationshipReady?"ready":"awaiting-data",
+      datasetId:CROSS_ROOT_RELATIONSHIP_DATASET_ID,datasetVersion:CROSS_ROOT_RELATIONSHIP_DATASET_VERSION,
+      algorithmVersion:CROSS_ROOT_RELATIONSHIP_ALGORITHM_VERSION,
+      assertionCount:row.cross_root_relationship_assertions,evidenceCount:row.cross_root_relationship_evidence,
+      subjectResourceCount:row.cross_root_relationship_subjects,objectResourceCount:row.cross_root_relationship_objects,
+      resourceReuseCount:relationshipNumber("resourceReuse"),resourceAdditionCount:relationshipNumber("resourceAdditions"),
+      relationshipFamilyCounts:(relationshipExpected.relationshipFamilyCounts ?? {}) as Record<string,number>,
+      causalAssertionCount:relationshipNumber("causal"),nonCausalAssertionCount:relationshipNumber("nonCausal"),
+      directlySourcedCount:Number((relationshipExpected.derivationCounts as Record<string,unknown>|undefined)?.directly_sourced ?? 0),
+      acceptedCount:Number((relationshipExpected.reviewStateCounts as Record<string,unknown>|undefined)?.accepted_after_review ?? 0),
+      disputedCount:relationshipNumber("disputed"),
+      unreviewedCount:Number((relationshipExpected.reviewStateCounts as Record<string,unknown>|undefined)?.unreviewed ?? 0),
+      uncertainCount:relationshipNumber("uncertain"),sameRootCount:relationshipNumber("sameRoot"),crossRootCount:relationshipNumber("crossRoot"),
+      participatingRoots:["HistoryRoot"],sourceDatasetIdentities:[{datasetId:"historyroot-plymouth-knowledge-dataset-v1",version:"1.3.0"}],
     },
   };
 }

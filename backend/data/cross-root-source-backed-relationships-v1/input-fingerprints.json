@@ -1,0 +1,38 @@
+[
+  {
+    "filename": "backend/data/historyroot-wampanoag-regional-corpus-v1/historyroot-wampanoag-regional-corpus-v1.bundle.json",
+    "datasetId": "historyroot-plymouth-knowledge-dataset-v1",
+    "datasetVersion": "1.3.0",
+    "byteLength": 860361,
+    "sha256": "E3BFEBD9D98353BB9F05893E2865C838DF04E322F18E0F4E68CE124B32665B02",
+    "gitBlob": "128ac44784d27ae7357b6e44b5451465d3d3021f",
+    "purpose": "Released relationship, causal, source, and provenance records"
+  },
+  {
+    "filename": "backend/data/cross-root-link-foundation-v1/resource-registry.json",
+    "datasetId": "sourceroot-cross-root-lexical-evidence-v1",
+    "datasetVersion": "1.0.0",
+    "byteLength": 1619809,
+    "sha256": "697B12782E6175B022D5C7B633D807CE7466B2410450E9F266478A5358A1F7D0",
+    "gitBlob": "64e1f06892083748ecba176c86b5d1bd0a803c60",
+    "purpose": "Reuse canonical registered resources only"
+  },
+  {
+    "filename": "backend/data/cross-root-link-foundation-v1/dataset-manifest.json",
+    "datasetId": "sourceroot-cross-root-lexical-evidence-v1",
+    "datasetVersion": "1.0.0",
+    "byteLength": 2066,
+    "sha256": "9C748D20F80134335F98DC3444B58B1C6229118A0319538795BE88B4CC62E504",
+    "gitBlob": "cf77c116eff91ef860d277409a4b0b3f5f739afe",
+    "purpose": "Validate Chunk 14A registry identity without consuming lexical links"
+  },
+  {
+    "filename": "backend/data/cross-root-link-foundation-v1/hashes.json",
+    "datasetId": "sourceroot-cross-root-lexical-evidence-v1",
+    "datasetVersion": "1.0.0",
+    "byteLength": 920,
+    "sha256": "CEB5362647D43D83D825691717BB23F9F322BBF151D4B848B741DF2DD2F7F6F4",
+    "gitBlob": "5dffadf3d1d4a2105fbf9e29a3c3a94c2029e26f",
+    "purpose": "Validate committed registry hash contract"
+  }
+]
