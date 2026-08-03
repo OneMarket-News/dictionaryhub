@@ -189,6 +189,7 @@
                             "VERIFY-BIBLEROOT-ORIGINAL-LANGUAGE-FOUNDATION.ps1",
                             "VERIFY-BIBLEROOT-TRANSLATION-COMPARISON.ps1",
                             "VERIFY-BIBLEROOT-COMMENTARY-INTERPRETATION-PROVENANCE.ps1",
+                            "VERIFY-BIBLEROOT-VISUAL-IDENTITY-LOGO.ps1",
                             "VERIFY-CROSS-ROOT-LINK-FOUNDATION-DETERMINISTIC-LEXICAL-EVIDENCE.ps1",
                             "VERIFY-CROSS-ROOT-SOURCE-BACKED-ENTITY-HISTORICAL-RELATIONSHIPS.ps1",
                             "VERIFY-SOURCEROOT-IMMUTABLE-SOURCE-ARTIFACT-PRESERVATION.ps1",
@@ -213,15 +214,9 @@
                          "name":  "",
                          "slug":  "",
                          "specification":  "",
-                         "allowed_files":  [
-
-                                           ],
-                         "required_verifiers":  [
-
-                                                ],
-                         "preflight_changed_files":  [
-
-                                                     ],
+                         "allowed_files":  [],
+                         "required_verifiers":  [],
+                         "preflight_changed_files":  [],
                          "status":  "inactive"
                      }
 }
