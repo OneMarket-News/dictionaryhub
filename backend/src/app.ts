@@ -27,6 +27,7 @@ import { moderationRouter } from "./routes/moderation.js";
 import { nodesRouter } from "./routes/nodes.js";
 import { revisionsRouter } from "./routes/revisions.js";
 import { searchRouter } from "./routes/search.js";
+import { sourceRootContractsRouter } from "./routes/sourceroot-contracts.js";
 import { sourcesRouter } from "./routes/sources.js";
 import { unifiedSearchRouter } from "./routes/unified-search.js";
 import { validateRouter } from "./routes/validate.js";
@@ -147,6 +148,7 @@ export function createApp(options: CreateAppOptions = {}) {
   app.use("/api/v1/dictionaryroot/editorial", editorialRouter);
   app.use("/api/v1/bibleroot", bibleRootRouter);
   app.use("/api/v1/cross-root", crossRootRouter);
+  app.use("/api/v1/sourceroot", sourceRootContractsRouter);
   app.use("/api/v1/search/unified", unifiedSearchRouter);
   app.use("/api/v1/search", searchRouter);
   app.use("/api/v1/bundles", bundlesRouter);
