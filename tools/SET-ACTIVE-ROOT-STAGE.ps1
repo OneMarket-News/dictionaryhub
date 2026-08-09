@@ -77,8 +77,60 @@ function Get-MarkdownSectionList {
 
 function Write-Utf8File {
     param([string]$Path, [string]$Content)
+    # Mutable lifecycle and governance artifacts are written UTF-8 without BOM
+    # and with LF line endings. Normalization happens in memory at the write
+    # boundary so no caller depends on platform-default newline behavior.
+    $Normalized = $Content -replace "`r`n", "`n" -replace "`r", "`n"
     $Encoding = New-Object Text.UTF8Encoding($false)
-    [IO.File]::WriteAllText($Path, $Content, $Encoding)
+    [IO.File]::WriteAllText($Path, $Normalized, $Encoding)
+}
+
+function Read-Utf8File {
+    param([string]$Path)
+    # STRICT UTF-8 lifecycle read contract.
+    #
+    # Two decoding boundaries have to be closed here, not one. Windows
+    # PowerShell 5.1 `Get-Content` decodes with the system ANSI code page, so
+    # BOM-less UTF-8 was silently corrupted: an em dash (E2 80 94) became three
+    # windows-1252 characters that the UTF-8 writer then persisted as mojibake.
+    # `[IO.File]::ReadAllText($Path, $Encoding)` fixes that but still performs
+    # byte-order-mark auto-detection, so it silently ACCEPTS UTF-16 and UTF-32
+    # input that this contract must reject.
+    #
+    # Bytes are therefore read raw, the byte-order mark is classified
+    # explicitly, and only UTF-8 is ever decoded.
+    #
+    #   Accepted: BOM-less UTF-8, and UTF-8 with a BOM. An accepted BOM is
+    #             stripped and never reaches the content or the writer.
+    #   Rejected: UTF-16LE/BE, UTF-32LE/BE, and any invalid UTF-8 sequence.
+    #
+    # There is no fallback decoder. Malformed input fails closed.
+    $Bytes = [IO.File]::ReadAllBytes($Path)
+
+    # UTF-32 signatures are tested first: UTF-32LE (FF FE 00 00) begins with
+    # the UTF-16LE signature (FF FE), so the shorter test would shadow it.
+    if ($Bytes.Length -ge 4 -and $Bytes[0] -eq 0xFF -and $Bytes[1] -eq 0xFE -and $Bytes[2] -eq 0x00 -and $Bytes[3] -eq 0x00) {
+        throw "Lifecycle text must be UTF-8; a UTF-32LE byte-order mark was found: $Path"
+    }
+    if ($Bytes.Length -ge 4 -and $Bytes[0] -eq 0x00 -and $Bytes[1] -eq 0x00 -and $Bytes[2] -eq 0xFE -and $Bytes[3] -eq 0xFF) {
+        throw "Lifecycle text must be UTF-8; a UTF-32BE byte-order mark was found: $Path"
+    }
+    if ($Bytes.Length -ge 2 -and $Bytes[0] -eq 0xFF -and $Bytes[1] -eq 0xFE) {
+        throw "Lifecycle text must be UTF-8; a UTF-16LE byte-order mark was found: $Path"
+    }
+    if ($Bytes.Length -ge 2 -and $Bytes[0] -eq 0xFE -and $Bytes[1] -eq 0xFF) {
+        throw "Lifecycle text must be UTF-8; a UTF-16BE byte-order mark was found: $Path"
+    }
+
+    $Offset = 0
+    if ($Bytes.Length -ge 3 -and $Bytes[0] -eq 0xEF -and $Bytes[1] -eq 0xBB -and $Bytes[2] -eq 0xBF) {
+        $Offset = 3
+    }
+    # GetString over an explicit byte range performs no BOM auto-detection, and
+    # throwOnInvalidBytes makes malformed UTF-8 throw instead of degrading to
+    # U+FFFD replacement characters. An empty file decodes to an empty string.
+    $Encoding = New-Object Text.UTF8Encoding($false, $true)
+    return $Encoding.GetString($Bytes, $Offset, $Bytes.Length - $Offset)
 }
 
 function Get-CurrentChangedFiles {
@@ -108,8 +160,8 @@ try {
         throw "Stage specification does not exist: $StageSpecification"
     }
     $StageRelativePath = ConvertTo-RepositoryRelativePath -FullPath $CandidatePath
-    $StageText = Get-Content -LiteralPath $CandidatePath -Raw
-    $Manifest = Get-Content -LiteralPath $ManifestPath -Raw | ConvertFrom-Json
+    $StageText = Read-Utf8File -Path $CandidatePath
+    $Manifest = Read-Utf8File -Path $ManifestPath | ConvertFrom-Json
 
     $NameMatch = [regex]::Match($StageText, '(?m)^-\s*Name:\s*(.+?)\s*$')
     $SlugMatch = [regex]::Match($StageText, '(?m)^-\s*Slug:\s*([A-Z0-9]+(?:-[A-Z0-9]+)*)\s*$')
@@ -166,7 +218,7 @@ try {
     }
     $ManifestJson = $Manifest | ConvertTo-Json -Depth 30
     $null = $ManifestJson | ConvertFrom-Json
-    Write-Utf8File -Path $ManifestPath -Content ($ManifestJson + "`r`n")
+    Write-Utf8File -Path $ManifestPath -Content ($ManifestJson + "`n")
 
     Write-Host "[PASS] Active stage selected." -ForegroundColor Green
     Write-Host "[INFO] Name: $StageName" -ForegroundColor Cyan

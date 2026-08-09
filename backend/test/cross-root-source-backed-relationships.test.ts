@@ -35,6 +35,8 @@ let first:SourceBackedRelationshipImportSummary;
 let second:SourceBackedRelationshipImportSummary;
 let lexicalBefore="";
 let lexicalAfter="";
+/** True when the released 14B bundle was already provisioned before this run. */
+let datasetWasProvisioned=false;
 
 function database(){const pool=getPool();if(!pool)throw new Error("Relationship tests require DATABASE_URL.");return pool;}
 async function lexicalFingerprint(){
@@ -50,19 +52,50 @@ async function lexicalFingerprint(){
 
 before(async()=>{
   await execFileAsync(process.execPath,["--import","./scripts/register-tsx.mjs","src/scripts/import-historyroot-wampanoag-regional-corpus.ts"],{cwd:new URL("../",import.meta.url)});
-  await saveDictionaryRootCoreLexicalCorpus(await validateDictionaryRootCoreCorpus());
-  await importBibleRootFoundation({dataset:await validateBibleRootFoundation()});
-  await importBibleRootTranslationComparison({dataset:await validateTranslationComparisonDataset()});
-  await execFileAsync(process.execPath,["--import","./scripts/register-tsx.mjs","src/scripts/import-cross-root-lexical-evidence.ts"],{cwd:new URL("../",import.meta.url)});
+
+  // Validate and REUSE provisioned prerequisites rather than rebuilding them.
+  // The BibleRoot foundation importer deletes and recreates foundation
+  // material, and later released commentary anchors legitimately reference
+  // those canonical verses, so an unconditional rebuild would destroy data
+  // this suite does not own. Each prerequisite is imported only when it is
+  // genuinely absent.
+  const prerequisites=(await database().query<{lemmas:number;foundation:number;translations:number;lexical:number}>(`
+    SELECT (SELECT COUNT(*)::integer FROM dictionaryroot_lexical_lemmas WHERE dataset_id='dictionaryroot-core-lexical-corpus-v1') AS lemmas,
+      (SELECT COUNT(*)::integer FROM bibleroot_verse_texts WHERE dataset_id='bibleroot-foundation-v1') AS foundation,
+      (SELECT COUNT(*)::integer FROM bibleroot_verse_texts WHERE dataset_id='bibleroot-translation-comparison-v1') AS translations,
+      (SELECT COUNT(*)::integer FROM cross_root_datasets WHERE dataset_id='sourceroot-cross-root-lexical-evidence-v1') AS lexical;
+  `)).rows[0]!;
+  if(prerequisites.lemmas!==500) await saveDictionaryRootCoreLexicalCorpus(await validateDictionaryRootCoreCorpus());
+  if(prerequisites.foundation!==110) await importBibleRootFoundation({dataset:await validateBibleRootFoundation()});
+  if(prerequisites.translations!==330) await importBibleRootTranslationComparison({dataset:await validateTranslationComparisonDataset()});
+  if(prerequisites.lexical===0) await execFileAsync(process.execPath,["--import","./scripts/register-tsx.mjs","src/scripts/import-cross-root-lexical-evidence.ts"],{cwd:new URL("../",import.meta.url)});
+
   dataset=await validateSourceBackedRelationshipDataset();
-  await database().query("DELETE FROM imported_bundles WHERE bundle_id=$1",[dataset.manifest.datasetId]);
+
+  // Do not delete the released 14B bundle to force a clean import. Detect the
+  // provisioned state instead and exercise the matching idempotent path.
+  datasetWasProvisioned=(await database().query<{count:number}>(
+    "SELECT COUNT(*)::integer AS count FROM cross_root_relationship_datasets WHERE dataset_id=$1",
+    [dataset.manifest.datasetId],
+  )).rows[0]!.count>0;
+
   lexicalBefore=await lexicalFingerprint();
   first=await importSourceBackedRelationships({dataset});
   second=await importSourceBackedRelationships({dataset});
   lexicalAfter=await lexicalFingerprint();
 });
 
-after(async()=>{if(dataset)await database().query("DELETE FROM imported_bundles WHERE bundle_id=$1",[dataset.manifest.datasetId]);await closeTestDatabase();});
+after(async()=>{
+  try{
+    // Only remove what this suite created. An already-provisioned bundle is
+    // canonical database state and is left exactly as found.
+    if(dataset&&!datasetWasProvisioned){
+      await database().query("DELETE FROM imported_bundles WHERE bundle_id=$1",[dataset.manifest.datasetId]);
+    }
+  } finally {
+    await closeTestDatabase();
+  }
+});
 
 test("1. exact fingerprints, hashes, identities, and corpus counts validate",()=>{
   assert.equal(dataset.manifest.datasetId,"sourceroot-cross-root-source-backed-relationships-v1");
@@ -130,7 +163,13 @@ test("7. evidence reconstructs exact UTF-16 source fields and retains provenance
 });
 
 test("8. importer is exact, idempotent, and preserves all Chunk 14A rows",()=>{
-  assert.deepEqual(first.records,{imported:323,updated:0,skipped:0,failed:0});
+  // The released record count is 323 either way. A clean database imports; an
+  // already-provisioned one skips. Both are exact idempotent outcomes.
+  if(datasetWasProvisioned){
+    assert.deepEqual(first.records,{imported:0,updated:0,skipped:323,failed:0});
+  } else {
+    assert.deepEqual(first.records,{imported:323,updated:0,skipped:0,failed:0});
+  }
   assert.deepEqual(second.records,{imported:0,updated:0,skipped:323,failed:0});
   assert.equal(lexicalAfter,lexicalBefore);
 });

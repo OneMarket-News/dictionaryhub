@@ -27,7 +27,10 @@ import {
   type CommentaryImportSummary,
 } from "../src/scripts/import-bibleroot-commentary-provenance.js";
 import { prepare } from "../src/scripts/prepare-bibleroot-commentary-provenance.js";
-import { getDevelopmentRuntimeReadiness } from "../src/services/development-runtime-readiness.js";
+import {
+  getDevelopmentRuntimeReadiness,
+  type DevelopmentRuntimeReadiness,
+} from "../src/services/development-runtime-readiness.js";
 import { closeTestDatabase } from "./helpers/database.js";
 
 const execFileAsync = promisify(execFile);
@@ -234,7 +237,13 @@ test("10. awaiting-data is honest and contains no fallback commentary", async ()
 
 test("11. readiness adds commentaryProvenanceReady without redefining prior BibleRoot fields", async () => {
   const readiness = await getDevelopmentRuntimeReadiness();
-  assert.equal(readiness.contractVersion, "1.3.0");
+  // This validates CURRENT provisioned readiness, not historical release
+  // state, so it must track the live contract. Binding the expectation to the
+  // service's own declared literal type means a future readiness revision
+  // fails typecheck here immediately rather than leaving a stale literal to
+  // be discovered at runtime much later.
+  const expectedContractVersion: DevelopmentRuntimeReadiness["contractVersion"] = "1.4.0";
+  assert.equal(readiness.contractVersion, expectedContractVersion);
   assert.equal(readiness.roots.BibleRoot.ready, true);
   assert.equal(readiness.roots.BibleRoot.foundationReady, true);
   assert.equal(readiness.roots.BibleRoot.originalLanguageReady, true);

@@ -1,3 +1,13 @@
 # Preserve immutable upstream artifacts byte-for-byte.
 backend/data/**/raw/** -text
 backend/data/**/source-docs/** -text
+
+# Mutable lifecycle and governance artifacts are LF.
+#
+# These are the files the stage lifecycle tooling rewrites on every stage.
+# Without this, a PowerShell writer can silently flip them to CRLF and dirty
+# `git diff --check`. Deliberately narrow: this is not repository-wide EOL
+# normalization, and it does not touch released data or source bytes.
+ROOT-MANIFEST.json text eol=lf
+docs/stages/active/CURRENT-STAGE.md text eol=lf
+docs/stages/templates/ROOT-STAGE-TEMPLATE.md text eol=lf

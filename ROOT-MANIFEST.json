@@ -215,9 +215,15 @@
                          "name":  "",
                          "slug":  "",
                          "specification":  "",
-                         "allowed_files":  [],
-                         "required_verifiers":  [],
-                         "preflight_changed_files":  [],
+                         "allowed_files":  [
+
+                                           ],
+                         "required_verifiers":  [
+
+                                                ],
+                         "preflight_changed_files":  [
+
+                                                     ],
                          "status":  "inactive"
                      }
 }

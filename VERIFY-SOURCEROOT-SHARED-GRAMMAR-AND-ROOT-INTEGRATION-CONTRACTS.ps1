@@ -57,15 +57,40 @@ Write-Host "Repository: $RepositoryRoot"
 Write-Host ""
 
 # ---------------------------------------------------------------------------
-# 1. Governed stage identity and Git state
+# 1. RELEASE IDENTITY (historical facts)
+#
+# This verifier protects two different things, and they must not be confused:
+#
+#   A. HISTORICAL RELEASE FACTS - what the 14C release actually was. These are
+#      inspected at the released commit/tree and never change, no matter how
+#      much legitimate work lands afterwards.
+#
+#   B. DURABLE SEMANTIC INVARIANTS - what must still hold in the repository
+#      today. These are checked against current code.
+#
+# Before this maintenance the verifier asserted that HEAD was still the
+# pre-commit baseline, that no tag existed, and that the static suite was
+# untracked. Those were true only during 14C development and became
+# permanently false the moment 14C was committed, tagged, and released.
 # ---------------------------------------------------------------------------
 
-$Branch = (& git -C $RepositoryRoot branch --show-current).Trim()
-$Head = (& git -C $RepositoryRoot rev-parse HEAD).Trim()
-$Tags = @(& git -C $RepositoryRoot tag --points-at HEAD)
-Assert-True ($Branch -eq "agent/claude-14c") "Expected stage branch agent/claude-14c"
-Assert-True ($Head -eq "1363be2b3e5f8ad44674207915cc84c8d2a15026") "Expected HEAD is unchanged (no commit was created)"
-Assert-True ($Tags.Count -eq 0) "No tag was created at HEAD"
+$ReleaseTag = "sourceroot-shared-grammar-root-integration-contracts-v1"
+$ReleaseCommit = "d995e4c3ceff18c8fdd4f696a853494eb4f0daea"
+$ReleaseParent = "1363be2b3e5f8ad44674207915cc84c8d2a15026"
+
+$TaggedCommit = (& git -C $RepositoryRoot rev-parse --verify --quiet "$ReleaseTag^{commit}")
+if ($TaggedCommit) { $TaggedCommit = $TaggedCommit.Trim() }
+Assert-True ($TaggedCommit -eq $ReleaseCommit) "Release tag $ReleaseTag still resolves to the released 14C commit"
+
+$ActualParent = (& git -C $RepositoryRoot rev-parse --verify --quiet "$ReleaseCommit^")
+if ($ActualParent) { $ActualParent = $ActualParent.Trim() }
+Assert-True ($ActualParent -eq $ReleaseParent) "Released 14C commit still has its exact recorded parent"
+
+& git -C $RepositoryRoot merge-base --is-ancestor $ReleaseCommit HEAD 2>$null | Out-Null
+Assert-True ($LASTEXITCODE -eq 0) "Released 14C commit remains in the current branch ancestry"
+
+# Later legitimate SourceRoot commits are expected and must not fail this
+# verifier. Only removal of the release from history is a failure.
 
 $Staged = @(& git -C $RepositoryRoot diff --cached --name-only | Where-Object { $_ })
 Assert-True ($Staged.Count -eq 0) "No staged change exists"
@@ -80,9 +105,8 @@ $Manifest = Get-Content -Raw -LiteralPath (Join-Path $RepositoryRoot "ROOT-MANIF
 $CompletedRelative = "docs/stages/completed/20260808-SOURCEROOT-SHARED-GRAMMAR-ROOT-INTEGRATION-CONTRACTS-V1.md"
 $CompletedPath = Join-Path $RepositoryRoot ($CompletedRelative -replace "/", "\")
 $ActiveRelative = "docs/stages/active/CURRENT-STAGE.md"
-$IsActive = ($Manifest.active_stage.status -eq "active") -and ($Manifest.active_stage.slug -eq "SOURCEROOT-SHARED-GRAMMAR-ROOT-INTEGRATION-CONTRACTS-V1")
-$IsInactive = ($Manifest.active_stage.status -eq "inactive") -and (Test-Path -LiteralPath $CompletedPath -PathType Leaf)
-Assert-True ($IsActive -or $IsInactive) "Stage lifecycle is active or completed/inactive"
+Assert-True (Test-Path -LiteralPath $CompletedPath -PathType Leaf) "Completed 14C stage record is present"
+Assert-True (-not ($Manifest.active_stage.slug -eq "SOURCEROOT-SHARED-GRAMMAR-ROOT-INTEGRATION-CONTRACTS-V1")) "The 14C stage is no longer the active stage"
 
 # ---------------------------------------------------------------------------
 # 2. Exact implementation boundary
@@ -110,11 +134,27 @@ $Allowed = @(
 )
 Assert-True ($Allowed.Count -eq 18) "Exact 18-file allowed boundary"
 
-if ($IsActive) {
-    $ManifestAllowed = [string]::Join("|", @($Manifest.active_stage.allowed_files | Sort-Object))
-    $ExpectedAllowed = [string]::Join("|", @($Allowed | Sort-Object))
-    Assert-True ($ManifestAllowed -eq $ExpectedAllowed) "Manifest allowed boundary is exact"
+# HISTORICAL: the released 14C commit must have stayed inside its governed
+# boundary. An allowlist grants permission rather than obliging change, so the
+# correct invariant is containment, not equality.
+$ReleaseInventory = @(
+    & git -C $RepositoryRoot diff --name-only "$ReleaseParent" "$ReleaseCommit" |
+        ForEach-Object { ([string]$_).Trim().Replace("\", "/") } | Where-Object { $_ } | Sort-Object -Unique
+)
+Assert-True ($ReleaseInventory.Count -gt 0) "Released 14C commit has an inspectable inventory"
+$ReleaseOutside = @($ReleaseInventory | Where-Object { $Allowed -notcontains $_ })
+Assert-True ($ReleaseOutside.Count -eq 0) "Released 14C commit stayed inside its governed boundary"
+if ($ReleaseOutside.Count -gt 0) {
+    Write-Host "       Outside release boundary: $($ReleaseOutside -join ', ')" -ForegroundColor Red
 }
+
+# HISTORICAL: the static semantic-safety suite shipped inside the release even
+# though `verification/` is ignored, which required a deliberate force-add.
+$ReleasedStaticSuite = @(
+    & git -C $RepositoryRoot ls-tree -r --name-only "$ReleaseCommit" -- "verification/sourceroot-shared-grammar.test.cjs" |
+        Where-Object { $_ }
+)
+Assert-True ($ReleasedStaticSuite.Count -eq 1) "Static semantic-safety suite is present in the released 14C tree"
 
 # Scope discovery must be DETERMINISTIC and REPOSITORY-LOCAL.
 #
@@ -127,17 +167,36 @@ $NoGlobalExcludes = Join-Path $RepositoryRoot ".git\info\sourceroot-no-global-ex
 $RepositoryLocalGit = @("-C", $RepositoryRoot, "-c", "core.excludesFile=$NoGlobalExcludes")
 Assert-True (-not (Test-Path -LiteralPath $NoGlobalExcludes)) "Global-exclude neutralization path does not exist"
 
-$Changed = @(
-    & git @RepositoryLocalGit diff --name-only
-    & git @RepositoryLocalGit diff --cached --name-only
-    & git @RepositoryLocalGit ls-files --others --exclude-standard
-    & git @RepositoryLocalGit ls-files --others --ignored --exclude-standard -- "verification/sourceroot-shared-grammar.test.cjs"
-) | ForEach-Object { ([string]$_).Trim().Replace("\", "/") } | Where-Object { $_ } | Sort-Object -Unique
-
-$Outside = @($Changed | Where-Object { $Allowed -notcontains $_ })
-Assert-True ($Outside.Count -eq 0) "All changed and ignored artifacts are inside the allowed boundary"
-if ($Outside.Count -gt 0) {
-    Write-Host "       Outside boundary: $($Outside -join ', ')" -ForegroundColor Red
+# DURABLE: the released 14C contract surface must be byte-identical to what
+# shipped. A stage-time "only allowlisted files changed" check cannot survive
+# later releases, but "the contracts themselves never drifted" must hold
+# forever, so that is what is enforced here.
+$ContractSurface = @(
+    "backend/src/sourceroot/addressing.ts",
+    "backend/src/sourceroot/contracts.ts",
+    "backend/src/sourceroot/identity-assertions.ts",
+    "backend/src/sourceroot/object-types.ts",
+    "backend/src/sourceroot/query-vocabulary.ts",
+    "backend/src/sourceroot/response-envelope.ts",
+    "backend/src/sourceroot/root-registry.ts",
+    "backend/src/routes/sourceroot-contracts.ts",
+    "verification/sourceroot-shared-grammar.test.cjs",
+    "backend/test/sourceroot-shared-grammar.test.ts",
+    "backend/test/fixtures/sourceroot-jerusalem-contract-fixture.ts"
+)
+$ContractDrift = @()
+foreach ($Relative in $ContractSurface) {
+    $ReleasedBlob = (& git -C $RepositoryRoot rev-parse --verify --quiet "${ReleaseCommit}:$Relative")
+    $CurrentBlob = (& git -C $RepositoryRoot hash-object --no-filters -- $Relative 2>$null)
+    if ($ReleasedBlob) { $ReleasedBlob = $ReleasedBlob.Trim() }
+    if ($CurrentBlob) { $CurrentBlob = $CurrentBlob.Trim() }
+    if (-not $ReleasedBlob -or -not $CurrentBlob -or $ReleasedBlob -ne $CurrentBlob) {
+        $ContractDrift += $Relative
+    }
+}
+Assert-True ($ContractDrift.Count -eq 0) "Released 14C contract surface is byte-identical to the release"
+if ($ContractDrift.Count -gt 0) {
+    Write-Host "       Contract drift: $($ContractDrift -join ', ')" -ForegroundColor Red
 }
 
 # Nothing may be visible to repository-local discovery yet hidden from the
@@ -168,33 +227,34 @@ if (Test-Path -LiteralPath (Join-Path $RepositoryRoot ($ClaudeLocalSettings -rep
     Assert-True ($LASTEXITCODE -eq 0) "Clone-local Claude configuration is excluded by repository-local Git metadata"
 }
 
+# The active-stage document belongs to whatever stage is running now, so it is
+# excluded from the released-artifact presence check.
 $Missing = @($Allowed | Where-Object {
+    $_ -ne $ActiveRelative -and
     -not (Test-Path -LiteralPath (Join-Path $RepositoryRoot ($_ -replace "/", "\")) -PathType Leaf)
 })
-if ($IsActive) { $Missing = @($Missing | Where-Object { $_ -ne $CompletedRelative }) }
-if ($IsInactive) { $Missing = @($Missing | Where-Object { $_ -ne $ActiveRelative }) }
-Assert-True ($Missing.Count -eq 0) "All required stage artifacts exist"
+Assert-True ($Missing.Count -eq 0) "All released 14C artifacts exist"
 if ($Missing.Count -gt 0) {
     Write-Host "       Missing: $($Missing -join ', ')" -ForegroundColor Red
 }
 
 Assert-True (@($Manifest.known_verifiers) -contains "VERIFY-SOURCEROOT-SHARED-GRAMMAR-AND-ROOT-INTEGRATION-CONTRACTS.ps1") "Focused verifier is registered in the manifest"
 
-# The static semantic-safety suite is an INTENDED stage artifact that the
-# repository .gitignore hides, because verification/ is ignored wholesale. It
-# must exist on disk, be inside the governed allowlist, and be recognised as
-# ignored, so it can never silently vanish from the stage. It requires a
-# deliberate force-add at commit time if that matches SourceRoot release
-# practice; this verifier never stages it.
+# The static semantic-safety suite sits under the ignored `verification/`
+# directory, so it required a deliberate force-add to enter the release. Before
+# the release it had to be ignored-and-untracked; now it must be TRACKED, or it
+# has been lost from the repository. The durable invariant is that a governed
+# stage artifact cannot silently vanish, and after release that means tracked.
 $StaticSuiteRelative = "verification/sourceroot-shared-grammar.test.cjs"
 $StaticSuitePath = Join-Path $RepositoryRoot ($StaticSuiteRelative -replace "/", "\")
+# The message wording below is pinned by the released static semantic-safety
+# suite, which is byte-frozen. The ASSERTION SEMANTICS are what this
+# maintenance corrects; the wording stays so a released artifact need not be
+# reopened.
 Assert-True (Test-Path -LiteralPath $StaticSuitePath -PathType Leaf) "Intended ignored stage artifact exists on disk"
 Assert-True ($Allowed -contains $StaticSuiteRelative) "Intended ignored stage artifact is inside the governed allowlist"
-& git @RepositoryLocalGit check-ignore -q -- $StaticSuiteRelative | Out-Null
-$StaticSuiteIgnored = ($LASTEXITCODE -eq 0)
-Assert-True $StaticSuiteIgnored "Intended ignored stage artifact is recognised as ignored and will need a deliberate force-add at commit time"
 $StaticSuiteTracked = @(& git @RepositoryLocalGit ls-files -- $StaticSuiteRelative | Where-Object { $_ })
-Assert-True ($StaticSuiteTracked.Count -eq 0) "Intended ignored stage artifact is not staged by this verifier"
+Assert-True ($StaticSuiteTracked.Count -eq 1) "Static semantic-safety suite is tracked, having been force-added into the release"
 
 # ---------------------------------------------------------------------------
 # 3. Migration policy
