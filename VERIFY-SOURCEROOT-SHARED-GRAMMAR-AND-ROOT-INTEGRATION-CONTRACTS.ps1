@@ -39,6 +39,118 @@ function Write-VerifierWarning([string]$Message) {
     Write-Host "[WARN] $Message" -ForegroundColor Yellow
 }
 
+# ===== BEGIN LEGACY STAGE-IDENTITY PARSER (NON-AUTHORITATIVE, UNUSED) =====
+# ---------------------------------------------------------------------------
+# LEGACY STAGE-IDENTITY PARSER  (NON-AUTHORITATIVE, UNUSED)
+#
+# This block is duplicated verbatim in the 15A, 14C and GDS verifiers because a
+# shared module would need a 21st authorized path. The static semantic-safety
+# suite formerly asserted all copies were byte-identical. The fourth Codex audit
+# proved that parser-based authorization is the wrong boundary. This legacy
+# helper is retained only to avoid unrelated deletion churn; no authority path
+# calls it, and the static suite enforces that separation.
+#
+# WHY A SCANNER AND NOT A REGEX. Successive audits defeated successive regexes:
+# a substring scan matched the expected slug in prose; a section-scoped regex
+# still matched it inside fenced code, inside indented code, in a nested list
+# item, and in a second duplicate "Stage identity" section. Authority-bearing
+# metadata cannot be read with a pattern that has no notion of document
+# structure, so this is a small deterministic Markdown-aware scanner - only as
+# much grammar as this governed record format needs, and no more.
+#
+# It recognises exactly:
+#   - fenced code blocks (``` and ~~~, up to 3 spaces of indent, closed by the
+#     same fence character), whose contents are INERT;
+#   - indented code blocks (4+ columns), which are INERT;
+#   - real ATX H2 headings outside those, which delimit sections;
+#   - DIRECT top-level list items (column 0 exactly) inside one section.
+#
+# Every ambiguity FAILS CLOSED by returning $null:
+#   zero or MORE THAN ONE real "## Stage identity" heading; a missing field; a
+#   nested, fenced, indented, or prose occurrence; duplicate direct fields; a
+#   malformed value. Comparison by the caller is exact and case-sensitive.
+# ---------------------------------------------------------------------------
+function Get-GovernedRecordLineFacts([string]$RecordText) {
+    # One pass. For each line: is it structural (outside any code), and if so is
+    # it a real H2, and what is its indent in columns (tabs expand to 4).
+    $Lines = $RecordText -split "`r?`n"
+    $Facts = New-Object System.Collections.Generic.List[object]
+    $InFence = $false
+    $FenceChar = ""
+    foreach ($Raw in $Lines) {
+        $Expanded = ""
+        foreach ($Char in $Raw.ToCharArray()) {
+            if ($Char -eq "`t") { $Expanded += "    " } else { $Expanded += $Char }
+        }
+        $Trimmed = $Expanded.TrimStart(" ")
+        $Indent = $Expanded.Length - $Trimmed.Length
+        $IsFenceToken = ($Indent -lt 4 -and ($Trimmed -match '^(`{3,}|~{3,})'))
+        if ($InFence) {
+            # Only a fence of the SAME character can close the block.
+            if ($IsFenceToken -and $Trimmed.StartsWith($FenceChar)) { $InFence = $false; $FenceChar = "" }
+            $Facts.Add([pscustomobject]@{ Structural = $false; IsH2 = $false; H2Title = ""; Indent = $Indent; Text = $Trimmed })
+            continue
+        }
+        if ($IsFenceToken) {
+            $InFence = $true
+            $FenceChar = $Trimmed.Substring(0, 1)
+            $Facts.Add([pscustomobject]@{ Structural = $false; IsH2 = $false; H2Title = ""; Indent = $Indent; Text = $Trimmed })
+            continue
+        }
+        if ($Indent -ge 4) {
+            # Indented code block. Inert.
+            $Facts.Add([pscustomobject]@{ Structural = $false; IsH2 = $false; H2Title = ""; Indent = $Indent; Text = $Trimmed })
+            continue
+        }
+        $IsH2 = $false
+        $Title = ""
+        $H2Match = [regex]::Match($Trimmed, '^##[ \t]+(\S.*?)[ \t]*$')
+        if ($H2Match.Success -and -not $Trimmed.StartsWith("###")) {
+            $IsH2 = $true
+            $Title = $H2Match.Groups[1].Value
+        }
+        $Facts.Add([pscustomobject]@{ Structural = $true; IsH2 = $IsH2; H2Title = $Title; Indent = $Indent; Text = $Trimmed })
+    }
+    # An unterminated fence leaves the document structurally ambiguous.
+    if ($InFence) { return $null }
+    return $Facts
+}
+
+function Get-DeclaredStageSlug([string]$RecordText) {
+    $Facts = Get-GovernedRecordLineFacts $RecordText
+    if ($null -eq $Facts) { return $null }
+
+    $IdentityHeadings = @()
+    for ($Index = 0; $Index -lt $Facts.Count; $Index++) {
+        if ($Facts[$Index].Structural -and $Facts[$Index].IsH2 -and $Facts[$Index].H2Title -ceq "Stage identity") {
+            $IdentityHeadings += $Index
+        }
+    }
+    # Exactly one real Stage identity section. Two - even identical ones - leave
+    # the authority-bearing structure repeated and therefore ambiguous.
+    if ($IdentityHeadings.Count -ne 1) { return $null }
+
+    $Start = $IdentityHeadings[0] + 1
+    $End = $Facts.Count
+    for ($Index = $Start; $Index -lt $Facts.Count; $Index++) {
+        if ($Facts[$Index].Structural -and $Facts[$Index].IsH2) { $End = $Index; break }
+    }
+
+    $Values = @()
+    for ($Index = $Start; $Index -lt $End; $Index++) {
+        $Fact = $Facts[$Index]
+        if (-not $Fact.Structural) { continue }
+        # DIRECT top-level list item only: column 0 exactly. A nested item is a
+        # child of some other claim and is not the record's own identity field.
+        if ($Fact.Indent -ne 0) { continue }
+        $Field = [regex]::Match($Fact.Text, '^-[ \t]+Slug:[ \t]*(\S+)[ \t]*$')
+        if ($Field.Success) { $Values += $Field.Groups[1].Value }
+    }
+    if ($Values.Count -ne 1) { return $null }
+    return $Values[0]
+}
+# ===== END LEGACY STAGE-IDENTITY PARSER =====
+
 function Invoke-Gate([string]$Name, [string]$WorkingDirectory, [scriptblock]$Command) {
     Write-Host "[INFO] $Name" -ForegroundColor Cyan
     Push-Location $WorkingDirectory
@@ -167,36 +279,196 @@ $NoGlobalExcludes = Join-Path $RepositoryRoot ".git\info\sourceroot-no-global-ex
 $RepositoryLocalGit = @("-C", $RepositoryRoot, "-c", "core.excludesFile=$NoGlobalExcludes")
 Assert-True (-not (Test-Path -LiteralPath $NoGlobalExcludes)) "Global-exclude neutralization path does not exist"
 
-# DURABLE: the released 14C contract surface must be byte-identical to what
-# shipped. A stage-time "only allowlisted files changed" check cannot survive
-# later releases, but "the contracts themselves never drifted" must hold
-# forever, so that is what is enforced here.
-$ContractSurface = @(
+# The released 14C contract surface splits into TWO governed classes, and
+# conflating them was the descendant-awareness defect this maintenance repairs.
+#
+#   FROZEN. Modules no governed descendant is authorized to edit. Byte-identity
+#     is the correct durable invariant and stays enforced forever.
+#
+#   GOVERNED-EXTENSIBLE. `object-types.ts` is the DECLARED EXTENSION POINT of
+#     the shared grammar: the released architecture explicitly permits later
+#     governed stages to ADD object types and persistence-to-network mappings
+#     there, and the two 14C verification suites must be able to learn about
+#     those additions. Byte-freezing them contradicted an authorization the same
+#     release granted, so a legitimate descendant failed by construction.
+#     Their durable guarantee is SEMANTIC compatibility - historical mappings
+#     preserved with their released meaning, reverse mapping unambiguous, proved
+#     by the focused contract suite - plus GOVERNED AUTHORIZATION here: drift is
+#     admissible only while a stage whose own allowlist names the file is
+#     active. An ungoverned edit still fails, so nothing is silently weakened.
+$ContractSurfaceFrozen = @(
     "backend/src/sourceroot/addressing.ts",
     "backend/src/sourceroot/contracts.ts",
     "backend/src/sourceroot/identity-assertions.ts",
-    "backend/src/sourceroot/object-types.ts",
     "backend/src/sourceroot/query-vocabulary.ts",
     "backend/src/sourceroot/response-envelope.ts",
     "backend/src/sourceroot/root-registry.ts",
     "backend/src/routes/sourceroot-contracts.ts",
-    "verification/sourceroot-shared-grammar.test.cjs",
-    "backend/test/sourceroot-shared-grammar.test.ts",
     "backend/test/fixtures/sourceroot-jerusalem-contract-fixture.ts"
 )
-$ContractDrift = @()
+$ContractSurfaceGoverned = @(
+    "backend/src/sourceroot/object-types.ts",
+    "backend/test/sourceroot-shared-grammar.test.ts",
+    "verification/sourceroot-shared-grammar.test.cjs"
+)
+# The union must still be the complete released surface, so a file can never be
+# quietly dropped from protection by being listed in neither class.
+$ContractSurface = @($ContractSurfaceFrozen + $ContractSurfaceGoverned)
+Assert-True ($ContractSurface.Count -eq 11) "The released 14C contract surface is still accounted for in full (11 files)"
+Assert-True (@($ContractSurfaceFrozen | Where-Object { $ContractSurfaceGoverned -contains $_ }).Count -eq 0) "No contract file is classified both frozen and extensible"
+
+# HISTORICAL: every file of the surface existed with its canonical bytes in the
+# pinned release tree. A failed or empty Git lookup is a FAILURE, never a
+# vacuous pass, so a broken historical probe cannot be read as success.
+$ReleasedSurfaceBlobs = @{}
+$SurfaceUnreadable = @()
 foreach ($Relative in $ContractSurface) {
     $ReleasedBlob = (& git -C $RepositoryRoot rev-parse --verify --quiet "${ReleaseCommit}:$Relative")
-    $CurrentBlob = (& git -C $RepositoryRoot hash-object --no-filters -- $Relative 2>$null)
     if ($ReleasedBlob) { $ReleasedBlob = $ReleasedBlob.Trim() }
+    if (-not $ReleasedBlob) { $SurfaceUnreadable += $Relative } else { $ReleasedSurfaceBlobs[$Relative] = $ReleasedBlob }
+}
+Assert-True ($SurfaceUnreadable.Count -eq 0) "Released 14C contract surface has its canonical bytes in the pinned release tree (historical release fact)"
+if ($SurfaceUnreadable.Count -gt 0) {
+    Write-Host "       Not readable at the release commit: $($SurfaceUnreadable -join ', ')" -ForegroundColor Red
+}
+
+# DURABLE: frozen modules never drift.
+$ContractDrift = @()
+foreach ($Relative in $ContractSurfaceFrozen) {
+    $CurrentBlob = (& git -C $RepositoryRoot hash-object --no-filters -- $Relative 2>$null)
     if ($CurrentBlob) { $CurrentBlob = $CurrentBlob.Trim() }
-    if (-not $ReleasedBlob -or -not $CurrentBlob -or $ReleasedBlob -ne $CurrentBlob) {
+    if (-not $ReleasedSurfaceBlobs.ContainsKey($Relative) -or -not $CurrentBlob -or $ReleasedSurfaceBlobs[$Relative] -ne $CurrentBlob) {
         $ContractDrift += $Relative
     }
 }
-Assert-True ($ContractDrift.Count -eq 0) "Released 14C contract surface is byte-identical to the release"
+Assert-True ($ContractDrift.Count -eq 0) "Frozen 14C contract modules are byte-identical to the release"
 if ($ContractDrift.Count -gt 0) {
     Write-Host "       Contract drift: $($ContractDrift -join ', ')" -ForegroundColor Red
+}
+
+# DURABLE: an extensible file may differ from the release ONLY under an active
+# governed stage that names it. Unchanged is always acceptable; changed without
+# authorization is not.
+#
+# ANCHORED AUTHORIZATION. A completed stage record is a MUTABLE, UNTRACKED
+# markdown file. An independent Tier 3 audit demonstrated that trusting one
+# merely because it exists and names a path is forgeable: anyone can drop a file
+# into docs/stages/completed with an "Allowed files" section and authorize
+# arbitrary drift of a governed 14C surface. An earlier revision of this gate
+# unioned every completed record's allowlist and was exactly that unsafe.
+#
+# Authorization therefore comes from TWO sources only:
+#
+#   1. An ACTIVE stage whose manifest allowlist names the path. The manifest is
+#      itself governed and the Root verifier checks it.
+#
+#   2. The ANCHORED completed-stage window below, which exists so that a stage
+#      that has completed but must stay uncommitted pending independent audit is
+#      not treated as ungoverned. The window is deliberately narrow and is NOT a
+#      general control plane.
+#
+# The window's authority does NOT come from the record. It comes from constants
+# pinned HERE, in a file that is itself inside the externally authorized
+# candidate and under independent audit. The exact record path must exist, but
+# its mutable Markdown content is documentation/evidence only and cannot open,
+# close, widen, narrow, or redirect authority.
+$AnchoredBaseline = "d55a45b9ed4e9065c186bf48a5a17ec3b5b71eb6"
+$AnchoredDescendantSlug = "SOURCEROOT-EARTHROOT-PLACE-GEOGRAPHY-POLITY-V1"
+# The external Principal Architect exact allowlist. Twenty paths, no more.
+$AnchoredDescendantPaths = @(
+    "ROOT-MANIFEST.json",
+    "VERIFY-CROSS-ROOT-SOURCE-BACKED-ENTITY-HISTORICAL-RELATIONSHIPS.ps1",
+    "VERIFY-SOURCEROOT-EARTHROOT-PLACE-GEOGRAPHY-POLITY.ps1",
+    "VERIFY-SOURCEROOT-GOVERNED-DEVELOPMENT-SYSTEM.ps1",
+    "VERIFY-SOURCEROOT-SHARED-GRAMMAR-AND-ROOT-INTEGRATION-CONTRACTS.ps1",
+    "backend/db/migrations/020_create_earthroot_place_polity_foundation.sql",
+    "backend/src/earthroot/adapter.ts",
+    "backend/src/earthroot/contract.ts",
+    "backend/src/earthroot/domain.ts",
+    "backend/src/earthroot/payload.ts",
+    "backend/src/earthroot/store.ts",
+    "backend/src/sourceroot/object-types.ts",
+    "backend/test/earthroot-adapter.test.ts",
+    "backend/test/earthroot-provenance.test.ts",
+    "backend/test/earthroot-semantics.test.ts",
+    "backend/test/sourceroot-shared-grammar.test.ts",
+    "docs/architecture/SOURCEROOT-EARTHROOT-PLACE-GEOGRAPHY-POLITY-V1.md",
+    "docs/stages/active/CURRENT-STAGE.md",
+    "docs/stages/completed/20260810-SOURCEROOT-EARTHROOT-PLACE-GEOGRAPHY-POLITY-V1.md",
+    "verification/sourceroot-shared-grammar.test.cjs"
+)
+
+$ActiveAllowed = @()
+if ($Manifest.active_stage -and $Manifest.active_stage.allowed_files) {
+    $ActiveAllowed = @($Manifest.active_stage.allowed_files | ForEach-Object { ([string]$_).Trim().Replace("\", "/") } | Where-Object { $_ })
+}
+
+# The anchored window opens only when EVERY condition holds.
+$AnchoredWindowOpen = $false
+$AnchoredWindowReason = "closed"
+$HeadCommit = (& git -C $RepositoryRoot rev-parse HEAD 2>$null)
+if ($HeadCommit) { $HeadCommit = $HeadCommit.Trim() }
+$CompletedStageRoot = Join-Path $RepositoryRoot "docs\stages\completed"
+if ($HeadCommit -ne $AnchoredBaseline) {
+    # Once the candidate commits, the window closes permanently and ordinary
+    # rules resume. A stale anchor can never keep authorizing drift.
+    $AnchoredWindowReason = "HEAD has moved off the anchored baseline"
+} else {
+    # Historical records are TRACKED. The record of a stage that completed but
+    # has not been committed is UNTRACKED. Only the latter can open the window,
+    # and there must be exactly one, so an old committed record can never
+    # authorize present drift.
+    $UntrackedCompleted = @(
+        & git -C $RepositoryRoot ls-files --others --exclude-standard -- "docs/stages/completed" |
+            ForEach-Object { ([string]$_).Trim().Replace("\", "/") } | Where-Object { $_ -like "*.md" }
+    )
+    if ($UntrackedCompleted.Count -ne 1) {
+        $AnchoredWindowReason = "expected exactly one uncommitted completed record, found $($UntrackedCompleted.Count)"
+    } else {
+        $CandidateRecord = $UntrackedCompleted[0]
+        $ExpectedRecord = "docs/stages/completed/20260810-$AnchoredDescendantSlug.md"
+        if ($CandidateRecord -ne $ExpectedRecord) {
+            $AnchoredWindowReason = "uncommitted completed record is not the anchored one: $CandidateRecord"
+        } elseif (-not (Test-Path -LiteralPath (Join-Path $RepositoryRoot ($CandidateRecord -replace "/", "\")) -PathType Leaf)) {
+            $AnchoredWindowReason = "anchored record path is not readable"
+        } else {
+            $AnchoredWindowOpen = $true
+            $AnchoredWindowReason = "open for pinned stage $AnchoredDescendantSlug; record content is non-authoritative"
+        }
+    }
+}
+# Paths come from the ANCHOR, never from the record.
+if ($AnchoredWindowOpen) { $ActiveAllowed += $AnchoredDescendantPaths }
+$ActiveAllowed = @($ActiveAllowed | Sort-Object -Unique)
+$UngovernedDrift = @()
+foreach ($Relative in $ContractSurfaceGoverned) {
+    $CurrentBlob = (& git -C $RepositoryRoot hash-object --no-filters -- $Relative 2>$null)
+    if ($CurrentBlob) { $CurrentBlob = $CurrentBlob.Trim() }
+    if (-not $CurrentBlob) { $UngovernedDrift += "$Relative (missing)"; continue }
+    if (-not $ReleasedSurfaceBlobs.ContainsKey($Relative)) { $UngovernedDrift += "$Relative (no released blob)"; continue }
+    if ($ReleasedSurfaceBlobs[$Relative] -eq $CurrentBlob) { continue }
+    if ($ActiveAllowed -notcontains $Relative) { $UngovernedDrift += $Relative }
+}
+Assert-True ($UngovernedDrift.Count -eq 0) "Extensible 14C contract files changed only under anchored governed authorization"
+if ($UngovernedDrift.Count -gt 0) {
+    Write-Host "       Ungoverned drift: $($UngovernedDrift -join ', ')" -ForegroundColor Red
+    Write-Host "       Anchored completed-stage window: $AnchoredWindowReason" -ForegroundColor Red
+}
+
+# HISTORICAL: the released persistence-to-network mapping count, read from the
+# pinned blob rather than constrained on today's file.
+$ReleasedObjectTypesText = ((& git -C $RepositoryRoot show "${ReleaseCommit}:backend/src/sourceroot/object-types.ts" 2>$null) -join "`n")
+Assert-True ($ReleasedObjectTypesText.Length -gt 0) "Released 14C object-types.ts is readable at the pinned release commit"
+$ReleasedMappingCount = ([regex]::Matches($ReleasedObjectTypesText, 'persistenceResourceType:\s*"')).Count
+Assert-True ($ReleasedMappingCount -eq 3) "Released object-type mapping count was 3 at the 14C release (historical release fact)"
+
+# DURABLE: the mapping set may GROW under a governed stage but never shrinks,
+# and every mapping released at 14C survives by name.
+$CurrentObjectTypesText = Get-Content -Raw -LiteralPath (Join-Path $BackendRoot "src\sourceroot\object-types.ts")
+$CurrentMappingCount = ([regex]::Matches($CurrentObjectTypesText, 'persistenceResourceType:\s*"')).Count
+Assert-True ($CurrentMappingCount -ge $ReleasedMappingCount) "The persistence-to-network mapping set never shrinks below the released 3 (found $CurrentMappingCount)"
+foreach ($ReleasedMapping in @("lemma", "accepted-contextual-record", "edition-verse-text")) {
+    Assert-True ($CurrentObjectTypesText -match [regex]::Escape("persistenceResourceType: `"$ReleasedMapping`"")) "Historical 14C mapping survives by name: $ReleasedMapping"
 }
 
 # Nothing may be visible to repository-local discovery yet hidden from the
@@ -267,9 +539,82 @@ Assert-True ((Get-FileHash -Algorithm SHA256 -LiteralPath $Migration018).Hash -e
 $Migration019 = Join-Path $MigrationRoot "019_create_cross_root_source_backed_relationships.sql"
 Assert-True ((Get-FileHash -Algorithm SHA256 -LiteralPath $Migration019).Hash -eq "10BBD3D8BF187BC12AD1CC59F738578950AEB7066A65A4DB411B54E855E573F2") "Migration 019 exact SHA-256 is preserved"
 
+# HISTORICAL: at the 14C release the chain was exactly 20 migrations and 020
+# did not exist. Both are facts about the RELEASE TREE and are inspected there,
+# so they stay true forever however many governed migrations land afterwards.
+# Asserting them against the WORKING TREE was the descendant-awareness defect:
+# it made every authorized future migration fail by construction, which is a
+# defect in this verifier and not in the descendant stage.
+$ReleasedMigrationPaths = @(
+    & git -C $RepositoryRoot ls-tree -r --name-only "$ReleaseCommit" -- "backend/db/migrations" |
+        ForEach-Object { ([string]$_).Trim().Replace("\", "/") } |
+        Where-Object { $_ -like "*.sql" } | Sort-Object -Unique
+)
+# A failed or empty Git lookup FAILS CLOSED rather than passing vacuously.
+#
+# It must also fail LEGIBLY. A bounded control that made this lookup return
+# nothing crashed the run with IndexOutOfRange on the high-water-mark
+# computation below, under Set-StrictMode with $ErrorActionPreference "Stop".
+# The run stopped non-zero, so nothing passed vacuously, but every later
+# assertion was skipped and the operator saw a stack trace instead of a named
+# failing gate. The historical set is therefore proven inspectable FIRST, and
+# every check that depends on it is skipped explicitly with its own recorded
+# failure rather than being allowed to throw.
+$ReleasedMigrationsReadable = ($ReleasedMigrationPaths.Count -gt 0)
+Assert-True $ReleasedMigrationsReadable "Released 14C migration set is inspectable at the pinned release commit"
+Assert-True ($ReleasedMigrationPaths.Count -eq 20) "Migration count was 20 at the 14C release (historical release fact)"
+# Guarded, because "no 020 in an EMPTY set" is vacuously true. An unreadable
+# pinned tree must never be able to satisfy a historical absence claim.
+if (-not $ReleasedMigrationsReadable) {
+    Assert-True $false "Migration 020's absence at the 14C release is unverifiable because the pinned release set could not be read"
+} else {
+    Assert-True (@($ReleasedMigrationPaths | Where-Object { (Split-Path $_ -Leaf) -like "020*" }).Count -eq 0) "Migration 020 was absent at the 14C release (historical release fact)"
+}
+
+# DURABLE: every migration released at 14C still exists today with its released
+# bytes. The chain may GROW under a governed stage; it may never shrink, and a
+# released migration may never be rewritten or removed. This is what actually
+# protects released schema, and it survives legitimate descendants.
+$ReleasedMigrationDrift = @()
+foreach ($Relative in $ReleasedMigrationPaths) {
+    $ReleasedBlob = (& git -C $RepositoryRoot rev-parse --verify --quiet "${ReleaseCommit}:$Relative")
+    $CurrentBlob = (& git -C $RepositoryRoot hash-object --no-filters -- $Relative 2>$null)
+    if ($ReleasedBlob) { $ReleasedBlob = $ReleasedBlob.Trim() }
+    if ($CurrentBlob) { $CurrentBlob = $CurrentBlob.Trim() }
+    if (-not $ReleasedBlob -or -not $CurrentBlob -or $ReleasedBlob -ne $CurrentBlob) {
+        $ReleasedMigrationDrift += $Relative
+    }
+}
+# Also guarded: an empty released set makes the loop above iterate zero times,
+# so "no drift" would be true because nothing was compared, not because nothing
+# changed. Preservation must be proved against a set that was actually read.
+if (-not $ReleasedMigrationsReadable) {
+    Assert-True $false "Released migration preservation is unverifiable because the pinned release set could not be read"
+} else {
+    Assert-True ($ReleasedMigrationDrift.Count -eq 0) "Every migration released at 14C is still present and byte-identical"
+    if ($ReleasedMigrationDrift.Count -gt 0) {
+        Write-Host "       Released migration drift: $($ReleasedMigrationDrift -join ', ')" -ForegroundColor Red
+    }
+}
+
 $Migrations = @(Get-ChildItem -LiteralPath $MigrationRoot -File -Filter "*.sql")
-Assert-True ($Migrations.Count -eq 20) "Migration count is unchanged at 20"
-Assert-True (@($Migrations | Where-Object { $_.Name -like "020*" }).Count -eq 0) "Migration 020 is absent"
+Assert-True ($Migrations.Count -ge $ReleasedMigrationPaths.Count) "Migration chain never shrinks below the 20 released at 14C (found $($Migrations.Count))"
+
+# A descendant may only APPEND. An addition that sorts at or below the released
+# high-water mark would be a renumbering of released history wearing a new name,
+# which is how a rewritten old migration could otherwise hide behind a new one.
+if (-not $ReleasedMigrationsReadable) {
+    Assert-True $false "Append-only migration ordering is unverifiable because the pinned release set could not be read"
+} else {
+    $ReleasedMigrationNames = @($ReleasedMigrationPaths | ForEach-Object { Split-Path $_ -Leaf })
+    $HighestReleasedMigration = @($ReleasedMigrationNames | Sort-Object)[-1]
+    $AddedMigrationNames = @($Migrations | ForEach-Object { $_.Name } | Where-Object { $ReleasedMigrationNames -notcontains $_ })
+    $MisorderedAdditions = @($AddedMigrationNames | Where-Object { [string]::Compare($_, $HighestReleasedMigration, [System.StringComparison]::Ordinal) -le 0 })
+    Assert-True ($MisorderedAdditions.Count -eq 0) "Every migration added since the 14C release sorts after the released chain, so released history cannot be renumbered"
+    if ($MisorderedAdditions.Count -gt 0) {
+        Write-Host "       Misordered additions: $($MisorderedAdditions -join ', ')" -ForegroundColor Red
+    }
+}
 
 $Migration019Text = Get-Content -Raw -LiteralPath $Migration019
 Assert-True ($Migration019Text -match "predicate TEXT NOT NULL,") "Migration 019 predicate column remains unconstrained TEXT"

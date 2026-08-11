@@ -325,13 +325,138 @@ test("S10. migration 019 is byte-identical and stays unconstrained on predicate"
   );
 });
 
-test("S10b. migration 020 is absent and the migration set is unchanged", () => {
+/** The exact migration chain as released at Chunk 14C. Historical, pinned. */
+const MIGRATIONS_RELEASED_AT_14C = [
+  "001_create_imported_bundles.sql",
+  "002_create_knowledge_tables.sql",
+  "003_create_dictionaryroot_lexicon.sql",
+  "004_create_dictionaryroot_editorial_reviews.sql",
+  "005_create_auth_identity_governance.sql",
+  "005_create_dictionaryroot_identity_access.sql",
+  "006_create_governed_editorial_workflow.sql",
+  "007_create_moderation_operations.sql",
+  "008_strengthen_session_identity.sql",
+  "009_create_contextual_knowledge_foundation.sql",
+  "010_extend_contextual_governance.sql",
+  "011_refine_contextual_identity_time.sql",
+  "012_refine_contextual_assertions_evidence_versioning.sql",
+  "013_create_dictionaryroot_lexical_evidence.sql",
+  "014_create_dictionaryroot_lexical_relationships.sql",
+  "015_create_bibleroot_foundation.sql",
+  "016_create_bibleroot_original_language_foundation.sql",
+  "017_create_bibleroot_commentary_provenance.sql",
+  "018_create_cross_root_link_foundation.sql",
+  "019_create_cross_root_source_backed_relationships.sql",
+];
+
+test("S10b. released migrations survive unchanged while the chain may grow", () => {
+  // The previous form asserted `migrations.length === 20` against the LIVE
+  // directory, which said no governed stage may ever add a migration. That is
+  // not the released contract, and it failed the moment Chunk 15A added
+  // migration 020 under an authorized allowlist.
   const migrations = fs
     .readdirSync(path.join(root, "backend/db/migrations"))
-    .filter((name) => name.endsWith(".sql"));
-  assert.equal(migrations.length, 20);
-  assert.equal(migrations.filter((name) => name.startsWith("020")).length, 0);
+    .filter((name) => name.endsWith(".sql"))
+    .sort();
+
+  assert.equal(MIGRATIONS_RELEASED_AT_14C.length, 20);
+  for (const released of MIGRATIONS_RELEASED_AT_14C) {
+    assert.ok(
+      migrations.includes(released),
+      `migration released at 14C is missing: ${released}`,
+    );
+  }
+  assert.ok(
+    migrations.length >= MIGRATIONS_RELEASED_AT_14C.length,
+    `migration chain shrank to ${migrations.length}`,
+  );
+
+  // Additions may only APPEND, so released history cannot be renumbered.
+  const highestReleased = [...MIGRATIONS_RELEASED_AT_14C].sort().at(-1);
+  for (const name of migrations) {
+    if (MIGRATIONS_RELEASED_AT_14C.includes(name)) continue;
+    assert.ok(
+      name > highestReleased,
+      `migration ${name} does not append after the released chain`,
+    );
+  }
+
+  // Frozen released contract text: this records the 14C release-time position,
+  // when 020 was deliberately deferred. It is not a claim about today.
   assert.match(sources["contracts.ts"], /migration020: "deferred-absent"/);
+});
+
+test("S10d. human Markdown is not authority in the temporary 15A window", () => {
+  const verifiers = [
+    "VERIFY-SOURCEROOT-EARTHROOT-PLACE-GEOGRAPHY-POLITY.ps1",
+    "VERIFY-SOURCEROOT-SHARED-GRAMMAR-AND-ROOT-INTEGRATION-CONTRACTS.ps1",
+    "VERIFY-SOURCEROOT-GOVERNED-DEVELOPMENT-SYSTEM.ps1",
+  ];
+  const texts = verifiers.map((name) => read(name));
+  const authorityBlocks = [
+    texts[0].slice(
+      texts[0].indexOf('$AnchoredBaseline ='),
+      texts[0].indexOf('if ($AllowedPaths.Count -gt 0)'),
+    ),
+    texts[1].slice(
+      texts[1].indexOf('$AnchoredBaseline ='),
+      texts[1].indexOf('# Paths come from the ANCHOR'),
+    ),
+    texts[2].slice(
+      texts[2].indexOf('$script:AnchoredBaseline ='),
+      texts[2].indexOf('# Returns the plain-text body'),
+    ),
+  ];
+
+  for (let index = 0; index < authorityBlocks.length; index += 1) {
+    const block = authorityBlocks[index];
+    assert.ok(block.length > 0, `${verifiers[index]} authority block is readable`);
+    assert.match(block, /d55a45b9ed4e9065c186bf48a5a17ec3b5b71eb6/);
+    assert.match(block, /SOURCEROOT-EARTHROOT-PLACE-GEOGRAPHY-POLITY-V1/);
+    assert.match(block, /AnchoredDescendantPaths/);
+    assert.match(block, /Test-Path[^\n]+-PathType Leaf/);
+    assert.doesNotMatch(block, /Get-DeclaredStageSlug|Get-GovernedRecordLineFacts/);
+    assert.doesNotMatch(block, /RecordText|CandidateText|RecordPaths|SelfWidened/);
+    assert.doesNotMatch(
+      block,
+      /ReadAllText\([^\n]*Record|Get-Content[^\n]*(?:CandidateRecord|AnchoredRecord|RecordFull)|Read-GovernedDocument[^\n]*(?:CandidateRecord|AnchoredRecord|RecordFull)/,
+    );
+  }
+});
+
+test("S10c. the focused verifier keeps its frozen contract modules frozen", () => {
+  // Defence in depth for the historical/durable split. The extensible class
+  // exists so a governed stage can extend the declared extension point; it must
+  // not become a hiding place for the runtime contract modules.
+  const verifier = read(
+    "VERIFY-SOURCEROOT-SHARED-GRAMMAR-AND-ROOT-INTEGRATION-CONTRACTS.ps1",
+  );
+  const frozenBlock = verifier.slice(
+    verifier.indexOf("$ContractSurfaceFrozen = @("),
+    verifier.indexOf("$ContractSurfaceGoverned = @("),
+  );
+  assert.ok(frozenBlock.length > 0, "the frozen contract class must be declared");
+  for (const frozen of [
+    "backend/src/sourceroot/addressing.ts",
+    "backend/src/sourceroot/contracts.ts",
+    "backend/src/sourceroot/identity-assertions.ts",
+    "backend/src/sourceroot/query-vocabulary.ts",
+    "backend/src/sourceroot/response-envelope.ts",
+    "backend/src/sourceroot/root-registry.ts",
+    "backend/src/routes/sourceroot-contracts.ts",
+    "backend/test/fixtures/sourceroot-jerusalem-contract-fixture.ts",
+  ]) {
+    assert.ok(
+      frozenBlock.includes(frozen),
+      `${frozen} must stay in the frozen contract class`,
+    );
+  }
+  // Historical probes must fail closed, never pass vacuously.
+  assert.match(verifier, /historical release fact/);
+  assert.match(
+    verifier,
+    /Released 14C migration set is inspectable at the pinned release commit/,
+  );
 });
 
 test("S11. readiness 1.4.0 semantics are preserved and untouched by this stage", () => {

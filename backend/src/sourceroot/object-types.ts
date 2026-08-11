@@ -194,7 +194,7 @@ export const SOURCEROOT_OBJECT_TYPE_DEFINITIONS: readonly SourceRootObjectTypeDe
       displayName: "Polity",
       description:
         "A Root-owned political jurisdiction, community, or governing body as that Root records it.",
-      plannedOwner: null,
+      plannedOwner: "EarthRoot",
     },
     {
       objectType: "event",
@@ -374,6 +374,21 @@ export const PERSISTENCE_TO_NETWORK_OBJECT_TYPES: readonly PersistenceToNetworkM
       persistenceResourceType: "edition-verse-text",
       rootId: "BibleRoot",
       networkObjectType: "scripture-passage",
+    },
+    // Chunk 15A. EarthRoot persists Place and Polity under migration 020 and
+    // declares the mapping here rather than inventing its own, as this table
+    // requires. Declaring a mapping is not a maturity claim: `place` and
+    // `polity` remain DEFINED, EarthRoot remains a planned Root, and nothing
+    // here marks either type IMPLEMENTED or PROVIDED.
+    {
+      persistenceResourceType: "place",
+      rootId: "EarthRoot",
+      networkObjectType: "place",
+    },
+    {
+      persistenceResourceType: "polity",
+      rootId: "EarthRoot",
+      networkObjectType: "polity",
     },
   ];
 

@@ -82,6 +82,183 @@ function Read-GovernedDocument([string]$RelativePath) {
 function ConvertTo-FlatText([string]$Text) { return ($Text -replace "\s+", " ") }
 function ConvertTo-PlainText([string]$Text) { return ((($Text -replace "[*`]", "") -replace "\s+", " ")) }
 
+# ===== BEGIN LEGACY STAGE-IDENTITY PARSER (NON-AUTHORITATIVE, UNUSED) =====
+# ---------------------------------------------------------------------------
+# LEGACY STAGE-IDENTITY PARSER  (NON-AUTHORITATIVE, UNUSED)
+#
+# This block is duplicated verbatim in the 15A, 14C and GDS verifiers because a
+# shared module would need a 21st authorized path. The static semantic-safety
+# suite formerly asserted all copies were byte-identical. The fourth Codex audit
+# proved that parser-based authorization is the wrong boundary. This legacy
+# helper is retained only to avoid unrelated deletion churn; no authority path
+# calls it, and the static suite enforces that separation.
+#
+# WHY A SCANNER AND NOT A REGEX. Successive audits defeated successive regexes:
+# a substring scan matched the expected slug in prose; a section-scoped regex
+# still matched it inside fenced code, inside indented code, in a nested list
+# item, and in a second duplicate "Stage identity" section. Authority-bearing
+# metadata cannot be read with a pattern that has no notion of document
+# structure, so this is a small deterministic Markdown-aware scanner - only as
+# much grammar as this governed record format needs, and no more.
+#
+# It recognises exactly:
+#   - fenced code blocks (``` and ~~~, up to 3 spaces of indent, closed by the
+#     same fence character), whose contents are INERT;
+#   - indented code blocks (4+ columns), which are INERT;
+#   - real ATX H2 headings outside those, which delimit sections;
+#   - DIRECT top-level list items (column 0 exactly) inside one section.
+#
+# Every ambiguity FAILS CLOSED by returning $null:
+#   zero or MORE THAN ONE real "## Stage identity" heading; a missing field; a
+#   nested, fenced, indented, or prose occurrence; duplicate direct fields; a
+#   malformed value. Comparison by the caller is exact and case-sensitive.
+# ---------------------------------------------------------------------------
+function Get-GovernedRecordLineFacts([string]$RecordText) {
+    # One pass. For each line: is it structural (outside any code), and if so is
+    # it a real H2, and what is its indent in columns (tabs expand to 4).
+    $Lines = $RecordText -split "`r?`n"
+    $Facts = New-Object System.Collections.Generic.List[object]
+    $InFence = $false
+    $FenceChar = ""
+    foreach ($Raw in $Lines) {
+        $Expanded = ""
+        foreach ($Char in $Raw.ToCharArray()) {
+            if ($Char -eq "`t") { $Expanded += "    " } else { $Expanded += $Char }
+        }
+        $Trimmed = $Expanded.TrimStart(" ")
+        $Indent = $Expanded.Length - $Trimmed.Length
+        $IsFenceToken = ($Indent -lt 4 -and ($Trimmed -match '^(`{3,}|~{3,})'))
+        if ($InFence) {
+            # Only a fence of the SAME character can close the block.
+            if ($IsFenceToken -and $Trimmed.StartsWith($FenceChar)) { $InFence = $false; $FenceChar = "" }
+            $Facts.Add([pscustomobject]@{ Structural = $false; IsH2 = $false; H2Title = ""; Indent = $Indent; Text = $Trimmed })
+            continue
+        }
+        if ($IsFenceToken) {
+            $InFence = $true
+            $FenceChar = $Trimmed.Substring(0, 1)
+            $Facts.Add([pscustomobject]@{ Structural = $false; IsH2 = $false; H2Title = ""; Indent = $Indent; Text = $Trimmed })
+            continue
+        }
+        if ($Indent -ge 4) {
+            # Indented code block. Inert.
+            $Facts.Add([pscustomobject]@{ Structural = $false; IsH2 = $false; H2Title = ""; Indent = $Indent; Text = $Trimmed })
+            continue
+        }
+        $IsH2 = $false
+        $Title = ""
+        $H2Match = [regex]::Match($Trimmed, '^##[ \t]+(\S.*?)[ \t]*$')
+        if ($H2Match.Success -and -not $Trimmed.StartsWith("###")) {
+            $IsH2 = $true
+            $Title = $H2Match.Groups[1].Value
+        }
+        $Facts.Add([pscustomobject]@{ Structural = $true; IsH2 = $IsH2; H2Title = $Title; Indent = $Indent; Text = $Trimmed })
+    }
+    # An unterminated fence leaves the document structurally ambiguous.
+    if ($InFence) { return $null }
+    return $Facts
+}
+
+function Get-DeclaredStageSlug([string]$RecordText) {
+    $Facts = Get-GovernedRecordLineFacts $RecordText
+    if ($null -eq $Facts) { return $null }
+
+    $IdentityHeadings = @()
+    for ($Index = 0; $Index -lt $Facts.Count; $Index++) {
+        if ($Facts[$Index].Structural -and $Facts[$Index].IsH2 -and $Facts[$Index].H2Title -ceq "Stage identity") {
+            $IdentityHeadings += $Index
+        }
+    }
+    # Exactly one real Stage identity section. Two - even identical ones - leave
+    # the authority-bearing structure repeated and therefore ambiguous.
+    if ($IdentityHeadings.Count -ne 1) { return $null }
+
+    $Start = $IdentityHeadings[0] + 1
+    $End = $Facts.Count
+    for ($Index = $Start; $Index -lt $Facts.Count; $Index++) {
+        if ($Facts[$Index].Structural -and $Facts[$Index].IsH2) { $End = $Index; break }
+    }
+
+    $Values = @()
+    for ($Index = $Start; $Index -lt $End; $Index++) {
+        $Fact = $Facts[$Index]
+        if (-not $Fact.Structural) { continue }
+        # DIRECT top-level list item only: column 0 exactly. A nested item is a
+        # child of some other claim and is not the record's own identity field.
+        if ($Fact.Indent -ne 0) { continue }
+        $Field = [regex]::Match($Fact.Text, '^-[ \t]+Slug:[ \t]*(\S+)[ \t]*$')
+        if ($Field.Success) { $Values += $Field.Groups[1].Value }
+    }
+    if ($Values.Count -ne 1) { return $null }
+    return $Values[0]
+}
+# ===== END LEGACY STAGE-IDENTITY PARSER =====
+
+# ---------------------------------------------------------------------------
+# ANCHORED COMPLETED-BUT-UNCOMMITTED WINDOW
+#
+# Computed ONCE and consumed by every gate that needs it, so no gate can fall
+# back to a weaker rule. Authority comes from the constants below and Git state,
+# never from mutable record content. Only the exact pinned record path must exist.
+#
+# This is a BOUNDED compensating control for the current 15A candidate while it
+# is completed but deliberately uncommitted pending independent audit. It is
+# not a general control plane, and deferred item H requires a future governed
+# stage to retire it.
+# ---------------------------------------------------------------------------
+$script:AnchoredBaseline = "d55a45b9ed4e9065c186bf48a5a17ec3b5b71eb6"
+$script:AnchoredDescendantSlug = "SOURCEROOT-EARTHROOT-PLACE-GEOGRAPHY-POLITY-V1"
+$script:AnchoredRecordRelative = "docs/stages/completed/20260810-$script:AnchoredDescendantSlug.md"
+# The external Principal Architect exact allowlist. Twenty paths, no more.
+$script:AnchoredDescendantPaths = @(
+    "ROOT-MANIFEST.json",
+    "VERIFY-CROSS-ROOT-SOURCE-BACKED-ENTITY-HISTORICAL-RELATIONSHIPS.ps1",
+    "VERIFY-SOURCEROOT-EARTHROOT-PLACE-GEOGRAPHY-POLITY.ps1",
+    "VERIFY-SOURCEROOT-GOVERNED-DEVELOPMENT-SYSTEM.ps1",
+    "VERIFY-SOURCEROOT-SHARED-GRAMMAR-AND-ROOT-INTEGRATION-CONTRACTS.ps1",
+    "backend/db/migrations/020_create_earthroot_place_polity_foundation.sql",
+    "backend/src/earthroot/adapter.ts",
+    "backend/src/earthroot/contract.ts",
+    "backend/src/earthroot/domain.ts",
+    "backend/src/earthroot/payload.ts",
+    "backend/src/earthroot/store.ts",
+    "backend/src/sourceroot/object-types.ts",
+    "backend/test/earthroot-adapter.test.ts",
+    "backend/test/earthroot-provenance.test.ts",
+    "backend/test/earthroot-semantics.test.ts",
+    "backend/test/sourceroot-shared-grammar.test.ts",
+    "docs/architecture/SOURCEROOT-EARTHROOT-PLACE-GEOGRAPHY-POLITY-V1.md",
+    "docs/stages/active/CURRENT-STAGE.md",
+    $script:AnchoredRecordRelative,
+    "verification/sourceroot-shared-grammar.test.cjs"
+)
+
+function Get-AnchoredWindow([string]$RepositoryRoot) {
+    $Head = (& git -C $RepositoryRoot rev-parse HEAD 2>$null)
+    if ($Head) { $Head = $Head.Trim() }
+    if ($Head -ne $script:AnchoredBaseline) {
+        return @{ Open = $false; Reason = "HEAD has moved off the anchored baseline; the window is permanently closed" }
+    }
+    # A historical completed record is TRACKED. The record of a stage completed
+    # but not yet committed is UNTRACKED. Only the latter opens the window, and
+    # exactly one may exist, so an old record can never authorize present work.
+    $Untracked = @(
+        & git -C $RepositoryRoot ls-files --others --exclude-standard -- "docs/stages/completed" |
+            ForEach-Object { ([string]$_).Trim().Replace("\", "/") } | Where-Object { $_ -like "*.md" }
+    )
+    if ($Untracked.Count -ne 1) {
+        return @{ Open = $false; Reason = "expected exactly one uncommitted completed record, found $($Untracked.Count)" }
+    }
+    if ($Untracked[0] -ne $script:AnchoredRecordRelative) {
+        return @{ Open = $false; Reason = "uncommitted completed record is not the anchored one: $($Untracked[0])" }
+    }
+    $Path = Join-Path $RepositoryRoot ($script:AnchoredRecordRelative -replace "/", "\")
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        return @{ Open = $false; Reason = "anchored record is not readable" }
+    }
+    return @{ Open = $true; Reason = "open for pinned stage $script:AnchoredDescendantSlug; record content is non-authoritative" }
+}
+
 # Returns the plain-text body of one "## " section, up to the next "## ".
 function Get-Section([string]$Text, [string]$HeadingRegex) {
     $Start = [regex]::Match($Text, $HeadingRegex)
@@ -331,34 +508,284 @@ if ($CompletedRecords.Count -eq 1) {
     Assert-True ($Allowed -contains $CompletedRelative) "Completed record is itself inside the authorized allowlist"
     Assert-True ($Allowed -contains "docs/stages/active/CURRENT-STAGE.md") "Allowlist retains the consumed active specification path"
 
-    $Pending = @(Invoke-RepositoryGit @("diff", "--name-only", "HEAD")) +
-               @(Invoke-RepositoryGit @("ls-files", "--others", "--exclude-standard"))
-    $Pending = @($Pending | Sort-Object -Unique)
-    $Unauthorized = @($Pending | Where-Object { $Allowed -notcontains $_ })
-    Assert-True ($Unauthorized.Count -eq 0) "Pending changeset stays inside the completed GDS allowlist"
-    if ($Unauthorized.Count -gt 0) {
-        foreach ($Path in $Unauthorized) { Write-Host "       unauthorized: $Path" -ForegroundColor Red }
+    # -----------------------------------------------------------------------
+    # HISTORICAL GDS RELEASE FACTS, read from the PINNED release commit.
+    #
+    # The GDS release changeset stayed inside its 7-path allowlist, and the
+    # active specification was consumed by completion. Both were true AT THE
+    # RELEASE BOUNDARY. Asserting them against the working tree instead turns
+    # them into "no governed stage may ever run again", which fails for every
+    # legitimate descendant and pressures future work to weaken this verifier
+    # rather than respect it.
+    # -----------------------------------------------------------------------
+    $GdsReleaseCommit = "d55a45b9ed4e9065c186bf48a5a17ec3b5b71eb6"
+    $GdsReleaseTag = "sourceroot-governed-development-system-v1"
+
+    $ResolvedTag = (Invoke-RepositoryGit @("rev-list", "-n", "1", $GdsReleaseTag))
+    Assert-True ($LASTEXITCODE -eq 0 -and ([string]$ResolvedTag).Trim() -eq $GdsReleaseCommit) `
+        "Release tag $GdsReleaseTag still resolves to the pinned GDS release commit"
+
+    Invoke-RepositoryGit @("merge-base", "--is-ancestor", $GdsReleaseCommit, "HEAD") | Out-Null
+    Assert-True ($LASTEXITCODE -eq 0) "GDS release commit remains in the current branch ancestry"
+
+    $ReleaseChangeset = @(Invoke-RepositoryGit @("diff", "--name-only", "$GdsReleaseCommit^", $GdsReleaseCommit))
+    $ReleaseChangesetOk = ($LASTEXITCODE -eq 0)
+    # Fail closed: an empty result from a broken git call must never read as
+    # "the release changed nothing, therefore it was compliant".
+    Assert-True ($ReleaseChangesetOk -and $ReleaseChangeset.Count -gt 0) `
+        "GDS release changeset is inspectable at the pinned release commit"
+    $ReleaseUnauthorized = @($ReleaseChangeset | Where-Object { $Allowed -notcontains $_ })
+    Assert-True ($ReleaseChangesetOk -and $ReleaseUnauthorized.Count -eq 0) `
+        "GDS release changeset stayed inside the completed GDS allowlist (historical release fact)"
+    if ($ReleaseUnauthorized.Count -gt 0) {
+        foreach ($Path in $ReleaseUnauthorized) { Write-Host "       unauthorized at release: $Path" -ForegroundColor Red }
     }
-    Assert-True (-not (Test-Path -LiteralPath (Join-Path $RepositoryRoot "docs\stages\active\CURRENT-STAGE.md"))) "Active specification remains consumed by completion"
+
+    $ReleaseTree = @(Invoke-RepositoryGit @("ls-tree", "-r", "--name-only", $GdsReleaseCommit))
+    $ReleaseTreeOk = ($LASTEXITCODE -eq 0)
+    Assert-True ($ReleaseTreeOk -and $ReleaseTree.Count -gt 0) `
+        "GDS release tree is inspectable at the pinned release commit"
+    Assert-True ($ReleaseTreeOk -and (-not ($ReleaseTree -contains "docs/stages/active/CURRENT-STAGE.md"))) `
+        "Active specification was consumed by completion at the GDS release (historical release fact)"
+    $ReleaseMigrations = @($ReleaseTree | Where-Object { $_ -like "backend/db/migrations/*.sql" })
+    Assert-True ($ReleaseTreeOk -and $ReleaseMigrations.Count -eq 20) `
+        "Migration count was 20 at the GDS release (historical release fact)"
+    Assert-True ($ReleaseTreeOk -and (-not ($ReleaseMigrations | Where-Object { $_ -like "*/020*" }))) `
+        "Migration 020 was absent at the GDS release (historical release fact)"
+    foreach ($Boundary in @("backend/src/", "backend/data/", "backend/db/migrations/")) {
+        Assert-True ($ReleaseChangesetOk -and (@($ReleaseChangeset | Where-Object { $_ -like "$Boundary*" }).Count -eq 0)) `
+            "GDS release itself changed nothing under $Boundary (historical release fact)"
+    }
+    Assert-True ($ReleaseChangesetOk -and (@($ReleaseChangeset | Where-Object { $_ -like "*package.json" -or $_ -like "*package-lock.json" }).Count -eq 0)) `
+        "GDS release itself made no package or dependency change (historical release fact)"
+
+    # -----------------------------------------------------------------------
+    # CURRENT DESCENDANT GOVERNANCE.
+    #
+    # Present work is bounded by the CURRENT active stage, not by the old
+    # completed GDS allowlist. Descendant mode is NOT a bypass: when a stage is
+    # active its allowlist is enforced exactly as strictly, and when no stage is
+    # active nothing may be pending at all.
+    # -----------------------------------------------------------------------
+    $CurrentManifest = Get-Content -Raw -LiteralPath (Join-Path $RepositoryRoot "ROOT-MANIFEST.json") | ConvertFrom-Json
+    $CurrentStage = $null
+    if ($CurrentManifest.PSObject.Properties.Name -contains "active_stage") { $CurrentStage = $CurrentManifest.active_stage }
+
+    $Pending = @(Invoke-RepositoryGit @("diff", "--name-only", "HEAD"))
+    $PendingOk = ($LASTEXITCODE -eq 0)
+    $Pending += @(Invoke-RepositoryGit @("ls-files", "--others", "--exclude-standard"))
+    $PendingOk = $PendingOk -and ($LASTEXITCODE -eq 0)
+    Assert-True $PendingOk "Current pending inventory is readable (git succeeded)"
+    $Pending = @($Pending | Sort-Object -Unique)
+
+    if ($null -ne $CurrentStage -and [string]$CurrentStage.status -eq "active") {
+        $CurrentAllowed = @()
+        if ($CurrentStage.PSObject.Properties.Name -contains "allowed_files") {
+            $CurrentAllowed = @($CurrentStage.allowed_files)
+        }
+        Assert-True ($CurrentAllowed.Count -gt 0) "Active descendant stage declares a governed allowlist"
+        $CurrentSlug = ""
+        if ($CurrentStage.PSObject.Properties.Name -contains "slug") { $CurrentSlug = [string]$CurrentStage.slug }
+        Assert-True (-not [string]::IsNullOrWhiteSpace($CurrentSlug)) "Active descendant stage is identified by slug"
+
+        # THE MANIFEST MAY NOT AUTHORIZE ITSELF.
+        #
+        # ROOT-MANIFEST.json is normally inside its own stage allowlist, so
+        # reading the write boundary out of that file alone would let a stage
+        # widen its own scope by appending a path to allowed_files and then
+        # editing whatever it just authorized. That is precisely the
+        # self-re-authorization the GDS contract forbids. The manifest is
+        # therefore bound to the AUTHORED stage specification: every entry must
+        # also appear in the specification's "Allowed files" section, which the
+        # manifest cannot edit on its own behalf.
+        $SpecRelative = ""
+        if ($CurrentStage.PSObject.Properties.Name -contains "specification") { $SpecRelative = [string]$CurrentStage.specification }
+        # The specification pointer is FIXED, not a free choice. Without this the
+        # manifest could name any allowlisted document that happens to contain an
+        # "Allowed files" heading and promote it to the authority that validates
+        # the manifest, which is self-authorization by redirection.
+        Assert-True ($SpecRelative -eq "docs/stages/active/CURRENT-STAGE.md") `
+            "Active stage specification pointer is the canonical active stage path"
+        $SpecPath = ""
+        if (-not [string]::IsNullOrWhiteSpace($SpecRelative)) {
+            $SpecPath = Join-Path $RepositoryRoot ($SpecRelative -replace "/", "\")
+        }
+        Assert-True ((-not [string]::IsNullOrWhiteSpace($SpecPath)) -and (Test-Path -LiteralPath $SpecPath -PathType Leaf)) `
+            "Active descendant stage names a readable authored specification"
+        if (-not [string]::IsNullOrWhiteSpace($SpecPath) -and (Test-Path -LiteralPath $SpecPath -PathType Leaf)) {
+            $SpecDocument = Read-GovernedDocument $SpecRelative
+            Assert-True ($null -ne $SpecDocument) "Active stage specification is readable as strict UTF-8"
+            $SpecAllowedSection = Get-Section $SpecDocument.Text "(?m)^## Allowed files\s*$"
+            $SpecAllowed = @([regex]::Matches($SpecAllowedSection, "``([^``]+)``") | ForEach-Object { $_.Groups[1].Value })
+            Assert-True ($SpecAllowed.Count -gt 0) "Active stage specification declares its own allowlist"
+            $SelfAuthorized = @($CurrentAllowed | Where-Object { $SpecAllowed -notcontains $_ })
+            Assert-True ($SpecAllowed.Count -gt 0 -and $SelfAuthorized.Count -eq 0) `
+                "Manifest allowlist is authorized by the stage specification, never self-widened"
+            if ($SelfAuthorized.Count -gt 0) {
+                foreach ($Path in $SelfAuthorized) { Write-Host "       self-authorized: $Path" -ForegroundColor Red }
+            }
+        }
+
+        # Directory-marker entries are honoured the way the Root verifier honours
+        # them, so a stage that legitimately declares a subtree is not forced to
+        # enumerate every file or to weaken this verifier instead.
+        $Unauthorized = @($Pending | Where-Object {
+            $Candidate = $_
+            -not (@($CurrentAllowed | Where-Object {
+                $Entry = [string]$_
+                ($Candidate -eq $Entry) -or ($Entry.EndsWith("/") -and $Candidate.StartsWith($Entry))
+            }).Count -gt 0)
+        })
+        Assert-True ($PendingOk -and $Unauthorized.Count -eq 0) `
+            "Pending changeset stays inside the CURRENT active stage allowlist"
+        if ($Unauthorized.Count -gt 0) {
+            foreach ($Path in $Unauthorized) { Write-Host "       unauthorized: $Path" -ForegroundColor Red }
+        }
+    } else {
+        # No governed stage is active, so no UNGOVERNED work may be pending.
+        #
+        # "No active stage" does not imply "nothing pending". The release
+        # boundary requires a completed stage to stay uncommitted until an
+        # independent audit runs, so completed-but-uncommitted is an AUTHORIZED
+        # state, and demanding an empty changeset failed a stage for completing
+        # correctly.
+        #
+        # An intermediate revision fixed that by unioning the allowlists of ALL
+        # completed stage records. An independent Tier 3 audit showed that is
+        # unsafe: completed records are mutable untracked markdown, so the union
+        # accepts unrelated dirty work, lets an OLD record authorize NEW changes,
+        # and can be forged outright by dropping a file into the directory.
+        #
+        # The rule is therefore ANCHORED. Pending work is admissible only inside
+        # a narrow window belonging to the ONE stage that just completed, and the
+        # authorizing path set is pinned HERE rather than read from the record,
+        # so a record can never widen its own authority. This is a bounded
+        # compensating control for the current candidate, not a general control
+        # plane; deferred item "GDS baseline-to-candidate changeset authority"
+        # remains open and is not solved by it.
+        $Window = Get-AnchoredWindow $RepositoryRoot
+        $WindowReason = $Window.Reason
+        # Paths come from the ANCHOR, never from the record.
+        $CompletedAuthorized = @()
+        if ($Window.Open) { $CompletedAuthorized = $script:AnchoredDescendantPaths }
+        $UngovernedPending = @($Pending | Where-Object {
+            $Candidate = $_
+            -not (@($CompletedAuthorized | Where-Object {
+                $Entry = [string]$_
+                ($Candidate -eq $Entry) -or ($Entry.EndsWith("/") -and $Candidate.StartsWith($Entry))
+            }).Count -gt 0)
+        })
+        Assert-True ($PendingOk -and $UngovernedPending.Count -eq 0) `
+            "With no active stage, every pending path is attributable to the anchored completed stage"
+        if ($UngovernedPending.Count -gt 0) {
+            Write-Host "       anchored window: $WindowReason" -ForegroundColor Red
+            foreach ($Path in $UngovernedPending) { Write-Host "       ungoverned: $Path" -ForegroundColor Red }
+        }
+        Assert-True (-not (Test-Path -LiteralPath (Join-Path $RepositoryRoot "docs\stages\active\CURRENT-STAGE.md"))) `
+            "With no active stage, the active specification stays consumed"
+    }
 }
 
 # ---------------------------------------------------------------------------
 # PRESERVATION INVARIANTS
 # ---------------------------------------------------------------------------
+# A descendant migration EXISTING is not a GDS failure. What GDS durably
+# guarantees is that the released chain is never rewritten or shortened: the
+# count may grow, never shrink, and the 20 migrations present at release must
+# still be present now.
 $Migrations = @(Get-ChildItem -LiteralPath (Join-Path $RepositoryRoot "backend\db\migrations") -File -Filter "*.sql")
-Assert-True ($Migrations.Count -eq 20) "Migration count remains 20"
-Assert-True (-not ($Migrations | Where-Object { $_.Name -like "020*" })) "Migration 020 is absent"
+Assert-True ($Migrations.Count -ge 20) `
+    "Migration chain is never shortened below the 20 present at GDS release (found $($Migrations.Count))"
 
-$Changed = @(Invoke-RepositoryGit @("diff", "--name-only", "HEAD")) +
-           @(Invoke-RepositoryGit @("ls-files", "--others", "--exclude-standard"))
-foreach ($Boundary in @("backend/src/", "backend/data/", "backend/db/migrations/")) {
-    Assert-True (@($Changed | Where-Object { $_ -like "$Boundary*" }).Count -eq 0) "No change under $Boundary"
+# Presence by NAME is not integrity. Comparing the release blob SHA against the
+# current file content is what makes "never rewritten" true: renaming nothing
+# while silently rewriting the body of a released migration would otherwise pass.
+$ReleaseMigrationBlobs = @{}
+foreach ($Line in @(Invoke-RepositoryGit @("ls-tree", "-r", $GdsReleaseCommit, "backend/db/migrations/"))) {
+    if ($Line -match "^\s*\d+\s+blob\s+([0-9a-f]{40})\s+(.+)$") {
+        $ReleaseMigrationBlobs[[IO.Path]::GetFileName($Matches[2].Trim())] = $Matches[1]
+    }
 }
-Assert-True (@($Changed | Where-Object { $_ -like "*package.json" -or $_ -like "*package-lock.json" }).Count -eq 0) "No package or dependency change"
+Assert-True ($ReleaseMigrationBlobs.Count -eq 20) `
+    "Release migration blob identities are inspectable at the pinned release commit"
 
+$RewrittenSinceRelease = @()
+$MissingSinceRelease = @()
+foreach ($Name in $ReleaseMigrationBlobs.Keys) {
+    $Current = @($Migrations | Where-Object { $_.Name -ceq $Name })
+    if ($Current.Count -ne 1) { $MissingSinceRelease += $Name; continue }
+    $CurrentBlob = ([string](Invoke-RepositoryGit @("hash-object", "--no-filters", "--", "backend/db/migrations/$Name"))).Trim()
+    if ($CurrentBlob -ne $ReleaseMigrationBlobs[$Name]) { $RewrittenSinceRelease += $Name }
+}
+Assert-True ($MissingSinceRelease.Count -eq 0) "Every migration present at GDS release is still present"
+if ($MissingSinceRelease.Count -gt 0) {
+    foreach ($Name in $MissingSinceRelease) { Write-Host "       missing since release: $Name" -ForegroundColor Red }
+}
+Assert-True ($RewrittenSinceRelease.Count -eq 0) `
+    "No migration present at GDS release has been rewritten since"
+if ($RewrittenSinceRelease.Count -gt 0) {
+    foreach ($Name in $RewrittenSinceRelease) { Write-Host "       rewritten since release: $Name" -ForegroundColor Red }
+}
+
+# A migration beyond the release set must be ATTRIBUTABLE to a governed stage.
+# Without this, growth is unconditionally permitted and an agent can commit an
+# arbitrary migration, declare the stage inactive, and pass a clean tree.
+$NewMigrations = @($Migrations | Where-Object { -not $ReleaseMigrationBlobs.ContainsKey($_.Name) })
+$GovernedPaths = New-Object System.Collections.Generic.HashSet[string]
+# The manifest may only grant attribution while it is ACTIVE, because the
+# manifest-to-specification binding that stops self-widening runs only in the
+# active branch. Consuming allowed_files with no status gate reopened the exact
+# bypass this check exists to close: commit a migration, declare the stage
+# inactive, and let the ungoverned manifest attribute it to itself.
+if ($null -ne $CurrentStage -and
+    [string]$CurrentStage.status -eq "active" -and
+    $CurrentStage.PSObject.Properties.Name -contains "allowed_files") {
+    foreach ($Path in @($CurrentStage.allowed_files)) { [void]$GovernedPaths.Add([string]$Path) }
+}
+# An independent audit found this previously enumerated EVERY completed record
+# and unioned their declared paths. That is generic completed-record authority
+# and it is prohibited: a historical record could authorize a NEW migration
+# forever merely because its allowlist once named that path, and a forged record
+# dropped into the directory could authorize anything at all.
+#
+# Attribution is now tied to the SAME anchored stage transition that governs the
+# pending changeset. Only the one stage that just completed, still uncommitted
+# and still matching the external anchor, can explain a migration beyond the
+# release set. Old records authorize nothing; forged records authorize nothing.
+#
+# This is the smallest bounded correction consistent with the existing external
+# 15A anchor. Permanent authority architecture is deferred to GDS maintenance
+# (deferred items A, B, and H).
+$MigrationWindow = Get-AnchoredWindow $RepositoryRoot
+if ($MigrationWindow.Open) {
+    foreach ($Path in $script:AnchoredDescendantPaths) { [void]$GovernedPaths.Add([string]$Path) }
+}
+$UngovernedMigrations = @($NewMigrations | Where-Object { -not $GovernedPaths.Contains("backend/db/migrations/$($_.Name)") })
+if ($UngovernedMigrations.Count -gt 0) {
+    Write-Host "       migration attribution window: $($MigrationWindow.Reason)" -ForegroundColor Red
+}
+Assert-True ($UngovernedMigrations.Count -eq 0) `
+    "Every migration added since GDS release is attributable to a governed stage"
+if ($UngovernedMigrations.Count -gt 0) {
+    foreach ($Item in $UngovernedMigrations) { Write-Host "       ungoverned migration: $($Item.Name)" -ForegroundColor Red }
+}
+
+# Current product/runtime and migration changes are governed by the CURRENT
+# active stage, enforced above. GDS does not own that boundary, and asserting
+# "no change under backend/src/" here would forbid all future development.
 $Manifest = Get-Content -Raw -LiteralPath (Join-Path $RepositoryRoot "ROOT-MANIFEST.json") | ConvertFrom-Json
 Assert-True (@($Manifest.known_verifiers) -contains "VERIFY-SOURCEROOT-GOVERNED-DEVELOPMENT-SYSTEM.ps1") "This verifier is declared in the manifest"
-Assert-True ([string]$Manifest.active_stage.status -eq "inactive") "GDS stage is completed and inactive"
+# The GDS stage itself is completed. A LATER stage may legitimately be active,
+# but it must never be the GDS stage reopened.
+$ActiveStatus = ""
+$ActiveSlug = ""
+if ($Manifest.PSObject.Properties.Name -contains "active_stage" -and $null -ne $Manifest.active_stage) {
+    $ActiveStatus = [string]$Manifest.active_stage.status
+    if ($Manifest.active_stage.PSObject.Properties.Name -contains "slug") { $ActiveSlug = [string]$Manifest.active_stage.slug }
+}
+Assert-True ($ActiveStatus -eq "inactive" -or $ActiveStatus -eq "active") "Manifest declares a coherent stage status"
+Assert-True ($ActiveSlug -ne "SOURCEROOT-GOVERNED-DEVELOPMENT-SYSTEM-V1") `
+    "The completed GDS stage is never reopened as the active stage"
 
 Invoke-RepositoryGit @("diff", "--check") | Out-Null
 Assert-True ($LASTEXITCODE -eq 0) "git diff --check reports no whitespace error"

@@ -570,16 +570,77 @@ test("S10 migration 019 is byte-identical", () => {
   );
 });
 
-test("migration 020 is absent and the migration count is unchanged", () => {
-  const files = readdirSync(MIGRATION_DIRECTORY).filter((name) =>
-    name.endsWith(".sql"),
+/**
+ * The exact migration chain as released at Chunk 14C.
+ *
+ * This is a HISTORICAL fact and is pinned as such. The previous version of this
+ * test asserted `files.length === 20` against the LIVE directory, which is a
+ * different and false claim: it said no governed stage may ever add a
+ * migration. Chunk 15A added migration 020 under an authorized allowlist and
+ * the test failed, which was a defect in the test, not in 15A.
+ */
+const MIGRATIONS_RELEASED_AT_14C: readonly string[] = [
+  "001_create_imported_bundles.sql",
+  "002_create_knowledge_tables.sql",
+  "003_create_dictionaryroot_lexicon.sql",
+  "004_create_dictionaryroot_editorial_reviews.sql",
+  "005_create_auth_identity_governance.sql",
+  "005_create_dictionaryroot_identity_access.sql",
+  "006_create_governed_editorial_workflow.sql",
+  "007_create_moderation_operations.sql",
+  "008_strengthen_session_identity.sql",
+  "009_create_contextual_knowledge_foundation.sql",
+  "010_extend_contextual_governance.sql",
+  "011_refine_contextual_identity_time.sql",
+  "012_refine_contextual_assertions_evidence_versioning.sql",
+  "013_create_dictionaryroot_lexical_evidence.sql",
+  "014_create_dictionaryroot_lexical_relationships.sql",
+  "015_create_bibleroot_foundation.sql",
+  "016_create_bibleroot_original_language_foundation.sql",
+  "017_create_bibleroot_commentary_provenance.sql",
+  "018_create_cross_root_link_foundation.sql",
+  "019_create_cross_root_source_backed_relationships.sql",
+];
+
+test("released migrations survive unchanged while the governed chain may grow", () => {
+  const files = readdirSync(MIGRATION_DIRECTORY)
+    .filter((name) => name.endsWith(".sql"))
+    .sort();
+
+  // HISTORICAL: the release shipped exactly these twenty.
+  assert.equal(MIGRATIONS_RELEASED_AT_14C.length, 20);
+
+  // DURABLE: none of them may be removed or renamed.
+  for (const released of MIGRATIONS_RELEASED_AT_14C) {
+    assert.ok(
+      files.includes(released),
+      `migration released at 14C is missing: ${released}`,
+    );
+  }
+
+  // DURABLE: the chain may grow but never shrink.
+  assert.ok(
+    files.length >= MIGRATIONS_RELEASED_AT_14C.length,
+    `migration chain shrank to ${files.length}`,
   );
-  assert.equal(files.length, 20);
-  assert.equal(
-    files.filter((name) => name.startsWith("020")).length,
-    0,
-    "migration 020 must remain absent",
-  );
+
+  // DURABLE: additions may only APPEND. An addition sorting at or below the
+  // released high-water mark would be a renumbering of released history, which
+  // is how a rewritten old migration could hide behind a new filename.
+  const highestReleased = [...MIGRATIONS_RELEASED_AT_14C].sort().at(-1)!;
+  for (const name of files) {
+    if (MIGRATIONS_RELEASED_AT_14C.includes(name)) continue;
+    assert.ok(
+      name > highestReleased,
+      `migration ${name} does not append after the released chain`,
+    );
+  }
+
+  // The released policy constants are themselves frozen contract text. They
+  // record the position AT THE 14C RELEASE, when 020 was deliberately deferred.
+  // Migration 020 has since been added under governed stage 15A, so this
+  // asserts that the released declaration has not drifted - NOT that 020 is
+  // absent today. Restating the constant needs its own governed 14C stage.
   assert.equal(SOURCEROOT_MIGRATION_POLICY.migration020, "deferred-absent");
   assert.equal(SOURCEROOT_MIGRATION_POLICY.migration018, "frozen-unchanged");
   assert.equal(
@@ -2166,34 +2227,124 @@ test("the shared object grammar defines the required network object types", () =
   }
 });
 
+/**
+ * The persistence-to-network mappings as released at Chunk 14C.
+ *
+ * The released architecture explicitly permits later governed stages to ADD
+ * object types and mappings, so the previous `length === 3` assertion encoded a
+ * rule the contract does not have and that the same release contradicts. It is
+ * replaced by the invariants the contract genuinely requires: the historical
+ * mappings survive with their released meaning, every mapping stays explicit
+ * and reversible, and no addition may introduce ambiguity. Replacing 3 with 5
+ * would only have moved the same defect one stage further out.
+ */
+const MAPPINGS_RELEASED_AT_14C: readonly [string, string, string][] = [
+  ["lemma", "DictionaryRoot", "lexical-entry"],
+  ["accepted-contextual-record", "HistoryRoot", "historical-record"],
+  ["edition-verse-text", "BibleRoot", "scripture-passage"],
+];
+
 test("persistence-to-network object type mappings are explicit and reversible", () => {
-  assert.equal(PERSISTENCE_TO_NETWORK_OBJECT_TYPES.length, 3);
-  const expected: readonly [string, string, string][] = [
-    ["lemma", "DictionaryRoot", "lexical-entry"],
-    ["accepted-contextual-record", "HistoryRoot", "historical-record"],
-    ["edition-verse-text", "BibleRoot", "scripture-passage"],
-  ];
-  for (const [persistence, rootId, network] of expected) {
+  // DURABLE: every historical mapping survives, with its released Root and its
+  // released network type. Removing one, or repointing it at a different Root
+  // or network type, is a silent weakening of a released contract.
+  for (const [persistence, rootId, network] of MAPPINGS_RELEASED_AT_14C) {
     assert.equal(networkObjectTypeForPersistenceType(persistence), network);
     assert.equal(persistenceTypeForNetworkObjectType(network), persistence);
     const mapping = PERSISTENCE_TO_NETWORK_OBJECT_TYPES.find(
       (item) => item.persistenceResourceType === persistence,
     );
-    assert.ok(mapping);
+    assert.ok(mapping, `released mapping is missing: ${persistence}`);
     assert.equal(mapping.rootId, rootId);
+    assert.equal(mapping.networkObjectType, network);
   }
+
+  // DURABLE: the set may grow under a governed stage but never shrink.
+  assert.ok(
+    PERSISTENCE_TO_NETWORK_OBJECT_TYPES.length >=
+      MAPPINGS_RELEASED_AT_14C.length,
+    "the released mapping set may never shrink",
+  );
+
+  // DURABLE: every mapping - released or added - stays explicit, resolves in
+  // BOTH directions, and names a DEFINED shared-grammar object type. A mapping
+  // to an undefined type would be an invented vocabulary.
+  for (const mapping of PERSISTENCE_TO_NETWORK_OBJECT_TYPES) {
+    assert.ok(mapping.persistenceResourceType.length > 0);
+    assert.ok(mapping.rootId.length > 0);
+    assert.ok(
+      (SOURCEROOT_OBJECT_TYPES as readonly string[]).includes(
+        mapping.networkObjectType,
+      ),
+      `${mapping.networkObjectType} must be a DEFINED shared-grammar object type`,
+    );
+    assert.equal(
+      networkObjectTypeForPersistenceType(mapping.persistenceResourceType),
+      mapping.networkObjectType,
+    );
+    assert.equal(
+      persistenceTypeForNetworkObjectType(mapping.networkObjectType),
+      mapping.persistenceResourceType,
+    );
+  }
+
+  // DURABLE: the mapping stays ONE-TO-ONE in both directions. The reverse
+  // lookup returns the first match, so a duplicate on either side would make
+  // one mapping silently unreachable and the reverse answer arbitrary.
+  const persistenceNames = PERSISTENCE_TO_NETWORK_OBJECT_TYPES.map(
+    (item) => item.persistenceResourceType,
+  );
+  const networkNames = PERSISTENCE_TO_NETWORK_OBJECT_TYPES.map(
+    (item) => item.networkObjectType,
+  );
+  assert.equal(
+    new Set(persistenceNames).size,
+    persistenceNames.length,
+    "a persistence type is mapped more than once",
+  );
+  assert.equal(
+    new Set(networkNames).size,
+    networkNames.length,
+    "a network object type is claimed by more than one persistence type",
+  );
+
   assert.equal(networkObjectTypeForPersistenceType("not-a-type"), undefined);
+  assert.equal(persistenceTypeForNetworkObjectType("not-a-type"), undefined);
 
   // The released persistence names must still exist verbatim in migration 018.
+  // Only the RELEASED names are checked here: a governed descendant may persist
+  // its resources under a migration of its own, so requiring every mapping to
+  // appear in 018 would freeze the schema surface a descendant is allowed to
+  // extend.
   const migration = readFileSync(
     path.join(MIGRATION_DIRECTORY, "018_create_cross_root_link_foundation.sql"),
     "utf8",
   );
-  for (const [persistence] of expected) {
+  for (const [persistence] of MAPPINGS_RELEASED_AT_14C) {
     assert.ok(
       migration.includes(`'${persistence}'`),
       `${persistence} must remain the released persistence name`,
     );
+  }
+});
+
+test("governed descendant mappings are well-formed where they exist", () => {
+  // Chunk 15A adds EarthRoot place and polity. This does not require them to
+  // exist - a later stage may legitimately remove its own unreleased addition -
+  // but where a governed addition IS present it must be correctly formed, so an
+  // addition cannot enter the released surface half-declared.
+  for (const [persistence, rootId, network] of [
+    ["place", "EarthRoot", "place"],
+    ["polity", "EarthRoot", "polity"],
+  ] as const) {
+    const mapping = PERSISTENCE_TO_NETWORK_OBJECT_TYPES.find(
+      (item) => item.persistenceResourceType === persistence,
+    );
+    if (!mapping) continue;
+    assert.equal(mapping.rootId, rootId);
+    assert.equal(mapping.networkObjectType, network);
+    assert.equal(networkObjectTypeForPersistenceType(persistence), network);
+    assert.equal(persistenceTypeForNetworkObjectType(network), persistence);
   }
 });
 

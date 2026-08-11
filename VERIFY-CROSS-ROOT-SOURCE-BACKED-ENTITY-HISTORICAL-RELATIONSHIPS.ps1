@@ -304,7 +304,92 @@ $Migration019 = Join-Path $BackendRoot "db\migrations\019_create_cross_root_sour
 Assert-True ((Get-Item -LiteralPath $Migration019).Length -eq 7815) "Migration 019 exact byte length"
 Assert-True ((Get-FileHash -Algorithm SHA256 -LiteralPath $Migration019).Hash -eq "10BBD3D8BF187BC12AD1CC59F738578950AEB7066A65A4DB411B54E855E573F2") "Migration 019 exact SHA-256"
 Assert-True ((& git -C $RepositoryRoot hash-object --no-filters -- "backend/db/migrations/019_create_cross_root_source_backed_relationships.sql").Trim() -eq "2cdb3c220fb47db6207f8b11d1cc725ed6f6c6ba") "Migration 019 exact no-filter blob"
-Assert-True (-not (Get-ChildItem -LiteralPath (Join-Path $BackendRoot "db\migrations") -File | Where-Object Name -Like "020*")) "Migration 020 is absent"
+# ---------------------------------------------------------------------------
+# "Migration 020 is absent" is a HISTORICAL RELEASE FACT, not a durable
+# invariant. It was true of the 14B release tree and must stay true of it. Read
+# as a statement about the CURRENT tree it would mean "no Root may ever add
+# another migration", which would fail for every legitimate descendant stage
+# and pressure future work to weaken this verifier instead of respecting it.
+#
+# So it is evaluated where it is actually true — at the released commit — while
+# the current tree keeps the durable guarantees: 018 and 019 byte-identical
+# (asserted above), and no descendant migration touching 14B's released tables.
+# ---------------------------------------------------------------------------
+$ReleasedMigrations = @(
+    & git -C $RepositoryRoot ls-tree --name-only "$ReleaseCommit" "backend/db/migrations/" 2>$null |
+        ForEach-Object { [IO.Path]::GetFileName($_) } | Where-Object { $_ }
+)
+Assert-True ($ReleasedMigrations.Count -gt 0) "Released 14B migration set is inspectable at the release commit"
+Assert-True (-not ($ReleasedMigrations | Where-Object { $_ -like "020*" })) `
+    "Migration 020 was absent at the 14B release (historical release fact)"
+Assert-True ([bool]($ReleasedMigrations | Where-Object { $_ -like "019*" })) `
+    "Migration 019 was present at the 14B release (historical release fact)"
+
+# Durable invariant: a descendant migration may exist, but it may not rewrite
+# the released 14B relationship schema. 018/019 immutability is asserted above
+# by byte length, SHA-256 and no-filter blob, so mutating them still FAILS.
+# Descendant selection MIRRORS THE MIGRATION RUNNER. migrate.ts applies every
+# *.sql in this directory in lexicographic order, with no numeric-prefix rule,
+# so selecting only /^\d{3}/ files numbered > 19 would skip `019a_relax.sql`,
+# `20_fix.sql`, and `zz_cleanup.sql` — all of which the runner executes after
+# 019. A guard that inspects fewer files than the runner runs is fail-open.
+$ReleasedLastMigration = "019_create_cross_root_source_backed_relationships.sql"
+$DescendantMigrations = @(
+    Get-ChildItem -LiteralPath (Join-Path $BackendRoot "db\migrations") -File -Filter "*.sql" |
+        Where-Object { [string]::CompareOrdinal($_.Name, $ReleasedLastMigration) -gt 0 }
+)
+
+# Two scopes, stated separately so the PASS message never claims more than it
+# proves. Chunk 15A's migration 020 is AUTHORIZED to widen released CHECK
+# constraints on cross_root_resources (that is how EarthRoot becomes
+# admissible), so an unqualified "alters nothing" claim covering that table
+# would be false. Dropping or truncating any released table is forbidden
+# outright; ALTER is forbidden on the 14B relationship tables specifically.
+$ReleasedTablesNoDropOrTruncate = @(
+    "cross_root_datasets",
+    "cross_root_resources",
+    "cross_root_links",
+    "cross_root_link_evidence",
+    "cross_root_relationship_datasets",
+    "cross_root_relationship_assertions",
+    "cross_root_relationship_evidence"
+)
+$RelationshipTablesNoAlter = @(
+    "cross_root_relationship_datasets",
+    "cross_root_relationship_assertions",
+    "cross_root_relationship_evidence"
+)
+$DescendantOffenders = @()
+foreach ($Descendant in $DescendantMigrations) {
+    $Sql = ((Get-Content -LiteralPath $Descendant.FullName) | Where-Object { $_ -notmatch "^\s*--" }) -join "`n"
+    foreach ($Table in $ReleasedTablesNoDropOrTruncate) {
+        if ($Sql -match "(?i)\b(DROP|TRUNCATE)\s+(TABLE\s+)?(IF\s+EXISTS\s+)?(ONLY\s+)?(public\.)?""?$Table""?\b") {
+            $DescendantOffenders += "$($Descendant.Name) DROP/TRUNCATE -> $Table"
+        }
+    }
+    foreach ($Table in $RelationshipTablesNoAlter) {
+        if ($Sql -match "(?i)\bALTER\s+TABLE\s+(IF\s+EXISTS\s+)?(ONLY\s+)?(public\.)?""?$Table""?\b") {
+            $DescendantOffenders += "$($Descendant.Name) ALTER -> $Table"
+        }
+    }
+}
+Assert-True ($DescendantOffenders.Count -eq 0) `
+    "No descendant migration drops or truncates a released 14B table, or alters a 14B relationship table"
+if ($DescendantOffenders.Count -gt 0) {
+    $DescendantOffenders | ForEach-Object { Write-Host "       $_" -ForegroundColor Red }
+}
+
+# The authorized exception is stated explicitly rather than left implicit, so a
+# reader can see exactly which released table a descendant may touch and how.
+$ResourceAlterers = @(
+    $DescendantMigrations | Where-Object {
+        $Body = ((Get-Content -LiteralPath $_.FullName) | Where-Object { $_ -notmatch "^\s*--" }) -join "`n"
+        $Body -match "(?i)\bALTER\s+TABLE\s+(public\.)?cross_root_resources\b"
+    } | ForEach-Object { $_.Name }
+)
+$UnauthorizedResourceAlterers = @($ResourceAlterers | Where-Object { $_ -notlike "020_*" })
+Assert-True ($UnauthorizedResourceAlterers.Count -eq 0) `
+    "Only the authorized migration 020 alters cross_root_resources; its CHECK widening is governed by Chunk 15A"
 
 $Protected = @(Get-ChildItem -LiteralPath (Join-Path $BackendRoot "data") -Recurse -File | Where-Object { $_.FullName -match "\\(?:raw|source-docs)\\" })
 $ProtectedFailures = @()
