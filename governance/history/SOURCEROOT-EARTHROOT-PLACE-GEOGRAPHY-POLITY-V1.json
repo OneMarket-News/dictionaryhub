@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "gds-authority-lifecycle-v1",
+  "objectType": "HistoricalReleaseRecord",
+  "stageSlug": "SOURCEROOT-EARTHROOT-PLACE-GEOGRAPHY-POLITY-V1",
+  "authorityNote": "HISTORICAL EVIDENCE AND PROVENANCE ONLY. This object records what Chunk 15A DID. It confers no authority, grants no allowlist, and must never be read as permitting any current or future change. Authority for present work comes exclusively from a Product Authority signed StageAuthorization in the external control store. A consumed authorization never authorizes a descendant.",
+  "implementationCommit": "3febc64dcf956edb14aa84917557128e39927ac5",
+  "parentCommit": "d55a45b9ed4e9065c186bf48a5a17ec3b5b71eb6",
+  "treeId": "31e70fa4a492f1c4293aa3fefcfd0c0eebe9fa18",
+  "commitSubject": "Complete SourceRoot EarthRoot place geography polity foundation v1",
+  "changedPathCount": 19,
+  "migrationIdentity": [
+    {
+      "path": "backend/db/migrations/020_create_earthroot_place_polity_foundation.sql",
+      "change": "add",
+      "byteLength": 19839,
+      "sha256": "487BE9991C0DEA3996D683A69B2DD0E1660440FCB15AA8B7B529D2011792E60F",
+      "note": "Introduced by Chunk 15A. Formally thawed once by Principal Architect authority for a truthful N9 enforcement-boundary wording correction and re-frozen on these bytes. Executable behaviour was not changed; equivalence across the thaw is supported by inspection and by passing clean-chain execution, NOT by a reproducible byte-level proof."
+    },
+    {
+      "path": "backend/db/migrations/018_create_cross_root_link_foundation.sql",
+      "change": "unchanged-by-15A",
+      "byteLength": 5116,
+      "sha256": "32760D802354738A6A5B051756BAE59849A05353966FF8752E93EBCC16183A75"
+    },
+    {
+      "path": "backend/db/migrations/019_create_cross_root_source_backed_relationships.sql",
+      "change": "unchanged-by-15A",
+      "byteLength": 7815,
+      "sha256": "10BBD3D8BF187BC12AD1CC59F738578950AEB7066A65A4DB411B54E855E573F2"
+    }
+  ],
+  "governedExtensibleChanges": [
+    {
+      "path": "backend/src/sourceroot/object-types.ts",
+      "surface": "chunk-14c-governed-extensible",
+      "note": "The declared extension point of the shared grammar. Chunk 15A added EarthRoot place and polity persistence-to-network mappings, taking the released set from three to five. The released three survive unchanged with their released Root and network types."
+    },
+    {
+      "path": "backend/test/sourceroot-shared-grammar.test.ts",
+      "surface": "chunk-14c-governed-extensible",
+      "note": "Released-state facts that had been written as durable invariants were separated into historical facts proved against the pinned 14C release tree and durable invariants proved against the current tree."
+    },
+    {
+      "path": "verification/sourceroot-shared-grammar.test.cjs",
+      "surface": "chunk-14c-governed-extensible",
+      "note": "Same separation, plus assertions proving human Markdown is not authority. Tracked despite verification/ being gitignored, having been force-added at the 14C release."
+    }
+  ],
+  "auditHistory": [
+    { "auditor": "Codex Tier 3", "verdict": "FAIL", "materialBlockerClasses": 5 },
+    { "auditor": "Codex Tier 3", "verdict": "FAIL", "materialBlockerClasses": 4 },
+    { "auditor": "Codex Tier 3", "verdict": "FAIL", "materialBlockerClasses": 3 },
+    { "auditor": "Codex Tier 3", "verdict": "PASS", "note": "Cleared for controlled release preparation. The controlled release then halted before tag and push because three governance verifiers required HEAD to equal the pre-release baseline, a pre-commit-only rule that closed at the instant the release commit was created." }
+  ],
+  "releaseState": {
+    "released": false,
+    "tagged": false,
+    "pushed": false,
+    "note": "Chunk 15A is COMMITTED but NOT RELEASED. The release tag sourceroot-earthroot-place-geography-polity-v1 is reserved for the final governance-safe descendant produced after GDS v1.1, not for this commit. This commit remains the immutable historical truth of the audited EarthRoot implementation bytes."
+  }
+}

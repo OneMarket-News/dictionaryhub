@@ -82,117 +82,21 @@ function Read-GovernedDocument([string]$RelativePath) {
 function ConvertTo-FlatText([string]$Text) { return ($Text -replace "\s+", " ") }
 function ConvertTo-PlainText([string]$Text) { return ((($Text -replace "[*`]", "") -replace "\s+", " ")) }
 
-# ===== BEGIN LEGACY STAGE-IDENTITY PARSER (NON-AUTHORITATIVE, UNUSED) =====
 # ---------------------------------------------------------------------------
-# LEGACY STAGE-IDENTITY PARSER  (NON-AUTHORITATIVE, UNUSED)
+# LEGACY STAGE-IDENTITY PARSER - REMOVED
 #
-# This block is duplicated verbatim in the 15A, 14C and GDS verifiers because a
-# shared module would need a 21st authorized path. The static semantic-safety
-# suite formerly asserted all copies were byte-identical. The fourth Codex audit
-# proved that parser-based authorization is the wrong boundary. This legacy
-# helper is retained only to avoid unrelated deletion churn; no authority path
-# calls it, and the static suite enforces that separation.
+# A Markdown-aware scanner used to live here, duplicated verbatim in three
+# verifiers, to read stage identity out of a governed record. The fourth Codex
+# audit proved that parser-based authorization is the wrong boundary: a record
+# inside the candidate cannot establish what the candidate is allowed to be.
+# The block was retained for a while marked NON-AUTHORITATIVE and UNUSED, which
+# left three copies of legacy authority logic sitting in the tree looking
+# authoritative to anyone who did not read the header.
 #
-# WHY A SCANNER AND NOT A REGEX. Successive audits defeated successive regexes:
-# a substring scan matched the expected slug in prose; a section-scoped regex
-# still matched it inside fenced code, inside indented code, in a nested list
-# item, and in a second duplicate "Stage identity" section. Authority-bearing
-# metadata cannot be read with a pattern that has no notion of document
-# structure, so this is a small deterministic Markdown-aware scanner - only as
-# much grammar as this governed record format needs, and no more.
-#
-# It recognises exactly:
-#   - fenced code blocks (``` and ~~~, up to 3 spaces of indent, closed by the
-#     same fence character), whose contents are INERT;
-#   - indented code blocks (4+ columns), which are INERT;
-#   - real ATX H2 headings outside those, which delimit sections;
-#   - DIRECT top-level list items (column 0 exactly) inside one section.
-#
-# Every ambiguity FAILS CLOSED by returning $null:
-#   zero or MORE THAN ONE real "## Stage identity" heading; a missing field; a
-#   nested, fenced, indented, or prose occurrence; duplicate direct fields; a
-#   malformed value. Comparison by the caller is exact and case-sensitive.
+# It is gone. Authority is read from the external signed control store by
+# srgds-core, and this verifier delegates to it rather than parsing anything.
+# See the GDS v1.1 TRUST CORE DELEGATION section below.
 # ---------------------------------------------------------------------------
-function Get-GovernedRecordLineFacts([string]$RecordText) {
-    # One pass. For each line: is it structural (outside any code), and if so is
-    # it a real H2, and what is its indent in columns (tabs expand to 4).
-    $Lines = $RecordText -split "`r?`n"
-    $Facts = New-Object System.Collections.Generic.List[object]
-    $InFence = $false
-    $FenceChar = ""
-    foreach ($Raw in $Lines) {
-        $Expanded = ""
-        foreach ($Char in $Raw.ToCharArray()) {
-            if ($Char -eq "`t") { $Expanded += "    " } else { $Expanded += $Char }
-        }
-        $Trimmed = $Expanded.TrimStart(" ")
-        $Indent = $Expanded.Length - $Trimmed.Length
-        $IsFenceToken = ($Indent -lt 4 -and ($Trimmed -match '^(`{3,}|~{3,})'))
-        if ($InFence) {
-            # Only a fence of the SAME character can close the block.
-            if ($IsFenceToken -and $Trimmed.StartsWith($FenceChar)) { $InFence = $false; $FenceChar = "" }
-            $Facts.Add([pscustomobject]@{ Structural = $false; IsH2 = $false; H2Title = ""; Indent = $Indent; Text = $Trimmed })
-            continue
-        }
-        if ($IsFenceToken) {
-            $InFence = $true
-            $FenceChar = $Trimmed.Substring(0, 1)
-            $Facts.Add([pscustomobject]@{ Structural = $false; IsH2 = $false; H2Title = ""; Indent = $Indent; Text = $Trimmed })
-            continue
-        }
-        if ($Indent -ge 4) {
-            # Indented code block. Inert.
-            $Facts.Add([pscustomobject]@{ Structural = $false; IsH2 = $false; H2Title = ""; Indent = $Indent; Text = $Trimmed })
-            continue
-        }
-        $IsH2 = $false
-        $Title = ""
-        $H2Match = [regex]::Match($Trimmed, '^##[ \t]+(\S.*?)[ \t]*$')
-        if ($H2Match.Success -and -not $Trimmed.StartsWith("###")) {
-            $IsH2 = $true
-            $Title = $H2Match.Groups[1].Value
-        }
-        $Facts.Add([pscustomobject]@{ Structural = $true; IsH2 = $IsH2; H2Title = $Title; Indent = $Indent; Text = $Trimmed })
-    }
-    # An unterminated fence leaves the document structurally ambiguous.
-    if ($InFence) { return $null }
-    return $Facts
-}
-
-function Get-DeclaredStageSlug([string]$RecordText) {
-    $Facts = Get-GovernedRecordLineFacts $RecordText
-    if ($null -eq $Facts) { return $null }
-
-    $IdentityHeadings = @()
-    for ($Index = 0; $Index -lt $Facts.Count; $Index++) {
-        if ($Facts[$Index].Structural -and $Facts[$Index].IsH2 -and $Facts[$Index].H2Title -ceq "Stage identity") {
-            $IdentityHeadings += $Index
-        }
-    }
-    # Exactly one real Stage identity section. Two - even identical ones - leave
-    # the authority-bearing structure repeated and therefore ambiguous.
-    if ($IdentityHeadings.Count -ne 1) { return $null }
-
-    $Start = $IdentityHeadings[0] + 1
-    $End = $Facts.Count
-    for ($Index = $Start; $Index -lt $Facts.Count; $Index++) {
-        if ($Facts[$Index].Structural -and $Facts[$Index].IsH2) { $End = $Index; break }
-    }
-
-    $Values = @()
-    for ($Index = $Start; $Index -lt $End; $Index++) {
-        $Fact = $Facts[$Index]
-        if (-not $Fact.Structural) { continue }
-        # DIRECT top-level list item only: column 0 exactly. A nested item is a
-        # child of some other claim and is not the record's own identity field.
-        if ($Fact.Indent -ne 0) { continue }
-        $Field = [regex]::Match($Fact.Text, '^-[ \t]+Slug:[ \t]*(\S+)[ \t]*$')
-        if ($Field.Success) { $Values += $Field.Groups[1].Value }
-    }
-    if ($Values.Count -ne 1) { return $null }
-    return $Values[0]
-}
-# ===== END LEGACY STAGE-IDENTITY PARSER =====
 
 # ---------------------------------------------------------------------------
 # ANCHORED COMPLETED-BUT-UNCOMMITTED WINDOW
@@ -490,6 +394,92 @@ Assert-True ($RecordPlain -match "Only the Product Authority may make the final 
 Assert-True ($RecordPlain -match "no automated collection exists") "Execution record is explicitly not a telemetry system"
 
 # ---------------------------------------------------------------------------
+# GDS v1.1 TRUST CORE DELEGATION
+#
+# Trust-critical questions - is there a valid signed authorization, and is the
+# candidate inside it - are ANSWERED BY srgds-core, not by this verifier. A
+# verifier that re-derived them would be a second implementation of the rules,
+# and two implementations of one rule eventually disagree, at which point the
+# more permissive one is the one that matters.
+#
+# This section therefore contains no digesting, no path grammar, no signature
+# handling and no candidate derivation. It asks, and it reports.
+#
+# Execution context comes from OUTSIDE the repository. When it is absent the
+# section is skipped explicitly and says so: a skipped check is never counted
+# as a passing one.
+# ---------------------------------------------------------------------------
+$GdsModule = Join-Path $PSScriptRoot "tools\SourceRoot.Governance.psm1"
+$GdsContext = @{
+    Stage       = $env:SRGDS_STAGE
+    Id          = $env:SRGDS_AUTHORIZATION_ID
+    Digest      = $env:SRGDS_AUTHORIZATION_DIGEST
+    Fingerprint = $env:SRGDS_SIGNER_FINGERPRINT
+    Principal   = $env:SRGDS_SIGNER_PRINCIPAL
+}
+$GdsContextComplete = -not (@($GdsContext.Values) | Where-Object { [string]::IsNullOrWhiteSpace($_) })
+# Results are published for the governance sections BELOW, which must attribute
+# pending work to the SIGNED authorization rather than to a path list pinned
+# inside this file. A pinned list is a release-state fact; a signed
+# authorization is authority.
+$script:GdsAuthorityValid = $false
+$script:GdsCandidateAuthorized = $false
+$script:GdsCandidatePaths = @()
+
+if (-not (Test-Path -LiteralPath $GdsModule -PathType Leaf)) {
+    Assert-True $false "GDS orchestration module is present"
+} elseif (-not $GdsContextComplete) {
+    Write-Host "[SKIP] GDS trust core delegation: execution context not supplied (SRGDS_*)" -ForegroundColor Yellow
+    Write-Host "       This is a SKIP, not a PASS. Authority was not checked in this run."
+} else {
+    Import-Module $GdsModule -Force
+
+    $GdsCoreVersion = ""
+    try { $GdsCoreVersion = Get-SrgdsCoreVersion } catch { $GdsCoreVersion = "" }
+    Assert-True ($GdsCoreVersion -like "srgds-core/*") "GDS trust core is present and answers ($GdsCoreVersion)"
+
+    if ($GdsCoreVersion -like "srgds-core/*") {
+        $GdsAuth = Get-GdsStageAuthorization -RepositoryRoot $PSScriptRoot -StageSlug $GdsContext.Stage `
+            -ExpectedAuthorizationId $GdsContext.Id -ExpectedAuthorizationDigest $GdsContext.Digest `
+            -ExpectedSignerFingerprint $GdsContext.Fingerprint -SignerPrincipal $GdsContext.Principal
+        Assert-True $GdsAuth.Valid "Signed stage authorization verifies through the trust core"
+        $script:GdsAuthorityValid = $GdsAuth.Valid
+        Assert-True ($GdsAuth.AuthorizationId -ceq $GdsContext.Id) `
+            "The authorization the core returned is the issuance execution context selected"
+        Assert-True ($GdsAuth.Digest -ceq $GdsContext.Digest.ToUpperInvariant()) `
+            "The authorization bytes are the exact bytes execution context named"
+
+        if ($GdsAuth.Valid) {
+            $GdsCandidate = Get-GdsCandidateManifest -RepositoryRoot $PSScriptRoot -StageSlug $GdsContext.Stage `
+                -ExpectedAuthorizationId $GdsContext.Id -ExpectedAuthorizationDigest $GdsContext.Digest `
+                -ExpectedSignerFingerprint $GdsContext.Fingerprint -SignerPrincipal $GdsContext.Principal
+            $script:GdsCandidateAuthorized = $GdsCandidate.Authorized
+            if ($null -ne $GdsCandidate.Manifest) {
+                $script:GdsCandidatePaths = @($GdsCandidate.Manifest.entries | ForEach-Object { [string]$_.path })
+            }
+            Assert-True $GdsCandidate.Authorized `
+                "Every candidate path is inside the signed authority ($($GdsCandidate.Reason))"
+            Assert-True ($GdsCandidate.CandidateDigest -match '^[0-9A-F]{64}$') `
+                "The candidate has a determinate identity ($($GdsCandidate.CandidateDigest))"
+
+            # Determinism, measured rather than asserted: the same tree must
+            # yield the same identity when asked twice.
+            $GdsRepeat = Get-GdsCandidateManifest -RepositoryRoot $PSScriptRoot -StageSlug $GdsContext.Stage `
+                -ExpectedAuthorizationId $GdsContext.Id -ExpectedAuthorizationDigest $GdsContext.Digest `
+                -ExpectedSignerFingerprint $GdsContext.Fingerprint -SignerPrincipal $GdsContext.Principal
+            Assert-True ($GdsRepeat.CandidateDigest -ceq $GdsCandidate.CandidateDigest) `
+                "Candidate identity is deterministic across repeated derivation"
+        }
+
+        # A green result here is EVIDENCE, never approval. Release requires a
+        # separate signed release authorization over one exact PASS audit.
+        Assert-True (-not (Test-GdsLifecycleTransition -From "AUDIT_PASSED" -To "RELEASED").Allowed) `
+            "A passing audit cannot reach RELEASED without a release authorization"
+    }
+}
+
+
+# ---------------------------------------------------------------------------
 # POST-COMPLETION ALLOWLIST ENFORCEMENT
 #
 # Once the stage is completed the manifest active_stage is cleared and the
@@ -675,14 +665,45 @@ if ($CompletedRecords.Count -eq 1) {
                 ($Candidate -eq $Entry) -or ($Entry.EndsWith("/") -and $Candidate.StartsWith($Entry))
             }).Count -gt 0)
         })
-        Assert-True ($PendingOk -and $UngovernedPending.Count -eq 0) `
-            "With no active stage, every pending path is attributable to the anchored completed stage"
-        if ($UngovernedPending.Count -gt 0) {
-            Write-Host "       anchored window: $WindowReason" -ForegroundColor Red
-            foreach ($Path in $UngovernedPending) { Write-Host "       ungoverned: $Path" -ForegroundColor Red }
+        # GDS v1.1 SUPERSESSION.
+        #
+        # The anchored window above is a bounded compensating control built when
+        # authority had nowhere else to live: a path set pinned INSIDE this file,
+        # opened by a release-state fact. It closes when HEAD moves, which is how
+        # a released verifier ends up failing correct work.
+        #
+        # When a valid SIGNED authorization governs the current candidate, that
+        # authorization is the authority and this file is not. Attribution is
+        # then answered by srgds-core. The check does not become weaker: the core
+        # requires every pending path to be inside signed, externally stored,
+        # Product-Authority-signed bounds, which is strictly stronger than a list
+        # this file could edit. What is added here is a CROSS-CHECK - the paths
+        # this verifier sees pending must be exactly the paths the core put in
+        # the candidate, so the two views cannot silently diverge.
+        if ($script:GdsAuthorityValid -and $script:GdsCandidateAuthorized) {
+            $PendingSet = @($Pending | Sort-Object -Unique)
+            $CandidateSet = @($script:GdsCandidatePaths | Sort-Object -Unique)
+            $OnlyPending = @($PendingSet | Where-Object { $CandidateSet -notcontains $_ })
+            $OnlyCandidate = @($CandidateSet | Where-Object { $PendingSet -notcontains $_ })
+            Assert-True ($PendingOk -and $OnlyPending.Count -eq 0 -and $OnlyCandidate.Count -eq 0) `
+                "Pending work is attributable to the signed authorization, and this verifier's view of it matches the candidate the core derived"
+            foreach ($Path in $OnlyPending) { Write-Host "       pending but not in the candidate: $Path" -ForegroundColor Red }
+            foreach ($Path in $OnlyCandidate) { Write-Host "       in the candidate but not pending: $Path" -ForegroundColor Red }
+
+            # A governed stage is in flight, so its specification SHOULD be
+            # present. The legacy rule below applies only when nothing governs.
+            Assert-True (Test-Path -LiteralPath (Join-Path $RepositoryRoot "docs\stages\active\CURRENT-STAGE.md")) `
+                "A signed governed stage in flight declares its active specification"
+        } else {
+            Assert-True ($PendingOk -and $UngovernedPending.Count -eq 0) `
+                "With no active stage and no signed authorization, every pending path is attributable to the anchored completed stage"
+            if ($UngovernedPending.Count -gt 0) {
+                Write-Host "       anchored window: $WindowReason" -ForegroundColor Red
+                foreach ($Path in $UngovernedPending) { Write-Host "       ungoverned: $Path" -ForegroundColor Red }
+            }
+            Assert-True (-not (Test-Path -LiteralPath (Join-Path $RepositoryRoot "docs\stages\active\CURRENT-STAGE.md"))) `
+                "With no active stage, the active specification stays consumed"
         }
-        Assert-True (-not (Test-Path -LiteralPath (Join-Path $RepositoryRoot "docs\stages\active\CURRENT-STAGE.md"))) `
-            "With no active stage, the active specification stays consumed"
     }
 }
 
@@ -761,13 +782,31 @@ if ($MigrationWindow.Open) {
     foreach ($Path in $script:AnchoredDescendantPaths) { [void]$GovernedPaths.Add([string]$Path) }
 }
 $UngovernedMigrations = @($NewMigrations | Where-Object { -not $GovernedPaths.Contains("backend/db/migrations/$($_.Name)") })
-if ($UngovernedMigrations.Count -gt 0) {
-    Write-Host "       migration attribution window: $($MigrationWindow.Reason)" -ForegroundColor Red
-}
-Assert-True ($UngovernedMigrations.Count -eq 0) `
-    "Every migration added since GDS release is attributable to a governed stage"
-if ($UngovernedMigrations.Count -gt 0) {
-    foreach ($Item in $UngovernedMigrations) { Write-Host "       ungoverned migration: $($Item.Name)" -ForegroundColor Red }
+
+# GDS v1.1 SUPERSESSION, on the same reasoning as the pending-path rule above.
+#
+# Under a valid signed authorization, attribution of a migration is answered by
+# whether the CANDIDATE touches it. The signed authorization for this stage
+# protects backend/ outright, so no migration can enter this candidate at all -
+# and that is asserted here rather than assumed. Migrations that already exist
+# in the baseline are historical release facts belonging to the stage that
+# introduced them; they are not this candidate's to attribute, and demanding
+# that a closed anchor window keep vouching for them is what turned a released
+# fact into a permanent invariant.
+if ($script:GdsAuthorityValid -and $script:GdsCandidateAuthorized) {
+    $CandidateMigrations = @($script:GdsCandidatePaths | Where-Object { $_ -like "backend/db/migrations/*" })
+    Assert-True ($CandidateMigrations.Count -eq 0) `
+        "The signed authorization admits no migration into this candidate ($($CandidateMigrations.Count) found)"
+    foreach ($Path in $CandidateMigrations) { Write-Host "       candidate migration: $Path" -ForegroundColor Red }
+} else {
+    if ($UngovernedMigrations.Count -gt 0) {
+        Write-Host "       migration attribution window: $($MigrationWindow.Reason)" -ForegroundColor Red
+    }
+    Assert-True ($UngovernedMigrations.Count -eq 0) `
+        "Every migration added since GDS release is attributable to a governed stage"
+    if ($UngovernedMigrations.Count -gt 0) {
+        foreach ($Item in $UngovernedMigrations) { Write-Host "       ungoverned migration: $($Item.Name)" -ForegroundColor Red }
+    }
 }
 
 # Current product/runtime and migration changes are governed by the CURRENT

@@ -1,0 +1,235 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sourceroot.local/schemas/gds-authority-lifecycle-v1.schema.json",
+  "title": "SourceRoot GDS v1.1 authority and lifecycle objects",
+  "description": "Schema for the four separately bound governance objects. This file is TOOLING, not authority: it describes the shape of authoritative objects, which live in the ACL-protected external control store and are signed by the Product Authority. A repository file can be edited by the stage it governs and therefore can never be the trust root.",
+  "type": "object",
+  "required": ["schemaVersion", "objectType"],
+  "properties": {
+    "schemaVersion": { "const": "gds-authority-lifecycle-v1" },
+    "objectType": {
+      "enum": ["StageAuthorization", "CandidateManifest", "AuditBinding", "ReleaseAuthorization"]
+    }
+  },
+  "oneOf": [
+    { "$ref": "#/$defs/stageAuthorization" },
+    { "$ref": "#/$defs/candidateManifest" },
+    { "$ref": "#/$defs/auditBinding" },
+    { "$ref": "#/$defs/releaseAuthorization" }
+  ],
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "gitObjectId": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "gitMode": { "type": "string", "pattern": "^[0-7]{6}$" },
+    "nullableSha256": {
+      "oneOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }],
+      "description": "null where the side of the transition being described does not exist. Absence is spelled null, never \"\": an empty string in an identity field is indistinguishable from an identity that was computed and came out empty."
+    },
+    "nullableGitObjectId": {
+      "oneOf": [{ "$ref": "#/$defs/gitObjectId" }, { "type": "null" }]
+    },
+    "nullableGitMode": {
+      "oneOf": [{ "$ref": "#/$defs/gitMode" }, { "type": "null" }]
+    },
+    "migrationPath": {
+      "type": "string",
+      "pattern": "^backend/db/migrations/[^/]+\\.sql$",
+      "description": "A migration identity must actually name a migration. Without this the entry is an arbitrary path wearing a migration's label, and the separate record that exists so a reviewer can find applied migrations stops meaning anything."
+    },
+    "keyFingerprint": { "type": "string", "pattern": "^SHA256:[A-Za-z0-9+/]{43}$" },
+    "utcTimestamp": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+      "description": "Second precision, UTC, Z-suffixed. No offsets and no fractional seconds, so one instant has exactly one serialization."
+    },
+    "repositoryPath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!.*//)(?!.*(^|/)\\.\\.?(/|$))[^\\\\]+$",
+      "description": "Forward-slash repository-relative path. Traversal, absolute paths, drive letters, backslashes and doubled separators are rejected so an authority object can never name anything outside the repository."
+    },
+    "pathSet": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/repositoryPath" },
+      "uniqueItems": true,
+      "description": "Ordinal-sorted by the producer. Sorting is a property of the object, never a side effect of serialization."
+    },
+    "lifecycleState": {
+      "enum": [
+        "DEFINED", "ACTIVE", "IMPLEMENTATION_COMPLETE", "AUDIT_PENDING",
+        "AUDIT_FAILED", "REPAIR_ACTIVE", "AUDIT_PASSED", "RELEASE_AUTHORIZED", "RELEASED"
+      ],
+      "description": "RELEASED is terminal. Post-release modification requires a NEW authorization; a consumed authorization never authorizes a descendant."
+    },
+
+    "stageAuthorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion", "objectType", "authorizationId", "repositoryId", "stageSlug",
+        "riskTier", "baselineCommit", "lifecycleState", "allowedPaths", "protectedPaths",
+        "requestedBy", "issuedAt", "signerKeyFingerprint", "signatureNamespace"
+      ],
+      "properties": {
+        "schemaVersion": { "const": "gds-authority-lifecycle-v1" },
+        "objectType": { "const": "StageAuthorization" },
+        "authorizationId": { "type": "string", "minLength": 1 },
+        "repositoryId": { "type": "string", "minLength": 1 },
+        "stageSlug": { "type": "string", "pattern": "^[A-Z0-9-]+$" },
+        "riskTier": { "type": "integer", "minimum": 1, "maximum": 4 },
+        "baselineCommit": { "$ref": "#/$defs/gitObjectId" },
+        "lifecycleState": { "$ref": "#/$defs/lifecycleState" },
+        "allowedPaths": { "$ref": "#/$defs/pathSet" },
+        "protectedPaths": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true,
+          "description": "May include directory prefixes ending in '/'. Protected always beats allowed."
+        },
+        "requestedBy": {
+          "type": "string",
+          "description": "Records who asked. Authority comes from the Product Authority signature over these exact bytes, never from this field."
+        },
+        "issuedAt": { "$ref": "#/$defs/utcTimestamp" },
+        "signerKeyFingerprint": { "$ref": "#/$defs/keyFingerprint" },
+        "signatureNamespace": { "const": "sourceroot-gds-v1" }
+      }
+    },
+
+    "candidateManifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Exactly what a stage changed, as ONE coherent repository state. Every field is a projection of a single baselineTree -> candidateTree transition, so no field can come from a different state than its neighbours. This declaration, the producer in tools/srgds-core/internal/candidate, and that package's Validate must agree exactly; drift between the three fails a test rather than shipping.",
+      "required": [
+        "schemaVersion", "objectType", "repositoryId", "stageSlug",
+        "authorizationDigest", "baselineCommit", "baselineTree", "candidateTree",
+        "entries", "migrationIdentity", "candidateDigest"
+      ],
+      "properties": {
+        "schemaVersion": { "const": "gds-authority-lifecycle-v1" },
+        "objectType": { "const": "CandidateManifest" },
+        "repositoryId": { "type": "string", "minLength": 1 },
+        "stageSlug": { "type": "string", "pattern": "^[A-Z0-9-]+$" },
+        "authorizationDigest": { "$ref": "#/$defs/sha256" },
+        "baselineCommit": { "$ref": "#/$defs/gitObjectId" },
+        "baselineTree": {
+          "$ref": "#/$defs/gitObjectId",
+          "description": "The signed baseline commit's tree. One end of the transition."
+        },
+        "candidateTree": {
+          "$ref": "#/$defs/gitObjectId",
+          "description": "The tree written from a disposable index seeded with the real index and overlaid with the effective worktree. The other end of the transition, and the sole source of candidate identity."
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "change", "mode", "gitObject", "sha256", "baselineMode", "baselineObject"],
+            "properties": {
+              "path": { "$ref": "#/$defs/repositoryPath" },
+              "change": {
+                "enum": ["add", "modify", "delete"],
+                "description": "A rename is recorded as delete + add. Rename detection is a similarity heuristic, and a heuristic that decides which two paths are the same file is not a judgement this system makes on a governance record."
+              },
+              "mode": {
+                "$ref": "#/$defs/nullableGitMode",
+                "description": "Candidate mode. null for a delete, which has no candidate side."
+              },
+              "gitObject": {
+                "$ref": "#/$defs/nullableGitObjectId",
+                "description": "Candidate blob id. null for a delete."
+              },
+              "sha256": {
+                "$ref": "#/$defs/nullableSha256",
+                "description": "SHA-256 of the bytes of the blob the CANDIDATE TREE names, so gitObject and sha256 are guaranteed to describe the same content. null for a delete."
+              },
+              "baselineMode": {
+                "$ref": "#/$defs/nullableGitMode",
+                "description": "Baseline mode. null for an add, which has no baseline side."
+              },
+              "baselineObject": {
+                "$ref": "#/$defs/nullableGitObjectId",
+                "description": "Baseline blob id. null for an add. A delete binds this, so what was removed is identified and not merely named."
+              }
+            }
+          }
+        },
+        "migrationIdentity": {
+          "type": "array",
+          "description": "Database migrations recorded separately: an applied migration cannot be edited after the fact, so its identity is bound where a reviewer will look for it.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "change", "gitObject", "sha256"],
+            "properties": {
+              "path": { "$ref": "#/$defs/migrationPath" },
+              "change": { "enum": ["add", "modify", "delete"] },
+              "gitObject": { "$ref": "#/$defs/nullableGitObjectId" },
+              "sha256": { "$ref": "#/$defs/nullableSha256" }
+            }
+          }
+        },
+        "candidateDigest": {
+          "$ref": "#/$defs/sha256",
+          "description": "Digest of the canonical manifest WITHOUT this field: a digest cannot be one of its own inputs. Any candidate mutation changes it, which is what lets an audit binding refer to one exact candidate."
+        }
+      }
+    },
+
+    "auditBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion", "objectType", "repositoryId", "stageSlug",
+        "candidateDigest", "binarySha256", "verdict", "auditorIdentity", "auditedAt", "auditReportDigest"
+      ],
+      "properties": {
+        "schemaVersion": { "const": "gds-authority-lifecycle-v1" },
+        "objectType": { "const": "AuditBinding" },
+        "repositoryId": { "type": "string", "minLength": 1 },
+        "stageSlug": { "type": "string", "pattern": "^[A-Z0-9-]+$" },
+        "candidateDigest": {
+          "$ref": "#/$defs/sha256",
+          "description": "Binds the verdict to ONE exact candidate. Any candidate mutation changes this digest and invalidates the binding."
+        },
+        "binarySha256": {
+          "$ref": "#/$defs/sha256",
+          "description": "SHA-256 of the srgds-core executable the auditor actually ran, produced by the deterministic build recipe in docs/build/SRGDS-CORE-BUILD-CONTRACT.md. An audit is evidence about a specific decision procedure, not about source that resembles it: a candidate audited by one binary must not be releasable on the word of another."
+        },
+        "verdict": { "enum": ["PASS", "FAIL"] },
+        "auditorIdentity": { "type": "string", "minLength": 1 },
+        "auditedAt": { "$ref": "#/$defs/utcTimestamp" },
+        "auditReportDigest": { "$ref": "#/$defs/sha256" }
+      }
+    },
+
+    "releaseAuthorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion", "objectType", "repositoryId", "stageSlug",
+        "candidateDigest", "binarySha256", "auditBindingDigest", "authorizedAt",
+        "signerKeyFingerprint", "signatureNamespace"
+      ],
+      "properties": {
+        "schemaVersion": { "const": "gds-authority-lifecycle-v1" },
+        "objectType": { "const": "ReleaseAuthorization" },
+        "repositoryId": { "type": "string", "minLength": 1 },
+        "stageSlug": { "type": "string", "pattern": "^[A-Z0-9-]+$" },
+        "candidateDigest": { "$ref": "#/$defs/sha256" },
+        "binarySha256": {
+          "$ref": "#/$defs/sha256",
+          "description": "Must equal the binarySha256 of the referenced audit binding, and the core enforces that the executable answering the release gate is that same binary. Release is therefore bound to the exact decision procedure that was audited."
+        },
+        "auditBindingDigest": {
+          "$ref": "#/$defs/sha256",
+          "description": "Must reference a PASS audit binding over the SAME candidate digest, so release cannot be granted without independent audit."
+        },
+        "authorizedAt": { "$ref": "#/$defs/utcTimestamp" },
+        "signerKeyFingerprint": { "$ref": "#/$defs/keyFingerprint" },
+        "signatureNamespace": { "const": "sourceroot-gds-v1" }
+      }
+    }
+  }
+}

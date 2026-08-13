@@ -345,3 +345,145 @@ Knowledge Sync automation is **not implemented** and is not part of GDS v1.
   Architect; migration or data-integrity implications → Migration / Data
   Integrity Reviewer, who may veto; any scope or tier change → re-authorization
   before continuing.
+
+## 13. GDS v1.1 — Trust Core Architecture
+
+Added by SOURCEROOT-GDS-AUTHORITY-LIFECYCLE-DESCENDANT-HARDENING-V1. Sections 1
+through 12 are unchanged and remain in force; this section describes where the
+decisions they refer to are now made.
+
+### 13.1 PowerShell orchestrates, Go decides
+
+Four independent Tier-3 audits found materially equivalent defects in the same
+place, and in every case the defect sat on a documented PowerShell behaviour: a
+pipeline yielding one element collapses to a scalar; `-eq` is case-insensitive
+by default; `ConvertFrom-Json` merges duplicate property names; `UTF8Encoding`
+substitutes U+FFFD for malformed input; native output is decoded through a
+console code page; `Out-String` hard-wraps at the console width; `>` writes
+UTF-16. None of these is a bug. They are properties of a language built for
+interactive administration, and they are the wrong properties for the component
+that decides whether a change is authorized.
+
+The Principal Architect therefore split the system:
+
+| Component | Owns |
+|---|---|
+| `tools/srgds-core` (Go 1.26.5, standard library only) | canonical serialization, strict JSON, path grammar, signature verification, candidate identity, lifecycle, authority validity |
+| `tools/SourceRoot.Governance.psm1` and the verifiers | locating the core, invoking it, supplying execution context, reading its verdict, failing closed |
+
+PowerShell **MUST NOT** independently re-derive any decision the core makes. Two
+implementations of one rule eventually disagree, and the more permissive one is
+the one that matters. A durable guard in
+`tools/INVOKE-ROOT-NEGATIVE-CONTROL.ps1` fails if trust-core constructs reappear
+in the module.
+
+The core is a build artifact and is **never committed**. It is built outside the
+repository, because a candidate that could supply the executable judging it
+could authorize itself. When the binary is absent, orchestration fails closed;
+there is no PowerShell fallback.
+
+### 13.2 Versioned authorization selection
+
+One stage slug can carry more than one signed issuance, so resolving a stage to
+"the file named after it" is not a decision at all. Selection is stated by the
+CALLER, in execution context, as a pair that must BOTH hold:
+
+- `authorizationId` — which issuance is intended
+- expected digest — which exact signed bytes are intended
+
+`<stageSlug>.<authorizationId>.authorization.json` is resolved first. The
+historical unversioned name is consulted only when no file carries the requested
+id, and whatever it holds must still prove its own id. **A request for one
+issuance can never be answered by another.** Nothing is selected because it
+exists, because it is newest, or because its identifier sorts highest, and the
+store is never enumerated.
+
+Execution context comes from OUTSIDE the repository. `CURRENT-STAGE.md` records
+it for humans and is never read to decide anything: it is a repository file, and
+the stage it describes may edit it.
+
+### 13.3 Candidate-tree model
+
+Candidate identity is ONE Git tree, so no field can come from a different state
+than its neighbours:
+
+```
+signed baseline commit
+      |
+real index --copy--> disposable GIT_INDEX_FILE
+      |
+git add -A   overlays the effective worktree
+      v
+git write-tree -> CANDIDATE TREE   (written to a disposable GIT_OBJECT_DIRECTORY
+      |                             with the repository's object database
+      |                             attached as a read-only alternate)
+      v
+git diff-tree --raw -r -z --no-renames --no-abbrev  baselineTree candidateTree
+```
+
+Deriving a candidate is **read-only**: the canonical index, the object database,
+HEAD and refs are left exactly as they were. `sha256` is hashed from the bytes of
+the blob the candidate tree names, so content and object id cannot describe
+different things. Renames are recorded as DELETE + ADD, because rename detection
+is a similarity heuristic, and a heuristic that decides which two paths are "the
+same file" is not a judgement to record in a governance object.
+
+Any mutation changes the candidate digest; exact restoration restores it. The
+digest reproduces in a disposable clone at a different path, which is what makes
+it an identity rather than a local fact.
+
+### 13.4 Audit binding and release authorization
+
+Four objects are bound separately and never conflated:
+
+| Object | Binds |
+|---|---|
+| StageAuthorization | what a stage MAY change, signed before work begins |
+| CandidateManifest | exactly what a stage DID change, deterministic |
+| AuditBinding | an independent verdict over ONE exact candidate |
+| ReleaseAuthorization | Product Authority release over ONE exact candidate and ONE exact PASS audit |
+
+An audit binding names a candidate digest, so it dies the moment the candidate
+changes by a byte. A release authorization names both a candidate digest and an
+audit binding digest, so release cannot be granted over an unaudited candidate,
+a failed audit, or an audit of something else.
+
+An AuditBinding declares no signer fingerprint. The auditor is an independent
+party, and which key is acceptable is stated by the caller in execution context
+rather than asserted by the audited object about itself.
+
+### 13.5 Release-gate semantics
+
+`srgds-core release-gate` recomputes the candidate from the repository as it
+stands and then requires every link:
+
+1. the signed authorization verifies and HEAD equals its baseline;
+2. every candidate path is inside that authorization;
+3. an audit binding exists over THIS candidate digest;
+4. its verdict is PASS;
+5. a release authorization exists over THIS candidate digest;
+6. that release authorization names THIS audit binding, by digest.
+
+Exit codes are part of the contract: `0` ACCEPT, `3` REJECT, `2` ERROR. A caller
+that cannot distinguish 3 from 2 must treat both as failure. There is no exit
+code meaning "probably fine".
+
+A green gate is EVIDENCE. It reports that a Product Authority signature exists
+over one exact candidate and one exact PASS audit. It is not approval, it does
+not release anything, and section 2 continues to govern who decides: only the
+Product Authority may make the final release decision, and no verifier, no
+independent audit, and no AI role holds that authority.
+
+### 13.6 Historical release fact versus durable descendant invariant
+
+The defect this stage repaired most often was a released verifier encoding a
+release-state fact as a permanent requirement — a path list or window pinned
+inside a file, opened by a condition that closes as soon as HEAD moves, so
+correct descendant work fails by construction.
+
+The rule is now explicit. A historical release fact is read from a pinned
+immutable commit and never depends on current HEAD. A durable invariant is read
+from the current tree and answered by the signed authorization through the core.
+Where the converted verifiers previously attributed pending work to a pinned
+anchor, they now attribute it to the signed authorization and cross-check that
+their own view of the changeset matches the candidate the core derived.
