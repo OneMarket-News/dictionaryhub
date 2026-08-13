@@ -68,6 +68,8 @@ func main() {
 		os.Exit(cmdPathCheck(args))
 	case "release-gate":
 		os.Exit(cmdReleaseGate(args))
+	case "release-state":
+		os.Exit(cmdReleaseState(args))
 	case "lifecycle-check":
 		os.Exit(cmdLifecycleCheck(args))
 	case "canonical-digest":
@@ -116,6 +118,10 @@ func usage() {
   path-check          <authority flags> -path PATH [-path PATH ...]
   release-gate        <authority flags> -audit-digest SHA256 -release-digest SHA256
                       -auditor-principal NAME -auditor-fingerprint SHA256:...
+  release-state       <authority flags> -audit-digest SHA256 -release-digest SHA256
+                      -auditor-principal NAME -auditor-fingerprint SHA256:...
+                      -commit-binding-digest SHA256
+                      is HEAD the governed released truth for this stage?
   lifecycle-check     -from STATE -to STATE
   canonical-digest    -file FILE
 
@@ -404,6 +410,223 @@ func cmdReleaseGate(args []string) int {
 	return emitReturn(exitAccept, "release-gate", "ACCEPT",
 		fmt.Sprintf("candidate %s carries a PASS audit binding and a Product Authority release authorization over that exact audit",
 			manifest.CandidateDigest), members...)
+}
+
+// cmdReleaseState answers one question: is HEAD the governed released truth for
+// this stage?
+//
+// It exists because "authorized" and "released" are different facts, and the
+// system previously had a name for only the first. Before a release commit, the
+// question is whether current authority permits a change, and that requires
+// HEAD to equal the signed baseline. After the release commit, HEAD is a
+// DESCENDANT of that baseline, so current authority is correctly and
+// permanently unavailable - and the verifiers had nothing truthful left to ask.
+//
+// This is not a descendant allowance and not a baseline bypass. It confers no
+// mutation authority whatsoever: every check below reads immutable history and
+// externally signed evidence, and the command's own last act is to prove that
+// the historical authorization STILL FAILS as current authority at HEAD.
+//
+// The chain, end to end:
+//
+//	HEAD^          == the baseline the historical authorization named
+//	HEAD^{tree}    == the tree the recomputed manifest describes
+//	manifest       == recomputed from the two historical trees alone
+//	candidateDigest== the digest a PASS AuditBinding names
+//	ReleaseAuthorization binds that candidate and that audit
+//	running binary == the audited binarySha256
+//	Load(HEAD)     == still REJECTS; the past authorizes nothing now
+func cmdReleaseState(args []string) int {
+	fs := flag.NewFlagSet("release-state", flag.ContinueOnError)
+	f := bind(fs)
+	auditDigest := fs.String("audit-digest", "", "exact SHA-256 of the signed audit binding")
+	releaseDigest := fs.String("release-digest", "", "exact SHA-256 of the signed release authorization")
+	auditorPrincipal := fs.String("auditor-principal", "", "allowed_signers principal of the independent auditor")
+	auditorFingerprint := fs.String("auditor-fingerprint", "", "expected auditor key fingerprint")
+	// This names WHICH signed binding must answer. It does not name the commit.
+	// An "-expected-commit" flag would put the release identity in the hands of
+	// whoever types the command, which is the opposite of governance.
+	commitBindingDigest := fs.String("commit-binding-digest", "", "exact SHA-256 of the signed release commit binding")
+	if err := fs.Parse(args); err != nil {
+		return emitReturn(exitError, "release-state", "ERROR", err.Error())
+	}
+	if *commitBindingDigest == "" {
+		return emitReturn(exitError, "release-state", "ERROR",
+			"-commit-binding-digest is required: without a signed ReleaseCommitBinding the exact release commit is unknown, and any commit sharing a parent and a tree would be accepted")
+	}
+	if f.repo == "" {
+		return emitReturn(exitError, "release-state", "ERROR", "-repo is required")
+	}
+
+	git := gitexec.New(f.repo)
+	repositoryID := f.repositoryID
+	if repositoryID == "" {
+		derived, err := git.RepositoryID()
+		if err != nil {
+			return emitReturn(exitError, "release-state", "ERROR", err.Error())
+		}
+		repositoryID = derived
+	}
+	request := authority.Request{
+		ControlStoreRoot: f.controlStore,
+		RepositoryID:     repositoryID,
+		StageSlug:        f.stage,
+		AuthorizationID:  f.authID,
+		ExpectedDigest:   f.digest,
+		ExpectedSigner:   f.fingerprint,
+		SignerPrincipal:  f.principal,
+		RepositoryRoot:   f.repo,
+		Git:              git,
+	}
+
+	// The authorization is read as EVIDENCE ABOUT THE PAST. The type returned
+	// carries no paths and cannot permit anything.
+	historical := authority.LoadHistoricalAuthorization(request)
+	if !historical.Valid {
+		return emitReturn(exitReject, "release-state", "REJECT", "historical authorization: "+historical.Reason)
+	}
+
+	head, err := git.HeadCommit()
+	if err != nil {
+		return emitReturn(exitError, "release-state", "ERROR", err.Error())
+	}
+	parent, err := git.RequiredLine(nil, "rev-parse", "HEAD^")
+	if err != nil {
+		return emitReturn(exitReject, "release-state", "REJECT", "HEAD has no parent, so it cannot be a release descendant: "+err.Error())
+	}
+	headTree, err := git.RequiredLine(nil, "rev-parse", "HEAD^{tree}")
+	if err != nil {
+		return emitReturn(exitError, "release-state", "ERROR", err.Error())
+	}
+	baselineTree, err := git.RequiredLine(nil, "rev-parse", parent+"^{tree}")
+	if err != nil {
+		return emitReturn(exitError, "release-state", "ERROR", err.Error())
+	}
+
+	members := []jsonstrict.Member{
+		jsonstrict.P("commit", jsonstrict.String(head)),
+		jsonstrict.P("parent", jsonstrict.String(parent)),
+		jsonstrict.P("tree", jsonstrict.String(headTree)),
+		jsonstrict.P("historicalAuthorizationDigest", jsonstrict.String(historical.Digest)),
+		jsonstrict.P("historicalBaseline", jsonstrict.String(historical.BaselineCommit)),
+	}
+
+	if parent != historical.BaselineCommit {
+		return emitReturn(exitReject, "release-state", "REJECT",
+			fmt.Sprintf("HEAD's parent %s is not the baseline %s the historical authorization governed",
+				parent, historical.BaselineCommit), members...)
+	}
+
+	// Recomputed from the two immutable trees alone - no worktree, no index, no
+	// current authority.
+	manifest, err := candidate.BuildFromTrees(git, repositoryID, historical.StageSlug, historical.Digest,
+		parent, baselineTree, headTree)
+	if err != nil {
+		return emitReturn(exitError, "release-state", "ERROR", err.Error())
+	}
+	value := manifest.Value()
+	if err := candidate.Validate(value); err != nil {
+		return emitReturn(exitError, "release-state", "ERROR", "recomputed manifest failed its own contract: "+err.Error())
+	}
+	members = append(members,
+		jsonstrict.P("candidateDigest", jsonstrict.String(manifest.CandidateDigest)),
+		jsonstrict.P("candidateTree", jsonstrict.String(manifest.CandidateTree)),
+		jsonstrict.P("entryCount", jsonstrict.Int(int64(len(manifest.Entries)))))
+
+	if manifest.CandidateTree != headTree {
+		return emitReturn(exitReject, "release-state", "REJECT",
+			"the recomputed manifest does not describe HEAD's tree", members...)
+	}
+
+	binding := authority.BindingRequest{
+		ControlStoreRoot: f.controlStore,
+		RepositoryID:     repositoryID,
+		StageSlug:        historical.StageSlug,
+		CandidateDigest:  manifest.CandidateDigest,
+	}
+	auditReq := binding
+	auditReq.ExpectedDigest = *auditDigest
+	auditReq.ExpectedSigner = *auditorFingerprint
+	auditReq.SignerPrincipal = *auditorPrincipal
+	audit := authority.LoadAuditBinding(auditReq)
+	members = append(members,
+		jsonstrict.P("auditBindingDigest", jsonstrict.String(audit.Digest)),
+		jsonstrict.P("auditVerdict", jsonstrict.String(audit.Verdict)),
+		jsonstrict.P("auditorIdentity", jsonstrict.String(audit.AuditorIdentity)))
+	if !audit.Valid {
+		return emitReturn(exitReject, "release-state", "REJECT", "audit binding: "+audit.Reason, members...)
+	}
+
+	releaseReq := binding
+	releaseReq.ExpectedDigest = *releaseDigest
+	releaseReq.ExpectedSigner = f.fingerprint
+	releaseReq.SignerPrincipal = f.principal
+	release := authority.LoadReleaseAuthorization(releaseReq)
+	members = append(members, jsonstrict.P("releaseAuthorizationDigest", jsonstrict.String(release.Digest)))
+	if !release.Valid {
+		return emitReturn(exitReject, "release-state", "REJECT", "release authorization: "+release.Reason, members...)
+	}
+
+	binaryDigest, err := authority.SelfBinaryDigest()
+	if err != nil {
+		return emitReturn(exitError, "release-state", "ERROR", err.Error())
+	}
+	// The RELEASED binary identity is the audited one; the RUNNING binary is
+	// reported separately and need not be the same, or no future core could
+	// verify this release.
+	members = append(members,
+		jsonstrict.P("releasedBinarySha256", jsonstrict.String(audit.BinarySha256)),
+		jsonstrict.P("runningBinarySha256", jsonstrict.String(binaryDigest)))
+	if err := authority.ReleaseChainHistorical(audit, release, manifest.CandidateDigest); err != nil {
+		return emitReturn(exitReject, "release-state", "REJECT", "release chain: "+err.Error(), members...)
+	}
+
+	// THE EXACT COMMIT.
+	//
+	// Everything proved so far - the parent, the tree, the recomputed candidate,
+	// the PASS audit, the Product Authority release - was equally true of an
+	// impostor commit built over the same parent and the same tree. An audit
+	// demonstrated exactly that. Parent and tree do not identify a commit;
+	// author, committer, message and timestamps are precisely the fields an
+	// impostor controls, and none of them is signed anywhere above.
+	//
+	// The commit identity therefore arrives the way every other authority fact
+	// arrives: signed, from the external control store.
+	commitReq := binding
+	commitReq.ExpectedDigest = *commitBindingDigest
+	commitReq.ExpectedSigner = f.fingerprint
+	commitReq.SignerPrincipal = f.principal
+	commitBinding := authority.LoadReleaseCommitBinding(commitReq)
+	members = append(members,
+		jsonstrict.P("releaseCommitBindingDigest", jsonstrict.String(commitBinding.Digest)),
+		jsonstrict.P("boundReleaseCommit", jsonstrict.String(commitBinding.ReleaseCommit)))
+	if !commitBinding.Valid {
+		return emitReturn(exitReject, "release-state", "REJECT", "release commit binding: "+commitBinding.Reason, members...)
+	}
+	if err := authority.ReleaseCommitChain(commitBinding, audit, release, historical,
+		authority.ObservedRelease{Head: head, Parent: parent, Tree: headTree}); err != nil {
+		return emitReturn(exitReject, "release-state", "REJECT", "release commit chain: "+err.Error(), members...)
+	}
+
+	// THE CLOSING INVARIANT. Establishing release state must not have made the
+	// consumed authorization usable again. This asserts the negative directly
+	// rather than trusting that nothing above quietly relaxed it.
+	current := authority.Load(request)
+	members = append(members, jsonstrict.P("currentAuthorityAtHead", jsonstrict.String(
+		func() string {
+			if current.Valid {
+				return "VALID"
+			}
+			return "REJECTED"
+		}())))
+	if current.Valid {
+		return emitReturn(exitError, "release-state", "ERROR",
+			"the historical authorization verifies as CURRENT authority at HEAD; release state must never grant that", members...)
+	}
+
+	return emitReturn(exitAccept, "release-state", "ACCEPT",
+		fmt.Sprintf("HEAD %s is the governed release of candidate %s: a Product Authority release commit binding names this exact commit, its parent is the signed baseline, its tree is the audited candidate tree, a PASS audit and a Product Authority release authorization bind it, and the historical authorization confers no authority over HEAD",
+			head, manifest.CandidateDigest), members...)
 }
 
 func cmdLifecycleCheck(args []string) int {

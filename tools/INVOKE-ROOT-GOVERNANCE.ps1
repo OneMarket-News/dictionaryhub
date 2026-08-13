@@ -31,11 +31,14 @@ pointer and NEVER a source of authority. Nothing here reads it.
   ./tools/INVOKE-ROOT-GOVERNANCE.ps1 -Action candidate -OutFile candidate.json
   ./tools/INVOKE-ROOT-GOVERNANCE.ps1 -Action paths -Path tools/x.ps1
   ./tools/INVOKE-ROOT-GOVERNANCE.ps1 -Action lifecycle -From AUDIT_PASSED -To RELEASED
+
+.EXAMPLE
+  ./tools/INVOKE-ROOT-GOVERNANCE.ps1 -Action release-state
 #>
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("status", "authority", "candidate", "paths", "lifecycle", "release-gate")]
+    [ValidateSet("status", "authority", "candidate", "paths", "lifecycle", "release-gate", "release-state")]
     [string]$Action,
 
     [Parameter()][string]$RepositoryRoot,
@@ -45,14 +48,22 @@ param(
     [Parameter()][string]$SignerFingerprint = $env:SRGDS_SIGNER_FINGERPRINT,
     [Parameter()][string]$SignerPrincipal = $env:SRGDS_SIGNER_PRINCIPAL,
 
+    # The RELEASED predecessor. Kept separate from current authority on purpose:
+    # they describe different commits, and every time the two were conflated the
+    # result was a released fact behaving like a live permission.
+    [Parameter()][string]$ReleasedStageSlug = $env:SRGDS_RELEASED_STAGE,
+    [Parameter()][string]$ReleasedAuthorizationId = $env:SRGDS_RELEASED_AUTHORIZATION_ID,
+    [Parameter()][string]$ReleasedAuthorizationDigest = $env:SRGDS_RELEASED_AUTHORIZATION_DIGEST,
+
     [Parameter()][string[]]$Path,
     [Parameter()][string]$OutFile,
     [Parameter()][string]$From,
     [Parameter()][string]$To,
-    [Parameter()][string]$AuditDigest,
-    [Parameter()][string]$ReleaseDigest,
-    [Parameter()][string]$AuditorPrincipal,
-    [Parameter()][string]$AuditorFingerprint,
+    [Parameter()][string]$AuditDigest = $env:SRGDS_AUDIT_DIGEST,
+    [Parameter()][string]$ReleaseDigest = $env:SRGDS_RELEASE_DIGEST,
+    [Parameter()][string]$AuditorPrincipal = $env:SRGDS_AUDITOR_PRINCIPAL,
+    [Parameter()][string]$AuditorFingerprint = $env:SRGDS_AUDITOR_FINGERPRINT,
+    [Parameter()][string]$CommitBindingDigest = $env:SRGDS_COMMIT_BINDING_DIGEST,
     [Parameter()][string]$ControlStoreRoot,
     [Parameter()][string]$CorePath
 )
@@ -87,8 +98,31 @@ function Assert-Context {
     }
 }
 
+$ReleaseContext = @{
+    RepositoryRoot              = $RepositoryRoot
+    StageSlug                   = $ReleasedStageSlug
+    ExpectedAuthorizationId     = $ReleasedAuthorizationId
+    ExpectedAuthorizationDigest = $ReleasedAuthorizationDigest
+    ExpectedSignerFingerprint   = $SignerFingerprint
+    SignerPrincipal             = $SignerPrincipal
+    AuditDigest                 = $AuditDigest
+    ReleaseDigest               = $ReleaseDigest
+    AuditorPrincipal            = $AuditorPrincipal
+    AuditorFingerprint          = $AuditorFingerprint
+    CommitBindingDigest         = $CommitBindingDigest
+}
+if (-not [string]::IsNullOrWhiteSpace($ControlStoreRoot)) { $ReleaseContext.ControlStoreRoot = $ControlStoreRoot }
+if (-not [string]::IsNullOrWhiteSpace($CorePath)) { $ReleaseContext.CorePath = $CorePath }
+$ReleaseContextComplete = (@(@(
+    $ReleasedStageSlug, $ReleasedAuthorizationId, $ReleasedAuthorizationDigest,
+    $SignerFingerprint, $SignerPrincipal, $AuditDigest, $ReleaseDigest,
+    $AuditorPrincipal, $AuditorFingerprint, $CommitBindingDigest
+) | Where-Object { [string]::IsNullOrWhiteSpace($_) }).Count -eq 0)
+
 $Context = @{}
-if ($Action -ne "lifecycle") {
+# release-state reads the RELEASED predecessor and nothing else, so demanding
+# current-authority context for it would be asking for values it never uses.
+if ($Action -ne "lifecycle" -and $Action -ne "release-state") {
     Assert-Context
     $Context = @{
         RepositoryRoot              = $RepositoryRoot
@@ -121,7 +155,36 @@ switch ($Action) {
         Write-Output "  lifecycle        : $($Auth.LifecycleState)"
         Write-Output "  allowed paths    : $(@($Auth.AllowedPaths).Count)"
         Write-Output "  protected paths  : $(@($Auth.ProtectedPaths).Count)"
-        if (-not $Auth.Valid) { exit 3 }
+
+        # An invalid current authority is not automatically a problem. After a
+        # release commit it is the CORRECT answer, and the repository's real
+        # state is terminal rather than ungoverned. Reporting failure here made
+        # a completed release look like a broken one.
+        if (-not $Auth.Valid) {
+            if (-not $ReleaseContextComplete) {
+                Write-Output ""
+                Write-Output "  No released-stage context was supplied, so terminal release state"
+                Write-Output "  could not be checked. This is unknown, not governed."
+                exit 3
+            }
+            Write-Section "TERMINAL RELEASE STATE"
+            $Release = Test-GdsReleaseState @ReleaseContext
+            Write-Output "  released         : $($Release.Released)"
+            Write-Output "  reason           : $($Release.Reason)"
+            Write-Output "  commit           : $($Release.Commit)"
+            Write-Output "  parent           : $($Release.Parent)"
+            Write-Output "  tree             : $($Release.Tree)"
+            Write-Output "  candidate digest : $($Release.CandidateDigest)"
+            Write-Output "  candidate tree   : $($Release.CandidateTree)"
+            Write-Output "  entries          : $($Release.EntryCount)"
+            Write-Output "  audit verdict    : $($Release.AuditVerdict) by $($Release.AuditorIdentity)"
+            Write-Output "  bound commit     : $($Release.BoundReleaseCommit)"
+            Write-Output "  authority at HEAD: $($Release.CurrentAuthorityAtHead)"
+            Write-Output ""
+            Write-Output "  Terminal state is a historical fact. It authorizes no mutation, and"
+            Write-Output "  the authorization that produced it stays consumed."
+            exit $(if ($Release.Released) { 0 } else { 3 })
+        }
 
         Write-Section "CANDIDATE"
         $Manifest = Get-GdsCandidateManifest @Context
@@ -137,6 +200,38 @@ switch ($Action) {
         }
         if (-not $Manifest.Authorized) { exit 3 }
         exit 0
+    }
+
+    "release-state" {
+        if (-not $ReleaseContextComplete) {
+            throw "Released-stage context is incomplete. Supply -ReleasedStageSlug, " +
+                  "-ReleasedAuthorizationId, -ReleasedAuthorizationDigest, -AuditDigest, " +
+                  "-ReleaseDigest, -AuditorPrincipal, -AuditorFingerprint, -CommitBindingDigest (or the matching " +
+                  "SRGDS_* variables). None of them is defaulted: a defaulted trust decision " +
+                  "is a decision nobody made."
+        }
+        $Release = Test-GdsReleaseState @ReleaseContext
+        Write-Output "released         : $($Release.Released)"
+        Write-Output "reason           : $($Release.Reason)"
+        Write-Output "commit           : $($Release.Commit)"
+        Write-Output "parent           : $($Release.Parent)"
+        Write-Output "tree             : $($Release.Tree)"
+        Write-Output "candidate digest : $($Release.CandidateDigest)"
+        Write-Output "candidate tree   : $($Release.CandidateTree)"
+        Write-Output "entries          : $($Release.EntryCount)"
+        Write-Output "audit verdict    : $($Release.AuditVerdict)"
+        Write-Output "auditor          : $($Release.AuditorIdentity)"
+        # Reported separately and never compared. The released binary is what
+        # produced the audited verdict; the running binary is whatever is asking
+        # now. Requiring them to match would make released history unreadable by
+        # every later build, which is how the granting chain was first misused
+        # for a reading question.
+        Write-Output "released binary  : $($Release.ReleasedBinarySha256)"
+        Write-Output "running binary   : $($Release.RunningBinarySha256)"
+        Write-Output "commit binding   : $($Release.ReleaseCommitBindingDigest)"
+        Write-Output "bound commit     : $($Release.BoundReleaseCommit)"
+        Write-Output "authority at HEAD: $($Release.CurrentAuthorityAtHead)"
+        exit $(if ($Release.Released) { 0 } else { 3 })
     }
 
     "authority" {

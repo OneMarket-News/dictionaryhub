@@ -33,6 +33,14 @@ param(
     [Parameter()][string]$AuthorizationDigest = $env:SRGDS_AUTHORIZATION_DIGEST,
     [Parameter()][string]$SignerFingerprint = $env:SRGDS_SIGNER_FINGERPRINT,
     [Parameter()][string]$SignerPrincipal = $env:SRGDS_SIGNER_PRINCIPAL,
+    [Parameter()][string]$ReleasedStageSlug = $env:SRGDS_RELEASED_STAGE,
+    [Parameter()][string]$ReleasedAuthorizationId = $env:SRGDS_RELEASED_AUTHORIZATION_ID,
+    [Parameter()][string]$ReleasedAuthorizationDigest = $env:SRGDS_RELEASED_AUTHORIZATION_DIGEST,
+    [Parameter()][string]$AuditDigest = $env:SRGDS_AUDIT_DIGEST,
+    [Parameter()][string]$ReleaseDigest = $env:SRGDS_RELEASE_DIGEST,
+    [Parameter()][string]$AuditorPrincipal = $env:SRGDS_AUDITOR_PRINCIPAL,
+    [Parameter()][string]$AuditorFingerprint = $env:SRGDS_AUDITOR_FINGERPRINT,
+    [Parameter()][string]$CommitBindingDigest = $env:SRGDS_COMMIT_BINDING_DIGEST,
     [Parameter()][string]$CorePath
 )
 
@@ -88,6 +96,33 @@ $Context = @{
 }
 if (-not [string]::IsNullOrWhiteSpace($CorePath)) { $Context.CorePath = $CorePath }
 
+# The RELEASED predecessor is a separate execution context because it describes a
+# DIFFERENT commit. Conflating it with current authority is the mistake the
+# terminal-state stage exists to remove.
+$ReleaseContext = @{
+    RepositoryRoot              = $RepositoryRoot
+    StageSlug                   = $ReleasedStageSlug
+    ExpectedAuthorizationId     = $ReleasedAuthorizationId
+    ExpectedAuthorizationDigest = $ReleasedAuthorizationDigest
+    ExpectedSignerFingerprint   = $SignerFingerprint
+    SignerPrincipal             = $SignerPrincipal
+    AuditDigest                 = $AuditDigest
+    ReleaseDigest               = $ReleaseDigest
+    AuditorPrincipal            = $AuditorPrincipal
+    AuditorFingerprint          = $AuditorFingerprint
+    CommitBindingDigest         = $CommitBindingDigest
+}
+if (-not [string]::IsNullOrWhiteSpace($CorePath)) { $ReleaseContext.CorePath = $CorePath }
+$ReleaseContextComplete = (@(@($ReleaseContext.Values) | Where-Object { [string]::IsNullOrWhiteSpace($_) }).Count -eq 0)
+
+function Get-VariantRelease {
+    param([hashtable]$Override)
+    $Copy = @{}
+    foreach ($Key in $ReleaseContext.Keys) { $Copy[$Key] = $ReleaseContext[$Key] }
+    foreach ($Key in $Override.Keys) { $Copy[$Key] = $Override[$Key] }
+    return $Copy
+}
+
 function Get-VariantContext {
     # Returns a COPY of the execution context with one or more values replaced.
     # The result must be bound to a variable before splatting: @(Get-VariantContext ...)
@@ -106,13 +141,116 @@ Write-Output ""
 
 # ---------------------------------------------------------------------------
 Write-Output "=== POSITIVE BASELINE (the harness must be able to observe success) ==="
+# A repository is governed in exactly one of two ways, and which one it is
+# depends on where HEAD stands:
+#
+#   IN-FLIGHT  HEAD is a signed baseline. Current authority verifies, and the
+#              SELECTION / INTEGRITY / GRAMMAR families below are live.
+#   TERMINAL   HEAD is a release commit. Current authority is correctly and
+#              permanently unavailable, and the governed fact is instead that
+#              HEAD is the released truth, provable only from the historical
+#              chain and conferring nothing.
+#
+# Refusing to run in the second state was the harness reproducing, in its own
+# positive baseline, the defect the rest of the system just removed.
 $Baseline = Get-GdsStageAuthorization @Context
-Test-Control -Id "P0" -Expectation "the current signed authorization verifies" -Held ($Baseline.Valid) -Detail $Baseline.Reason
-if (-not $Baseline.Valid) {
+$Terminal = $null
+$TerminalHolds = $false
+if ($ReleaseContextComplete) {
+    $Terminal = Test-GdsReleaseState @ReleaseContext
+    $TerminalHolds = $Terminal.Released
+}
+$Mode = $(if ($Baseline.Valid) { "in-flight" } elseif ($TerminalHolds) { "terminal" } else { "ungoverned" })
+
+Test-Control -Id "P0" -Expectation "a governed state is observable ($Mode)" -Held ($Mode -ne "ungoverned") `
+    -Detail $(if ($Baseline.Valid) { $Baseline.Reason } elseif ($null -ne $Terminal) { $Terminal.Reason } else { "no released-stage context was supplied" })
+if ($Mode -eq "ungoverned") {
     Write-Output ""
     Write-Output "The positive baseline failed. Every negative control below would pass"
     Write-Output "vacuously, so the harness stops rather than reporting a green run."
     exit 2
+}
+if (-not $ReleaseContextComplete) {
+    # Said out loud. A family that quietly does not run looks identical to a
+    # family that ran and held, and this harness exists precisely to make that
+    # confusion impossible.
+    Write-Output ""
+    Write-Output "=== TERMINAL: NOT EXERCISED IN THIS RUN ==="
+    Write-Output "The released-stage context is incomplete, so no terminal release state"
+    Write-Output "could be established and the terminal controls did NOT run. This is a SKIP."
+    foreach ($Pair in @(
+        @{ Name = "SRGDS_RELEASED_STAGE"; Value = $ReleasedStageSlug },
+        @{ Name = "SRGDS_RELEASED_AUTHORIZATION_ID"; Value = $ReleasedAuthorizationId },
+        @{ Name = "SRGDS_RELEASED_AUTHORIZATION_DIGEST"; Value = $ReleasedAuthorizationDigest },
+        @{ Name = "SRGDS_AUDIT_DIGEST"; Value = $AuditDigest },
+        @{ Name = "SRGDS_RELEASE_DIGEST"; Value = $ReleaseDigest },
+        @{ Name = "SRGDS_AUDITOR_PRINCIPAL"; Value = $AuditorPrincipal },
+        @{ Name = "SRGDS_AUDITOR_FINGERPRINT"; Value = $AuditorFingerprint },
+        @{ Name = "SRGDS_COMMIT_BINDING_DIGEST"; Value = $CommitBindingDigest }
+    )) {
+        if ([string]::IsNullOrWhiteSpace($Pair.Value)) { Write-Output "  missing: $($Pair.Name)" }
+    }
+}
+if ($TerminalHolds) {
+    Test-Control -Id "P1" -Expectation "the terminal release tree is the audited candidate tree" `
+        -Held ($Terminal.Tree -ceq $Terminal.CandidateTree) -Detail "$($Terminal.Tree) / $($Terminal.CandidateTree)"
+}
+
+# ---------------------------------------------------------------------------
+if ($TerminalHolds) {
+    Write-Output ""
+    Write-Output "=== TERMINAL (a released state proves history and grants nothing) ==="
+
+    # The controls that matter most: terminal state must not become a way to
+    # obtain authority, and it must not accept a chain it cannot reconstruct.
+    Test-Control -Id "T1" -Expectation "terminal state confers NO current authority over HEAD" `
+        -Held ($Terminal.CurrentAuthorityAtHead -ceq "REJECTED") -Detail $Terminal.CurrentAuthorityAtHead
+
+    $HistoricalAsCurrent = Get-GdsStageAuthorization -RepositoryRoot $RepositoryRoot -StageSlug $ReleasedStageSlug `
+        -ExpectedAuthorizationId $ReleasedAuthorizationId -ExpectedAuthorizationDigest $ReleasedAuthorizationDigest `
+        -ExpectedSignerFingerprint $SignerFingerprint -SignerPrincipal $SignerPrincipal
+    Test-Control -Id "T2" -Expectation "the consumed authorization still fails as CURRENT authority" `
+        -Held (-not $HistoricalAsCurrent.Valid) -Detail $HistoricalAsCurrent.Reason
+
+    # Every binding in the chain must be load-bearing. If any of these is
+    # accepted, terminal state is a hole rather than a proof.
+    $TerminalVariants = @(
+        @{ Id = "T3"; What = "a released authorization id that was never issued"; Over = @{ ExpectedAuthorizationId = "00000000-0000-4000-8000-000000000000" } },
+        @{ Id = "T4"; What = "a released authorization digest that is one byte wrong"; Over = @{ ExpectedAuthorizationDigest = ("0" * 64) } },
+        @{ Id = "T5"; What = "an audit binding digest that is not the audited one"; Over = @{ AuditDigest = ("0" * 64) } },
+        @{ Id = "T6"; What = "a release authorization digest that is not the signed one"; Over = @{ ReleaseDigest = ("0" * 64) } },
+        @{ Id = "T7"; What = "an auditor principal the audit was not issued to"; Over = @{ AuditorPrincipal = "not-the-auditor@example.invalid" } },
+        @{ Id = "T8"; What = "an auditor key fingerprint that did not sign the audit"; Over = @{ AuditorFingerprint = "SHA256:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" } },
+        @{ Id = "T9"; What = "a signer fingerprint that did not sign the authorization"; Over = @{ ExpectedSignerFingerprint = "SHA256:BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB" } },
+        @{ Id = "T10"; What = "a released stage slug that does not name this release"; Over = @{ StageSlug = "SOURCEROOT-NO-SUCH-STAGE-V1" } },
+        # The audit finding: parent and tree do not identify a commit.
+        @{ Id = "T11"; What = "a release commit binding digest that was never signed"; Over = @{ CommitBindingDigest = ("0" * 64) } }
+    )
+    foreach ($Variant in $TerminalVariants) {
+        # The override is carried in a variable that is NOT a Test-Refusal
+        # parameter name. Naming it $Attempt splatted the scriptblock itself,
+        # so every control "held" by throwing a parameter-binding error - eight
+        # controls that could not fail, which is exactly what this harness
+        # exists to make impossible.
+        $TerminalOverride = $Variant.Over
+        Test-Refusal -Id $Variant.Id -Expectation "release state is refused for $($Variant.What)" -Attempt {
+            $ReleaseVariant = Get-VariantRelease $TerminalOverride; (Test-GdsReleaseState @ReleaseVariant).Released
+        }
+    }
+}
+
+if (-not $Baseline.Valid) {
+    Write-Output ""
+    Write-Output "=== SELECTION / INTEGRITY / GRAMMAR: SKIPPED ==="
+    Write-Output "HEAD is a terminal release state, so no current authorization governs it."
+    Write-Output "Those families perturb CURRENT authority, which already refuses everything"
+    Write-Output "here; running them would report refusals that prove nothing. This is a SKIP."
+    Write-Output ""
+    Write-Output ("controls held : {0}" -f $script:Passed)
+    Write-Output ("controls failed: {0}" -f $script:Failed)
+    if ($script:Failed -gt 0) { Write-Output "NEGATIVE CONTROL RESULT: FAIL"; exit 1 }
+    Write-Output "NEGATIVE CONTROL RESULT: PASS (terminal family only)"
+    exit 0
 }
 
 # ---------------------------------------------------------------------------

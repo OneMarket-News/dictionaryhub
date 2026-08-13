@@ -487,3 +487,169 @@ from the current tree and answered by the signed authorization through the core.
 Where the converted verifiers previously attributed pending work to a pinned
 anchor, they now attribute it to the signed authorization and cross-check that
 their own view of the changeset matches the candidate the core derived.
+
+### 13.7 Terminal release state
+
+Section 13.6 named the defect. It did not finish it, and the release of the
+authority-lifecycle stage proved that in the plainest way available: the moment
+the audited candidate became a commit, all three governed verifiers began to
+fail against the very release they exist to verify.
+
+Nothing was wrong with the release. Current authority requires HEAD to equal the
+signed baseline, and the release commit moved HEAD past it — permanently and
+correctly. The verifiers were asking a question that had become unanswerable and
+treating "unanswerable" as "unauthorized". That is the fifth appearance of one
+defect class, this time inside the machinery built to remove it.
+
+**A repository is governed in exactly one of two states.**
+
+| | IN-FLIGHT | TERMINAL |
+|---|---|---|
+| Where HEAD stands | on the signed baseline | on a release commit |
+| Authority object | a current StageAuthorization | none, permanently |
+| What is established | what may change | what was released |
+| Derived from | the pending index | two committed trees |
+| Confers | bounded mutation authority | **nothing** |
+| Answered by | `authority-verify` / `candidate-manifest` | `release-state` |
+
+Terminal state is reconstructed from the complete historical chain and from
+nothing else. The core reads the released commit, requires its parent to be the
+authorization's signed baseline, rebuilds the candidate manifest from the
+baseline tree and the released tree, and requires the recomputed candidate
+digest to be the one a signed PASS audit and a signed Product Authority release
+authorization both name. If any link is missing or mismatched, there is no
+terminal state — the answer is REJECT, not a weaker acceptance.
+
+**Three prohibitions make this a proof rather than a hole.**
+
+1. **No generic descendant allowance.** Being a descendant of a signed baseline
+   grants nothing. Terminal state is established for the exact released commit
+   by reconstruction, never inferred from ancestry.
+2. **No baseline bypass.** `Load` still requires HEAD to equal the baseline, with
+   no parameter, switch or field that skips it. The historical reader is a
+   separate function over the same signed bytes, not a flag on the granting one.
+3. **No path authority.** The historical result carries no allowed paths, no
+   protected paths and no method to ask about a path. It structurally cannot
+   authorize a mutation, and a Go test fails if a field or method is ever added
+   that could.
+
+The core proves the third point while establishing the first: `release-state`
+reports `currentAuthorityAtHead`, and that field must read `REJECTED`. A
+terminal state that could not demonstrate its own powerlessness would not be
+accepted.
+
+The released binary and the running binary are both reported and never compared.
+The released binary is the one that produced the audited verdict; the running
+binary is whatever is asking now. Requiring them to match would make released
+history unreadable by every later build — which is exactly how the granting
+chain was first misapplied to a reading question, and why `ReleaseChain` (which
+binds the running binary) and `ReleaseChainHistorical` (which does not) are two
+functions instead of one.
+
+For verifiers, the consequence is a mode, not an exemption. In terminal state a
+verifier asserts the released tree is the audited candidate tree and admits
+**zero** pending paths — strictly stronger than the in-flight branch, which
+admits a signed set. Absent released-stage execution context, a verifier reports
+a SKIP and says so. A skipped check is never counted as a passing one.
+
+### 13.8 The exact release commit
+
+Section 13.7 established terminal release state from the parent commit, the
+tree, and the signed chain. An independent audit then constructed two commits
+over one parent and one tree and showed that BOTH were accepted.
+
+The finding is elementary once seen. A Git commit object contains a tree, a
+parent, an author, a committer, a message and two timestamps. The chain covered
+the first two. The other four are exactly the fields an impostor controls, and
+none of them was signed anywhere. "Parent P plus tree T" names a set of commits,
+not a commit.
+
+This could not be fixed inside the ReleaseAuthorization, because that object is
+signed BEFORE the release commit exists. Asking it to name the commit would be
+asking the Product Authority to predict a SHA. The governed sequence therefore
+gains a step:
+
+| # | Object | Signed by | When |
+|---|---|---|---|
+| 1 | StageAuthorization | Product Authority | before work |
+| 2 | CandidateManifest | derived, unsigned | during work |
+| 3 | AuditBinding | independent auditor | after audit |
+| 4 | ReleaseAuthorization | Product Authority | before the commit |
+| 5 | -- the release commit is created -- | | |
+| 6 | **ReleaseCommitBinding** | **Product Authority** | **after the commit** |
+| 7 | terminal release-state verification | nobody; it is a reading | any time after |
+| 8 | tags, packages, publication | Product Authority | after 7 |
+
+Step 6 grants nothing. It is historical release evidence, and it is the only
+object in the system that can state which commit a release actually is.
+
+The lifecycle state machine did not change. `RELEASE_AUTHORIZED â†’ RELEASED` and
+the terminality of `RELEASED` already described this transition correctly; what
+was missing was evidence binding the transition to a specific commit, not a new
+state to sit in.
+
+Three prohibitions carry over unchanged and are enforced structurally:
+no generic descendant allowance, no baseline bypass, no path authority. Two are
+added:
+
+- **No hard-coded commit.** The expected commit is read from signed bytes. There
+  is no exception for any particular SHA.
+- **No caller-supplied expected commit.** `release-state` takes the DIGEST of
+  the binding that must answer, never the commit it should expect. A commit SHA
+  on a command line is a claim, not evidence.
+
+The audit's reproduction is now a permanent regression test. It builds both
+commits for real, asserts they genuinely share a parent and a tree and genuinely
+differ in SHA, and requires ACCEPT at the bound one and REJECT at the other. If
+the fixture ever fails to produce two distinct commits, the test fails rather
+than passing vacuously.
+### 13.9 Where a stage declares itself
+
+A release tree must not contain `docs/stages/active/CURRENT-STAGE.md`. The GDS
+release at `d55a45b` establishes TERMINAL ABSENCE of the active specification,
+and that absence is verified as a historical release fact. A release tree that
+still carries an active specification asserts a stage is in progress at the
+exact commit that ended it.
+
+Stated precisely, because an audit found the earlier wording claimed more than
+the repository proves: `d55a45b` did not perform a deletion. The path
+`docs/stages/active/CURRENT-STAGE.md` appears exactly once in history, ADDED at
+`ee327bd`; `docs/stages/active/` is empty at `d55a45b` and at its ancestors, and
+the six-path `d55a45b` changeset contains no such deletion. What is proven is
+absence at the release boundary, which is what the rule needs. No transition
+commit is cited because none exists.
+
+Consumption therefore belongs to the CANDIDATE. The release tree is the audited
+candidate tree, so a release cannot delete the file on its way out; the stage
+must delete it as part of the work being audited. The candidate records the path
+with disposition `delete`, which keeps the governed path count unchanged.
+
+That exposed a contradiction between two assertions, and it is worth stating
+because it is the sixth appearance of one defect class:
+
+- the in-flight branch required the active specification FILE to be present
+- the terminal branch requires it to be absent
+
+Both cannot hold for a stage that reaches release, because the candidate tree is
+the worktree state and the release tree is the candidate tree. The in-flight
+assertion conflated "the stage declared a specification", which is durable, with
+"the file exists at this instant", which stops being true at completion. **No
+releasable candidate existed.**
+
+The rule now follows the lifecycle. A governed stage declares itself in EXACTLY
+ONE place:
+
+| State | Meaning | Verdict |
+|---|---|---|
+| active specification only | work in progress | permitted |
+| completed record only | consumed; releasable | permitted |
+| both | half-consumed | refused |
+| neither | undeclared | refused |
+
+The completed record is not read from the directory, where a file could simply
+be dropped in. It must be a path the SIGNED authorization placed in the
+candidate, so a stage cannot declare its own completion into existence.
+
+This is not a relaxation of the previous rule. It corrects one state the old
+rule wrongly refused, and refuses one state the old rule wrongly accepted. The
+terminal assertion is unchanged.

@@ -8,14 +8,15 @@
   "properties": {
     "schemaVersion": { "const": "gds-authority-lifecycle-v1" },
     "objectType": {
-      "enum": ["StageAuthorization", "CandidateManifest", "AuditBinding", "ReleaseAuthorization"]
+      "enum": ["StageAuthorization", "CandidateManifest", "AuditBinding", "ReleaseAuthorization", "ReleaseCommitBinding"]
     }
   },
   "oneOf": [
     { "$ref": "#/$defs/stageAuthorization" },
     { "$ref": "#/$defs/candidateManifest" },
     { "$ref": "#/$defs/auditBinding" },
-    { "$ref": "#/$defs/releaseAuthorization" }
+    { "$ref": "#/$defs/releaseAuthorization" },
+    { "$ref": "#/$defs/releaseCommitBinding" }
   ],
   "$defs": {
     "sha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
@@ -227,6 +228,62 @@
           "description": "Must reference a PASS audit binding over the SAME candidate digest, so release cannot be granted without independent audit."
         },
         "authorizedAt": { "$ref": "#/$defs/utcTimestamp" },
+        "signerKeyFingerprint": { "$ref": "#/$defs/keyFingerprint" },
+        "signatureNamespace": { "const": "sourceroot-gds-v1" }
+      }
+    },
+    "releaseCommitBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Binds the EXACT Git commit object produced by a release to the already-authorized chain. A pre-commit ReleaseAuthorization cannot name a commit that does not exist yet, so exact terminal release identity requires this separate post-commit statement. An audit proved the gap was real: two commits sharing one parent and one tree were both accepted as the release, because parent and tree do not identify a commit. This object grants ZERO mutation authority; it is historical release evidence only.",
+      "required": [
+        "schemaVersion", "objectType", "repositoryId", "stageSlug",
+        "authorizationId", "authorizationDigest", "candidateDigest", "candidateTree",
+        "auditBindingDigest", "releaseAuthorizationDigest", "binarySha256",
+        "releaseCommit", "releaseParent", "releaseTree", "boundAt",
+        "signerKeyFingerprint", "signatureNamespace"
+      ],
+      "properties": {
+        "schemaVersion": { "const": "gds-authority-lifecycle-v1" },
+        "objectType": { "const": "ReleaseCommitBinding" },
+        "repositoryId": { "type": "string", "minLength": 1 },
+        "stageSlug": { "type": "string", "pattern": "^[A-Z0-9-]+$" },
+        "authorizationId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The stage authorization this release consumed. It is named here as HISTORY: it is permanently non-current, because HEAD has moved past the baseline it requires."
+        },
+        "authorizationDigest": {
+          "$ref": "#/$defs/sha256",
+          "description": "Exact signed bytes of that consumed authorization, so the binding cannot be re-pointed at a different issuance for the same stage."
+        },
+        "candidateDigest": {
+          "$ref": "#/$defs/sha256",
+          "description": "Must equal the candidate the audit and the release authorization are both over, and must recompute from the baseline tree and the released tree."
+        },
+        "candidateTree": {
+          "$ref": "#/$defs/gitObjectId",
+          "description": "The audited candidate tree. Must equal releaseTree: the thing committed must be the thing audited."
+        },
+        "auditBindingDigest": { "$ref": "#/$defs/sha256" },
+        "releaseAuthorizationDigest": { "$ref": "#/$defs/sha256" },
+        "binarySha256": {
+          "$ref": "#/$defs/sha256",
+          "description": "The audited and released trust-core binary. Recorded, and required to match the audit and release authorization. It is NOT compared against the binary reading this object: requiring that would make released history unverifiable by every later build."
+        },
+        "releaseCommit": {
+          "$ref": "#/$defs/gitObjectId",
+          "description": "THE point of this object. Terminal release state requires HEAD to equal this exact commit. A commit with the same parent and the same tree but a different SHA is a different commit and must be refused."
+        },
+        "releaseParent": {
+          "$ref": "#/$defs/gitObjectId",
+          "description": "Must equal the baseline commit of the consumed authorization."
+        },
+        "releaseTree": {
+          "$ref": "#/$defs/gitObjectId",
+          "description": "Must equal candidateTree and the tree of releaseCommit."
+        },
+        "boundAt": { "$ref": "#/$defs/utcTimestamp" },
         "signerKeyFingerprint": { "$ref": "#/$defs/keyFingerprint" },
         "signatureNamespace": { "const": "sourceroot-gds-v1" }
       }

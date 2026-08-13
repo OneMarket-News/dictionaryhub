@@ -417,7 +417,7 @@ $GdsContext = @{
     Fingerprint = $env:SRGDS_SIGNER_FINGERPRINT
     Principal   = $env:SRGDS_SIGNER_PRINCIPAL
 }
-$GdsContextComplete = -not (@($GdsContext.Values) | Where-Object { [string]::IsNullOrWhiteSpace($_) })
+$GdsContextComplete = (@(@($GdsContext.Values) | Where-Object { [string]::IsNullOrWhiteSpace($_) }).Count -eq 0)
 # Results are published for the governance sections BELOW, which must attribute
 # pending work to the SIGNED authorization rather than to a path list pinned
 # inside this file. A pinned list is a release-state fact; a signed
@@ -425,6 +425,28 @@ $GdsContextComplete = -not (@($GdsContext.Values) | Where-Object { [string]::IsN
 $script:GdsAuthorityValid = $false
 $script:GdsCandidateAuthorized = $false
 $script:GdsCandidatePaths = @()
+$script:GdsCandidateEntries = @()
+$script:GdsBaselineCommit = ""
+$script:GdsTerminalRelease = $false
+$script:GdsRelease = $null
+$script:GdsGovernanceMode = "ungoverned"
+
+# The RELEASED predecessor, supplied separately from current authority because
+# they are different facts about different commits. Absent context simply means
+# terminal state cannot be established in this run.
+$GdsReleaseContext = @{
+    StageSlug                   = $env:SRGDS_RELEASED_STAGE
+    ExpectedAuthorizationId     = $env:SRGDS_RELEASED_AUTHORIZATION_ID
+    ExpectedAuthorizationDigest = $env:SRGDS_RELEASED_AUTHORIZATION_DIGEST
+    ExpectedSignerFingerprint   = $env:SRGDS_SIGNER_FINGERPRINT
+    SignerPrincipal             = $env:SRGDS_SIGNER_PRINCIPAL
+    AuditDigest                 = $env:SRGDS_AUDIT_DIGEST
+    ReleaseDigest               = $env:SRGDS_RELEASE_DIGEST
+    AuditorPrincipal            = $env:SRGDS_AUDITOR_PRINCIPAL
+    AuditorFingerprint          = $env:SRGDS_AUDITOR_FINGERPRINT
+    CommitBindingDigest         = $env:SRGDS_COMMIT_BINDING_DIGEST
+}
+$GdsReleaseContextComplete = (@(@($GdsReleaseContext.Values) | Where-Object { [string]::IsNullOrWhiteSpace($_) }).Count -eq 0)
 
 if (-not (Test-Path -LiteralPath $GdsModule -PathType Leaf)) {
     Assert-True $false "GDS orchestration module is present"
@@ -442,12 +464,47 @@ if (-not (Test-Path -LiteralPath $GdsModule -PathType Leaf)) {
         $GdsAuth = Get-GdsStageAuthorization -RepositoryRoot $PSScriptRoot -StageSlug $GdsContext.Stage `
             -ExpectedAuthorizationId $GdsContext.Id -ExpectedAuthorizationDigest $GdsContext.Digest `
             -ExpectedSignerFingerprint $GdsContext.Fingerprint -SignerPrincipal $GdsContext.Principal
-        Assert-True $GdsAuth.Valid "Signed stage authorization verifies through the trust core"
         $script:GdsAuthorityValid = $GdsAuth.Valid
-        Assert-True ($GdsAuth.AuthorizationId -ceq $GdsContext.Id) `
-            "The authorization the core returned is the issuance execution context selected"
-        Assert-True ($GdsAuth.Digest -ceq $GdsContext.Digest.ToUpperInvariant()) `
-            "The authorization bytes are the exact bytes execution context named"
+
+        # TERMINAL RELEASE STATE.
+        #
+        # Current authority requires HEAD to equal the signed baseline, so after
+        # a release commit it is correctly and PERMANENTLY unavailable. Asserting
+        # it anyway made these verifiers fail against the very release they exist
+        # to verify - the fifth appearance of one defect class: a release-state
+        # fact treated as a durable invariant.
+        #
+        # The governed question after release is different: is HEAD the released
+        # truth? That is answered only from the complete historical chain, and it
+        # grants nothing. The core proves, as part of answering, that the
+        # historical authorization STILL fails as current authority at HEAD.
+        if (-not $script:GdsAuthorityValid -and $GdsReleaseContextComplete) {
+            $script:GdsRelease = Test-GdsReleaseState -RepositoryRoot $PSScriptRoot @GdsReleaseContext
+            $script:GdsTerminalRelease = $script:GdsRelease.Released
+        }
+        $script:GdsGovernanceMode =
+            if ($script:GdsAuthorityValid) { "in-flight" }
+            elseif ($script:GdsTerminalRelease) { "terminal" }
+            else { "ungoverned" }
+
+        Assert-True ($script:GdsGovernanceMode -ne "ungoverned") `
+            "Governance state is established through the trust core: $($script:GdsGovernanceMode)"
+
+        if ($script:GdsAuthorityValid) {
+            Assert-True ($GdsAuth.AuthorizationId -ceq $GdsContext.Id) `
+                "The authorization the core returned is the issuance execution context selected"
+            Assert-True ($GdsAuth.Digest -ceq $GdsContext.Digest.ToUpperInvariant()) `
+                "The authorization bytes are the exact bytes execution context named"
+        } elseif ($script:GdsTerminalRelease) {
+            Assert-True ($script:GdsRelease.Tree -ceq $script:GdsRelease.CandidateTree) `
+                "HEAD's tree is the audited candidate tree ($($script:GdsRelease.CandidateTree))"
+            Assert-True ($script:GdsRelease.AuditVerdict -ceq "PASS") `
+                "The released candidate carries a PASS audit binding from $($script:GdsRelease.AuditorIdentity)"
+            Assert-True ($script:GdsRelease.BoundReleaseCommit -ceq $script:GdsRelease.Commit) `
+                "A signed release commit binding names this exact commit, not merely its parent and tree"
+            Assert-True ($script:GdsRelease.CurrentAuthorityAtHead -ceq "REJECTED") `
+                "Terminal release state confers NO authority over HEAD; the consumed authorization stays consumed"
+        }
 
         if ($GdsAuth.Valid) {
             $GdsCandidate = Get-GdsCandidateManifest -RepositoryRoot $PSScriptRoot -StageSlug $GdsContext.Stage `
@@ -455,8 +512,10 @@ if (-not (Test-Path -LiteralPath $GdsModule -PathType Leaf)) {
                 -ExpectedSignerFingerprint $GdsContext.Fingerprint -SignerPrincipal $GdsContext.Principal
             $script:GdsCandidateAuthorized = $GdsCandidate.Authorized
             if ($null -ne $GdsCandidate.Manifest) {
-                $script:GdsCandidatePaths = @($GdsCandidate.Manifest.entries | ForEach-Object { [string]$_.path })
+                $script:GdsCandidateEntries = @($GdsCandidate.Manifest.entries)
+                $script:GdsCandidatePaths = @($script:GdsCandidateEntries | ForEach-Object { [string]$_.path })
             }
+            $script:GdsBaselineCommit = [string]$GdsAuth.BaselineCommit
             Assert-True $GdsCandidate.Authorized `
                 "Every candidate path is inside the signed authority ($($GdsCandidate.Reason))"
             Assert-True ($GdsCandidate.CandidateDigest -match '^[0-9A-F]{64}$') `
@@ -501,9 +560,9 @@ if ($CompletedRecords.Count -eq 1) {
     # -----------------------------------------------------------------------
     # HISTORICAL GDS RELEASE FACTS, read from the PINNED release commit.
     #
-    # The GDS release changeset stayed inside its 7-path allowlist, and the
-    # active specification was consumed by completion. Both were true AT THE
-    # RELEASE BOUNDARY. Asserting them against the working tree instead turns
+    # The GDS release changeset stayed inside its 7-path allowlist, and no
+    # active specification was present in the released tree. Both were true AT
+    # THE RELEASE BOUNDARY. Asserting them against the working tree instead turns
     # them into "no governed stage may ever run again", which fails for every
     # legitimate descendant and pressures future work to weaken this verifier
     # rather than respect it.
@@ -536,7 +595,7 @@ if ($CompletedRecords.Count -eq 1) {
     Assert-True ($ReleaseTreeOk -and $ReleaseTree.Count -gt 0) `
         "GDS release tree is inspectable at the pinned release commit"
     Assert-True ($ReleaseTreeOk -and (-not ($ReleaseTree -contains "docs/stages/active/CURRENT-STAGE.md"))) `
-        "Active specification was consumed by completion at the GDS release (historical release fact)"
+        "No active specification exists in the GDS release tree (historical release fact)"
     $ReleaseMigrations = @($ReleaseTree | Where-Object { $_ -like "backend/db/migrations/*.sql" })
     Assert-True ($ReleaseTreeOk -and $ReleaseMigrations.Count -eq 20) `
         "Migration count was 20 at the GDS release (historical release fact)"
@@ -690,10 +749,71 @@ if ($CompletedRecords.Count -eq 1) {
             foreach ($Path in $OnlyPending) { Write-Host "       pending but not in the candidate: $Path" -ForegroundColor Red }
             foreach ($Path in $OnlyCandidate) { Write-Host "       in the candidate but not pending: $Path" -ForegroundColor Red }
 
-            # A governed stage is in flight, so its specification SHOULD be
-            # present. The legacy rule below applies only when nothing governs.
-            Assert-True (Test-Path -LiteralPath (Join-Path $RepositoryRoot "docs\stages\active\CURRENT-STAGE.md")) `
-                "A signed governed stage in flight declares its active specification"
+            # WHERE A STAGE DECLARES ITSELF DEPENDS ON HOW FAR IT HAS GOT.
+            #
+            # This asserted that the ACTIVE specification file is present, which
+            # conflated two different things: that the stage declared a
+            # specification (durable, true of the whole stage) and that the file
+            # exists at this instant (a state fact that stops being true the
+            # moment the stage completes).
+            #
+            # It made a releasable candidate impossible. Completion consumes the
+            # active specification - the GDS release tree at d55a45b is verified
+            # above to contain none - so a candidate that consumed it failed
+            # HERE, while a candidate that kept it produced a release tree that
+            # fails the terminal assertion below. No candidate could satisfy
+            # both. That is the same defect this whole line of work has been
+            # closing: an instant's state written down as an invariant.
+            #
+            # The corrected rule follows the lifecycle. A governed stage declares
+            # itself in EXACTLY ONE place: the active specification while work is
+            # in progress, or the completed record once it is consumed. The
+            # completed record is not read from the directory, where any file
+            # could be dropped in - it must be a path the SIGNED authorization
+            # put in this candidate.
+            #
+            # This is not a relaxation. "Neither present" fails exactly as
+            # before, and "both present" - a half-consumed stage, which the
+            # previous check accepted - now fails as well.
+            # A completed record is a DECLARATION OF COMPLETION, so recognising
+            # one loosely lets the candidate manufacture its own completion
+            # authority. A Tier-3 audit found the previous form did exactly
+            # that: a case-insensitive wildcard and "Count -gt 0", which accept
+            # any number of records and several spellings of one.
+            #
+            # Recognition is now singular and canonical. Exactly ONE entry, in
+            # exactly the canonical path form, matched ORDINALLY, not a
+            # deletion, drawn from the SIGNED candidate rather than from
+            # directory contents, and actually present on disk. Zero records,
+            # two records, case-varied duplicates and deletion-only entries all
+            # fail to establish completion.
+            $ActiveSpecPresent = Test-Path -LiteralPath (Join-Path $RepositoryRoot "docs\stages\active\CURRENT-STAGE.md")
+
+            # Candidates are collected CASE-INSENSITIVELY and then required to be
+            # a single CANONICAL one. Filtering case-sensitively first would
+            # silently ignore a case-varied twin instead of rejecting it, and on
+            # a case-insensitive filesystem the two spellings are one file - an
+            # ambiguity that must fail, not be quietly resolved.
+            $CompletedEntries = @($script:GdsCandidateEntries | Where-Object {
+                (([string]$_.path) -imatch '^docs/stages/completed/[^/]+\.md$') -and (([string]$_.change) -cne "delete")
+            })
+            $CompletedSpecPresent = ($CompletedEntries.Count -eq 1) -and
+                (([string]$CompletedEntries[0].path) -cmatch '^docs/stages/completed/[^/]+\.md$') -and
+                (Test-Path -LiteralPath (Join-Path $RepositoryRoot (([string]$CompletedEntries[0].path) -replace "/", "\")) -PathType Leaf)
+            Assert-True ($ActiveSpecPresent -ne $CompletedSpecPresent) `
+                "A signed governed stage in flight declares its specification in exactly one place (active: $ActiveSpecPresent, consumed into exactly one authorized completed record: $CompletedSpecPresent, completed entries: $($CompletedEntries.Count))"
+        } elseif ($script:GdsTerminalRelease) {
+            # TERMINAL RELEASE STATE. No authorization governs HEAD, and none
+            # should: current authority requires HEAD to be a signed baseline,
+            # and HEAD is a release commit. There is consequently nothing for
+            # pending work to be attributed TO, so this branch admits none -
+            # which is strictly stronger than the signed branch above, not a
+            # relaxation of it.
+            Assert-True ($PendingOk -and $Pending.Count -eq 0) `
+                "At a terminal release state nothing is pending against HEAD ($($Pending.Count) found)"
+            foreach ($Path in $Pending) { Write-Host "       pending at a terminal release: $Path" -ForegroundColor Red }
+            Assert-True (-not (Test-Path -LiteralPath (Join-Path $RepositoryRoot "docs\stages\active\CURRENT-STAGE.md"))) `
+                "At a terminal release state the active specification stays consumed"
         } else {
             Assert-True ($PendingOk -and $UngovernedPending.Count -eq 0) `
                 "With no active stage and no signed authorization, every pending path is attributable to the anchored completed stage"

@@ -1216,3 +1216,192 @@ func TestAuthorizedAgainst(t *testing.T) {
 		t.Error("an invalid authorization produced an authorization decision")
 	}
 }
+
+// ===========================================================================
+// TERMINAL RELEASE STATE
+//
+// After a release commit there is no index to derive a candidate from and no
+// current authorization to derive it under. The manifest must instead be
+// rebuilt from two COMMITTED trees, and the whole claim of terminal state
+// rests on that reconstruction being the same object the auditor saw.
+//
+// If BuildFromTrees and Build could ever disagree, terminal state would be a
+// second opinion about what shipped rather than a proof of it.
+// ===========================================================================
+
+// The reconstruction is faithful: the manifest rebuilt from committed trees is
+// byte-identical to the manifest that was derived from the pending index, so
+// the released candidate digest recomputes exactly.
+func TestBuildFromTreesReconstructsTheAuditedManifest(t *testing.T) {
+	r := newRepo(t)
+
+	// A pending changeset with every change class in it, so the comparison is
+	// not a trivial one over additions alone.
+	r.write("a.txt", "modified")
+	r.remove("b.txt")
+	r.write("new.txt", "added")
+	r.write("backend/db/migrations/001_init.sql", "-- changed")
+	r.run("add", "-A")
+
+	pending, err := Build(r.git, r.auth())
+	if err != nil {
+		t.Fatalf("Build: %v", err)
+	}
+	if len(pending.Entries) == 0 {
+		t.Fatal("the fixture produced an empty candidate; the comparison would be vacuous")
+	}
+
+	// Release it: the pending candidate becomes a commit.
+	r.run("commit", "-q", "-m", "release")
+	head, err := r.git.HeadCommit()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if head == r.baseline {
+		t.Fatal("the fixture did not actually commit")
+	}
+
+	baselineTree, err := r.git.RequiredLine(nil, "rev-parse", r.baseline+"^{tree}")
+	if err != nil {
+		t.Fatal(err)
+	}
+	headTree, err := r.git.RequiredLine(nil, "rev-parse", head+"^{tree}")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if headTree != pending.CandidateTree {
+		t.Fatalf("the released tree %s is not the candidate tree %s", headTree, pending.CandidateTree)
+	}
+
+	rebuilt, err := BuildFromTrees(r.git, pending.RepositoryID, pending.StageSlug,
+		pending.AuthorizationDigest, r.baseline, baselineTree, headTree)
+	if err != nil {
+		t.Fatalf("BuildFromTrees: %v", err)
+	}
+
+	if rebuilt.CandidateDigest != pending.CandidateDigest {
+		t.Errorf("reconstruction changed the candidate digest:\n  audited: %s\n  rebuilt: %s",
+			pending.CandidateDigest, rebuilt.CandidateDigest)
+	}
+	if !reflect.DeepEqual(rebuilt.Entries, pending.Entries) {
+		t.Errorf("reconstruction changed the entries:\n  audited: %+v\n  rebuilt: %+v",
+			pending.Entries, rebuilt.Entries)
+	}
+	if !reflect.DeepEqual(rebuilt.MigrationIdentity, pending.MigrationIdentity) {
+		t.Errorf("reconstruction changed the migration identity:\n  audited: %+v\n  rebuilt: %+v",
+			pending.MigrationIdentity, rebuilt.MigrationIdentity)
+	}
+	if err := Validate(rebuilt.Value()); err != nil {
+		t.Errorf("the reconstructed manifest does not satisfy its own contract: %v", err)
+	}
+
+	// The canonical bytes are what an auditor actually saw, so equality is
+	// asserted over those rather than over the in-memory structure alone.
+	auditedBytes, err := canonical.Marshal(pending.Value())
+	if err != nil {
+		t.Fatal(err)
+	}
+	rebuiltBytes, err := canonical.Marshal(rebuilt.Value())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(auditedBytes) != string(rebuiltBytes) {
+		t.Errorf("the reconstructed manifest is not byte-identical to the audited one:\n  audited: %s\n  rebuilt: %s",
+			auditedBytes, rebuiltBytes)
+	}
+}
+
+// Reconstruction reads trees and NOTHING ELSE. It must not consult the index,
+// the worktree, or HEAD - a manifest that changed depending on what happened to
+// be checked out would be describing the wrong thing entirely.
+func TestBuildFromTreesIgnoresIndexAndWorktree(t *testing.T) {
+	r := newRepo(t)
+	r.write("a.txt", "modified")
+	r.run("add", "-A")
+	r.run("commit", "-q", "-m", "release")
+
+	head, err := r.git.HeadCommit()
+	if err != nil {
+		t.Fatal(err)
+	}
+	baselineTree, err := r.git.RequiredLine(nil, "rev-parse", r.baseline+"^{tree}")
+	if err != nil {
+		t.Fatal(err)
+	}
+	headTree, err := r.git.RequiredLine(nil, "rev-parse", head+"^{tree}")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	clean, err := BuildFromTrees(r.git, "repo", "STAGE", strings.Repeat("A", 64), r.baseline, baselineTree, headTree)
+	if err != nil {
+		t.Fatalf("BuildFromTrees: %v", err)
+	}
+
+	// Now make the working state loudly disagree with the trees: an unrelated
+	// staged change, an unstaged edit, and an untracked file.
+	r.write("a.txt", "later unstaged edit")
+	r.write("staged-later.txt", "staged after release")
+	r.run("add", "staged-later.txt")
+	r.write("untracked-later.txt", "never added")
+
+	noisy, err := BuildFromTrees(r.git, "repo", "STAGE", strings.Repeat("A", 64), r.baseline, baselineTree, headTree)
+	if err != nil {
+		t.Fatalf("BuildFromTrees after local changes: %v", err)
+	}
+
+	if noisy.CandidateDigest != clean.CandidateDigest {
+		t.Errorf("local working state changed the reconstructed release:\n  clean: %s\n  noisy: %s",
+			clean.CandidateDigest, noisy.CandidateDigest)
+	}
+	for _, entry := range noisy.Entries {
+		if entry.Path == "staged-later.txt" || entry.Path == "untracked-later.txt" {
+			t.Errorf("post-release local work entered the reconstructed release: %s", entry.Path)
+		}
+	}
+
+	// And the local state really was dirty, so the assertion above was not
+	// passing because there was nothing to notice.
+	if strings.TrimSpace(r.status()) == "" {
+		t.Fatal("the fixture failed to dirty the working state")
+	}
+}
+
+// Reconstruction is a reading operation. It must leave no commit, no index
+// change and no worktree change behind, because it runs against a repository
+// nobody authorized it to touch.
+func TestBuildFromTreesIsReadOnly(t *testing.T) {
+	r := newRepo(t)
+	r.write("a.txt", "modified")
+	r.run("add", "-A")
+	r.run("commit", "-q", "-m", "release")
+
+	head, err := r.git.HeadCommit()
+	if err != nil {
+		t.Fatal(err)
+	}
+	baselineTree, err := r.git.RequiredLine(nil, "rev-parse", r.baseline+"^{tree}")
+	if err != nil {
+		t.Fatal(err)
+	}
+	headTree, err := r.git.RequiredLine(nil, "rev-parse", head+"^{tree}")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	before := r.status()
+
+	if _, err := BuildFromTrees(r.git, "repo", "STAGE", strings.Repeat("A", 64), r.baseline, baselineTree, headTree); err != nil {
+		t.Fatalf("BuildFromTrees: %v", err)
+	}
+
+	after := r.status()
+	if before != after {
+		t.Errorf("reconstruction changed the working state:\n  before: %q\n  after:  %q", before, after)
+	}
+	if nowHead, err := r.git.HeadCommit(); err != nil {
+		t.Fatal(err)
+	} else if nowHead != head {
+		t.Errorf("reconstruction moved HEAD from %s to %s", head, nowHead)
+	}
+}

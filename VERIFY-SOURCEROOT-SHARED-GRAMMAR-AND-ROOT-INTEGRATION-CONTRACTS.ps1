@@ -150,7 +150,7 @@ $GdsContext = @{
     Fingerprint = $env:SRGDS_SIGNER_FINGERPRINT
     Principal   = $env:SRGDS_SIGNER_PRINCIPAL
 }
-$GdsContextComplete = -not (@($GdsContext.Values) | Where-Object { [string]::IsNullOrWhiteSpace($_) })
+$GdsContextComplete = (@(@($GdsContext.Values) | Where-Object { [string]::IsNullOrWhiteSpace($_) }).Count -eq 0)
 # Results are published for the governance sections BELOW, which must attribute
 # pending work to the SIGNED authorization rather than to a path list pinned
 # inside this file. A pinned list is a release-state fact; a signed
@@ -158,6 +158,28 @@ $GdsContextComplete = -not (@($GdsContext.Values) | Where-Object { [string]::IsN
 $script:GdsAuthorityValid = $false
 $script:GdsCandidateAuthorized = $false
 $script:GdsCandidatePaths = @()
+$script:GdsCandidateEntries = @()
+$script:GdsBaselineCommit = ""
+$script:GdsTerminalRelease = $false
+$script:GdsRelease = $null
+$script:GdsGovernanceMode = "ungoverned"
+
+# The RELEASED predecessor, supplied separately from current authority because
+# they are different facts about different commits. Absent context simply means
+# terminal state cannot be established in this run.
+$GdsReleaseContext = @{
+    StageSlug                   = $env:SRGDS_RELEASED_STAGE
+    ExpectedAuthorizationId     = $env:SRGDS_RELEASED_AUTHORIZATION_ID
+    ExpectedAuthorizationDigest = $env:SRGDS_RELEASED_AUTHORIZATION_DIGEST
+    ExpectedSignerFingerprint   = $env:SRGDS_SIGNER_FINGERPRINT
+    SignerPrincipal             = $env:SRGDS_SIGNER_PRINCIPAL
+    AuditDigest                 = $env:SRGDS_AUDIT_DIGEST
+    ReleaseDigest               = $env:SRGDS_RELEASE_DIGEST
+    AuditorPrincipal            = $env:SRGDS_AUDITOR_PRINCIPAL
+    AuditorFingerprint          = $env:SRGDS_AUDITOR_FINGERPRINT
+    CommitBindingDigest         = $env:SRGDS_COMMIT_BINDING_DIGEST
+}
+$GdsReleaseContextComplete = (@(@($GdsReleaseContext.Values) | Where-Object { [string]::IsNullOrWhiteSpace($_) }).Count -eq 0)
 
 if (-not (Test-Path -LiteralPath $GdsModule -PathType Leaf)) {
     Assert-True $false "GDS orchestration module is present"
@@ -175,12 +197,47 @@ if (-not (Test-Path -LiteralPath $GdsModule -PathType Leaf)) {
         $GdsAuth = Get-GdsStageAuthorization -RepositoryRoot $PSScriptRoot -StageSlug $GdsContext.Stage `
             -ExpectedAuthorizationId $GdsContext.Id -ExpectedAuthorizationDigest $GdsContext.Digest `
             -ExpectedSignerFingerprint $GdsContext.Fingerprint -SignerPrincipal $GdsContext.Principal
-        Assert-True $GdsAuth.Valid "Signed stage authorization verifies through the trust core"
         $script:GdsAuthorityValid = $GdsAuth.Valid
-        Assert-True ($GdsAuth.AuthorizationId -ceq $GdsContext.Id) `
-            "The authorization the core returned is the issuance execution context selected"
-        Assert-True ($GdsAuth.Digest -ceq $GdsContext.Digest.ToUpperInvariant()) `
-            "The authorization bytes are the exact bytes execution context named"
+
+        # TERMINAL RELEASE STATE.
+        #
+        # Current authority requires HEAD to equal the signed baseline, so after
+        # a release commit it is correctly and PERMANENTLY unavailable. Asserting
+        # it anyway made these verifiers fail against the very release they exist
+        # to verify - the fifth appearance of one defect class: a release-state
+        # fact treated as a durable invariant.
+        #
+        # The governed question after release is different: is HEAD the released
+        # truth? That is answered only from the complete historical chain, and it
+        # grants nothing. The core proves, as part of answering, that the
+        # historical authorization STILL fails as current authority at HEAD.
+        if (-not $script:GdsAuthorityValid -and $GdsReleaseContextComplete) {
+            $script:GdsRelease = Test-GdsReleaseState -RepositoryRoot $PSScriptRoot @GdsReleaseContext
+            $script:GdsTerminalRelease = $script:GdsRelease.Released
+        }
+        $script:GdsGovernanceMode =
+            if ($script:GdsAuthorityValid) { "in-flight" }
+            elseif ($script:GdsTerminalRelease) { "terminal" }
+            else { "ungoverned" }
+
+        Assert-True ($script:GdsGovernanceMode -ne "ungoverned") `
+            "Governance state is established through the trust core: $($script:GdsGovernanceMode)"
+
+        if ($script:GdsAuthorityValid) {
+            Assert-True ($GdsAuth.AuthorizationId -ceq $GdsContext.Id) `
+                "The authorization the core returned is the issuance execution context selected"
+            Assert-True ($GdsAuth.Digest -ceq $GdsContext.Digest.ToUpperInvariant()) `
+                "The authorization bytes are the exact bytes execution context named"
+        } elseif ($script:GdsTerminalRelease) {
+            Assert-True ($script:GdsRelease.Tree -ceq $script:GdsRelease.CandidateTree) `
+                "HEAD's tree is the audited candidate tree ($($script:GdsRelease.CandidateTree))"
+            Assert-True ($script:GdsRelease.AuditVerdict -ceq "PASS") `
+                "The released candidate carries a PASS audit binding from $($script:GdsRelease.AuditorIdentity)"
+            Assert-True ($script:GdsRelease.BoundReleaseCommit -ceq $script:GdsRelease.Commit) `
+                "A signed release commit binding names this exact commit, not merely its parent and tree"
+            Assert-True ($script:GdsRelease.CurrentAuthorityAtHead -ceq "REJECTED") `
+                "Terminal release state confers NO authority over HEAD; the consumed authorization stays consumed"
+        }
 
         if ($GdsAuth.Valid) {
             $GdsCandidate = Get-GdsCandidateManifest -RepositoryRoot $PSScriptRoot -StageSlug $GdsContext.Stage `
@@ -188,8 +245,10 @@ if (-not (Test-Path -LiteralPath $GdsModule -PathType Leaf)) {
                 -ExpectedSignerFingerprint $GdsContext.Fingerprint -SignerPrincipal $GdsContext.Principal
             $script:GdsCandidateAuthorized = $GdsCandidate.Authorized
             if ($null -ne $GdsCandidate.Manifest) {
-                $script:GdsCandidatePaths = @($GdsCandidate.Manifest.entries | ForEach-Object { [string]$_.path })
+                $script:GdsCandidateEntries = @($GdsCandidate.Manifest.entries)
+                $script:GdsCandidatePaths = @($script:GdsCandidateEntries | ForEach-Object { [string]$_.path })
             }
+            $script:GdsBaselineCommit = [string]$GdsAuth.BaselineCommit
             Assert-True $GdsCandidate.Authorized `
                 "Every candidate path is inside the signed authority ($($GdsCandidate.Reason))"
             Assert-True ($GdsCandidate.CandidateDigest -match '^[0-9A-F]{64}$') `
@@ -462,6 +521,14 @@ foreach ($Relative in $ContractSurfaceGoverned) {
         if ($PendingDrift.Count -gt 0 -and $script:GdsCandidatePaths -notcontains $Relative) {
             $UngovernedDrift += "$Relative (uncommitted, outside the signed candidate)"
         }
+    } elseif ($script:GdsTerminalRelease) {
+        # TERMINAL RELEASE STATE. Committed content is release history and was
+        # governed when it landed; the core has proven HEAD's tree is the
+        # audited candidate. What is not governed by anything is UNCOMMITTED
+        # change, so that alone is drift here.
+        $PendingDrift = @(& git @RepositoryLocalGit status --porcelain --untracked-files=all -- $Relative |
+            Where-Object { $_ })
+        if ($PendingDrift.Count -gt 0) { $UngovernedDrift += "$Relative (uncommitted at a terminal release state)" }
     } elseif ($ActiveAllowed -notcontains $Relative) { $UngovernedDrift += $Relative }
 }
 Assert-True ($UngovernedDrift.Count -eq 0) "Extensible 14C contract files changed only under anchored governed authorization"

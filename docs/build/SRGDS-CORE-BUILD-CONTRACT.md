@@ -203,7 +203,23 @@ srgds-core candidate-manifest  <authority flags> [-out FILE]
 srgds-core path-check          <authority flags> -path PATH [-path PATH ...]
 srgds-core lifecycle-check     -from STATE -to STATE
 srgds-core canonical-digest    -file FILE
+srgds-core release-state       <authority flags> -audit-digest SHA256
+                               -release-digest SHA256 -auditor-principal NAME
+                               -auditor-fingerprint SHA256:...
+                               -commit-binding-digest SHA256
 ```
+
+`-commit-binding-digest` names WHICH signed ReleaseCommitBinding must answer. It
+is mandatory, and it is deliberately not an `-expected-commit` argument: a commit
+SHA typed on a command line is a claim by whoever ran the command, not evidence.
+The expected commit is read from the signed object; the observed commit is read
+from Git; the caller chooses neither.
+
+`release-state` answers a different question from every command above it. The
+others ask what MAY change and require HEAD to be the signed baseline.
+`release-state` asks what WAS released, is only answerable once HEAD has moved
+past that baseline, and grants nothing. Its authority flags therefore name the
+CONSUMED authorization of the released stage, not a current one.
 
 | Exit | Verdict | Meaning |
 |---|---|---|
@@ -475,6 +491,78 @@ baseline check. The PowerShell implementation carried `-SkipHeadCheck` for test
 convenience and an audit proved it produced a fully authoritative object on the
 wrong HEAD. **A bypass that exists for tests is a bypass that exists.** Tests
 build a real repository and sign a real baseline.
+
+### Terminal release state reads; it never grants
+
+Once a release is committed, HEAD is past the baseline forever and `Load` refuses
+forever. That is the invariant working, not a fault to be worked around, so the
+reading question is answered by a SEPARATE function over the same signed bytes
+rather than by relaxing the granting one.
+
+`LoadValidatedObject` performs every gate except the baseline check. `Load` adds
+the baseline check and returns an `Authorization`, which carries allowed and
+protected paths and answers `PathAuthorized`. `LoadHistoricalAuthorization` adds
+nothing and returns a `HistoricalAuthorization`, which carries **no path data and
+exposes no methods at all**. The separation is structural: the historical result
+has no way to authorize anything, whatever a future caller intends.
+
+The same split applies one level up. `ReleaseChain` is the granting form and
+requires the RUNNING binary to be the audited one. `ReleaseChainHistorical` is
+the reading form and requires only that the audit and the release authorization
+record the same binary as each other. Collapsing them would either let an
+unaudited binary act, or make released history unreadable by every later build.
+
+Four things are asserted before a terminal state exists, and all four come from
+committed history:
+
+1. `HEAD^` is the signed baseline of the named authorization
+2. the manifest rebuilt from the baseline tree and the released tree recomputes
+   the audited candidate digest
+3. a signed PASS audit binding and a signed Product Authority release
+   authorization both name that digest
+4. the named authorization is still REJECTED as current authority at HEAD
+
+The fourth is reported as `currentAuthorityAtHead` and is not optional. A
+terminal state that cannot demonstrate its own powerlessness is refused.
+
+Reconstruction reads trees only. It does not consult the index, the worktree or
+any local state, and Go tests assert that a dirty working tree, staged changes
+and untracked files leave the reconstructed candidate digest unchanged.
+
+### Parent and tree do not identify a commit
+
+The four assertions above were once the whole of terminal state, and an audit
+showed they are satisfied by more than one commit. Two commits were built over
+the same parent and the same tree, differing only in author, committer, message
+and timestamps; both were accepted as the release.
+
+Nothing in the chain covered those fields, because nothing could: the
+ReleaseAuthorization is signed BEFORE the commit exists and cannot name a SHA
+that does not yet exist. A fifth signed object closes it.
+
+`ReleaseCommitBinding` is a Product Authority statement, made after the commit
+exists, that one exact commit is the release of one exact audited candidate. It
+is keyed in the control store by CANDIDATE digest, not by commit SHA, so a
+caller cannot select which commit gets validated by choosing a filename:
+
+	<store>/commits/<stageSlug>.<candidateDigest>.commit.json
+
+`release-state` now requires it, and additionally asserts:
+
+5. `HEAD` equals `binding.releaseCommit`
+6. `HEAD^` equals `binding.releaseParent`, which equals the signed baseline
+7. `HEAD`'s tree equals `binding.releaseTree`, which equals `candidateTree`
+8. the binding names, by digest, the same authorization, audit binding and
+   release authorization that were independently verified
+
+Like `HistoricalAuthorization`, the binding carries no path data and exposes no
+methods, and a Go test fails if a field or method is ever added that could
+authorize a mutation.
+
+**There is no `-expected-commit` argument.** A commit SHA supplied on a command
+line is a claim by whoever ran the command. The expected commit comes from
+signed bytes, the observed commit comes from Git, and the caller supplies
+neither. There is likewise no hard-coded exception for any particular commit.
 
 ---
 

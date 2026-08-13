@@ -456,8 +456,56 @@ func Build(git *gitexec.Runner, auth authority.Authorization) (*Manifest, error)
 		return nil, err
 	}
 
-	out, err := git.Checked(ws.Env, "diff-tree", "--raw", "-r", "-z", "--no-renames", "--no-abbrev",
-		trees.BaselineTree, trees.CandidateTree)
+	// Live construction and historical reconstruction share ONE derivation, so
+	// the same pair of trees can never yield two different identities.
+	entries, err := deriveEntries(ws.Git(git), ws.Env, trees.BaselineTree, trees.CandidateTree)
+	if err != nil {
+		return nil, err
+	}
+	return assembleManifest(repositoryID, auth.StageSlug, auth.Digest, auth.BaselineCommit, trees, entries)
+}
+
+// BuildFromTrees derives a manifest from two trees that already exist in the
+// object database, with no worktree and no HEAD requirement.
+//
+// This is what makes terminal release state checkable. After release, the
+// audited candidate cannot be rebuilt the normal way: that path requires HEAD
+// to equal the signed baseline, and HEAD is now the release commit. But the two
+// trees are still in history - the baseline's tree and the release commit's
+// tree - and the manifest is a pure function of them. Recomputing it and
+// comparing the resulting candidateDigest to the digest a PASS audit binding
+// names is what proves the released tree IS the audited candidate.
+//
+// It grants nothing. It reads two immutable trees and reports what changed
+// between them.
+func BuildFromTrees(git *gitexec.Runner, repositoryID, stageSlug, authorizationDigest, baselineCommit, baselineTree, candidateTree string) (*Manifest, error) {
+	for _, field := range []struct {
+		name  string
+		value string
+	}{
+		{"baselineCommit", baselineCommit},
+		{"baselineTree", baselineTree},
+		{"candidateTree", candidateTree},
+	} {
+		if !gitIDRe.MatchString(field.value) {
+			return nil, fmt.Errorf("%s %q is not a full Git object id", field.name, field.value)
+		}
+	}
+	entries, err := deriveEntries(git, nil, baselineTree, candidateTree)
+	if err != nil {
+		return nil, err
+	}
+	return assembleManifest(repositoryID, stageSlug, authorizationDigest, baselineCommit,
+		Trees{BaselineTree: baselineTree, CandidateTree: candidateTree}, entries)
+}
+
+// deriveEntries turns one baseline-tree to candidate-tree transition into the
+// ordered entry set. It is shared by live candidate construction and by
+// historical reconstruction, so the two cannot drift apart and produce
+// different identities for the same pair of trees.
+func deriveEntries(git *gitexec.Runner, env map[string]string, baselineTree, candidateTree string) ([]Entry, error) {
+	out, err := git.Checked(env, "diff-tree", "--raw", "-r", "-z", "--no-renames", "--no-abbrev",
+		baselineTree, candidateTree)
 	if err != nil {
 		return nil, err
 	}
@@ -512,7 +560,7 @@ func Build(git *gitexec.Runner, auth authority.Authorization) (*Manifest, error)
 		if !gitIDRe.MatchString(dstSha) {
 			return nil, fmt.Errorf("candidate object id for %q is not a full id", path)
 		}
-		sum, err := BlobSha256(git, ws, dstSha)
+		sum, err := blobSha256WithEnv(git, env, dstSha)
 		if err != nil {
 			return nil, err
 		}
@@ -528,7 +576,11 @@ func Build(git *gitexec.Runner, auth authority.Authorization) (*Manifest, error)
 	}
 
 	sort.Slice(entries, func(a, b int) bool { return entries[a].Path < entries[b].Path })
+	return entries, nil
+}
 
+// assembleManifest builds the manifest and seals it with its own digest.
+func assembleManifest(repositoryID, stageSlug, authorizationDigest, baselineCommit string, trees Trees, entries []Entry) (*Manifest, error) {
 	migrations := make([]Migration, 0)
 	for _, entry := range entries {
 		if strings.HasPrefix(entry.Path, MigrationPrefix) && strings.HasSuffix(entry.Path, ".sql") {
@@ -538,14 +590,13 @@ func Build(git *gitexec.Runner, auth authority.Authorization) (*Manifest, error)
 			})
 		}
 	}
-
 	m := &Manifest{
 		SchemaVersion:       SchemaVersion,
 		ObjectType:          ObjectType,
 		RepositoryID:        repositoryID,
-		StageSlug:           auth.StageSlug,
-		AuthorizationDigest: auth.Digest,
-		BaselineCommit:      auth.BaselineCommit,
+		StageSlug:           stageSlug,
+		AuthorizationDigest: authorizationDigest,
+		BaselineCommit:      baselineCommit,
 		BaselineTree:        trees.BaselineTree,
 		CandidateTree:       trees.CandidateTree,
 		Entries:             entries,
@@ -557,6 +608,25 @@ func Build(git *gitexec.Runner, auth authority.Authorization) (*Manifest, error)
 	}
 	m.CandidateDigest = digest
 	return m, nil
+}
+
+func blobSha256WithEnv(git *gitexec.Runner, env map[string]string, objectID string) (string, error) {
+	sizeText, err := git.RequiredLine(env, "cat-file", "-s", objectID)
+	if err != nil {
+		return "", err
+	}
+	expected, err := strconv.Atoi(strings.TrimSpace(sizeText))
+	if err != nil {
+		return "", fmt.Errorf("git cat-file -s did not return a size for %s: %w", objectID, err)
+	}
+	blob, err := git.Checked(env, "cat-file", "blob", objectID)
+	if err != nil {
+		return "", err
+	}
+	if len(blob) != expected {
+		return "", fmt.Errorf("candidate blob %s read %d bytes but Git reports %d; refusing a truncated identity", objectID, len(blob), expected)
+	}
+	return canonical.Digest(blob), nil
 }
 
 func ptr(s string) *string { return &s }

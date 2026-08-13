@@ -338,6 +338,144 @@ function Get-GdsCandidateManifest {
 }
 
 # ===========================================================================
+# TERMINAL RELEASE STATE
+#
+# "Authorized" and "released" are different facts, and for a long time this
+# system had a name for only the first.
+#
+# BEFORE a release commit, the question is whether current authority permits a
+# change, and that requires HEAD to equal the signed baseline. AFTER the release
+# commit, HEAD is a DESCENDANT of that baseline, so current authority is
+# correctly and permanently unavailable - and every governed verifier was left
+# asserting something that could no longer be true, failing against the very
+# release it existed to verify.
+#
+# Terminal state is the missing name. It is established ONLY from the complete
+# historical chain, and it grants nothing: the core's own last act when
+# answering is to prove the historical authorization STILL fails as current
+# authority at HEAD.
+# ===========================================================================
+
+function Test-GdsReleaseState {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$RepositoryRoot,
+        [Parameter(Mandatory = $true)][string]$StageSlug,
+        [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string]$ExpectedAuthorizationId,
+        [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string]$ExpectedAuthorizationDigest,
+        [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string]$ExpectedSignerFingerprint,
+        [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string]$SignerPrincipal,
+        [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string]$AuditDigest,
+        [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string]$ReleaseDigest,
+        [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string]$AuditorPrincipal,
+        [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string]$AuditorFingerprint,
+        # The signed statement naming the EXACT release commit. Mandatory: an
+        # audit proved that without it, any commit sharing a parent and a tree
+        # with the real release was accepted as the release.
+        [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string]$CommitBindingDigest,
+        [Parameter()][string]$ControlStoreRoot,
+        [Parameter()][string]$CorePath
+    )
+    $Arguments = @(
+        "release-state",
+        "-repo", $RepositoryRoot,
+        "-stage", $StageSlug,
+        "-authorization-id", $ExpectedAuthorizationId,
+        "-expected-digest", $ExpectedAuthorizationDigest,
+        "-signer-fingerprint", $ExpectedSignerFingerprint,
+        "-signer-principal", $SignerPrincipal,
+        "-audit-digest", $AuditDigest,
+        "-release-digest", $ReleaseDigest,
+        "-auditor-principal", $AuditorPrincipal,
+        "-auditor-fingerprint", $AuditorFingerprint,
+        "-commit-binding-digest", $CommitBindingDigest
+    )
+    if (-not [string]::IsNullOrWhiteSpace($ControlStoreRoot)) { $Arguments += @("-control-store", $ControlStoreRoot) }
+
+    $Result = Invoke-SrgdsCore -Arguments $Arguments -CorePath $CorePath
+    $Payload = $Result.Payload
+    $Get = {
+        param($Name)
+        if ($Payload.PSObject.Properties.Name -contains $Name) { return [string]$Payload.$Name }
+        return ""
+    }
+    return [pscustomobject]@{
+        Released                   = $Result.Accepted
+        Reason                     = $Result.Reason
+        Commit                     = (& $Get "commit")
+        Parent                     = (& $Get "parent")
+        Tree                       = (& $Get "tree")
+        CandidateDigest            = (& $Get "candidateDigest")
+        CandidateTree              = (& $Get "candidateTree")
+        EntryCount                 = (& $Get "entryCount")
+        AuditVerdict               = (& $Get "auditVerdict")
+        AuditorIdentity            = (& $Get "auditorIdentity")
+        ReleasedBinarySha256       = (& $Get "releasedBinarySha256")
+        RunningBinarySha256        = (& $Get "runningBinarySha256")
+        ReleaseCommitBindingDigest = (& $Get "releaseCommitBindingDigest")
+        BoundReleaseCommit         = (& $Get "boundReleaseCommit")
+        CurrentAuthorityAtHead     = (& $Get "currentAuthorityAtHead")
+    }
+}
+
+# Get-GdsGovernanceState is the ONE place that decides which of the three
+# governance modes a repository is in, so the verifiers cannot disagree with
+# each other about it.
+#
+#   in-flight   current authority is valid: HEAD is the signed baseline and a
+#               stage is being built
+#   terminal    HEAD is the governed release of an audited candidate
+#   ungoverned  neither; nothing may be asserted on the strength of authority
+function Get-GdsGovernanceState {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$RepositoryRoot,
+        [Parameter(Mandatory = $true)][hashtable]$Context,
+        [Parameter()][hashtable]$ReleaseContext,
+        [Parameter()][string]$CorePath
+    )
+    # Both contexts describe the same repository and are answered by the same
+    # core, so those two values are supplied here rather than being repeated by
+    # every caller. A parameter that is accepted and ignored is worse than one
+    # that does not exist: it reads as though it were doing something.
+    $Fill = {
+        param([hashtable]$Source)
+        $Copy = @{}
+        foreach ($Key in $Source.Keys) { $Copy[$Key] = $Source[$Key] }
+        $Copy.RepositoryRoot = $RepositoryRoot
+        if (-not [string]::IsNullOrWhiteSpace($CorePath)) { $Copy.CorePath = $CorePath }
+        return $Copy
+    }
+    $Context = & $Fill $Context
+    if ($null -ne $ReleaseContext -and $ReleaseContext.Count -gt 0) { $ReleaseContext = & $Fill $ReleaseContext }
+
+    $Authority = Get-GdsStageAuthorization @Context
+    if ($Authority.Valid) {
+        return [pscustomobject]@{
+            Mode = "in-flight"; Authority = $Authority; Release = $null
+            Detail = $Authority.Reason
+        }
+    }
+    if ($null -ne $ReleaseContext -and $ReleaseContext.Count -gt 0) {
+        $Release = Test-GdsReleaseState @ReleaseContext
+        if ($Release.Released) {
+            return [pscustomobject]@{
+                Mode = "terminal"; Authority = $Authority; Release = $Release
+                Detail = $Release.Reason
+            }
+        }
+        return [pscustomobject]@{
+            Mode = "ungoverned"; Authority = $Authority; Release = $Release
+            Detail = "current authority: $($Authority.Reason); release state: $($Release.Reason)"
+        }
+    }
+    return [pscustomobject]@{
+        Mode = "ungoverned"; Authority = $Authority; Release = $null
+        Detail = $Authority.Reason
+    }
+}
+
+# ===========================================================================
 # LIFECYCLE
 # ===========================================================================
 
@@ -376,5 +514,5 @@ Export-ModuleMember -Function `
     Get-SrgdsCorePath, Invoke-SrgdsCore, Get-SrgdsCoreVersion, `
     Get-GdsStageAuthorization, Test-GdsPathAuthorized, `
     Get-GdsCandidateManifest, `
-    Test-GdsLifecycleTransition, `
+    Test-GdsLifecycleTransition, Test-GdsReleaseState, Get-GdsGovernanceState, `
     Test-GdsFileCanonical

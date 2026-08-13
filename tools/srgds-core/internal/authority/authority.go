@@ -159,7 +159,7 @@ func fileExists(path string) bool {
 // name a file, so a malformed request never reaches the filesystem as a path
 // fragment. The digest is checked before the signature, and the signature
 // before the parse, so no unverified byte is ever interpreted as structure.
-func Load(req Request) Authorization {
+func loadValidatedObject(req Request) Authorization {
 	principal := req.SignerPrincipal
 	if principal == "" {
 		return reject("no signer principal was supplied; authority cannot be attributed")
@@ -364,19 +364,6 @@ func Load(req Request) Authorization {
 		return fail("signed authorization bytes are not canonical under the committed algorithm")
 	}
 
-	// UNCONDITIONAL baseline enforcement. There is no bypass parameter, so no
-	// call path can produce an authoritative result on a descendant commit.
-	if req.Git == nil {
-		return fail("no repository was supplied for the baseline check")
-	}
-	head, err := req.Git.HeadCommit()
-	if err != nil {
-		return fail("HEAD is unreadable: %v", err)
-	}
-	if head != baseline {
-		return fail("HEAD %s is not the authorized baseline %s", head, baseline)
-	}
-
 	result.RepositoryID = str("repositoryId")
 	result.StageSlug = str("stageSlug")
 	result.RiskTier = tier
@@ -390,9 +377,91 @@ func Load(req Request) Authorization {
 	result.SignatureNamespace = Namespace
 	result.Valid = true
 	result.Reason = fmt.Sprintf(
-		"authorizationId %s selected explicitly (%s); signed by %s over %s; digest, canonical bytes and full schema verified; HEAD equals baseline",
+		"authorizationId %s selected explicitly (%s); signed by %s over %s; digest, canonical bytes and full schema verified",
 		result.AuthorizationID, selection, principal, Namespace)
 	return result
+}
+
+// Load selects, verifies and validates one signed StageAuthorization AS
+// CURRENT AUTHORITY.
+//
+// The baseline check is UNCONDITIONAL and has no bypass parameter: an
+// authorization governs work built from the commit it names, and nothing else.
+// A descendant is not that commit, so a consumed authorization can never
+// authorize a mutation on top of the release it produced.
+func Load(req Request) Authorization {
+	result := loadValidatedObject(req)
+	if !result.Valid {
+		return result
+	}
+	if req.Git == nil {
+		result.Valid = false
+		result.Reason = "no repository was supplied for the baseline check"
+		return result
+	}
+	head, err := req.Git.HeadCommit()
+	if err != nil {
+		result.Valid = false
+		result.Reason = fmt.Sprintf("HEAD is unreadable: %v", err)
+		return result
+	}
+	if head != result.BaselineCommit {
+		result.Valid = false
+		result.Reason = fmt.Sprintf("HEAD %s is not the authorized baseline %s", head, result.BaselineCommit)
+		return result
+	}
+	result.Reason += "; HEAD equals baseline"
+	return result
+}
+
+// HistoricalAuthorization is a signed authorization read as EVIDENCE ABOUT THE
+// PAST, never as permission in the present.
+//
+// It deliberately carries NO allowed or protected paths and has NO
+// PathAuthorized method. There is therefore nothing it can be used to permit:
+// it can answer "which baseline did this govern, and was it genuinely signed"
+// and nothing else. That distinction is the whole point. A released commit is a
+// descendant of the baseline its authorization named, and if reading that
+// authorization after release returned something that could authorize paths,
+// every release would silently re-arm the authority it just consumed.
+type HistoricalAuthorization struct {
+	Valid           bool
+	Reason          string
+	Path            string
+	Digest          string
+	AuthorizationID string
+	RepositoryID    string
+	StageSlug       string
+	BaselineCommit  string
+	SignerPrincipal string
+}
+
+// LoadHistoricalAuthorization validates a signed authorization object without
+// asserting anything about the current HEAD.
+//
+// It performs EXACTLY the same object validation as Load - same digest, same
+// signature, same canonical-form requirement, same complete schema check - and
+// omits exactly one thing: the HEAD-equals-baseline test. That omission is safe
+// only because of the return type. This is not "Load with a flag"; a flag would
+// be a bypass, and an earlier bypass of precisely that shape was removed from
+// this package after an audit.
+func LoadHistoricalAuthorization(req Request) HistoricalAuthorization {
+	result := loadValidatedObject(req)
+	historical := HistoricalAuthorization{
+		Valid:           result.Valid,
+		Reason:          result.Reason,
+		Path:            result.Path,
+		Digest:          result.Digest,
+		AuthorizationID: result.AuthorizationID,
+		RepositoryID:    result.RepositoryID,
+		StageSlug:       result.StageSlug,
+		BaselineCommit:  result.BaselineCommit,
+		SignerPrincipal: result.SignerPrincipal,
+	}
+	if historical.Valid {
+		historical.Reason += "; read as historical evidence, conferring no authority over HEAD"
+	}
+	return historical
 }
 
 // PathAuthorized decides one candidate path against this authorization.
@@ -802,9 +871,39 @@ func LoadReleaseAuthorization(req BindingRequest) ReleaseAuthorization {
 //
 // A green verifier is evidence, never approval: nothing in this function can be
 // satisfied by running a tool. Each link exists because someone signed it.
+// ReleaseChain is the GRANTING form, used before a release commit exists. It
+// requires everything ReleaseChainHistorical requires, and additionally that
+// the binary asking is the binary that was audited.
 func ReleaseChain(audit AuditBinding, release ReleaseAuthorization, candidateDigest, binaryDigest string) error {
-	candidateDigest = strings.ToUpper(candidateDigest)
+	if err := ReleaseChainHistorical(audit, release, candidateDigest); err != nil {
+		return err
+	}
 	binaryDigest = strings.ToUpper(binaryDigest)
+	if binaryDigest == "" {
+		return fmt.Errorf("the identity of the running trust core could not be established")
+	}
+	if audit.BinarySha256 != binaryDigest {
+		return fmt.Errorf("this trust core is binary %s, but the audit and release are bound to %s; a different binary cannot satisfy them",
+			binaryDigest, audit.BinarySha256)
+	}
+	return nil
+}
+
+// ReleaseChainHistorical is the READING form, used to verify a release that
+// already happened.
+//
+// It checks every link of the chain EXCEPT that the running binary is the
+// audited one, and the omission is deliberate. The audited binarySha256 is a
+// fact about the release; requiring the CURRENT process to equal it would mean
+// no future version of this core could ever verify a past release - the moment
+// the core changes, all its own history becomes unverifiable. That is the
+// opposite of what a release record is for.
+//
+// The binary is still bound: the audit and the release authorization must name
+// the SAME binary, and that value is reported as the released identity. What is
+// dropped is only the claim that the reader is the writer.
+func ReleaseChainHistorical(audit AuditBinding, release ReleaseAuthorization, candidateDigest string) error {
+	candidateDigest = strings.ToUpper(candidateDigest)
 	if !audit.Valid {
 		return fmt.Errorf("audit binding is not valid: %s", audit.Reason)
 	}
@@ -831,21 +930,13 @@ func ReleaseChain(audit AuditBinding, release ReleaseAuthorization, candidateDig
 		return fmt.Errorf("the audit binding and the release authorization name different repositories")
 	}
 
-	// BINARY IDENTITY. An audit is evidence about a specific decision procedure.
-	// Source that resembles the audited source is not the audited source, and a
-	// binary built from it is not the binary that produced the verdict. The
-	// executable ANSWERING this gate must be the executable that was audited, or
-	// the whole chain reduces to a claim about a file nobody checked.
+	// BINARY IDENTITY, chain-internal. An audit is evidence about a specific
+	// decision procedure, so the release must name the same procedure the audit
+	// judged. Whether the READER is that binary is decided by the caller:
+	// ReleaseChain requires it, ReleaseChainHistorical does not.
 	if audit.BinarySha256 != release.BinarySha256 {
 		return fmt.Errorf("the audit binding names binary %s but the release authorization names %s",
 			audit.BinarySha256, release.BinarySha256)
-	}
-	if binaryDigest == "" {
-		return fmt.Errorf("the identity of the running trust core could not be established")
-	}
-	if audit.BinarySha256 != binaryDigest {
-		return fmt.Errorf("this trust core is binary %s, but the audit and release are bound to %s; a different binary cannot satisfy them",
-			binaryDigest, audit.BinarySha256)
 	}
 	return nil
 }
@@ -1192,4 +1283,275 @@ func writeString(b *bytes.Buffer, value []byte) {
 	binary.BigEndian.PutUint32(length[:], uint32(len(value)))
 	b.Write(length[:])
 	b.Write(value)
+}
+
+// ===========================================================================
+// RELEASE COMMIT BINDING
+//
+// An audit found that terminal release state was established from the parent
+// commit, the tree, and the signed chain - and that this identifies a COMMIT
+// only by accident. Two commits over the same parent and the same tree, made by
+// different people at different times with different messages, are different
+// commits with different SHAs, and the check accepted both.
+//
+// The cure is not to compare more Git fields, and it is certainly not to
+// hard-code the SHA that happens to be right. Author, committer, timestamps and
+// message are exactly the fields an impostor controls. The commit identity has
+// to arrive the same way every other authority fact in this system arrives:
+// signed, from outside the candidate, in the control store.
+//
+// It cannot be folded into the ReleaseAuthorization. That object is signed
+// BEFORE the release commit exists, so it cannot name a commit SHA without
+// predicting one. Hence a separate, post-commit statement.
+//
+// Like HistoricalAuthorization, this object grants NOTHING. It carries no
+// paths, and it has no method that could authorize one.
+// ===========================================================================
+
+// CommitBindingObjectType is the fifth governed object type.
+const CommitBindingObjectType = "ReleaseCommitBinding"
+
+var commitBindingFields = []string{
+	"schemaVersion", "objectType", "repositoryId", "stageSlug",
+	"authorizationId", "authorizationDigest", "candidateDigest", "candidateTree",
+	"auditBindingDigest", "releaseAuthorizationDigest", "binarySha256",
+	"releaseCommit", "releaseParent", "releaseTree", "boundAt",
+	"signerKeyFingerprint", "signatureNamespace",
+}
+
+// ReleaseCommitBinding is the Product Authority's statement that one exact Git
+// commit is the release of one exact audited candidate.
+//
+// Every field is a scalar fact about a release that already happened. There is
+// deliberately no allowed-path set, no protected-path set, and no method: a
+// binding that could answer a path question would be mutation authority wearing
+// a historical label.
+type ReleaseCommitBinding struct {
+	Valid                      bool
+	Reason                     string
+	Path                       string
+	Digest                     string
+	RepositoryID               string
+	StageSlug                  string
+	AuthorizationID            string
+	AuthorizationDigest        string
+	CandidateDigest            string
+	CandidateTree              string
+	AuditBindingDigest         string
+	ReleaseAuthorizationDigest string
+	BinarySha256               string
+	ReleaseCommit              string
+	ReleaseParent              string
+	ReleaseTree                string
+	BoundAt                    string
+	SignerFingerprint          string
+	SignerPrincipal            string
+}
+
+// CommitBindingPath names the binding object for one candidate.
+//
+// It is keyed by candidate digest rather than by commit SHA on purpose: the
+// caller must not be able to select which commit gets validated by choosing a
+// filename. The candidate is what the caller legitimately knows in advance; the
+// commit is what this object is authoritative about.
+func CommitBindingPath(store, stageSlug, candidateDigest string) string {
+	return filepath.Join(store, "commits", fmt.Sprintf("%s.%s.commit.json", stageSlug, candidateDigest))
+}
+
+// LoadReleaseCommitBinding verifies a Product Authority binding of one exact
+// commit to one exact candidate.
+func LoadReleaseCommitBinding(req BindingRequest) ReleaseCommitBinding {
+	store := ControlStore(req.ControlStoreRoot, req.RepositoryID)
+	result := ReleaseCommitBinding{}
+	fail := func(format string, args ...any) ReleaseCommitBinding {
+		result.Valid = false
+		result.Reason = fmt.Sprintf(format, args...)
+		return result
+	}
+	if !sha256Re.MatchString(strings.ToUpper(req.CandidateDigest)) {
+		return fail("candidate digest is not an uppercase SHA-256")
+	}
+	if !slugRe.MatchString(req.StageSlug) {
+		return fail("stage slug %q is not an upper-case governance slug", req.StageSlug)
+	}
+	result.Path = CommitBindingPath(store, req.StageSlug, strings.ToUpper(req.CandidateDigest))
+
+	payload, digest, fingerprint, err := loadSigned(result.Path, req.ExpectedDigest, store, req.SignerPrincipal, req.ExpectedSigner)
+	result.Digest = digest
+	if err != nil {
+		return fail("%s", err.Error())
+	}
+	if err := exactProperties(payload, commitBindingFields); err != nil {
+		return fail("%s", err.Error())
+	}
+	if property(payload, "schemaVersion") != SchemaVersion {
+		return fail("unsupported schemaVersion %q", property(payload, "schemaVersion"))
+	}
+	if property(payload, "objectType") != CommitBindingObjectType {
+		return fail("unexpected objectType %q", property(payload, "objectType"))
+	}
+	if property(payload, "repositoryId") != req.RepositoryID {
+		return fail("release commit binding is for repository %q, not %q", property(payload, "repositoryId"), req.RepositoryID)
+	}
+	if property(payload, "stageSlug") != req.StageSlug {
+		return fail("release commit binding is for stage %q, not %q", property(payload, "stageSlug"), req.StageSlug)
+	}
+	if property(payload, "candidateDigest") != strings.ToUpper(req.CandidateDigest) {
+		return fail("release commit binding is over candidate %s, not %s",
+			property(payload, "candidateDigest"), strings.ToUpper(req.CandidateDigest))
+	}
+	if !uuidRe.MatchString(property(payload, "authorizationId")) {
+		return fail("authorizationId is not a lowercase UUID")
+	}
+	for _, field := range []string{"authorizationDigest", "auditBindingDigest", "releaseAuthorizationDigest", "binarySha256"} {
+		if !sha256Re.MatchString(property(payload, field)) {
+			return fail("%s is not an uppercase SHA-256", field)
+		}
+	}
+	for _, field := range []string{"candidateTree", "releaseCommit", "releaseParent", "releaseTree"} {
+		if !gitIDRe.MatchString(property(payload, field)) {
+			return fail("%s is not a lowercase 40-character Git object id", field)
+		}
+	}
+	if !stampRe.MatchString(property(payload, "boundAt")) {
+		return fail("boundAt is not a second-precision UTC timestamp")
+	}
+	if property(payload, "signerKeyFingerprint") != fingerprint {
+		return fail("the binding declares signer key %s but was signed by %s",
+			property(payload, "signerKeyFingerprint"), fingerprint)
+	}
+	if property(payload, "signatureNamespace") != Namespace {
+		return fail("unexpected signatureNamespace %q", property(payload, "signatureNamespace"))
+	}
+
+	// SELF-CONSISTENCY. The thing committed must be the thing audited, and the
+	// binding must say so about itself before anything else is compared to it.
+	if property(payload, "releaseTree") != property(payload, "candidateTree") {
+		return fail("the binding names release tree %s but audited candidate tree %s",
+			property(payload, "releaseTree"), property(payload, "candidateTree"))
+	}
+	// A commit is never its own parent, and a release never lands on its own
+	// baseline. Either would mean the release did not move history.
+	if property(payload, "releaseCommit") == property(payload, "releaseParent") {
+		return fail("the binding names the same commit as both the release and its parent")
+	}
+
+	result.RepositoryID = property(payload, "repositoryId")
+	result.StageSlug = property(payload, "stageSlug")
+	result.AuthorizationID = property(payload, "authorizationId")
+	result.AuthorizationDigest = property(payload, "authorizationDigest")
+	result.CandidateDigest = property(payload, "candidateDigest")
+	result.CandidateTree = property(payload, "candidateTree")
+	result.AuditBindingDigest = property(payload, "auditBindingDigest")
+	result.ReleaseAuthorizationDigest = property(payload, "releaseAuthorizationDigest")
+	result.BinarySha256 = property(payload, "binarySha256")
+	result.ReleaseCommit = property(payload, "releaseCommit")
+	result.ReleaseParent = property(payload, "releaseParent")
+	result.ReleaseTree = property(payload, "releaseTree")
+	result.BoundAt = property(payload, "boundAt")
+	result.SignerFingerprint = fingerprint
+	result.SignerPrincipal = req.SignerPrincipal
+	result.Valid = true
+	result.Reason = fmt.Sprintf("release commit binding %s binds commit %s to candidate %s, signed by %s",
+		digest, result.ReleaseCommit, result.CandidateDigest, req.SignerPrincipal)
+	return result
+}
+
+// ObservedRelease is what the repository itself says, read from Git.
+//
+// It is passed in rather than read here so that the comparison below is a pure
+// function of two inputs: what was signed, and what is actually checked out.
+type ObservedRelease struct {
+	Head   string
+	Parent string
+	Tree   string
+}
+
+// ReleaseCommitChain binds the exact commit to the complete historical chain.
+//
+// ReleaseChainHistorical already establishes that a PASS audit and a Product
+// Authority release authorization cover one candidate. This adds the fact those
+// two objects could not carry, because neither existed after the commit did:
+// WHICH COMMIT. Without it, terminal state was satisfied by any commit sharing a
+// parent and a tree with the real one.
+//
+// Nothing here is derived from a command-line argument. The expected commit
+// comes from signed bytes; the observed commit comes from Git; the caller
+// chooses neither.
+func ReleaseCommitChain(
+	binding ReleaseCommitBinding,
+	audit AuditBinding,
+	release ReleaseAuthorization,
+	historical HistoricalAuthorization,
+	observed ObservedRelease,
+) error {
+	if !binding.Valid {
+		return fmt.Errorf("release commit binding is not valid: %s", binding.Reason)
+	}
+	if !historical.Valid {
+		return fmt.Errorf("historical authorization is not valid: %s", historical.Reason)
+	}
+
+	// The chain the binding claims to sit on top of must itself hold.
+	if err := ReleaseChainHistorical(audit, release, binding.CandidateDigest); err != nil {
+		return err
+	}
+
+	// The binding must name the objects that were actually verified, by digest.
+	// Otherwise it could vouch for a commit while pointing at some other stage's
+	// audit and release.
+	if binding.AuditBindingDigest != audit.Digest {
+		return fmt.Errorf("the commit binding names audit binding %s, but the verified audit binding is %s",
+			binding.AuditBindingDigest, audit.Digest)
+	}
+	if binding.ReleaseAuthorizationDigest != release.Digest {
+		return fmt.Errorf("the commit binding names release authorization %s, but the verified release authorization is %s",
+			binding.ReleaseAuthorizationDigest, release.Digest)
+	}
+	if binding.BinarySha256 != audit.BinarySha256 {
+		return fmt.Errorf("the commit binding names binary %s but the audit names %s",
+			binding.BinarySha256, audit.BinarySha256)
+	}
+	if binding.RepositoryID != audit.RepositoryID || binding.RepositoryID != release.RepositoryID {
+		return fmt.Errorf("the commit binding names a different repository from the audit and release chain")
+	}
+	if binding.StageSlug != audit.StageSlug || binding.StageSlug != release.StageSlug {
+		return fmt.Errorf("the commit binding names a different stage from the audit and release chain")
+	}
+
+	// The binding must name the consumed authorization, exactly.
+	if binding.AuthorizationID != historical.AuthorizationID {
+		return fmt.Errorf("the commit binding names authorization %s, but the verified authorization is %s",
+			binding.AuthorizationID, historical.AuthorizationID)
+	}
+	if binding.AuthorizationDigest != historical.Digest {
+		return fmt.Errorf("the commit binding names authorization bytes %s, but the verified authorization is %s",
+			binding.AuthorizationDigest, historical.Digest)
+	}
+	if binding.StageSlug != historical.StageSlug {
+		return fmt.Errorf("the commit binding names stage %s, but the authorization is for %s",
+			binding.StageSlug, historical.StageSlug)
+	}
+
+	// The release must have landed on the baseline that authorization signed.
+	// This is what keeps "descendant" from being a synonym for "authorized":
+	// only the immediate child of the signed baseline can be its release.
+	if binding.ReleaseParent != historical.BaselineCommit {
+		return fmt.Errorf("the commit binding names parent %s, but the authorization's signed baseline is %s",
+			binding.ReleaseParent, historical.BaselineCommit)
+	}
+
+	// THE CODEX FINDING. Everything above was already true of an impostor commit
+	// over the same parent and tree. This is the line that refuses it.
+	if observed.Head != binding.ReleaseCommit {
+		return fmt.Errorf("HEAD is commit %s, but the signed release commit binding names %s; a commit sharing a parent and a tree is still a different commit",
+			observed.Head, binding.ReleaseCommit)
+	}
+	if observed.Parent != binding.ReleaseParent {
+		return fmt.Errorf("HEAD's parent is %s, but the binding names %s", observed.Parent, binding.ReleaseParent)
+	}
+	if observed.Tree != binding.ReleaseTree {
+		return fmt.Errorf("HEAD's tree is %s, but the binding names %s", observed.Tree, binding.ReleaseTree)
+	}
+	return nil
 }

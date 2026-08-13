@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -893,5 +894,958 @@ func TestFingerprintFormat(t *testing.T) {
 	f := newFixture(t)
 	if !fpRe.MatchString(f.fingerprint) {
 		t.Errorf("fingerprint %q is not an OpenSSH SHA256 fingerprint", f.fingerprint)
+	}
+}
+
+// ===========================================================================
+// TERMINAL RELEASE STATE
+//
+// Five times now the same defect has shipped in a different costume: a fact
+// that was true of one commit gets written down as an invariant, and the next
+// legitimate commit makes it false. The cure applied here is a SECOND reader
+// for the same signed bytes - one that answers "what was released" and is
+// structurally incapable of answering "what may change".
+//
+// These tests exist to keep it that way. The dangerous refactor is not a wrong
+// answer; it is someone adding an allowed-paths field, or a descendant
+// allowance, to the historical reader because it would be convenient. Each
+// test below fails loudly when that happens.
+// ===========================================================================
+
+// advance creates a real descendant commit so HEAD is genuinely past the
+// signed baseline. Nothing about terminal state may be provable by asserting
+// facts against a repository that never moved.
+func (f *fixture) advance(message string) string {
+	f.t.Helper()
+	run := func(args ...string) {
+		f.t.Helper()
+		cmd := exec.Command("git", append([]string{"-C", f.repo}, args...)...)
+		if out, err := cmd.CombinedOutput(); err != nil {
+			f.t.Fatalf("git %v: %v\n%s", args, err, out)
+		}
+	}
+	os.WriteFile(filepath.Join(f.repo, "a.txt"), []byte(message), 0o644)
+	run("add", "-A")
+	run("commit", "-q", "-m", message)
+	head, err := f.git.HeadCommit()
+	if err != nil {
+		f.t.Fatal(err)
+	}
+	return head
+}
+
+func (f *fixture) loadHistorical(id, digest string) HistoricalAuthorization {
+	return LoadHistoricalAuthorization(Request{
+		ControlStoreRoot: f.storeRoot,
+		RepositoryID:     testRepoID,
+		StageSlug:        testStage,
+		AuthorizationID:  id,
+		ExpectedDigest:   digest,
+		ExpectedSigner:   f.fingerprint,
+		SignerPrincipal:  testPrincipal,
+		RepositoryRoot:   f.repo,
+		Git:              f.git,
+	})
+}
+
+// THE CENTRAL INVARIANT. A historical authorization stays readable forever and
+// grants nothing, ever, at any distance from its baseline.
+func TestHistoricalAuthorizationNeverBecomesCurrentAuthority(t *testing.T) {
+	f := newFixture(t)
+	digest := f.issue(f.versionedName(newID), f.payload(overrides{}), f.priv, Namespace)
+
+	// At the baseline itself, current authority is available. This is the
+	// positive control: without it every assertion below would hold vacuously.
+	if auth := f.load(newID, digest); !auth.Valid {
+		t.Fatalf("authorization was not valid at its own baseline: %s", auth.Reason)
+	}
+
+	// Walk several commits past the baseline. A descendant allowance would show
+	// up here as authority quietly coming back.
+	for i := 1; i <= 3; i++ {
+		head := f.advance(fmt.Sprintf("descendant %d", i))
+
+		auth := f.load(newID, digest)
+		if auth.Valid {
+			t.Fatalf("descendant %d (%s) regained current authority", i, head)
+		}
+		if !strings.Contains(auth.Reason, "not the authorized baseline") {
+			t.Errorf("descendant %d was refused for the wrong reason: %s", i, auth.Reason)
+		}
+
+		historical := f.loadHistorical(newID, digest)
+		if !historical.Valid {
+			t.Fatalf("descendant %d could not read the historical authorization: %s", i, historical.Reason)
+		}
+		if historical.BaselineCommit == head {
+			t.Fatal("the fixture did not actually move HEAD")
+		}
+
+		// Reading history must not be a side channel into authority.
+		if after := f.load(newID, digest); after.Valid {
+			t.Fatalf("descendant %d gained authority AFTER a historical read", i)
+		}
+	}
+}
+
+// STRUCTURAL. The historical reader cannot answer a path question, because it
+// carries no path data and exposes no method to ask. Adding either would
+// re-create the mutation authority this stage removed, and this test is what
+// tells the person doing it.
+func TestHistoricalAuthorizationCarriesNoMutationAuthority(t *testing.T) {
+	typ := reflect.TypeOf(HistoricalAuthorization{})
+
+	if n := reflect.PointerTo(typ).NumMethod(); n != 0 {
+		for i := 0; i < n; i++ {
+			t.Errorf("historical authorization exposes a method: %s", reflect.PointerTo(typ).Method(i).Name)
+		}
+	}
+
+	// Every field must be a SCALAR fact about the release. This is the load-
+	// bearing rule: a permission set has to arrive as a collection, so banning
+	// collections outright bans the shape rather than chasing field names.
+	//
+	// Names are checked too, but only for words that have no innocent reading
+	// here. Path and AuthorizationID are deliberately NOT among them - the
+	// first is where the object was read from and the second is which object
+	// it was, and both are identity rather than permission.
+	for i := 0; i < typ.NumField(); i++ {
+		field := typ.Field(i)
+		switch field.Type.Kind() {
+		case reflect.String, reflect.Bool:
+		default:
+			t.Errorf("field %s is %s; historical state carries scalar facts, never collections", field.Name, field.Type)
+		}
+		lower := strings.ToLower(field.Name)
+		for _, banned := range []string{"allow", "protect", "grant", "permit"} {
+			if strings.Contains(lower, banned) {
+				t.Errorf("field %s reads as mutation authority (%q)", field.Name, banned)
+			}
+		}
+	}
+
+	// The granting reader still has what it needs, so this is a real separation
+	// rather than a general removal.
+	current := reflect.TypeOf(Authorization{})
+	_, value := current.MethodByName("PathAuthorized")
+	_, pointer := reflect.PointerTo(current).MethodByName("PathAuthorized")
+	if !value && !pointer {
+		t.Error("current authority lost PathAuthorized; the separation removed the wrong side")
+	}
+}
+
+// The historical reader skips the baseline check and NOTHING ELSE. Every other
+// gate protecting the signed bytes must still refuse.
+func TestHistoricalAuthorizationEnforcesEveryOtherGate(t *testing.T) {
+	f := newFixture(t)
+	digest := f.issue(f.versionedName(newID), f.payload(overrides{}), f.priv, Namespace)
+	f.advance("past the baseline")
+
+	if got := f.loadHistorical(newID, digest); !got.Valid {
+		t.Fatalf("positive control failed: %s", got.Reason)
+	}
+
+	for _, tc := range []struct{ label, id, digest string }{
+		{"an id that was never issued", "00000000-0000-4000-8000-000000000000", digest},
+		{"an id in the wrong case", strings.ToUpper(newID), digest},
+		{"a traversal id", "../../../etc/passwd", digest},
+		{"an empty id", "", digest},
+		{"a digest that is one byte wrong", newID, strings.Repeat("0", 64)},
+		{"a digest that is not hex", newID, strings.Repeat("Z", 64)},
+		{"an empty digest", newID, ""},
+	} {
+		if got := f.loadHistorical(tc.id, tc.digest); got.Valid {
+			t.Errorf("historical read accepted %s", tc.label)
+		}
+	}
+
+	t.Run("a foreign signer is refused", func(t *testing.T) {
+		other := f.issue(f.versionedName(oldID), f.payload(overrides{authorizationID: oldID}), f.otherPriv, Namespace)
+		if got := f.loadHistorical(oldID, other); got.Valid {
+			t.Error("historical read accepted an unlisted signer")
+		}
+	})
+
+	t.Run("a foreign namespace is refused", func(t *testing.T) {
+		other := f.issue(f.versionedName(oldID), f.payload(overrides{authorizationID: oldID}), f.priv, "some-other-namespace")
+		if got := f.loadHistorical(oldID, other); got.Valid {
+			t.Error("historical read accepted a signature from another namespace")
+		}
+	})
+
+	t.Run("tampered bytes are refused", func(t *testing.T) {
+		raw := f.payload(overrides{})
+		good := f.issue(f.versionedName(newID), raw, f.priv, Namespace)
+		tampered := bytes.Replace(raw, []byte(`"riskTier":3`), []byte(`"riskTier":4`), 1)
+		if bytes.Equal(tampered, raw) {
+			t.Fatal("tamper did not change the bytes")
+		}
+		os.WriteFile(filepath.Join(f.store, "authorizations", f.versionedName(newID)), tampered, 0o600)
+		if got := f.loadHistorical(newID, good); got.Valid {
+			t.Error("historical read accepted bytes that no longer digest to what was asked for")
+		}
+		// The signature covers the original bytes, so asking for the tampered
+		// digest must fail on the signature rather than succeed.
+		if got := f.loadHistorical(newID, canonical.Digest(tampered)); got.Valid {
+			t.Error("historical read accepted tampered bytes under their own digest")
+		}
+	})
+}
+
+// The two chain forms differ in exactly one way, and it is the load-bearing
+// way: only the GRANTING form binds the binary that is running right now.
+// Collapsing them back into one function would either let an unaudited binary
+// act, or make released history unreadable by any later build.
+func TestReleaseChainHistoricalReadsWithoutGranting(t *testing.T) {
+	f := newFixture(t)
+	auditDigest := f.issueAudit(testCandidate, "PASS", f.priv, "")
+	releaseDigest := f.issueRelease(testCandidate, auditDigest, f.priv)
+	audit := LoadAuditBinding(f.bindingRequest(testCandidate, auditDigest))
+	release := LoadReleaseAuthorization(f.bindingRequest(testCandidate, releaseDigest))
+	if !audit.Valid || !release.Valid {
+		t.Fatalf("fixture invalid: %s / %s", audit.Reason, release.Reason)
+	}
+
+	// A later build reading its own history: permitted.
+	if err := ReleaseChainHistorical(audit, release, testCandidate); err != nil {
+		t.Fatalf("a later binary could not read released history: %v", err)
+	}
+	// The same later build trying to ACT: refused.
+	laterBinary := strings.Repeat("9", 64)
+	if err := ReleaseChain(audit, release, testCandidate, laterBinary); err == nil {
+		t.Fatal("a binary that was never audited was granted a release")
+	}
+
+	// The historical form is not a weaker chain; it is the same chain minus the
+	// running-binary question. Every other link must still hold.
+	t.Run("a FAIL audit is still not a release", func(t *testing.T) {
+		failed := f.issueAudit(testCandidate, "FAIL", f.priv, "")
+		bad := LoadAuditBinding(f.bindingRequest(testCandidate, failed))
+		if !bad.Valid {
+			t.Fatalf("a FAIL binding is still a valid object: %s", bad.Reason)
+		}
+		if err := ReleaseChainHistorical(bad, release, testCandidate); err == nil {
+			t.Error("history was reconstructed over a FAIL audit")
+		}
+		f.issueAudit(testCandidate, "PASS", f.priv, "")
+	})
+
+	t.Run("another candidate is refused", func(t *testing.T) {
+		if err := ReleaseChainHistorical(audit, release, strings.Repeat("2", 64)); err == nil {
+			t.Error("a chain for one candidate described another")
+		}
+	})
+
+	t.Run("a release naming another audit is refused", func(t *testing.T) {
+		other := audit
+		other.Digest = strings.Repeat("D", 64)
+		if err := ReleaseChainHistorical(other, release, testCandidate); err == nil {
+			t.Error("history accepted a release naming a different audit binding")
+		}
+	})
+
+	t.Run("an audit and release recording different binaries are refused", func(t *testing.T) {
+		other := release
+		other.BinarySha256 = strings.Repeat("7", 64)
+		if err := ReleaseChainHistorical(audit, other, testCandidate); err == nil {
+			t.Error("history accepted a release bound to a binary the audit never saw")
+		}
+	})
+
+	t.Run("an invalid link never yields history", func(t *testing.T) {
+		if err := ReleaseChainHistorical(AuditBinding{Valid: false, Reason: "x"}, release, testCandidate); err == nil {
+			t.Error("an invalid audit binding produced a historical chain")
+		}
+		if err := ReleaseChainHistorical(audit, ReleaseAuthorization{Valid: false, Reason: "x"}, testCandidate); err == nil {
+			t.Error("an invalid release authorization produced a historical chain")
+		}
+	})
+}
+
+// ===========================================================================
+// RELEASE COMMIT BINDING
+//
+// An audit constructed two commits over one parent and one tree and showed that
+// terminal release state accepted BOTH. Parent and tree do not identify a
+// commit: author, committer, message and timestamps are free, and none of them
+// was signed anywhere in the chain.
+//
+// TestImpostorCommitOverSameParentAndTree is that finding, frozen. It builds
+// the two commits for real, in a real repository, and requires ACCEPT at the
+// bound one and REJECT at the other. If it ever passes vacuously - if the two
+// commits come out with the same SHA, or the fixture fails to move HEAD - it
+// fails loudly instead of reporting success.
+// ===========================================================================
+
+type commitOverrides struct {
+	repositoryID      string
+	stageSlug         string
+	authorizationID   string
+	authorizationDgst string
+	candidateDigest   string
+	candidateTree     string
+	auditDigest       string
+	releaseDigest     string
+	binary            string
+	releaseCommit     string
+	releaseParent     string
+	releaseTree       string
+	fingerprint       string
+	namespace         string
+	boundAt           string
+	extraField        bool
+	dropReleaseCommit bool
+}
+
+func pickOr(v, fallback string) string {
+	if v == "" {
+		return fallback
+	}
+	return v
+}
+
+// issueCommitBinding writes a signed ReleaseCommitBinding into the control
+// store and returns its digest.
+func (f *fixture) issueCommitBinding(candidate string, o commitOverrides, signer ed25519.PrivateKey) string {
+	f.t.Helper()
+	members := []jsonstrict.Member{
+		jsonstrict.P("schemaVersion", jsonstrict.String(SchemaVersion)),
+		jsonstrict.P("objectType", jsonstrict.String(CommitBindingObjectType)),
+		jsonstrict.P("repositoryId", jsonstrict.String(pickOr(o.repositoryID, testRepoID))),
+		jsonstrict.P("stageSlug", jsonstrict.String(pickOr(o.stageSlug, testStage))),
+		jsonstrict.P("authorizationId", jsonstrict.String(pickOr(o.authorizationID, newID))),
+		jsonstrict.P("authorizationDigest", jsonstrict.String(pickOr(o.authorizationDgst, strings.Repeat("A", 64)))),
+		jsonstrict.P("candidateDigest", jsonstrict.String(pickOr(o.candidateDigest, candidate))),
+		jsonstrict.P("candidateTree", jsonstrict.String(pickOr(o.candidateTree, strings.Repeat("a", 40)))),
+		jsonstrict.P("auditBindingDigest", jsonstrict.String(pickOr(o.auditDigest, strings.Repeat("B", 64)))),
+		jsonstrict.P("releaseAuthorizationDigest", jsonstrict.String(pickOr(o.releaseDigest, strings.Repeat("C", 64)))),
+		jsonstrict.P("binarySha256", jsonstrict.String(pickOr(o.binary, testBinary))),
+	}
+	if !o.dropReleaseCommit {
+		members = append(members, jsonstrict.P("releaseCommit", jsonstrict.String(pickOr(o.releaseCommit, strings.Repeat("b", 40)))))
+	}
+	members = append(members,
+		jsonstrict.P("releaseParent", jsonstrict.String(pickOr(o.releaseParent, strings.Repeat("c", 40)))),
+		jsonstrict.P("releaseTree", jsonstrict.String(pickOr(o.releaseTree, strings.Repeat("a", 40)))),
+		jsonstrict.P("boundAt", jsonstrict.String(pickOr(o.boundAt, "2026-08-13T08:00:00Z"))),
+		jsonstrict.P("signerKeyFingerprint", jsonstrict.String(pickOr(o.fingerprint, f.fingerprint))),
+		jsonstrict.P("signatureNamespace", jsonstrict.String(pickOr(o.namespace, Namespace))))
+	if o.extraField {
+		members = append(members, jsonstrict.P("zzzExtra", jsonstrict.String("unexpected")))
+	}
+
+	value, err := jsonstrict.Object(members...)
+	if err != nil {
+		f.t.Fatal(err)
+	}
+	raw, err := canonical.Marshal(value)
+	if err != nil {
+		f.t.Fatal(err)
+	}
+	path := CommitBindingPath(f.store, pickOr(o.stageSlug, testStage), candidate)
+	os.MkdirAll(filepath.Dir(path), 0o700)
+	os.WriteFile(path, raw, 0o600)
+	os.WriteFile(path+".sig", armorSignature(signer, raw, Namespace), 0o600)
+	return canonical.Digest(raw)
+}
+
+// commitAs creates a commit object over an explicit tree and parent, with an
+// explicit identity, without touching HEAD or the worktree.
+func (f *fixture) commitAs(tree, parent, message, who, when string) string {
+	f.t.Helper()
+	cmd := exec.Command("git", "-C", f.repo, "commit-tree", tree, "-p", parent, "-m", message)
+	cmd.Env = append(os.Environ(),
+		"GIT_AUTHOR_NAME="+who, "GIT_AUTHOR_EMAIL="+who+"@test",
+		"GIT_COMMITTER_NAME="+who, "GIT_COMMITTER_EMAIL="+who+"@test",
+		"GIT_AUTHOR_DATE="+when, "GIT_COMMITTER_DATE="+when)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		f.t.Fatalf("commit-tree: %v\n%s", err, out)
+	}
+	return strings.TrimSpace(string(out))
+}
+
+func (f *fixture) revParse(rev string) string {
+	f.t.Helper()
+	out, err := exec.Command("git", "-C", f.repo, "rev-parse", rev).CombinedOutput()
+	if err != nil {
+		f.t.Fatalf("rev-parse %s: %v\n%s", rev, err, out)
+	}
+	return strings.TrimSpace(string(out))
+}
+
+// releaseWorld is a complete, valid, signed historical release chain plus the
+// two commits from the audit finding.
+type releaseWorld struct {
+	f             *fixture
+	authDigest    string
+	auditDigest   string
+	releaseDigest string
+	candidate     string
+	tree          string
+	parent        string
+	commitA       string // the real release commit, named by the binding
+	commitB       string // the impostor: same parent, same tree, different SHA
+	bindingDigest string
+	audit         AuditBinding
+	release       ReleaseAuthorization
+	historical    HistoricalAuthorization
+}
+
+func newReleaseWorld(t *testing.T) *releaseWorld {
+	t.Helper()
+	f := newFixture(t)
+
+	authDigest := f.issue(f.versionedName(newID), f.payload(overrides{}), f.priv, Namespace)
+	candidate := testCandidate
+	auditDigest := f.issueAudit(candidate, "PASS", f.priv, "")
+	releaseDigest := f.issueRelease(candidate, auditDigest, f.priv)
+
+	// The baseline is the fixture's initial commit. Two DIFFERENT release
+	// commits are then built over it, sharing its tree.
+	parent := f.baseline
+	tree := f.revParse(parent + "^{tree}")
+
+	commitA := f.commitAs(tree, parent, "the governed release", "release-engineer", "2026-08-13T09:00:00 +0000")
+	commitB := f.commitAs(tree, parent, "not the governed release", "someone-else", "2026-08-13T10:00:00 +0000")
+	if commitA == commitB {
+		t.Fatal("the fixture produced one commit twice; the impostor test would be vacuous")
+	}
+
+	w := &releaseWorld{
+		f: f, authDigest: authDigest, auditDigest: auditDigest, releaseDigest: releaseDigest,
+		candidate: candidate, tree: tree, parent: parent, commitA: commitA, commitB: commitB,
+	}
+	w.bindingDigest = f.issueCommitBinding(candidate, commitOverrides{
+		authorizationDgst: authDigest,
+		candidateTree:     tree,
+		auditDigest:       auditDigest,
+		releaseDigest:     releaseDigest,
+		releaseCommit:     commitA,
+		releaseParent:     parent,
+		releaseTree:       tree,
+	}, f.priv)
+
+	w.audit = LoadAuditBinding(f.bindingRequest(candidate, auditDigest))
+	w.release = LoadReleaseAuthorization(f.bindingRequest(candidate, releaseDigest))
+	w.historical = f.loadHistorical(newID, authDigest)
+	if !w.audit.Valid || !w.release.Valid || !w.historical.Valid {
+		t.Fatalf("fixture chain invalid: %s / %s / %s", w.audit.Reason, w.release.Reason, w.historical.Reason)
+	}
+	return w
+}
+
+// observedAt reports what Git says about a commit, the way release-state reads
+// it from a checked-out repository.
+func (w *releaseWorld) observedAt(commit string) ObservedRelease {
+	return ObservedRelease{
+		Head:   commit,
+		Parent: w.f.revParse(commit + "^"),
+		Tree:   w.f.revParse(commit + "^{tree}"),
+	}
+}
+
+func (w *releaseWorld) binding() ReleaseCommitBinding {
+	return LoadReleaseCommitBinding(w.f.bindingRequest(w.candidate, w.bindingDigest))
+}
+
+func (w *releaseWorld) chainAt(commit string) error {
+	return ReleaseCommitChain(w.binding(), w.audit, w.release, w.historical, w.observedAt(commit))
+}
+
+// THE AUDIT FINDING, FROZEN AS A REGRESSION.
+func TestImpostorCommitOverSameParentAndTree(t *testing.T) {
+	w := newReleaseWorld(t)
+
+	// The fixture must genuinely reproduce the reported situation, or the
+	// REJECT below would prove nothing.
+	a, b := w.observedAt(w.commitA), w.observedAt(w.commitB)
+	if a.Parent != b.Parent {
+		t.Fatalf("the two commits do not share a parent: %s vs %s", a.Parent, b.Parent)
+	}
+	if a.Tree != b.Tree {
+		t.Fatalf("the two commits do not share a tree: %s vs %s", a.Tree, b.Tree)
+	}
+	if a.Head == b.Head {
+		t.Fatal("the two commits are the same commit")
+	}
+	t.Logf("same parent %s, same tree %s, different commits %s / %s", a.Parent, a.Tree, a.Head, b.Head)
+
+	if err := w.chainAt(w.commitA); err != nil {
+		t.Fatalf("the bound release commit was refused: %v", err)
+	}
+	err := w.chainAt(w.commitB)
+	if err == nil {
+		t.Fatal("an impostor commit over the same parent and tree was ACCEPTED as the release")
+	}
+	if !strings.Contains(err.Error(), "still a different commit") {
+		t.Errorf("the impostor was refused for the wrong reason: %v", err)
+	}
+}
+
+// Every link the binding adds must be load-bearing on its own.
+func TestReleaseCommitChainRequiresEveryLink(t *testing.T) {
+	w := newReleaseWorld(t)
+	if err := w.chainAt(w.commitA); err != nil {
+		t.Fatalf("positive control failed: %v", err)
+	}
+
+	t.Run("a wrong observed commit is refused", func(t *testing.T) {
+		observed := w.observedAt(w.commitA)
+		observed.Head = strings.Repeat("d", 40)
+		if err := ReleaseCommitChain(w.binding(), w.audit, w.release, w.historical, observed); err == nil {
+			t.Error("a commit the binding does not name was accepted")
+		}
+	})
+
+	t.Run("a wrong observed parent is refused", func(t *testing.T) {
+		observed := w.observedAt(w.commitA)
+		observed.Parent = strings.Repeat("e", 40)
+		if err := ReleaseCommitChain(w.binding(), w.audit, w.release, w.historical, observed); err == nil {
+			t.Error("a mismatched parent was accepted")
+		}
+	})
+
+	t.Run("a wrong observed tree is refused", func(t *testing.T) {
+		observed := w.observedAt(w.commitA)
+		observed.Tree = strings.Repeat("f", 40)
+		if err := ReleaseCommitChain(w.binding(), w.audit, w.release, w.historical, observed); err == nil {
+			t.Error("a mismatched tree was accepted")
+		}
+	})
+
+	t.Run("a binding whose parent is not the signed baseline is refused", func(t *testing.T) {
+		other := w.f.commitAs(w.tree, w.commitA, "a grandchild", "release-engineer", "2026-08-13T11:00:00 +0000")
+		digest := w.f.issueCommitBinding(w.candidate, commitOverrides{
+			authorizationDgst: w.authDigest, candidateTree: w.tree,
+			auditDigest: w.auditDigest, releaseDigest: w.releaseDigest,
+			releaseCommit: other, releaseParent: w.commitA, releaseTree: w.tree,
+		}, w.f.priv)
+		binding := LoadReleaseCommitBinding(w.f.bindingRequest(w.candidate, digest))
+		if !binding.Valid {
+			t.Fatalf("the fixture binding is invalid: %s", binding.Reason)
+		}
+		err := ReleaseCommitChain(binding, w.audit, w.release, w.historical, w.observedAt(other))
+		if err == nil {
+			t.Error("a descendant that is not the child of the signed baseline was accepted")
+		}
+		// Restore.
+		w.bindingDigest = w.f.issueCommitBinding(w.candidate, commitOverrides{
+			authorizationDgst: w.authDigest, candidateTree: w.tree,
+			auditDigest: w.auditDigest, releaseDigest: w.releaseDigest,
+			releaseCommit: w.commitA, releaseParent: w.parent, releaseTree: w.tree,
+		}, w.f.priv)
+	})
+
+	t.Run("a binding naming another audit is refused", func(t *testing.T) {
+		digest := w.f.issueCommitBinding(w.candidate, commitOverrides{
+			authorizationDgst: w.authDigest, candidateTree: w.tree,
+			auditDigest: strings.Repeat("9", 64), releaseDigest: w.releaseDigest,
+			releaseCommit: w.commitA, releaseParent: w.parent, releaseTree: w.tree,
+		}, w.f.priv)
+		binding := LoadReleaseCommitBinding(w.f.bindingRequest(w.candidate, digest))
+		if err := ReleaseCommitChain(binding, w.audit, w.release, w.historical, w.observedAt(w.commitA)); err == nil {
+			t.Error("a binding naming a different audit binding was accepted")
+		}
+	})
+
+	t.Run("a binding naming another release authorization is refused", func(t *testing.T) {
+		digest := w.f.issueCommitBinding(w.candidate, commitOverrides{
+			authorizationDgst: w.authDigest, candidateTree: w.tree,
+			auditDigest: w.auditDigest, releaseDigest: strings.Repeat("8", 64),
+			releaseCommit: w.commitA, releaseParent: w.parent, releaseTree: w.tree,
+		}, w.f.priv)
+		binding := LoadReleaseCommitBinding(w.f.bindingRequest(w.candidate, digest))
+		if err := ReleaseCommitChain(binding, w.audit, w.release, w.historical, w.observedAt(w.commitA)); err == nil {
+			t.Error("a binding naming a different release authorization was accepted")
+		}
+	})
+
+	t.Run("a binding naming another authorization is refused", func(t *testing.T) {
+		digest := w.f.issueCommitBinding(w.candidate, commitOverrides{
+			authorizationID: oldID, authorizationDgst: w.authDigest, candidateTree: w.tree,
+			auditDigest: w.auditDigest, releaseDigest: w.releaseDigest,
+			releaseCommit: w.commitA, releaseParent: w.parent, releaseTree: w.tree,
+		}, w.f.priv)
+		binding := LoadReleaseCommitBinding(w.f.bindingRequest(w.candidate, digest))
+		if err := ReleaseCommitChain(binding, w.audit, w.release, w.historical, w.observedAt(w.commitA)); err == nil {
+			t.Error("a binding naming a different authorization id was accepted")
+		}
+	})
+
+	t.Run("a binding naming other authorization bytes is refused", func(t *testing.T) {
+		digest := w.f.issueCommitBinding(w.candidate, commitOverrides{
+			authorizationDgst: strings.Repeat("7", 64), candidateTree: w.tree,
+			auditDigest: w.auditDigest, releaseDigest: w.releaseDigest,
+			releaseCommit: w.commitA, releaseParent: w.parent, releaseTree: w.tree,
+		}, w.f.priv)
+		binding := LoadReleaseCommitBinding(w.f.bindingRequest(w.candidate, digest))
+		if err := ReleaseCommitChain(binding, w.audit, w.release, w.historical, w.observedAt(w.commitA)); err == nil {
+			t.Error("a binding naming a different authorization digest was accepted")
+		}
+	})
+
+	t.Run("a binding naming another binary is refused", func(t *testing.T) {
+		digest := w.f.issueCommitBinding(w.candidate, commitOverrides{
+			authorizationDgst: w.authDigest, candidateTree: w.tree,
+			auditDigest: w.auditDigest, releaseDigest: w.releaseDigest, binary: strings.Repeat("6", 64),
+			releaseCommit: w.commitA, releaseParent: w.parent, releaseTree: w.tree,
+		}, w.f.priv)
+		binding := LoadReleaseCommitBinding(w.f.bindingRequest(w.candidate, digest))
+		if err := ReleaseCommitChain(binding, w.audit, w.release, w.historical, w.observedAt(w.commitA)); err == nil {
+			t.Error("a binding naming a binary the audit never saw was accepted")
+		}
+	})
+
+	t.Run("an invalid link never yields a chain", func(t *testing.T) {
+		observed := w.observedAt(w.commitA)
+		if err := ReleaseCommitChain(ReleaseCommitBinding{Valid: false, Reason: "x"}, w.audit, w.release, w.historical, observed); err == nil {
+			t.Error("an invalid commit binding produced a chain")
+		}
+		if err := ReleaseCommitChain(w.binding(), w.audit, w.release, HistoricalAuthorization{Valid: false, Reason: "x"}, observed); err == nil {
+			t.Error("an invalid historical authorization produced a chain")
+		}
+		if err := ReleaseCommitChain(w.binding(), AuditBinding{Valid: false, Reason: "x"}, w.release, w.historical, observed); err == nil {
+			t.Error("an invalid audit binding produced a chain")
+		}
+		if err := ReleaseCommitChain(w.binding(), w.audit, ReleaseAuthorization{Valid: false, Reason: "x"}, w.historical, observed); err == nil {
+			t.Error("an invalid release authorization produced a chain")
+		}
+	})
+
+	t.Run("a FAIL audit is still not a release", func(t *testing.T) {
+		failed := w.f.issueAudit(w.candidate, "FAIL", w.f.priv, "")
+		bad := LoadAuditBinding(w.f.bindingRequest(w.candidate, failed))
+		if !bad.Valid {
+			t.Fatalf("a FAIL binding is still a valid object: %s", bad.Reason)
+		}
+		if err := ReleaseCommitChain(w.binding(), bad, w.release, w.historical, w.observedAt(w.commitA)); err == nil {
+			t.Error("a commit binding was accepted over a FAIL audit")
+		}
+		w.f.issueAudit(w.candidate, "PASS", w.f.priv, "")
+	})
+}
+
+// The loader must refuse a malformed, unsigned, mis-signed or foreign binding
+// before any chain reasoning happens.
+func TestLoadReleaseCommitBindingRefusals(t *testing.T) {
+	w := newReleaseWorld(t)
+	if got := w.binding(); !got.Valid {
+		t.Fatalf("positive control failed: %s", got.Reason)
+	}
+
+	t.Run("a missing binding is refused", func(t *testing.T) {
+		other := strings.Repeat("5", 64)
+		got := LoadReleaseCommitBinding(w.f.bindingRequest(other, w.bindingDigest))
+		if got.Valid {
+			t.Error("a binding that does not exist was accepted")
+		}
+	})
+
+	t.Run("an unsigned binding is refused", func(t *testing.T) {
+		path := CommitBindingPath(w.f.store, testStage, w.candidate)
+		os.Remove(path + ".sig")
+		if got := w.binding(); got.Valid {
+			t.Error("a binding with no signature was accepted")
+		}
+		// Restore for the remaining subtests.
+		w.bindingDigest = w.f.issueCommitBinding(w.candidate, commitOverrides{
+			authorizationDgst: w.authDigest, candidateTree: w.tree,
+			auditDigest: w.auditDigest, releaseDigest: w.releaseDigest,
+			releaseCommit: w.commitA, releaseParent: w.parent, releaseTree: w.tree,
+		}, w.f.priv)
+	})
+
+	t.Run("a binding signed by an unlisted key is refused", func(t *testing.T) {
+		digest := w.f.issueCommitBinding(w.candidate, commitOverrides{
+			authorizationDgst: w.authDigest, candidateTree: w.tree,
+			auditDigest: w.auditDigest, releaseDigest: w.releaseDigest,
+			releaseCommit: w.commitA, releaseParent: w.parent, releaseTree: w.tree,
+		}, w.f.otherPriv)
+		if got := LoadReleaseCommitBinding(w.f.bindingRequest(w.candidate, digest)); got.Valid {
+			t.Error("a binding signed by an unlisted key was accepted")
+		}
+	})
+
+	t.Run("tampered bytes are refused", func(t *testing.T) {
+		digest := w.f.issueCommitBinding(w.candidate, commitOverrides{
+			authorizationDgst: w.authDigest, candidateTree: w.tree,
+			auditDigest: w.auditDigest, releaseDigest: w.releaseDigest,
+			releaseCommit: w.commitA, releaseParent: w.parent, releaseTree: w.tree,
+		}, w.f.priv)
+		path := CommitBindingPath(w.f.store, testStage, w.candidate)
+		raw, _ := os.ReadFile(path)
+		tampered := bytes.Replace(raw, []byte(w.commitA), []byte(w.commitB), 1)
+		if bytes.Equal(tampered, raw) {
+			t.Fatal("tamper did not change the bytes")
+		}
+		os.WriteFile(path, tampered, 0o600)
+
+		if got := LoadReleaseCommitBinding(w.f.bindingRequest(w.candidate, digest)); got.Valid {
+			t.Error("bytes that no longer digest to what was asked for were accepted")
+		}
+		// Swapping the commit and re-asking under the TAMPERED digest must fail
+		// on the signature: this is the whole attack, and it must not work.
+		if got := LoadReleaseCommitBinding(w.f.bindingRequest(w.candidate, canonical.Digest(tampered))); got.Valid {
+			t.Error("a commit swap re-digested under its own hash was accepted")
+		}
+	})
+
+	t.Run("a binding for another repository is refused", func(t *testing.T) {
+		digest := w.f.issueCommitBinding(w.candidate, commitOverrides{
+			repositoryID:      "github.com-someone-else-otherrepo",
+			authorizationDgst: w.authDigest, candidateTree: w.tree,
+			auditDigest: w.auditDigest, releaseDigest: w.releaseDigest,
+			releaseCommit: w.commitA, releaseParent: w.parent, releaseTree: w.tree,
+		}, w.f.priv)
+		got := LoadReleaseCommitBinding(w.f.bindingRequest(w.candidate, digest))
+		if got.Valid {
+			t.Error("a binding naming another repository was accepted")
+		}
+		if !strings.Contains(got.Reason, "repository") {
+			t.Errorf("refusal was not about the repository: %s", got.Reason)
+		}
+	})
+
+	t.Run("a binding for another stage is refused", func(t *testing.T) {
+		// Written under the other stage's own filename, so this is a real
+		// foreign object rather than a mislabelled one.
+		digest := w.f.issueCommitBinding(w.candidate, commitOverrides{
+			stageSlug:         "SOURCEROOT-SOME-OTHER-STAGE-V1",
+			authorizationDgst: w.authDigest, candidateTree: w.tree,
+			auditDigest: w.auditDigest, releaseDigest: w.releaseDigest,
+			releaseCommit: w.commitA, releaseParent: w.parent, releaseTree: w.tree,
+		}, w.f.priv)
+		if got := LoadReleaseCommitBinding(w.f.bindingRequest(w.candidate, digest)); got.Valid {
+			t.Error("a binding issued for another stage was accepted for this one")
+		}
+	})
+
+	t.Run("a binding over another candidate is refused", func(t *testing.T) {
+		digest := w.f.issueCommitBinding(w.candidate, commitOverrides{
+			candidateDigest:   strings.Repeat("4", 64),
+			authorizationDgst: w.authDigest, candidateTree: w.tree,
+			auditDigest: w.auditDigest, releaseDigest: w.releaseDigest,
+			releaseCommit: w.commitA, releaseParent: w.parent, releaseTree: w.tree,
+		}, w.f.priv)
+		got := LoadReleaseCommitBinding(w.f.bindingRequest(w.candidate, digest))
+		if got.Valid {
+			t.Error("a binding over another candidate was accepted")
+		}
+		if !strings.Contains(got.Reason, "candidate") {
+			t.Errorf("refusal was not about the candidate: %s", got.Reason)
+		}
+	})
+
+	// Digest spelling is part of identity in this system: the canonical form is
+	// uppercase, and two spellings of one value must never both be accepted or
+	// the same object could be filed under two identities. testCandidate is all
+	// digits, so a case test over IT would pass no matter what the loader did -
+	// this uses a candidate with letters in it, where the two spellings differ.
+	t.Run("a lowercase candidateDigest spelling is refused", func(t *testing.T) {
+		upper := "ABCDEF0123456789" + strings.Repeat("0", 48)
+		lower := strings.ToLower(upper)
+		if upper == lower {
+			t.Fatal("the fixture digest has no letters; the case test would be vacuous")
+		}
+		digest := w.f.issueCommitBinding(upper, commitOverrides{
+			candidateDigest: lower, candidateTree: w.tree,
+			authorizationDgst: w.authDigest, auditDigest: w.auditDigest, releaseDigest: w.releaseDigest,
+			releaseCommit: w.commitA, releaseParent: w.parent, releaseTree: w.tree,
+		}, w.f.priv)
+		got := LoadReleaseCommitBinding(w.f.bindingRequest(upper, digest))
+		if got.Valid {
+			t.Error("a binding declaring the lowercase spelling of its candidate was accepted")
+		}
+		if !strings.Contains(got.Reason, "candidate") {
+			t.Errorf("refusal was not about the candidate: %s", got.Reason)
+		}
+	})
+
+	t.Run("a malformed binding is refused", func(t *testing.T) {
+		for _, tc := range []struct {
+			label string
+			over  commitOverrides
+		}{
+			{"an undeclared property", commitOverrides{extraField: true}},
+			{"a missing releaseCommit", commitOverrides{dropReleaseCommit: true}},
+			{"a non-hex releaseCommit", commitOverrides{releaseCommit: strings.Repeat("z", 40)}},
+			{"an uppercase releaseCommit", commitOverrides{releaseCommit: strings.Repeat("A", 40)}},
+			{"a truncated releaseCommit", commitOverrides{releaseCommit: "abc"}},
+			{"a non-UUID authorizationId", commitOverrides{authorizationID: "not-a-uuid"}},
+			{"a malformed boundAt", commitOverrides{boundAt: "2026-08-13 08:00:00"}},
+			{"a foreign signatureNamespace", commitOverrides{namespace: "some-other-namespace"}},
+			{"a declared key that did not sign", commitOverrides{fingerprint: "SHA256:" + strings.Repeat("A", 43)}},
+			{"a releaseTree that is not the candidateTree", commitOverrides{releaseTree: strings.Repeat("9", 40)}},
+			{"a commit that is its own parent", commitOverrides{releaseCommit: strings.Repeat("b", 40), releaseParent: strings.Repeat("b", 40)}},
+		} {
+			over := tc.over
+			if over.candidateDigest == "" {
+				over.candidateDigest = w.candidate
+			}
+			if over.candidateTree == "" {
+				over.candidateTree = w.tree
+			}
+			if over.releaseTree == "" {
+				over.releaseTree = w.tree
+			}
+			if over.releaseCommit == "" && !over.dropReleaseCommit {
+				over.releaseCommit = w.commitA
+			}
+			if over.releaseParent == "" {
+				over.releaseParent = w.parent
+			}
+			over.authorizationDgst = pickOr(over.authorizationDgst, w.authDigest)
+			over.auditDigest = pickOr(over.auditDigest, w.auditDigest)
+			over.releaseDigest = pickOr(over.releaseDigest, w.releaseDigest)
+
+			digest := w.f.issueCommitBinding(w.candidate, over, w.f.priv)
+			if got := LoadReleaseCommitBinding(w.f.bindingRequest(w.candidate, digest)); got.Valid {
+				t.Errorf("a binding with %s was accepted", tc.label)
+			}
+		}
+	})
+}
+
+// The binding must not become a way to obtain authority, and establishing it
+// must leave the consumed authorization exactly as consumed as it was.
+func TestReleaseCommitBindingGrantsNothing(t *testing.T) {
+	typ := reflect.TypeOf(ReleaseCommitBinding{})
+
+	if n := reflect.PointerTo(typ).NumMethod(); n != 0 {
+		for i := 0; i < n; i++ {
+			t.Errorf("release commit binding exposes a method: %s", reflect.PointerTo(typ).Method(i).Name)
+		}
+	}
+	for i := 0; i < typ.NumField(); i++ {
+		field := typ.Field(i)
+		switch field.Type.Kind() {
+		case reflect.String, reflect.Bool:
+		default:
+			t.Errorf("field %s is %s; a release commit binding carries scalar facts, never collections", field.Name, field.Type)
+		}
+		lower := strings.ToLower(field.Name)
+		for _, banned := range []string{"allow", "protect", "grant", "permit"} {
+			if strings.Contains(lower, banned) {
+				t.Errorf("field %s reads as mutation authority (%q)", field.Name, banned)
+			}
+		}
+	}
+
+	w := newReleaseWorld(t)
+	if err := w.chainAt(w.commitA); err != nil {
+		t.Fatalf("positive control failed: %v", err)
+	}
+	// HEAD is still the baseline in this fixture, so current authority would be
+	// VALID here for the wrong reason. Move HEAD onto the release commit first,
+	// which is where a released repository actually stands.
+	if out, err := exec.Command("git", "-C", w.f.repo, "checkout", "--quiet", w.commitA).CombinedOutput(); err != nil {
+		t.Fatalf("checkout: %v\n%s", err, out)
+	}
+	if current := w.f.load(newID, w.authDigest); current.Valid {
+		t.Error("the consumed authorization became current authority at the released commit")
+	}
+	// And the binding is still readable there: history does not depend on
+	// authority being available.
+	if err := w.chainAt(w.commitA); err != nil {
+		t.Errorf("the release could not be verified at the released commit: %v", err)
+	}
+}
+
+// The committed schema must declare this object type exactly as the producer
+// emits it. Two descriptions of one object eventually disagree, and the more
+// permissive one is the one that matters.
+func TestCommittedSchemaDeclaresReleaseCommitBinding(t *testing.T) {
+	path := filepath.Join("..", "..", "..", "..", "governance", "schemas", "gds-authority-lifecycle-v1.schema.json")
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		t.Skipf("committed schema is not readable from here: %v", err)
+	}
+	schema, err := jsonstrict.Parse(raw)
+	if err != nil {
+		t.Fatalf("the committed schema is not strict JSON: %v", err)
+	}
+
+	root, ok := schema.Get("properties")
+	if !ok {
+		t.Fatal("the schema declares no properties")
+	}
+	objectType, ok := root.Get("objectType")
+	if !ok {
+		t.Fatal("the schema declares no objectType")
+	}
+	enum, ok := objectType.Get("enum")
+	if !ok || enum.Kind != jsonstrict.KindArray {
+		t.Fatal("objectType declares no enum")
+	}
+	found := false
+	for _, item := range enum.Array {
+		if s, _ := item.StringValue(); s == CommitBindingObjectType {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("the objectType enum does not admit %q", CommitBindingObjectType)
+	}
+
+	oneOf, ok := schema.Get("oneOf")
+	if !ok || oneOf.Kind != jsonstrict.KindArray {
+		t.Fatal("the schema declares no oneOf")
+	}
+	referenced := false
+	for _, item := range oneOf.Array {
+		ref, _ := item.Get("$ref")
+		if s, _ := ref.StringValue(); s == "#/$defs/releaseCommitBinding" {
+			referenced = true
+		}
+	}
+	if !referenced {
+		t.Error("oneOf does not reference #/$defs/releaseCommitBinding")
+	}
+
+	defs, ok := schema.Get("$defs")
+	if !ok {
+		t.Fatal("the schema declares no $defs")
+	}
+	def, ok := defs.Get("releaseCommitBinding")
+	if !ok {
+		t.Fatal("the schema declares no releaseCommitBinding definition")
+	}
+	if additional, ok := def.Get("additionalProperties"); !ok || additional.Kind != jsonstrict.KindBool || additional.Bool {
+		t.Error("releaseCommitBinding does not set additionalProperties:false")
+	}
+
+	props, ok := def.Get("properties")
+	if !ok {
+		t.Fatal("releaseCommitBinding declares no properties")
+	}
+	assertSameSet(t, "releaseCommitBinding.properties", props.Names(), commitBindingFields)
+
+	required, ok := def.Get("required")
+	if !ok || required.Kind != jsonstrict.KindArray {
+		t.Fatal("releaseCommitBinding declares no required array")
+	}
+	names := make([]string, 0, len(required.Array))
+	for _, item := range required.Array {
+		s, _ := item.StringValue()
+		names = append(names, s)
+	}
+	assertSameSet(t, "releaseCommitBinding.required", names, commitBindingFields)
+}
+
+func assertSameSet(t *testing.T, what string, got, want []string) {
+	t.Helper()
+	index := map[string]bool{}
+	for _, g := range got {
+		index[g] = true
+	}
+	for _, w := range want {
+		if !index[w] {
+			t.Errorf("%s does not declare %q, which the producer emits", what, w)
+		}
+		delete(index, w)
+	}
+	for extra := range index {
+		t.Errorf("%s declares %q, which the producer does not emit", what, extra)
 	}
 }
