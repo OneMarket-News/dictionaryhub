@@ -193,6 +193,18 @@ func loadValidatedObject(req Request) Authorization {
 		return result
 	}
 
+	// A StageAuthorization is a Product Authority object. Occupancy comes from
+	// the configured role table, never from the principal the caller named -
+	// otherwise the independent auditor could authorize a stage simply by being
+	// named as the signer of one it had signed.
+	roles, err := LoadRoles(store)
+	if err != nil {
+		return fail("roles: %v", err)
+	}
+	if err := roles.RequireRole(RoleProductAuthority, principal, req.ExpectedSigner); err != nil {
+		return fail("role: %v", err)
+	}
+
 	raw, err := os.ReadFile(path)
 	if err != nil {
 		return fail("authority object is unreadable: %v", err)
@@ -631,6 +643,22 @@ func ReleasePath(store, stageSlug, candidateDigest string) string {
 // exact bytes, a valid signature from the expected key, strict parsing, and
 // canonical form. Object-specific meaning is the caller's job.
 func loadSigned(path, expectedDigest, store, principal, expectedSigner string) (payload *jsonstrict.Value, digest, fingerprint string, err error) {
+	return loadSignedAs("", path, expectedDigest, store, principal, expectedSigner)
+}
+
+// loadSignedAs is loadSigned plus authoritative role occupancy. An empty role
+// means "no role constraint", which no governed object uses; every caller in
+// this package names a role.
+func loadSignedAs(role, path, expectedDigest, store, principal, expectedSigner string) (payload *jsonstrict.Value, digest, fingerprint string, err error) {
+	if role != "" {
+		roles, rerr := LoadRoles(store)
+		if rerr != nil {
+			return nil, "", "", fmt.Errorf("roles: %v", rerr)
+		}
+		if rerr := roles.RequireRole(role, principal, expectedSigner); rerr != nil {
+			return nil, "", "", fmt.Errorf("role: %v", rerr)
+		}
+	}
 	if !hexAnyRe.MatchString(expectedDigest) {
 		return nil, "", "", fmt.Errorf("expected digest is not a SHA-256 hex digest")
 	}
@@ -730,7 +758,7 @@ func LoadAuditBinding(req BindingRequest) AuditBinding {
 	}
 	result.Path = AuditPath(store, req.StageSlug, strings.ToUpper(req.CandidateDigest))
 
-	payload, digest, fingerprint, err := loadSigned(result.Path, req.ExpectedDigest, store, req.SignerPrincipal, req.ExpectedSigner)
+	payload, digest, fingerprint, err := loadSignedAs(RoleIndependentAuditor, result.Path, req.ExpectedDigest, store, req.SignerPrincipal, req.ExpectedSigner)
 	result.Digest = digest
 	if err != nil {
 		return fail("%s", err.Error())
@@ -762,8 +790,31 @@ func LoadAuditBinding(req BindingRequest) AuditBinding {
 	if verdict != "PASS" && verdict != "FAIL" {
 		return fail("unknown audit verdict %q", verdict)
 	}
-	if strings.TrimSpace(property(payload, "auditorIdentity")) == "" {
+	// AUDITOR AUTHENTICATION.
+	//
+	// auditorIdentity used to be checked only for non-emptiness, so an object
+	// could declare "Codex" while verifying under the Product Authority key and
+	// still be accepted. An audit found exactly that: every AuditBinding issued
+	// before this rule names an auditor who never signed anything. The object
+	// was asserting an identity that nothing checked.
+	//
+	// Every other signed object in this system binds its declared signer to the
+	// key that actually signed it. AuditBinding has no signerKeyFingerprint
+	// field, deliberately - the auditor is an independent party and the schema
+	// does not presume their key. auditorIdentity is therefore the field that
+	// must carry that binding, and it must name the principal the signature
+	// actually verified under.
+	//
+	// There is no legacy or date exemption. Objects that predate the rule are
+	// preserved as they are and simply do not satisfy it; representing them as
+	// independently authenticated would be the lie this check exists to stop.
+	auditor := strings.TrimSpace(property(payload, "auditorIdentity"))
+	if auditor == "" {
 		return fail("auditorIdentity is required")
+	}
+	if auditor != req.SignerPrincipal {
+		return fail("audit binding declares auditorIdentity %q but the signature verifies under principal %q; an audit must be authenticated by the auditor it names",
+			auditor, req.SignerPrincipal)
 	}
 	if !stampRe.MatchString(property(payload, "auditedAt")) {
 		return fail("auditedAt is not a second-precision UTC timestamp")
@@ -806,7 +857,7 @@ func LoadReleaseAuthorization(req BindingRequest) ReleaseAuthorization {
 	}
 	result.Path = ReleasePath(store, req.StageSlug, strings.ToUpper(req.CandidateDigest))
 
-	payload, digest, fingerprint, err := loadSigned(result.Path, req.ExpectedDigest, store, req.SignerPrincipal, req.ExpectedSigner)
+	payload, digest, fingerprint, err := loadSignedAs(RoleProductAuthority, result.Path, req.ExpectedDigest, store, req.SignerPrincipal, req.ExpectedSigner)
 	result.Digest = digest
 	if err != nil {
 		return fail("%s", err.Error())
@@ -909,6 +960,9 @@ func ReleaseChainHistorical(audit AuditBinding, release ReleaseAuthorization, ca
 	}
 	if !release.Valid {
 		return fmt.Errorf("release authorization is not valid: %s", release.Reason)
+	}
+	if err := SeparationOfDuties(audit, release); err != nil {
+		return err
 	}
 	if audit.CandidateDigest != candidateDigest {
 		return fmt.Errorf("the audit binding is over candidate %s, not %s", audit.CandidateDigest, candidateDigest)
@@ -1376,7 +1430,7 @@ func LoadReleaseCommitBinding(req BindingRequest) ReleaseCommitBinding {
 	}
 	result.Path = CommitBindingPath(store, req.StageSlug, strings.ToUpper(req.CandidateDigest))
 
-	payload, digest, fingerprint, err := loadSigned(result.Path, req.ExpectedDigest, store, req.SignerPrincipal, req.ExpectedSigner)
+	payload, digest, fingerprint, err := loadSignedAs(RoleProductAuthority, result.Path, req.ExpectedDigest, store, req.SignerPrincipal, req.ExpectedSigner)
 	result.Digest = digest
 	if err != nil {
 		return fail("%s", err.Error())
@@ -1552,6 +1606,403 @@ func ReleaseCommitChain(
 	}
 	if observed.Tree != binding.ReleaseTree {
 		return fmt.Errorf("HEAD's tree is %s, but the binding names %s", observed.Tree, binding.ReleaseTree)
+	}
+	return nil
+}
+
+// ===========================================================================
+// SEPARATION OF DUTIES
+//
+// Contract section 2 already requires it: "An agent occupying two roles in one
+// stage does not thereby satisfy separation of duties; the proposing,
+// approving, and reviewing functions must be held by distinct actors." The code
+// did not enforce it. An audit found that both AuditBindings ever issued
+// declared an auditor who had not signed them, because the Product Authority
+// key was the only key in allowed_signers and the caller simply named it as the
+// auditor.
+//
+// This is checked HERE, where the two roles are combined into a release
+// decision, rather than inside either loader. A loader sees only the identity
+// it was asked about; only the chain sees both at once. Nothing new has to be
+// plumbed in - both objects already carry the principal and the fingerprint
+// that verified them.
+//
+// Both halves are required. Comparing principals alone would let one key be
+// registered under two names; comparing fingerprints alone would let one name
+// cover two keys. An attacker controlling either dimension controls the role.
+// ===========================================================================
+
+// SeparationOfDuties reports whether the independent auditor and the Product
+// Authority are genuinely distinct actors.
+func SeparationOfDuties(audit AuditBinding, release ReleaseAuthorization) error {
+	if audit.SignerPrincipal == "" || release.SignerPrincipal == "" {
+		return fmt.Errorf("separation of duties cannot be established: a signing principal is unknown")
+	}
+	if audit.SignerFingerprint == "" || release.SignerFingerprint == "" {
+		return fmt.Errorf("separation of duties cannot be established: a signing key fingerprint is unknown")
+	}
+	if audit.SignerPrincipal == release.SignerPrincipal {
+		return fmt.Errorf("the audit binding and the release authorization were both authenticated as principal %q; the independent auditor and the Product Authority must be distinct actors",
+			audit.SignerPrincipal)
+	}
+	if audit.SignerFingerprint == release.SignerFingerprint {
+		return fmt.Errorf("the audit binding and the release authorization were both signed by key %s; the independent auditor and the Product Authority must be distinct keys",
+			audit.SignerFingerprint)
+	}
+	return nil
+}
+
+// ===========================================================================
+// AUTHORITATIVE ROLES
+//
+// An audit found that the Product Authority was whatever the caller named.
+// -signer-principal and -signer-fingerprint are command-line flags, so the core
+// proved only "this object was signed by the key registered to the principal
+// the caller supplied." Supply the auditor's own principal and fingerprint over
+// an object the auditor signed, and every Product Authority loader accepted it.
+// The roles were caller-selectable, which is not a role model at all.
+//
+// Role occupancy is now CONFIGURED, in a `roles` file beside allowed_signers at
+// the same ACL-protected trust root. The core resolves role -> principal ->
+// allowed key -> derived fingerprint itself. Caller-supplied values become
+// assertions checked against that resolution; they never define it.
+//
+// Everything fails closed: a missing or malformed file, an unknown role, a
+// duplicate assignment, a principal absent from allowed_signers, or the two
+// roles resolving to one principal or one key.
+// ===========================================================================
+
+// Role names as they appear in the roles file.
+const (
+	RoleProductAuthority   = "product-authority"
+	RoleIndependentAuditor = "independent-auditor"
+)
+
+// RoleAssignment is one resolved role: who holds it, and with which key.
+type RoleAssignment struct {
+	Role        string
+	Principal   string
+	Fingerprint string
+}
+
+// Roles is the resolved, mutually distinct role table.
+type Roles struct {
+	ProductAuthority   RoleAssignment
+	IndependentAuditor RoleAssignment
+}
+
+// RolesPath names the role table beside allowed_signers.
+func RolesPath(store string) string { return filepath.Join(store, "roles") }
+
+// LoadRoles resolves the configured roles against allowed_signers.
+//
+// The fingerprint is DERIVED from the registered key, never read from the roles
+// file. A role table that could state a fingerprint independently of the key
+// would be a second place for the two to disagree.
+func LoadRoles(store string) (Roles, error) {
+	var out Roles
+	raw, err := os.ReadFile(RolesPath(store))
+	if err != nil {
+		return out, fmt.Errorf("role table is unreadable: %v", err)
+	}
+	signers, err := os.ReadFile(filepath.Join(store, "allowed_signers"))
+	if err != nil {
+		return out, fmt.Errorf("allowed_signers is unreadable: %v", err)
+	}
+
+	seen := map[string]string{}
+	lines := strings.Split(strings.ReplaceAll(string(raw), "\r\n", "\n"), "\n")
+	for i, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		fields := splitFields(line)
+		if len(fields) != 2 {
+			return out, fmt.Errorf("role table line %d is malformed: expected exactly one role and one principal", i+1)
+		}
+		role, principal := fields[0], fields[1]
+		if role != RoleProductAuthority && role != RoleIndependentAuditor {
+			return out, fmt.Errorf("role table line %d names unknown role %q", i+1, role)
+		}
+		if prior, ok := seen[role]; ok {
+			return out, fmt.Errorf("role %q is assigned more than once (%q and %q); occupancy must be unambiguous",
+				role, prior, principal)
+		}
+		seen[role] = principal
+	}
+
+	for _, role := range []string{RoleProductAuthority, RoleIndependentAuditor} {
+		if _, ok := seen[role]; !ok {
+			return out, fmt.Errorf("role table does not assign %q", role)
+		}
+	}
+	if seen[RoleProductAuthority] == seen[RoleIndependentAuditor] {
+		return out, fmt.Errorf("both roles resolve to principal %q; the approving and reviewing functions must be distinct actors",
+			seen[RoleProductAuthority])
+	}
+
+	resolve := func(role string) (RoleAssignment, error) {
+		principal := seen[role]
+		blob, err := lookupSigner(signers, principal, Namespace)
+		if err != nil {
+			return RoleAssignment{}, fmt.Errorf("role %q names principal %q, which is not usable in allowed_signers: %v", role, principal, err)
+		}
+		return RoleAssignment{Role: role, Principal: principal, Fingerprint: Fingerprint(blob)}, nil
+	}
+	if out.ProductAuthority, err = resolve(RoleProductAuthority); err != nil {
+		return Roles{}, err
+	}
+	if out.IndependentAuditor, err = resolve(RoleIndependentAuditor); err != nil {
+		return Roles{}, err
+	}
+	if out.ProductAuthority.Fingerprint == out.IndependentAuditor.Fingerprint {
+		return Roles{}, fmt.Errorf("both roles resolve to key %s; distinct principals sharing one key is not separation",
+			out.ProductAuthority.Fingerprint)
+	}
+	return out, nil
+}
+
+// RequireRole checks a caller's asserted identity against configured occupancy.
+//
+// Both halves must agree with the resolved role. A caller may assert; it may
+// never define.
+func (r Roles) RequireRole(role, principal, fingerprint string) error {
+	var want RoleAssignment
+	switch role {
+	case RoleProductAuthority:
+		want = r.ProductAuthority
+	case RoleIndependentAuditor:
+		want = r.IndependentAuditor
+	default:
+		return fmt.Errorf("unknown role %q", role)
+	}
+	if principal != want.Principal {
+		return fmt.Errorf("principal %q does not hold role %q; the configured holder is %q",
+			principal, role, want.Principal)
+	}
+	if fingerprint != "" && fingerprint != want.Fingerprint {
+		return fmt.Errorf("key %s is not the key registered for role %q (%s)",
+			fingerprint, role, want.Fingerprint)
+	}
+	return nil
+}
+
+// ===========================================================================
+// RECOVERY ELIGIBILITY
+//
+// A TERMINAL-UNCLOSED release cannot produce release-state ACCEPT, and must
+// not: its chain does not satisfy the corrected auditor model, and pretending
+// otherwise is the laundering this object exists to avoid. But the repository
+// still needs a POSITIVE record of why one bounded recovery is legitimate.
+// Eligibility by omission - a SKIP - records nothing.
+//
+// So eligibility is a separate, weaker statement, signed by the configured
+// Product Authority: this exact predecessor may be recovered from, once. It
+// asserts nothing about the predecessor's audit chain. The legacy evidence
+// digests it carries identify that chain so it can be found and audited;
+// naming a digest is not endorsing it.
+//
+// Like HistoricalAuthorization and ReleaseCommitBinding, it carries no paths
+// and exposes no methods. Mutation authority comes only from a signed
+// StageAuthorization, and this object is structurally incapable of supplying
+// any.
+// ===========================================================================
+
+// EligibilityObjectType is the sixth governed object type.
+const EligibilityObjectType = "RecoveryEligibility"
+
+// ClassificationTerminalUnclosed is the only classification eligibility covers.
+const ClassificationTerminalUnclosed = "TERMINAL-UNCLOSED"
+
+var eligibilityFields = []string{
+	"schemaVersion", "objectType", "repositoryId",
+	"supersededCommit", "supersededStageSlug", "supersededAuthorizationDigest",
+	"supersededAuditBindingDigest", "supersededReleaseAuthorizationDigest",
+	"supersededCommitBindingDigest",
+	"recoveryStageSlug", "hopLimit", "classification", "reason",
+	"issuedAt", "signerKeyFingerprint", "signatureNamespace",
+}
+
+// RecoveryEligibility is the Product Authority's statement that one exact
+// TERMINAL-UNCLOSED predecessor may be recovered from exactly once.
+//
+// Every field is a scalar fact. There is deliberately no path set and no
+// method: eligibility that could answer a path question would be mutation
+// authority wearing a weaker name.
+type RecoveryEligibility struct {
+	Valid                                bool
+	Reason                               string
+	Path                                 string
+	Digest                               string
+	RepositoryID                         string
+	SupersededCommit                     string
+	SupersededStageSlug                  string
+	SupersededAuthorizationDigest        string
+	SupersededAuditBindingDigest         string
+	SupersededReleaseAuthorizationDigest string
+	SupersededCommitBindingDigest        string
+	RecoveryStageSlug                    string
+	Classification                       string
+	Justification                        string
+	IssuedAt                             string
+	SignerFingerprint                    string
+	SignerPrincipal                      string
+}
+
+// EligibilityRequest states which eligibility object is wanted, and for which
+// predecessor and recovery stage. All three are mandatory: the object must not
+// be findable by naming only one of them.
+type EligibilityRequest struct {
+	ControlStoreRoot  string
+	RepositoryID      string
+	RecoveryStageSlug string
+	SupersededCommit  string
+	ExpectedDigest    string
+	ExpectedSigner    string
+	SignerPrincipal   string
+}
+
+// EligibilityPath names the eligibility object for one recovery of one
+// predecessor. Keying by BOTH means an object issued for one predecessor can
+// never answer a request about another.
+func EligibilityPath(store, recoveryStageSlug, supersededCommit string) string {
+	return filepath.Join(store, "eligibility",
+		fmt.Sprintf("%s.%s.eligibility.json", recoveryStageSlug, supersededCommit))
+}
+
+// LoadRecoveryEligibility verifies a Product Authority eligibility statement.
+func LoadRecoveryEligibility(req EligibilityRequest) RecoveryEligibility {
+	store := ControlStore(req.ControlStoreRoot, req.RepositoryID)
+	result := RecoveryEligibility{}
+	fail := func(format string, args ...any) RecoveryEligibility {
+		result.Valid = false
+		result.Reason = fmt.Sprintf(format, args...)
+		return result
+	}
+	if !slugRe.MatchString(req.RecoveryStageSlug) {
+		return fail("recovery stage slug %q is not an upper-case governance slug", req.RecoveryStageSlug)
+	}
+	if !gitIDRe.MatchString(req.SupersededCommit) {
+		return fail("superseded commit is not a lowercase 40-character Git object id")
+	}
+	result.Path = EligibilityPath(store, req.RecoveryStageSlug, req.SupersededCommit)
+
+	// Product Authority only, by CONFIGURED role. The auditor is refused here
+	// even when asserting its own valid principal and fingerprint.
+	payload, digest, fingerprint, err := loadSignedAs(RoleProductAuthority, result.Path, req.ExpectedDigest, store, req.SignerPrincipal, req.ExpectedSigner)
+	result.Digest = digest
+	if err != nil {
+		return fail("%s", err.Error())
+	}
+	if err := exactProperties(payload, eligibilityFields); err != nil {
+		return fail("%s", err.Error())
+	}
+	if property(payload, "schemaVersion") != SchemaVersion {
+		return fail("unsupported schemaVersion %q", property(payload, "schemaVersion"))
+	}
+	if property(payload, "objectType") != EligibilityObjectType {
+		return fail("unexpected objectType %q", property(payload, "objectType"))
+	}
+	if property(payload, "repositoryId") != req.RepositoryID {
+		return fail("eligibility is for repository %q, not %q", property(payload, "repositoryId"), req.RepositoryID)
+	}
+	// The object must name the SAME predecessor and recovery stage the caller
+	// asked about. Reuse across either dimension is refused.
+	if property(payload, "supersededCommit") != req.SupersededCommit {
+		return fail("eligibility is for predecessor %s, not %s",
+			property(payload, "supersededCommit"), req.SupersededCommit)
+	}
+	if property(payload, "recoveryStageSlug") != req.RecoveryStageSlug {
+		return fail("eligibility is for recovery stage %q, not %q",
+			property(payload, "recoveryStageSlug"), req.RecoveryStageSlug)
+	}
+	if !slugRe.MatchString(property(payload, "supersededStageSlug")) {
+		return fail("supersededStageSlug is not an upper-case governance slug")
+	}
+	for _, field := range []string{
+		"supersededAuthorizationDigest", "supersededAuditBindingDigest",
+		"supersededReleaseAuthorizationDigest", "supersededCommitBindingDigest",
+	} {
+		if !sha256Re.MatchString(property(payload, field)) {
+			return fail("%s is not an uppercase SHA-256; legacy evidence must be identifiable", field)
+		}
+	}
+	// hopLimit is an integer, not a string. Reading it as a string would let
+	// "1 " or "01" through, so it is read from the parsed value.
+	hop, ok := payload.Get("hopLimit")
+	if !ok || hop.Kind != jsonstrict.KindInt {
+		return fail("hopLimit is not an integer")
+	}
+	hopValue, _ := hop.IntValue()
+	if hopValue != 1 {
+		return fail("hopLimit is %d; exactly one recovery hop may be authorized", hopValue)
+	}
+	if property(payload, "classification") != ClassificationTerminalUnclosed {
+		return fail("classification %q is not %s", property(payload, "classification"), ClassificationTerminalUnclosed)
+	}
+	if strings.TrimSpace(property(payload, "reason")) == "" {
+		return fail("reason is required; eligibility must record why it exists")
+	}
+	if !stampRe.MatchString(property(payload, "issuedAt")) {
+		return fail("issuedAt is not a second-precision UTC timestamp")
+	}
+	if property(payload, "signerKeyFingerprint") != fingerprint {
+		return fail("declared signerKeyFingerprint %s is not the key that signed these bytes (%s)",
+			property(payload, "signerKeyFingerprint"), fingerprint)
+	}
+	if property(payload, "signatureNamespace") != Namespace {
+		return fail("unexpected signatureNamespace %q", property(payload, "signatureNamespace"))
+	}
+	// A predecessor cannot be its own recovery.
+	if property(payload, "supersededStageSlug") == property(payload, "recoveryStageSlug") {
+		return fail("the superseded stage and the recovery stage are the same slug %q",
+			property(payload, "recoveryStageSlug"))
+	}
+
+	result.RepositoryID = property(payload, "repositoryId")
+	result.SupersededCommit = property(payload, "supersededCommit")
+	result.SupersededStageSlug = property(payload, "supersededStageSlug")
+	result.SupersededAuthorizationDigest = property(payload, "supersededAuthorizationDigest")
+	result.SupersededAuditBindingDigest = property(payload, "supersededAuditBindingDigest")
+	result.SupersededReleaseAuthorizationDigest = property(payload, "supersededReleaseAuthorizationDigest")
+	result.SupersededCommitBindingDigest = property(payload, "supersededCommitBindingDigest")
+	result.RecoveryStageSlug = property(payload, "recoveryStageSlug")
+	result.Classification = property(payload, "classification")
+	result.Justification = property(payload, "reason")
+	result.IssuedAt = property(payload, "issuedAt")
+	result.SignerFingerprint = fingerprint
+	result.SignerPrincipal = req.SignerPrincipal
+	result.Valid = true
+	result.Reason = fmt.Sprintf("recovery eligibility %s: predecessor %s is classified %s and eligible for exactly one recovery by stage %s, signed by %s; this states nothing about whether the predecessor's audit chain conforms",
+		digest, result.SupersededCommit, result.Classification, result.RecoveryStageSlug, req.SignerPrincipal)
+	return result
+}
+
+// EligibleForRecovery binds eligibility to the recovery stage's own signed
+// authorization.
+//
+// Eligibility alone authorizes nothing. It becomes meaningful only against a
+// StageAuthorization whose baseline IS the superseded commit - that is what
+// makes it "this recovery, from this predecessor" rather than a free-floating
+// permission slip.
+func EligibleForRecovery(eligibility RecoveryEligibility, auth Authorization) error {
+	if !eligibility.Valid {
+		return fmt.Errorf("recovery eligibility is not valid: %s", eligibility.Reason)
+	}
+	if !auth.Valid {
+		return fmt.Errorf("the recovery stage authorization is not valid: %s", auth.Reason)
+	}
+	if eligibility.RecoveryStageSlug != auth.StageSlug {
+		return fmt.Errorf("eligibility names recovery stage %q but the authorization is for %q",
+			eligibility.RecoveryStageSlug, auth.StageSlug)
+	}
+	if eligibility.SupersededCommit != auth.BaselineCommit {
+		return fmt.Errorf("eligibility names predecessor %s but the recovery authorization is baselined on %s",
+			eligibility.SupersededCommit, auth.BaselineCommit)
+	}
+	if eligibility.RepositoryID != "" && auth.RepositoryID != "" && eligibility.RepositoryID != auth.RepositoryID {
+		return fmt.Errorf("eligibility and the recovery authorization name different repositories")
 	}
 	return nil
 }

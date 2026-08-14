@@ -8,7 +8,7 @@
   "properties": {
     "schemaVersion": { "const": "gds-authority-lifecycle-v1" },
     "objectType": {
-      "enum": ["StageAuthorization", "CandidateManifest", "AuditBinding", "ReleaseAuthorization", "ReleaseCommitBinding"]
+      "enum": ["StageAuthorization", "CandidateManifest", "AuditBinding", "ReleaseAuthorization", "ReleaseCommitBinding", "RecoveryEligibility"]
     }
   },
   "oneOf": [
@@ -16,7 +16,8 @@
     { "$ref": "#/$defs/candidateManifest" },
     { "$ref": "#/$defs/auditBinding" },
     { "$ref": "#/$defs/releaseAuthorization" },
-    { "$ref": "#/$defs/releaseCommitBinding" }
+    { "$ref": "#/$defs/releaseCommitBinding" },
+    { "$ref": "#/$defs/recoveryEligibility" }
   ],
   "$defs": {
     "sha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
@@ -284,6 +285,46 @@
           "description": "Must equal candidateTree and the tree of releaseCommit."
         },
         "boundAt": { "$ref": "#/$defs/utcTimestamp" },
+        "signerKeyFingerprint": { "$ref": "#/$defs/keyFingerprint" },
+        "signatureNamespace": { "const": "sourceroot-gds-v1" }
+      }
+    },
+    "recoveryEligibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "A Product Authority statement that ONE named TERMINAL-UNCLOSED predecessor is eligible for ONE bounded recovery stage. It is NOT a release-state result and must never be treated as one: it does not assert that the predecessor's chain conforms, and it grants no repository paths and no mutation authority. Mutation authority comes only from a StageAuthorization. The legacy evidence digests below identify the historical chain so it can be found and audited; naming them is not endorsing them.",
+      "required": [
+        "schemaVersion", "objectType", "repositoryId",
+        "supersededCommit", "supersededStageSlug", "supersededAuthorizationDigest",
+        "supersededAuditBindingDigest", "supersededReleaseAuthorizationDigest",
+        "supersededCommitBindingDigest",
+        "recoveryStageSlug", "hopLimit", "classification", "reason",
+        "issuedAt", "signerKeyFingerprint", "signatureNamespace"
+      ],
+      "properties": {
+        "schemaVersion": { "const": "gds-authority-lifecycle-v1" },
+        "objectType": { "const": "RecoveryEligibility" },
+        "repositoryId": { "type": "string", "minLength": 1 },
+        "supersededCommit": {
+          "$ref": "#/$defs/gitObjectId",
+          "description": "The exact TERMINAL-UNCLOSED release commit. Must equal the baseline of the recovery StageAuthorization, so eligibility cannot be pointed at a different predecessor than the one being recovered from."
+        },
+        "supersededStageSlug": { "type": "string", "pattern": "^[A-Z0-9-]+$" },
+        "supersededAuthorizationDigest": { "$ref": "#/$defs/sha256" },
+        "supersededAuditBindingDigest": {
+          "$ref": "#/$defs/sha256",
+          "description": "Identifies the legacy audit binding. It is deliberately NOT verified as conforming: under the corrected auditor model it is not, and this object must not launder it."
+        },
+        "supersededReleaseAuthorizationDigest": { "$ref": "#/$defs/sha256" },
+        "supersededCommitBindingDigest": { "$ref": "#/$defs/sha256" },
+        "recoveryStageSlug": { "type": "string", "pattern": "^[A-Z0-9-]+$" },
+        "hopLimit": {
+          "const": 1,
+          "description": "Exactly one recovery hop. A second recovery is never implicitly authorized."
+        },
+        "classification": { "const": "TERMINAL-UNCLOSED" },
+        "reason": { "type": "string", "minLength": 1 },
+        "issuedAt": { "$ref": "#/$defs/utcTimestamp" },
         "signerKeyFingerprint": { "$ref": "#/$defs/keyFingerprint" },
         "signatureNamespace": { "const": "sourceroot-gds-v1" }
       }

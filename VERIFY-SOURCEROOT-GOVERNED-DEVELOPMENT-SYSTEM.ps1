@@ -918,6 +918,64 @@ if ($script:GdsAuthorityValid -and $script:GdsCandidateAuthorized) {
     Assert-True ($CandidateMigrations.Count -eq 0) `
         "The signed authorization admits no migration into this candidate ($($CandidateMigrations.Count) found)"
     foreach ($Path in $CandidateMigrations) { Write-Host "       candidate migration: $Path" -ForegroundColor Red }
+} elseif ($script:GdsTerminalRelease) {
+    # TERMINAL MIGRATION ATTRIBUTION.
+    #
+    # The anchored development window is STRUCTURALLY unavailable here. It is
+    # open only while HEAD is still a historical baseline, and a release moves
+    # HEAD by definition, so after terminalization it can never attribute
+    # anything again. Continuing to ask it was the same defect this system keeps
+    # closing: a fact true at one commit written down as a durable invariant.
+    # It made migration 020 - committed governed history from the 15A stage -
+    # read as ungoverned at the very release that shipped it.
+    #
+    # The durable evidence at terminal state is the RELEASE TREE ITSELF. A
+    # Product Authority ReleaseCommitBinding names this exact commit, its tree is
+    # the audited candidate tree, and a PASS audit and a Product Authority
+    # release authorization cover that candidate. A migration inside that tree
+    # was therefore inside a signed, independently audited candidate. Nothing
+    # else is accepted as attribution - not the manifest, not a completed
+    # record, not the filesystem.
+    #
+    # This is not a relaxation of the window it replaces. It additionally binds
+    # the BYTES of every migration that entered after the GDS release, migration
+    # 020 among them, which the release-set blob comparison above cannot cover
+    # because 020 is not in that set. A migration edited, added, renamed or
+    # removed after the release diverges from the bound tree and fails here.
+    $BoundMigrations = @{}
+    foreach ($Line in @(Invoke-RepositoryGit @("ls-tree", "-r", "HEAD", "backend/db/migrations/"))) {
+        if ($Line -match "^\s*\d+\s+blob\s+([0-9a-f]{40})\s+(.+)$") {
+            $BoundMigrations[[IO.Path]::GetFileName($Matches[2].Trim())] = $Matches[1]
+        }
+    }
+    # Fail closed: an unreadable tree must never read as "no migrations, so
+    # nothing to attribute".
+    Assert-True ($BoundMigrations.Count -ge 20) `
+        "The bound release tree's migration set is inspectable ($($BoundMigrations.Count) found)"
+
+    $NotInBoundTree = @()
+    $DivergedFromBoundTree = @()
+    foreach ($Item in $Migrations) {
+        if (-not $BoundMigrations.ContainsKey($Item.Name)) { $NotInBoundTree += $Item.Name; continue }
+        $Blob = ([string](Invoke-RepositoryGit @("hash-object", "--no-filters", "--", "backend/db/migrations/$($Item.Name)"))).Trim()
+        if ($Blob -cne $BoundMigrations[$Item.Name]) { $DivergedFromBoundTree += $Item.Name }
+    }
+    $MissingFromBoundSet = @()
+    foreach ($Name in $BoundMigrations.Keys) {
+        if (@($Migrations | Where-Object { $_.Name -ceq $Name }).Count -ne 1) { $MissingFromBoundSet += $Name }
+    }
+
+    Assert-True ($NotInBoundTree.Count -eq 0) `
+        "Every migration present is attributable to the cryptographically bound release tree ($($NotInBoundTree.Count) unattributable)"
+    foreach ($Name in $NotInBoundTree) { Write-Host "       not in the bound release tree: $Name" -ForegroundColor Red }
+
+    Assert-True ($DivergedFromBoundTree.Count -eq 0) `
+        "Every attributed migration is byte-identical to the bound release tree ($($DivergedFromBoundTree.Count) diverged)"
+    foreach ($Name in $DivergedFromBoundTree) { Write-Host "       diverged from the bound release tree: $Name" -ForegroundColor Red }
+
+    Assert-True ($MissingFromBoundSet.Count -eq 0) `
+        "Every migration in the bound release tree is still present ($($MissingFromBoundSet.Count) missing)"
+    foreach ($Name in $MissingFromBoundSet) { Write-Host "       missing from the bound release set: $Name" -ForegroundColor Red }
 } else {
     if ($UngovernedMigrations.Count -gt 0) {
         Write-Host "       migration attribution window: $($MigrationWindow.Reason)" -ForegroundColor Red

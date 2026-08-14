@@ -70,6 +70,8 @@ func main() {
 		os.Exit(cmdReleaseGate(args))
 	case "release-state":
 		os.Exit(cmdReleaseState(args))
+	case "recovery-eligibility":
+		os.Exit(cmdRecoveryEligibility(args))
 	case "lifecycle-check":
 		os.Exit(cmdLifecycleCheck(args))
 	case "canonical-digest":
@@ -122,6 +124,10 @@ func usage() {
                       -auditor-principal NAME -auditor-fingerprint SHA256:...
                       -commit-binding-digest SHA256
                       is HEAD the governed released truth for this stage?
+  recovery-eligibility <authority flags> -superseded-commit SHA1
+                      -eligibility-digest SHA256
+                      may this TERMINAL-UNCLOSED predecessor be recovered from?
+                      This is NOT release-state and never implies it.
   lifecycle-check     -from STATE -to STATE
   canonical-digest    -file FILE
 
@@ -694,4 +700,100 @@ func emitReturn(code int, command, verdict, reason string, extra ...jsonstrict.M
 
 func emit(code int, command, verdict, reason string, extra ...jsonstrict.Member) {
 	os.Exit(emitReturn(code, command, verdict, reason, extra...))
+}
+
+// cmdRecoveryEligibility answers a DIFFERENT question from release-state.
+//
+// release-state asks "is HEAD the governed released truth?" and, for a
+// TERMINAL-UNCLOSED predecessor whose audit chain does not satisfy the
+// corrected auditor model, the honest answer is REJECT - permanently. This
+// command asks "may that predecessor be recovered from, once?"
+//
+// The two must never be conflated, so this command:
+//
+//   - is a separate verb with its own verdict text
+//   - never loads or reports release-state
+//   - states in its own reason that it does not make the predecessor conforming
+//
+// It grants nothing. Mutation authority for the recovery comes solely from the
+// recovery StageAuthorization, which this command additionally requires the
+// eligibility to be bound to.
+func cmdRecoveryEligibility(args []string) int {
+	fs := flag.NewFlagSet("recovery-eligibility", flag.ContinueOnError)
+	f := bind(fs)
+	supersededCommit := fs.String("superseded-commit", "", "exact TERMINAL-UNCLOSED predecessor commit")
+	eligibilityDigest := fs.String("eligibility-digest", "", "exact SHA-256 of the signed recovery eligibility")
+	if err := fs.Parse(args); err != nil {
+		return emitReturn(exitError, "recovery-eligibility", "ERROR", err.Error())
+	}
+	if f.repo == "" {
+		return emitReturn(exitError, "recovery-eligibility", "ERROR", "-repo is required")
+	}
+	if *supersededCommit == "" {
+		return emitReturn(exitError, "recovery-eligibility", "ERROR", "-superseded-commit is required")
+	}
+	if *eligibilityDigest == "" {
+		return emitReturn(exitError, "recovery-eligibility", "ERROR", "-eligibility-digest is required")
+	}
+
+	git := gitexec.New(f.repo)
+	repositoryID := f.repositoryID
+	if repositoryID == "" {
+		derived, err := git.RepositoryID()
+		if err != nil {
+			return emitReturn(exitError, "recovery-eligibility", "ERROR", err.Error())
+		}
+		repositoryID = derived
+	}
+
+	eligibility := authority.LoadRecoveryEligibility(authority.EligibilityRequest{
+		ControlStoreRoot:  f.controlStore,
+		RepositoryID:      repositoryID,
+		RecoveryStageSlug: f.stage,
+		SupersededCommit:  *supersededCommit,
+		ExpectedDigest:    *eligibilityDigest,
+		ExpectedSigner:    f.fingerprint,
+		SignerPrincipal:   f.principal,
+	})
+	members := []jsonstrict.Member{
+		jsonstrict.P("classification", jsonstrict.String(eligibility.Classification)),
+		jsonstrict.P("supersededCommit", jsonstrict.String(eligibility.SupersededCommit)),
+		jsonstrict.P("recoveryStageSlug", jsonstrict.String(eligibility.RecoveryStageSlug)),
+		jsonstrict.P("eligibilityDigest", jsonstrict.String(eligibility.Digest)),
+		jsonstrict.P("predecessorConforming", jsonstrict.String("NO")),
+		jsonstrict.P("grantsMutationAuthority", jsonstrict.String("NO")),
+	}
+	if !eligibility.Valid {
+		return emitReturn(exitReject, "recovery-eligibility", "REJECT", eligibility.Reason, members...)
+	}
+
+	// Eligibility is meaningful only against the recovery stage's own signed
+	// authorization. Verified here so the answer cannot be read as a standalone
+	// permission detached from any stage.
+	auth := authority.Load(authority.Request{
+		ControlStoreRoot: f.controlStore,
+		RepositoryID:     repositoryID,
+		StageSlug:        f.stage,
+		AuthorizationID:  f.authID,
+		ExpectedDigest:   f.digest,
+		ExpectedSigner:   f.fingerprint,
+		SignerPrincipal:  f.principal,
+		RepositoryRoot:   f.repo,
+		Git:              git,
+	})
+	members = append(members,
+		jsonstrict.P("recoveryAuthorizationDigest", jsonstrict.String(auth.Digest)),
+		jsonstrict.P("recoveryBaseline", jsonstrict.String(auth.BaselineCommit)))
+	if err := authority.EligibleForRecovery(eligibility, auth); err != nil {
+		return emitReturn(exitReject, "recovery-eligibility", "REJECT", err.Error(), members...)
+	}
+
+	members = append(members,
+		jsonstrict.P("supersededStageSlug", jsonstrict.String(eligibility.SupersededStageSlug)),
+		jsonstrict.P("supersededAuditBindingDigest", jsonstrict.String(eligibility.SupersededAuditBindingDigest)),
+		jsonstrict.P("supersededReleaseAuthorizationDigest", jsonstrict.String(eligibility.SupersededReleaseAuthorizationDigest)),
+		jsonstrict.P("supersededCommitBindingDigest", jsonstrict.String(eligibility.SupersededCommitBindingDigest)))
+	return emitReturn(exitAccept, "recovery-eligibility", "ELIGIBLE",
+		fmt.Sprintf("predecessor %s is classified %s and eligible for exactly one recovery by stage %s, bound to recovery authorization %s. This is NOT release state: the predecessor's audit chain remains non-conforming, and this statement grants no repository path and no mutation authority.",
+			eligibility.SupersededCommit, eligibility.Classification, eligibility.RecoveryStageSlug, auth.Digest), members...)
 }

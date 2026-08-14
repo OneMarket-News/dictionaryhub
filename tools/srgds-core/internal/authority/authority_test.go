@@ -91,6 +91,10 @@ const (
 	testRepoID    = "github.com-OneMarket-News-dictionaryhub"
 	newID         = "a8f6cf37-225b-42f6-a4ea-a333935825d4"
 	oldID         = "b7a1c3e2-5d94-4f8a-9c16-3e0a72d5f481"
+	// The independent auditor. A DIFFERENT principal with a DIFFERENT key: the
+	// fixture used to sign audits with the Product Authority key, which is the
+	// conflation the separation rule now refuses.
+	testAuditor = "test-tier3-auditor"
 )
 
 type fixture struct {
@@ -103,6 +107,8 @@ type fixture struct {
 	priv         ed25519.PrivateKey
 	fingerprint  string
 	otherPriv    ed25519.PrivateKey
+	auditorPriv  ed25519.PrivateKey
+	auditorFP    string
 	allowedPaths []string
 	protected    []string
 }
@@ -136,6 +142,7 @@ func newFixture(t *testing.T) *fixture {
 
 	_, priv, _ := ed25519.GenerateKey(rand.Reader)
 	_, otherPriv, _ := ed25519.GenerateKey(rand.Reader)
+	_, auditorPriv, _ := ed25519.GenerateKey(rand.Reader)
 
 	storeRoot := t.TempDir()
 	store := filepath.Join(storeRoot, testRepoID)
@@ -145,21 +152,34 @@ func newFixture(t *testing.T) *fixture {
 
 	f := &fixture{
 		t: t, storeRoot: storeRoot, store: store, repo: repo, git: git, baseline: head,
-		priv: priv, otherPriv: otherPriv,
+		priv: priv, otherPriv: otherPriv, auditorPriv: auditorPriv,
 		fingerprint:  Fingerprint(pubBlobOf(priv.Public().(ed25519.PublicKey))),
+		auditorFP:    Fingerprint(pubBlobOf(auditorPriv.Public().(ed25519.PublicKey))),
 		allowedPaths: []string{"a.txt", "docs/build/note.md", "tools/x.go"},
 		protected:    []string{"backend", "secrets/"},
 	}
-	f.writeSigners(fmt.Sprintf("%s namespaces=%q ssh-ed25519 %s",
-		testPrincipal, Namespace, base64.StdEncoding.EncodeToString(pubBlobOf(priv.Public().(ed25519.PublicKey)))))
+	f.writeSigners(fmt.Sprintf("%s namespaces=%q ssh-ed25519 %s\n%s namespaces=%q ssh-ed25519 %s",
+		testPrincipal, Namespace, base64.StdEncoding.EncodeToString(pubBlobOf(priv.Public().(ed25519.PublicKey))),
+		testAuditor, Namespace, base64.StdEncoding.EncodeToString(pubBlobOf(auditorPriv.Public().(ed25519.PublicKey)))))
 	return f
 }
 
 func (f *fixture) writeSigners(line string) {
 	f.t.Helper()
+	// Option tests replace allowed_signers wholesale to exercise one PA line.
+	// The auditor is appended so the role table still resolves; without it every
+	// load fails on roles rather than on the option under test.
+	if !strings.Contains(line, testAuditor) {
+		line = line + "\n" + fmt.Sprintf("%s namespaces=%q ssh-ed25519 %s", testAuditor, Namespace,
+			base64.StdEncoding.EncodeToString(pubBlobOf(f.auditorPriv.Public().(ed25519.PublicKey))))
+	}
 	if err := os.WriteFile(filepath.Join(f.store, "allowed_signers"), []byte(line+"\n"), 0o600); err != nil {
 		f.t.Fatal(err)
 	}
+	// Role occupancy is configured, not caller-supplied, so the fixture must
+	// provide a role table alongside allowed_signers or nothing loads at all.
+	f.writeRoles(fmt.Sprintf("%s %s\n%s %s\n",
+		RoleProductAuthority, testPrincipal, RoleIndependentAuditor, testAuditor))
 }
 
 type overrides struct {
@@ -631,6 +651,16 @@ func (f *fixture) issueAudit(candidate, verdict string, signer ed25519.PrivateKe
 	return f.issueAuditBinary(candidate, verdict, signer, over, testBinary)
 }
 
+// auditRequest names the AUDITOR, not the Product Authority. Loading an audit
+// binding under the Product Authority identity is exactly what the separation
+// rule refuses, so the fixture must not do it by default.
+func (f *fixture) auditRequest(candidate, expected string) BindingRequest {
+	req := f.bindingRequest(candidate, expected)
+	req.ExpectedSigner = f.auditorFP
+	req.SignerPrincipal = testAuditor
+	return req
+}
+
 func (f *fixture) issueAuditBinary(candidate, verdict string, signer ed25519.PrivateKey, over, binary string) string {
 	f.t.Helper()
 	if over == "" {
@@ -644,7 +674,7 @@ func (f *fixture) issueAuditBinary(candidate, verdict string, signer ed25519.Pri
 		jsonstrict.P("candidateDigest", jsonstrict.String(over)),
 		jsonstrict.P("binarySha256", jsonstrict.String(binary)),
 		jsonstrict.P("verdict", jsonstrict.String(verdict)),
-		jsonstrict.P("auditorIdentity", jsonstrict.String("Independent Audit")),
+		jsonstrict.P("auditorIdentity", jsonstrict.String(testAuditor)),
 		jsonstrict.P("auditedAt", jsonstrict.String("2026-08-12T06:00:00Z")),
 		jsonstrict.P("auditReportDigest", jsonstrict.String(strings.Repeat("C", 64))),
 	)
@@ -663,6 +693,30 @@ func (f *fixture) issueRelease(candidate, auditDigest string, signer ed25519.Pri
 	return f.issueReleaseBinary(candidate, auditDigest, signer, testBinary)
 }
 
+func (f *fixture) issueReleaseSigner(candidate, auditDigest string, signer ed25519.PrivateKey, declaredFP string) string {
+	f.t.Helper()
+	value := jsonstrict.MustObject(
+		jsonstrict.P("schemaVersion", jsonstrict.String(SchemaVersion)),
+		jsonstrict.P("objectType", jsonstrict.String("ReleaseAuthorization")),
+		jsonstrict.P("repositoryId", jsonstrict.String(testRepoID)),
+		jsonstrict.P("stageSlug", jsonstrict.String(testStage)),
+		jsonstrict.P("candidateDigest", jsonstrict.String(candidate)),
+		jsonstrict.P("binarySha256", jsonstrict.String(testBinary)),
+		jsonstrict.P("auditBindingDigest", jsonstrict.String(auditDigest)),
+		jsonstrict.P("authorizedAt", jsonstrict.String("2026-08-12T07:00:00Z")),
+		jsonstrict.P("signerKeyFingerprint", jsonstrict.String(declaredFP)),
+		jsonstrict.P("signatureNamespace", jsonstrict.String(Namespace)),
+	)
+	raw, err := canonical.Marshal(value)
+	if err != nil {
+		f.t.Fatal(err)
+	}
+	path := ReleasePath(f.store, testStage, candidate)
+	os.MkdirAll(filepath.Dir(path), 0o700)
+	os.WriteFile(path, raw, 0o600)
+	os.WriteFile(path+".sig", armorSignature(signer, raw, Namespace), 0o600)
+	return canonical.Digest(raw)
+}
 func (f *fixture) issueReleaseBinary(candidate, auditDigest string, signer ed25519.PrivateKey, binary string) string {
 	f.t.Helper()
 	value := jsonstrict.MustObject(
@@ -702,10 +756,10 @@ func (f *fixture) bindingRequest(candidate, expected string) BindingRequest {
 
 func TestReleaseChainRequiresEveryLink(t *testing.T) {
 	f := newFixture(t)
-	auditDigest := f.issueAudit(testCandidate, "PASS", f.priv, "")
+	auditDigest := f.issueAudit(testCandidate, "PASS", f.auditorPriv, "")
 	releaseDigest := f.issueRelease(testCandidate, auditDigest, f.priv)
 
-	audit := LoadAuditBinding(f.bindingRequest(testCandidate, auditDigest))
+	audit := LoadAuditBinding(f.auditRequest(testCandidate, auditDigest))
 	if !audit.Valid {
 		t.Fatalf("valid audit binding rejected: %s", audit.Reason)
 	}
@@ -718,8 +772,8 @@ func TestReleaseChainRequiresEveryLink(t *testing.T) {
 	}
 
 	t.Run("a FAIL audit blocks release", func(t *testing.T) {
-		failed := f.issueAudit(testCandidate, "FAIL", f.priv, "")
-		bad := LoadAuditBinding(f.bindingRequest(testCandidate, failed))
+		failed := f.issueAudit(testCandidate, "FAIL", f.auditorPriv, "")
+		bad := LoadAuditBinding(f.auditRequest(testCandidate, failed))
 		if !bad.Valid {
 			t.Fatalf("a FAIL binding is still a valid object: %s", bad.Reason)
 		}
@@ -727,7 +781,7 @@ func TestReleaseChainRequiresEveryLink(t *testing.T) {
 			t.Error("release was granted over a FAIL audit")
 		}
 		// Restore the PASS binding for the remaining subtests.
-		f.issueAudit(testCandidate, "PASS", f.priv, "")
+		f.issueAudit(testCandidate, "PASS", f.auditorPriv, "")
 	})
 
 	t.Run("release naming a different audit binding is refused", func(t *testing.T) {
@@ -746,19 +800,19 @@ func TestReleaseChainRequiresEveryLink(t *testing.T) {
 	})
 
 	t.Run("an audit over another candidate cannot be loaded for this one", func(t *testing.T) {
-		mismatched := f.issueAudit(testCandidate, "PASS", f.priv, strings.Repeat("3", 64))
-		got := LoadAuditBinding(f.bindingRequest(testCandidate, mismatched))
+		mismatched := f.issueAudit(testCandidate, "PASS", f.auditorPriv, strings.Repeat("3", 64))
+		got := LoadAuditBinding(f.auditRequest(testCandidate, mismatched))
 		if got.Valid {
 			t.Error("an audit binding naming another candidate was accepted")
 		}
 		if !strings.Contains(got.Reason, "is over candidate") {
 			t.Errorf("refusal was not about the candidate: %s", got.Reason)
 		}
-		f.issueAudit(testCandidate, "PASS", f.priv, "")
+		f.issueAudit(testCandidate, "PASS", f.auditorPriv, "")
 	})
 
 	t.Run("wrong expected digest is refused", func(t *testing.T) {
-		got := LoadAuditBinding(f.bindingRequest(testCandidate, strings.Repeat("F", 64)))
+		got := LoadAuditBinding(f.auditRequest(testCandidate, strings.Repeat("F", 64)))
 		if got.Valid {
 			t.Error("an audit binding with the wrong expected digest was accepted")
 		}
@@ -770,10 +824,10 @@ func TestReleaseChainRequiresEveryLink(t *testing.T) {
 
 	t.Run("an unlisted signer is refused", func(t *testing.T) {
 		digest := f.issueAudit(testCandidate, "PASS", f.otherPriv, "")
-		if got := LoadAuditBinding(f.bindingRequest(testCandidate, digest)); got.Valid {
+		if got := LoadAuditBinding(f.auditRequest(testCandidate, digest)); got.Valid {
 			t.Error("an audit binding signed by an unlisted key was accepted")
 		}
-		f.issueAudit(testCandidate, "PASS", f.priv, "")
+		f.issueAudit(testCandidate, "PASS", f.auditorPriv, "")
 	})
 
 	t.Run("an invalid link never yields a chain", func(t *testing.T) {
@@ -792,9 +846,9 @@ func TestReleaseChainRequiresEveryLink(t *testing.T) {
 // release authorization bound to it.
 func TestReleaseChainBindsTheAuditedBinary(t *testing.T) {
 	f := newFixture(t)
-	auditDigest := f.issueAudit(testCandidate, "PASS", f.priv, "")
+	auditDigest := f.issueAudit(testCandidate, "PASS", f.auditorPriv, "")
 	releaseDigest := f.issueRelease(testCandidate, auditDigest, f.priv)
-	audit := LoadAuditBinding(f.bindingRequest(testCandidate, auditDigest))
+	audit := LoadAuditBinding(f.auditRequest(testCandidate, auditDigest))
 	release := LoadReleaseAuthorization(f.bindingRequest(testCandidate, releaseDigest))
 	if !audit.Valid || !release.Valid {
 		t.Fatalf("fixture invalid: %s / %s", audit.Reason, release.Reason)
@@ -835,12 +889,12 @@ func TestReleaseChainBindsTheAuditedBinary(t *testing.T) {
 	})
 
 	t.Run("a malformed binary digest is refused at load", func(t *testing.T) {
-		digest := f.issueAuditBinary(testCandidate, "PASS", f.priv, "", "not-a-digest")
-		got := LoadAuditBinding(f.bindingRequest(testCandidate, digest))
+		digest := f.issueAuditBinary(testCandidate, "PASS", f.auditorPriv, "", "not-a-digest")
+		got := LoadAuditBinding(f.auditRequest(testCandidate, digest))
 		if got.Valid {
 			t.Error("an audit binding with a malformed binarySha256 was accepted")
 		}
-		f.issueAudit(testCandidate, "PASS", f.priv, "")
+		f.issueAudit(testCandidate, "PASS", f.auditorPriv, "")
 	})
 }
 
@@ -870,7 +924,7 @@ func TestBindingSchemaContract(t *testing.T) {
 		jsonstrict.P("candidateDigest", jsonstrict.String(testCandidate)),
 		jsonstrict.P("binarySha256", jsonstrict.String(testBinary)),
 		jsonstrict.P("verdict", jsonstrict.String("PASS")),
-		jsonstrict.P("auditorIdentity", jsonstrict.String("Independent Audit")),
+		jsonstrict.P("auditorIdentity", jsonstrict.String(testAuditor)),
 		jsonstrict.P("auditedAt", jsonstrict.String("2026-08-12T06:00:00Z")),
 		jsonstrict.P("auditReportDigest", jsonstrict.String(strings.Repeat("C", 64))),
 		jsonstrict.P("zzzExtra", jsonstrict.String("unexpected")),
@@ -879,9 +933,12 @@ func TestBindingSchemaContract(t *testing.T) {
 	path := AuditPath(f.store, testStage, testCandidate)
 	os.MkdirAll(filepath.Dir(path), 0o700)
 	os.WriteFile(path, raw, 0o600)
-	os.WriteFile(path+".sig", armorSignature(f.priv, raw, Namespace), 0o600)
+	// Signed by the AUDITOR, so the object reaches the schema check. Signing it
+	// with the Product Authority key would now fail on authentication first and
+	// this test would pass for the wrong reason.
+	os.WriteFile(path+".sig", armorSignature(f.auditorPriv, raw, Namespace), 0o600)
 
-	got := LoadAuditBinding(f.bindingRequest(testCandidate, canonical.Digest(raw)))
+	got := LoadAuditBinding(f.auditRequest(testCandidate, canonical.Digest(raw)))
 	if got.Valid {
 		t.Fatal("an audit binding with an undeclared property was accepted")
 	}
@@ -1098,9 +1155,9 @@ func TestHistoricalAuthorizationEnforcesEveryOtherGate(t *testing.T) {
 // act, or make released history unreadable by any later build.
 func TestReleaseChainHistoricalReadsWithoutGranting(t *testing.T) {
 	f := newFixture(t)
-	auditDigest := f.issueAudit(testCandidate, "PASS", f.priv, "")
+	auditDigest := f.issueAudit(testCandidate, "PASS", f.auditorPriv, "")
 	releaseDigest := f.issueRelease(testCandidate, auditDigest, f.priv)
-	audit := LoadAuditBinding(f.bindingRequest(testCandidate, auditDigest))
+	audit := LoadAuditBinding(f.auditRequest(testCandidate, auditDigest))
 	release := LoadReleaseAuthorization(f.bindingRequest(testCandidate, releaseDigest))
 	if !audit.Valid || !release.Valid {
 		t.Fatalf("fixture invalid: %s / %s", audit.Reason, release.Reason)
@@ -1119,15 +1176,15 @@ func TestReleaseChainHistoricalReadsWithoutGranting(t *testing.T) {
 	// The historical form is not a weaker chain; it is the same chain minus the
 	// running-binary question. Every other link must still hold.
 	t.Run("a FAIL audit is still not a release", func(t *testing.T) {
-		failed := f.issueAudit(testCandidate, "FAIL", f.priv, "")
-		bad := LoadAuditBinding(f.bindingRequest(testCandidate, failed))
+		failed := f.issueAudit(testCandidate, "FAIL", f.auditorPriv, "")
+		bad := LoadAuditBinding(f.auditRequest(testCandidate, failed))
 		if !bad.Valid {
 			t.Fatalf("a FAIL binding is still a valid object: %s", bad.Reason)
 		}
 		if err := ReleaseChainHistorical(bad, release, testCandidate); err == nil {
 			t.Error("history was reconstructed over a FAIL audit")
 		}
-		f.issueAudit(testCandidate, "PASS", f.priv, "")
+		f.issueAudit(testCandidate, "PASS", f.auditorPriv, "")
 	})
 
 	t.Run("another candidate is refused", func(t *testing.T) {
@@ -1298,7 +1355,7 @@ func newReleaseWorld(t *testing.T) *releaseWorld {
 
 	authDigest := f.issue(f.versionedName(newID), f.payload(overrides{}), f.priv, Namespace)
 	candidate := testCandidate
-	auditDigest := f.issueAudit(candidate, "PASS", f.priv, "")
+	auditDigest := f.issueAudit(candidate, "PASS", f.auditorPriv, "")
 	releaseDigest := f.issueRelease(candidate, auditDigest, f.priv)
 
 	// The baseline is the fixture's initial commit. Two DIFFERENT release
@@ -1326,7 +1383,7 @@ func newReleaseWorld(t *testing.T) *releaseWorld {
 		releaseTree:       tree,
 	}, f.priv)
 
-	w.audit = LoadAuditBinding(f.bindingRequest(candidate, auditDigest))
+	w.audit = LoadAuditBinding(f.auditRequest(candidate, auditDigest))
 	w.release = LoadReleaseAuthorization(f.bindingRequest(candidate, releaseDigest))
 	w.historical = f.loadHistorical(newID, authDigest)
 	if !w.audit.Valid || !w.release.Valid || !w.historical.Valid {
@@ -1514,15 +1571,15 @@ func TestReleaseCommitChainRequiresEveryLink(t *testing.T) {
 	})
 
 	t.Run("a FAIL audit is still not a release", func(t *testing.T) {
-		failed := w.f.issueAudit(w.candidate, "FAIL", w.f.priv, "")
-		bad := LoadAuditBinding(w.f.bindingRequest(w.candidate, failed))
+		failed := w.f.issueAudit(w.candidate, "FAIL", w.f.auditorPriv, "")
+		bad := LoadAuditBinding(w.f.auditRequest(w.candidate, failed))
 		if !bad.Valid {
 			t.Fatalf("a FAIL binding is still a valid object: %s", bad.Reason)
 		}
 		if err := ReleaseCommitChain(w.binding(), bad, w.release, w.historical, w.observedAt(w.commitA)); err == nil {
 			t.Error("a commit binding was accepted over a FAIL audit")
 		}
-		w.f.issueAudit(w.candidate, "PASS", w.f.priv, "")
+		w.f.issueAudit(w.candidate, "PASS", w.f.auditorPriv, "")
 	})
 }
 
@@ -1848,4 +1905,849 @@ func assertSameSet(t *testing.T, what string, got, want []string) {
 	for extra := range index {
 		t.Errorf("%s declares %q, which the producer does not emit", what, extra)
 	}
+}
+
+// ===========================================================================
+// INDEPENDENT AUDITOR AUTHENTICATION
+//
+// Contract section 2 requires that "the proposing, approving, and reviewing
+// functions must be held by distinct actors." The code did not enforce it: an
+// AuditBinding could declare any auditorIdentity while verifying under the
+// Product Authority key, and every binding issued before this rule did exactly
+// that. The audit was authenticated by the party it was supposed to constrain.
+//
+// The eight properties below are the required model. They are tested against
+// two genuinely distinct keys, because a test that used one key for both roles
+// would be re-creating the defect inside its own fixture.
+// ===========================================================================
+
+func auditorWorld(t *testing.T) (*fixture, string, string) {
+	t.Helper()
+	f := newFixture(t)
+	auditDigest := f.issueAudit(testCandidate, "PASS", f.auditorPriv, "")
+	releaseDigest := f.issueRelease(testCandidate, auditDigest, f.priv)
+	return f, auditDigest, releaseDigest
+}
+
+// 1. An AuditBinding signed by the independent auditor is ACCEPTED.
+// 5. An unknown auditor is REJECTED.
+func TestAuditBindingAcceptsOnlyRegisteredAuditor(t *testing.T) {
+	f, auditDigest, _ := auditorWorld(t)
+
+	audit := LoadAuditBinding(f.auditRequest(testCandidate, auditDigest))
+	if !audit.Valid {
+		t.Fatalf("an audit signed by the registered auditor was refused: %s", audit.Reason)
+	}
+	if audit.SignerPrincipal != testAuditor {
+		t.Errorf("audit authenticated as %q, expected %q", audit.SignerPrincipal, testAuditor)
+	}
+	if audit.SignerFingerprint != f.auditorFP {
+		t.Errorf("audit signed by %s, expected %s", audit.SignerFingerprint, f.auditorFP)
+	}
+	if audit.SignerFingerprint == f.fingerprint {
+		t.Fatal("the fixture's auditor and Product Authority share a key; the suite would prove nothing")
+	}
+
+	t.Run("an unknown auditor principal is refused", func(t *testing.T) {
+		req := f.auditRequest(testCandidate, auditDigest)
+		req.SignerPrincipal = "nobody-in-allowed-signers"
+		if got := LoadAuditBinding(req); got.Valid {
+			t.Error("an unregistered auditor principal was accepted")
+		}
+	})
+
+	t.Run("an unlisted key is refused", func(t *testing.T) {
+		digest := f.issueAudit(testCandidate, "PASS", f.otherPriv, "")
+		if got := LoadAuditBinding(f.auditRequest(testCandidate, digest)); got.Valid {
+			t.Error("an audit signed by an unlisted key was accepted")
+		}
+		f.issueAudit(testCandidate, "PASS", f.auditorPriv, "")
+	})
+}
+
+// 2. The same AuditBinding signed by the Product Authority key is REJECTED.
+// 8. The Product Authority cannot impersonate the auditor.
+func TestProductAuthorityCannotAuthenticateAnAudit(t *testing.T) {
+	f, _, _ := auditorWorld(t)
+
+	// Signed by the Product Authority while still naming the auditor: the
+	// signature does not verify under the auditor's registered key.
+	paSigned := f.issueAudit(testCandidate, "PASS", f.priv, "")
+	if got := LoadAuditBinding(f.auditRequest(testCandidate, paSigned)); got.Valid {
+		t.Error("an audit signed by the Product Authority key was accepted as the auditor's")
+	}
+
+	// And naming the Product Authority as the auditor does not rescue it: the
+	// object declares testAuditor, so identity and principal disagree.
+	req := f.auditRequest(testCandidate, paSigned)
+	req.ExpectedSigner = f.fingerprint
+	req.SignerPrincipal = testPrincipal
+	got := LoadAuditBinding(req)
+	if got.Valid {
+		t.Error("the Product Authority was accepted as the auditor of its own audit")
+	}
+	// Either refusal is correct and both are about role confusion: the role gate
+	// fires first because occupancy is configured, and the auditorIdentity gate
+	// would fire next. Asserting only the second would fail the moment the
+	// stronger check was added, which is exactly what happened.
+	if !strings.Contains(got.Reason, "auditorIdentity") && !strings.Contains(got.Reason, "does not hold role") {
+		t.Errorf("refusal was not about auditor role or identity: %s", got.Reason)
+	}
+}
+
+// 3. A declared auditorIdentity that is not the verifying principal is REJECTED.
+func TestAuditorIdentityMustBeTheVerifiedPrincipal(t *testing.T) {
+	f := newFixture(t)
+
+	// The historical shape: a friendly label that nothing authenticates.
+	value := jsonstrict.MustObject(
+		jsonstrict.P("schemaVersion", jsonstrict.String(SchemaVersion)),
+		jsonstrict.P("objectType", jsonstrict.String("AuditBinding")),
+		jsonstrict.P("repositoryId", jsonstrict.String(testRepoID)),
+		jsonstrict.P("stageSlug", jsonstrict.String(testStage)),
+		jsonstrict.P("candidateDigest", jsonstrict.String(testCandidate)),
+		jsonstrict.P("binarySha256", jsonstrict.String(testBinary)),
+		jsonstrict.P("verdict", jsonstrict.String("PASS")),
+		jsonstrict.P("auditorIdentity", jsonstrict.String("Codex")),
+		jsonstrict.P("auditedAt", jsonstrict.String("2026-08-12T06:00:00Z")),
+		jsonstrict.P("auditReportDigest", jsonstrict.String(strings.Repeat("C", 64))),
+	)
+	raw, err := canonical.Marshal(value)
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := AuditPath(f.store, testStage, testCandidate)
+	os.MkdirAll(filepath.Dir(path), 0o700)
+	os.WriteFile(path, raw, 0o600)
+	os.WriteFile(path+".sig", armorSignature(f.auditorPriv, raw, Namespace), 0o600)
+
+	got := LoadAuditBinding(f.auditRequest(testCandidate, canonical.Digest(raw)))
+	if got.Valid {
+		t.Fatal("an audit declaring an identity that did not sign it was accepted")
+	}
+	if !strings.Contains(got.Reason, "auditorIdentity") {
+		t.Errorf("refusal was not about the declared auditor: %s", got.Reason)
+	}
+}
+
+//  4. An auditor fingerprint equal to the Product Authority's is REJECTED, and
+//     so is an equal principal. Both dimensions are load-bearing.
+func TestSeparationOfDutiesRequiresDistinctPrincipalAndKey(t *testing.T) {
+	f, auditDigest, releaseDigest := auditorWorld(t)
+	audit := LoadAuditBinding(f.auditRequest(testCandidate, auditDigest))
+	release := LoadReleaseAuthorization(f.bindingRequest(testCandidate, releaseDigest))
+	if !audit.Valid || !release.Valid {
+		t.Fatalf("fixture invalid: %s / %s", audit.Reason, release.Reason)
+	}
+
+	// 6. A valid auditor PASS plus a valid Product Authority release: ACCEPTED.
+	if err := SeparationOfDuties(audit, release); err != nil {
+		t.Fatalf("two genuinely distinct actors were refused: %v", err)
+	}
+	if err := ReleaseChainHistorical(audit, release, testCandidate); err != nil {
+		t.Fatalf("a complete, properly separated chain was refused: %v", err)
+	}
+
+	t.Run("identical principals are refused", func(t *testing.T) {
+		bad := audit
+		bad.SignerPrincipal = release.SignerPrincipal
+		if err := SeparationOfDuties(bad, release); err == nil {
+			t.Error("one principal filled both roles")
+		}
+		if err := ReleaseChainHistorical(bad, release, testCandidate); err == nil {
+			t.Error("the chain accepted one principal in both roles")
+		}
+	})
+
+	t.Run("identical fingerprints are refused", func(t *testing.T) {
+		bad := audit
+		bad.SignerFingerprint = release.SignerFingerprint
+		if err := SeparationOfDuties(bad, release); err == nil {
+			t.Error("one key filled both roles")
+		}
+		if err := ReleaseChainHistorical(bad, release, testCandidate); err == nil {
+			t.Error("the chain accepted one key in both roles")
+		}
+	})
+
+	t.Run("an unknown identity cannot establish separation", func(t *testing.T) {
+		for _, blank := range []AuditBinding{
+			{Valid: true, SignerPrincipal: "", SignerFingerprint: audit.SignerFingerprint},
+			{Valid: true, SignerPrincipal: audit.SignerPrincipal, SignerFingerprint: ""},
+		} {
+			if err := SeparationOfDuties(blank, release); err == nil {
+				t.Error("separation was established from an unknown identity")
+			}
+		}
+	})
+}
+
+// 7. The auditor cannot occupy Product Authority-only roles.
+func TestAuditorCannotHoldProductAuthorityRoles(t *testing.T) {
+	f, auditDigest, _ := auditorWorld(t)
+
+	t.Run("auditor cannot issue a ReleaseAuthorization", func(t *testing.T) {
+		digest := f.issueRelease(testCandidate, auditDigest, f.auditorPriv)
+		if got := LoadReleaseAuthorization(f.bindingRequest(testCandidate, digest)); got.Valid {
+			t.Error("a release authorization signed by the auditor was accepted")
+		}
+	})
+
+	t.Run("auditor cannot issue a StageAuthorization", func(t *testing.T) {
+		raw := f.payload(overrides{})
+		digest := f.issue(f.versionedName(newID), raw, f.auditorPriv, Namespace)
+		if got := f.load(newID, digest); got.Valid {
+			t.Error("a stage authorization signed by the auditor was accepted")
+		}
+	})
+}
+
+// writeRoles installs the role table. Tests that need a malformed, missing or
+// ambiguous table overwrite or remove it deliberately.
+func (f *fixture) writeRoles(body string) {
+	f.t.Helper()
+	if err := os.WriteFile(RolesPath(f.store), []byte(body), 0o600); err != nil {
+		f.t.Fatal(err)
+	}
+}
+
+// ===========================================================================
+// ROLE OCCUPANCY IS CONFIGURED, NOT ASSERTED
+//
+// The previous version of TestAuditorCannotHoldProductAuthorityRoles loaded an
+// auditor-signed object using the PRODUCT AUTHORITY request, so it passed on a
+// fingerprint mismatch and proved nothing about role occupancy. An audit caught
+// it. These tests load with the auditor's OWN valid principal and fingerprint -
+// the case that previously succeeded.
+// ===========================================================================
+
+func TestAuditorIsRefusedFromProductAuthorityRolesUsingItsOwnIdentity(t *testing.T) {
+	f := newFixture(t)
+	auditorReq := func(candidate, expected string) BindingRequest {
+		req := f.bindingRequest(candidate, expected)
+		req.ExpectedSigner = f.auditorFP
+		req.SignerPrincipal = testAuditor
+		return req
+	}
+
+	t.Run("StageAuthorization", func(t *testing.T) {
+		raw := f.payload(overrides{fingerprint: f.auditorFP})
+		digest := f.issue(f.versionedName(newID), raw, f.auditorPriv, Namespace)
+		got := Load(Request{
+			ControlStoreRoot: f.storeRoot, RepositoryID: testRepoID, StageSlug: testStage,
+			AuthorizationID: newID, ExpectedDigest: digest,
+			ExpectedSigner: f.auditorFP, SignerPrincipal: testAuditor,
+			RepositoryRoot: f.repo, Git: f.git,
+		})
+		if got.Valid {
+			t.Error("the auditor authorized a stage using its own valid identity")
+		}
+		if !strings.Contains(got.Reason, "does not hold role") {
+			t.Errorf("refusal was not about role occupancy: %s", got.Reason)
+		}
+	})
+
+	t.Run("ReleaseAuthorization", func(t *testing.T) {
+		auditDigest := f.issueAudit(testCandidate, "PASS", f.auditorPriv, "")
+		digest := f.issueReleaseSigner(testCandidate, auditDigest, f.auditorPriv, f.auditorFP)
+		got := LoadReleaseAuthorization(auditorReq(testCandidate, digest))
+		if got.Valid {
+			t.Error("the auditor issued a release authorization using its own valid identity")
+		}
+		if !strings.Contains(got.Reason, "does not hold role") {
+			t.Errorf("refusal was not about role occupancy: %s", got.Reason)
+		}
+	})
+}
+
+// The role table itself fails closed on every ambiguity.
+func TestRoleTableFailsClosed(t *testing.T) {
+	for _, tc := range []struct{ label, body string }{
+		{"missing product-authority", "independent-auditor test-tier3-auditor\n"},
+		{"missing independent-auditor", "product-authority test-product-authority\n"},
+		{"duplicate assignment", "product-authority test-product-authority\nproduct-authority someone-else\nindependent-auditor test-tier3-auditor\n"},
+		{"both roles one principal", "product-authority test-product-authority\nindependent-auditor test-product-authority\n"},
+		{"unknown role", "release-authority test-product-authority\nindependent-auditor test-tier3-auditor\n"},
+		{"malformed line", "product-authority\nindependent-auditor test-tier3-auditor\n"},
+		{"principal absent from allowed_signers", "product-authority nobody-at-all\nindependent-auditor test-tier3-auditor\n"},
+		{"empty table", "# nothing configured\n"},
+	} {
+		f := newFixture(t)
+		f.writeRoles(tc.body)
+		if _, err := LoadRoles(f.store); err == nil {
+			t.Errorf("%s was accepted", tc.label)
+		}
+	}
+
+	t.Run("a missing table is refused", func(t *testing.T) {
+		f := newFixture(t)
+		os.Remove(RolesPath(f.store))
+		if _, err := LoadRoles(f.store); err == nil {
+			t.Error("an absent role table was accepted")
+		}
+	})
+
+	t.Run("the configured table resolves to distinct principals and keys", func(t *testing.T) {
+		f := newFixture(t)
+		roles, err := LoadRoles(f.store)
+		if err != nil {
+			t.Fatalf("the fixture table did not resolve: %v", err)
+		}
+		if roles.ProductAuthority.Principal == roles.IndependentAuditor.Principal {
+			t.Error("roles resolved to one principal")
+		}
+		if roles.ProductAuthority.Fingerprint == roles.IndependentAuditor.Fingerprint {
+			t.Error("roles resolved to one key")
+		}
+		// Fingerprints are DERIVED from the registered keys, never declared.
+		if roles.ProductAuthority.Fingerprint != f.fingerprint {
+			t.Errorf("product authority fingerprint %s was not derived from allowed_signers (%s)",
+				roles.ProductAuthority.Fingerprint, f.fingerprint)
+		}
+		if roles.IndependentAuditor.Fingerprint != f.auditorFP {
+			t.Errorf("auditor fingerprint %s was not derived from allowed_signers (%s)",
+				roles.IndependentAuditor.Fingerprint, f.auditorFP)
+		}
+	})
+}
+
+// ===========================================================================
+// RECOVERY ELIGIBILITY IS ADVERSARIALLY BOUNDED
+//
+// Eligibility is the most dangerous object in this system, because it is the
+// only one whose whole purpose is to say "yes" about a chain that failed. Every
+// other governed object refuses non-conforming evidence outright; this one
+// acknowledges it and permits a bounded step forward anyway. That makes it the
+// obvious lever for exactly the laundering the corrected auditor model exists
+// to stop.
+//
+// So it is tested the way an attacker would use it. Each test below takes the
+// ONE valid eligibility statement and changes a single thing an attacker would
+// want to change - the signer, the predecessor, the recovery stage, the hop
+// count, the classification, the binding to a real authorization - and requires
+// a refusal. The properties being fixed:
+//
+//  1. only the CONFIGURED Product Authority can issue one, and the auditor is
+//     refused even holding its own entirely valid identity
+//  2. it covers exactly ONE predecessor and cannot be replayed onto another
+//  3. it covers exactly ONE recovery stage and cannot be replayed into another
+//  4. hopLimit is exactly 1, as an integer, with no string coercion
+//  5. it is meaningless detached from a StageAuthorization baselined on the
+//     predecessor it names
+//  6. it never becomes release state, and grants no path and no mutation
+// ===========================================================================
+
+const testSupersededStage = "SOURCEROOT-TEST-SUPERSEDED-STAGE-V1"
+
+type eligibilityOverrides struct {
+	schemaVersion      string
+	objectType         string
+	repositoryID       string
+	supersededCommit   string
+	supersededStage    string
+	recoveryStage      string
+	classification     string
+	reason             string
+	issuedAt           string
+	fingerprint        string
+	namespace          string
+	authorizationDig   string
+	auditDig           string
+	releaseDig         string
+	commitDig          string
+	hopLimit           int64
+	hopLimitAsString   string
+	dropReason         bool
+	extraField         bool
+	dropSupersededSlug bool
+}
+
+// issueEligibility writes an eligibility object at the path keyed by the
+// recovery stage and predecessor it is FILED under, which the overrides may
+// deliberately disagree with - that is how replay is tested.
+func (f *fixture) issueEligibility(fileStage, fileCommit string, o eligibilityOverrides, signer ed25519.PrivateKey) string {
+	f.t.Helper()
+	pick := func(v, fallback string) string {
+		if v == "" {
+			return fallback
+		}
+		return v
+	}
+	hop := o.hopLimit
+	if hop == 0 {
+		hop = 1
+	}
+	members := []jsonstrict.Member{
+		jsonstrict.P("schemaVersion", jsonstrict.String(pick(o.schemaVersion, SchemaVersion))),
+		jsonstrict.P("objectType", jsonstrict.String(pick(o.objectType, EligibilityObjectType))),
+		jsonstrict.P("repositoryId", jsonstrict.String(pick(o.repositoryID, testRepoID))),
+		jsonstrict.P("supersededCommit", jsonstrict.String(pick(o.supersededCommit, f.baseline))),
+		jsonstrict.P("supersededAuthorizationDigest", jsonstrict.String(pick(o.authorizationDig, strings.Repeat("A", 64)))),
+		jsonstrict.P("supersededAuditBindingDigest", jsonstrict.String(pick(o.auditDig, strings.Repeat("B", 64)))),
+		jsonstrict.P("supersededReleaseAuthorizationDigest", jsonstrict.String(pick(o.releaseDig, strings.Repeat("C", 64)))),
+		jsonstrict.P("supersededCommitBindingDigest", jsonstrict.String(pick(o.commitDig, strings.Repeat("D", 64)))),
+		jsonstrict.P("recoveryStageSlug", jsonstrict.String(pick(o.recoveryStage, testStage))),
+		jsonstrict.P("classification", jsonstrict.String(pick(o.classification, ClassificationTerminalUnclosed))),
+		jsonstrict.P("issuedAt", jsonstrict.String(pick(o.issuedAt, "2026-08-13T20:00:00Z"))),
+		jsonstrict.P("signerKeyFingerprint", jsonstrict.String(pick(o.fingerprint, f.fingerprint))),
+		jsonstrict.P("signatureNamespace", jsonstrict.String(pick(o.namespace, Namespace))),
+	}
+	if !o.dropSupersededSlug {
+		members = append(members,
+			jsonstrict.P("supersededStageSlug", jsonstrict.String(pick(o.supersededStage, testSupersededStage))))
+	}
+	// hopLimit is written as an INTEGER unless a test is specifically proving
+	// that a string is refused. Writing it as a string by default would leave
+	// the integer requirement untested.
+	if o.hopLimitAsString != "" {
+		members = append(members, jsonstrict.P("hopLimit", jsonstrict.String(o.hopLimitAsString)))
+	} else {
+		members = append(members, jsonstrict.P("hopLimit", jsonstrict.Int(hop)))
+	}
+	if !o.dropReason {
+		members = append(members, jsonstrict.P("reason", jsonstrict.String(pick(o.reason,
+			"the predecessor never achieved closure under the corrected auditor model"))))
+	}
+	if o.extraField {
+		members = append(members, jsonstrict.P("zzzExtra", jsonstrict.String("unexpected")))
+	}
+	value, err := jsonstrict.Object(members...)
+	if err != nil {
+		f.t.Fatal(err)
+	}
+	raw, err := canonical.Marshal(value)
+	if err != nil {
+		f.t.Fatal(err)
+	}
+	path := EligibilityPath(f.store, fileStage, fileCommit)
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		f.t.Fatal(err)
+	}
+	if err := os.WriteFile(path, raw, 0o600); err != nil {
+		f.t.Fatal(err)
+	}
+	if err := os.WriteFile(path+".sig", armorSignature(signer, raw, Namespace), 0o600); err != nil {
+		f.t.Fatal(err)
+	}
+	return canonical.Digest(raw)
+}
+
+func (f *fixture) eligibilityRequest(commit, digest string) EligibilityRequest {
+	return EligibilityRequest{
+		ControlStoreRoot:  f.storeRoot,
+		RepositoryID:      testRepoID,
+		RecoveryStageSlug: testStage,
+		SupersededCommit:  commit,
+		ExpectedDigest:    digest,
+		ExpectedSigner:    f.fingerprint,
+		SignerPrincipal:   testPrincipal,
+	}
+}
+
+// eligibilityWorld is the one legitimate arrangement: a signed eligibility for
+// the fixture's baseline commit, and a recovery StageAuthorization baselined on
+// that same commit.
+func eligibilityWorld(t *testing.T) (*fixture, string, Authorization) {
+	t.Helper()
+	f := newFixture(t)
+	digest := f.issueEligibility(testStage, f.baseline, eligibilityOverrides{}, f.priv)
+	authDigest := f.issue(f.versionedName(newID), f.payload(overrides{}), f.priv, Namespace)
+	auth := f.load(newID, authDigest)
+	if !auth.Valid {
+		t.Fatalf("fixture recovery authorization invalid: %s", auth.Reason)
+	}
+	return f, digest, auth
+}
+
+// The one arrangement that must WORK. Without this, every refusal below could
+// be a refusal of everything, which proves nothing.
+func TestRecoveryEligibilityAcceptsTheOneLegitimateArrangement(t *testing.T) {
+	f, digest, auth := eligibilityWorld(t)
+
+	got := LoadRecoveryEligibility(f.eligibilityRequest(f.baseline, digest))
+	if !got.Valid {
+		t.Fatalf("the one legitimate eligibility was refused: %s", got.Reason)
+	}
+	if err := EligibleForRecovery(got, auth); err != nil {
+		t.Fatalf("eligibility bound to its own recovery authorization was refused: %v", err)
+	}
+	if got.Classification != ClassificationTerminalUnclosed {
+		t.Errorf("classification %q, expected %s", got.Classification, ClassificationTerminalUnclosed)
+	}
+	if got.SupersededCommit != f.baseline {
+		t.Errorf("eligibility named %s, expected %s", got.SupersededCommit, f.baseline)
+	}
+	if got.SupersededStageSlug != testSupersededStage {
+		t.Errorf("superseded stage %q, expected %q", got.SupersededStageSlug, testSupersededStage)
+	}
+	// The four legacy evidence digests are CARRIED, so the non-conforming chain
+	// stays findable. Naming them is not endorsing them.
+	for label, value := range map[string]string{
+		"authorization": got.SupersededAuthorizationDigest,
+		"audit":         got.SupersededAuditBindingDigest,
+		"release":       got.SupersededReleaseAuthorizationDigest,
+		"commit":        got.SupersededCommitBindingDigest,
+	} {
+		if !sha256Re.MatchString(value) {
+			t.Errorf("legacy %s evidence digest %q is not identifiable", label, value)
+		}
+	}
+	// It says nothing about conformance, and it is not release state.
+	if !strings.Contains(got.Reason, "states nothing about whether the predecessor's audit chain conforms") {
+		t.Errorf("the accepted reason does not disclaim conformance: %s", got.Reason)
+	}
+}
+
+// PROPERTY 1. Only the configured Product Authority issues eligibility.
+func TestRecoveryEligibilityRefusesEveryoneButProductAuthority(t *testing.T) {
+	t.Run("the auditor is refused holding its own valid identity", func(t *testing.T) {
+		f := newFixture(t)
+		// Signed by the auditor, declaring the auditor's own real fingerprint,
+		// loaded under the auditor's own real principal. Everything about this
+		// object is internally consistent; it is refused purely on occupancy.
+		digest := f.issueEligibility(testStage, f.baseline,
+			eligibilityOverrides{fingerprint: f.auditorFP}, f.auditorPriv)
+		req := f.eligibilityRequest(f.baseline, digest)
+		req.ExpectedSigner = f.auditorFP
+		req.SignerPrincipal = testAuditor
+
+		got := LoadRecoveryEligibility(req)
+		if got.Valid {
+			t.Fatal("the independent auditor issued a recovery eligibility")
+		}
+		if !strings.Contains(got.Reason, "does not hold role") {
+			t.Errorf("refusal was not about role occupancy: %s", got.Reason)
+		}
+	})
+
+	t.Run("an unlisted key is refused", func(t *testing.T) {
+		f := newFixture(t)
+		digest := f.issueEligibility(testStage, f.baseline, eligibilityOverrides{}, f.otherPriv)
+		if got := LoadRecoveryEligibility(f.eligibilityRequest(f.baseline, digest)); got.Valid {
+			t.Fatal("an eligibility signed by an unlisted key was accepted")
+		}
+	})
+
+	t.Run("a declared fingerprint that did not sign is refused", func(t *testing.T) {
+		f := newFixture(t)
+		// Signed by the Product Authority but declaring the auditor's key.
+		digest := f.issueEligibility(testStage, f.baseline,
+			eligibilityOverrides{fingerprint: f.auditorFP}, f.priv)
+		got := LoadRecoveryEligibility(f.eligibilityRequest(f.baseline, digest))
+		if got.Valid {
+			t.Fatal("an eligibility declaring a key that did not sign it was accepted")
+		}
+		if !strings.Contains(got.Reason, "signerKeyFingerprint") {
+			t.Errorf("refusal was not about the declared key: %s", got.Reason)
+		}
+	})
+
+	t.Run("a missing role table refuses eligibility outright", func(t *testing.T) {
+		f := newFixture(t)
+		digest := f.issueEligibility(testStage, f.baseline, eligibilityOverrides{}, f.priv)
+		os.Remove(RolesPath(f.store))
+		got := LoadRecoveryEligibility(f.eligibilityRequest(f.baseline, digest))
+		if got.Valid {
+			t.Fatal("eligibility was granted with no configured role table")
+		}
+		if !strings.Contains(got.Reason, "roles") {
+			t.Errorf("refusal was not about the role table: %s", got.Reason)
+		}
+	})
+}
+
+// PROPERTY 2. One predecessor, and no replay onto another.
+func TestRecoveryEligibilityCoversExactlyOnePredecessor(t *testing.T) {
+	f := newFixture(t)
+	other := f.advance("a second commit")
+	if other == f.baseline {
+		t.Fatal("the fixture did not actually advance")
+	}
+
+	// Filed under the baseline, so it is the object a request for the baseline
+	// finds - but it NAMES the other commit.
+	digest := f.issueEligibility(testStage, f.baseline,
+		eligibilityOverrides{supersededCommit: other}, f.priv)
+	got := LoadRecoveryEligibility(f.eligibilityRequest(f.baseline, digest))
+	if got.Valid {
+		t.Fatal("an eligibility naming another predecessor answered for this one")
+	}
+	if !strings.Contains(got.Reason, "is for predecessor") {
+		t.Errorf("refusal was not about the predecessor: %s", got.Reason)
+	}
+
+	t.Run("the object cannot be moved to cover a different predecessor", func(t *testing.T) {
+		// The genuine object for the baseline, copied to the other commit's
+		// path. Its bytes and signature are untouched and entirely valid.
+		real := f.issueEligibility(testStage, f.baseline, eligibilityOverrides{}, f.priv)
+		src := EligibilityPath(f.store, testStage, f.baseline)
+		dst := EligibilityPath(f.store, testStage, other)
+		raw, err := os.ReadFile(src)
+		if err != nil {
+			t.Fatal(err)
+		}
+		sig, err := os.ReadFile(src + ".sig")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(dst, raw, 0o600); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(dst+".sig", sig, 0o600); err != nil {
+			t.Fatal(err)
+		}
+
+		relocated := LoadRecoveryEligibility(f.eligibilityRequest(other, real))
+		if relocated.Valid {
+			t.Fatal("a validly signed eligibility was relocated onto a different predecessor")
+		}
+		if !strings.Contains(relocated.Reason, "is for predecessor") {
+			t.Errorf("refusal was not about the predecessor: %s", relocated.Reason)
+		}
+	})
+
+	t.Run("a malformed predecessor id is refused before any load", func(t *testing.T) {
+		for _, bad := range []string{"HEAD", strings.ToUpper(f.baseline), f.baseline[:39], f.baseline + "0", ""} {
+			if got := LoadRecoveryEligibility(f.eligibilityRequest(bad, strings.Repeat("A", 64))); got.Valid {
+				t.Errorf("predecessor id %q was accepted", bad)
+			}
+		}
+	})
+}
+
+// PROPERTY 3. One recovery stage, and no replay into another.
+func TestRecoveryEligibilityCoversExactlyOneRecoveryStage(t *testing.T) {
+	f := newFixture(t)
+
+	digest := f.issueEligibility(testStage, f.baseline,
+		eligibilityOverrides{recoveryStage: "SOURCEROOT-SOME-OTHER-RECOVERY-V1"}, f.priv)
+	got := LoadRecoveryEligibility(f.eligibilityRequest(f.baseline, digest))
+	if got.Valid {
+		t.Fatal("an eligibility issued for another recovery stage answered for this one")
+	}
+	if !strings.Contains(got.Reason, "is for recovery stage") {
+		t.Errorf("refusal was not about the recovery stage: %s", got.Reason)
+	}
+
+	t.Run("a predecessor cannot be its own recovery", func(t *testing.T) {
+		self := f.issueEligibility(testStage, f.baseline,
+			eligibilityOverrides{supersededStage: testStage}, f.priv)
+		bad := LoadRecoveryEligibility(f.eligibilityRequest(f.baseline, self))
+		if bad.Valid {
+			t.Fatal("a stage was authorized to recover from itself")
+		}
+		if !strings.Contains(bad.Reason, "same slug") {
+			t.Errorf("refusal was not about self-recovery: %s", bad.Reason)
+		}
+	})
+
+	t.Run("a malformed recovery slug is refused before any load", func(t *testing.T) {
+		for _, bad := range []string{"lower-case-slug", "", "Mixed-Case-V1"} {
+			req := f.eligibilityRequest(f.baseline, strings.Repeat("A", 64))
+			req.RecoveryStageSlug = bad
+			if got := LoadRecoveryEligibility(req); got.Valid {
+				t.Errorf("recovery slug %q was accepted", bad)
+			}
+		}
+	})
+}
+
+// PROPERTY 4. Exactly one hop, as an integer.
+func TestRecoveryEligibilityPermitsExactlyOneHop(t *testing.T) {
+	f := newFixture(t)
+
+	for _, hop := range []int64{2, 3, 99, -1} {
+		digest := f.issueEligibility(testStage, f.baseline,
+			eligibilityOverrides{hopLimit: hop, reason: fmt.Sprintf("hop %d", hop)}, f.priv)
+		got := LoadRecoveryEligibility(f.eligibilityRequest(f.baseline, digest))
+		if got.Valid {
+			t.Errorf("hopLimit %d authorized a recovery", hop)
+		}
+		if !strings.Contains(got.Reason, "hopLimit") {
+			t.Errorf("refusal for hopLimit %d was not about the hop count: %s", hop, got.Reason)
+		}
+	}
+
+	// The reason the field is read from the parsed value rather than as text:
+	// a string "1" must not pass for the integer 1.
+	for _, text := range []string{"1", "1 ", "01", "+1", "one"} {
+		digest := f.issueEligibility(testStage, f.baseline,
+			eligibilityOverrides{hopLimitAsString: text}, f.priv)
+		got := LoadRecoveryEligibility(f.eligibilityRequest(f.baseline, digest))
+		if got.Valid {
+			t.Errorf("hopLimit %q was accepted as the integer 1", text)
+		}
+		if !strings.Contains(got.Reason, "hopLimit") {
+			t.Errorf("refusal for hopLimit %q was not about the hop count: %s", text, got.Reason)
+		}
+	}
+}
+
+// PROPERTY 5. Eligibility detached from a real StageAuthorization is nothing.
+func TestRecoveryEligibilityIsMeaninglessWithoutItsAuthorization(t *testing.T) {
+	f, digest, auth := eligibilityWorld(t)
+	eligibility := LoadRecoveryEligibility(f.eligibilityRequest(f.baseline, digest))
+	if !eligibility.Valid {
+		t.Fatalf("fixture eligibility invalid: %s", eligibility.Reason)
+	}
+
+	t.Run("an invalid authorization carries no recovery", func(t *testing.T) {
+		if err := EligibleForRecovery(eligibility, Authorization{Valid: false, Reason: "unsigned"}); err == nil {
+			t.Error("recovery proceeded on an invalid authorization")
+		}
+	})
+
+	t.Run("an invalid eligibility carries no recovery", func(t *testing.T) {
+		if err := EligibleForRecovery(RecoveryEligibility{Valid: false, Reason: "unsigned"}, auth); err == nil {
+			t.Error("recovery proceeded on an invalid eligibility")
+		}
+	})
+
+	t.Run("an authorization for another stage is refused", func(t *testing.T) {
+		other := auth
+		other.StageSlug = "SOURCEROOT-SOME-OTHER-STAGE-V1"
+		if err := EligibleForRecovery(eligibility, other); err == nil {
+			t.Error("eligibility was bound to an authorization for a different stage")
+		}
+	})
+
+	t.Run("an authorization baselined elsewhere is refused", func(t *testing.T) {
+		// The heart of the binding: the recovery must start FROM the predecessor
+		// it claims to recover. An authorization baselined anywhere else is a
+		// different piece of work wearing this eligibility.
+		elsewhere := auth
+		elsewhere.BaselineCommit = strings.Repeat("a", 40)
+		err := EligibleForRecovery(eligibility, elsewhere)
+		if err == nil {
+			t.Fatal("eligibility was bound to an authorization baselined on another commit")
+		}
+		if !strings.Contains(err.Error(), "baselined on") {
+			t.Errorf("refusal was not about the baseline: %v", err)
+		}
+	})
+
+	t.Run("a different repository is refused", func(t *testing.T) {
+		foreign := auth
+		foreign.RepositoryID = "github.com-someone-else-other"
+		if err := EligibleForRecovery(eligibility, foreign); err == nil {
+			t.Error("eligibility crossed a repository boundary")
+		}
+	})
+}
+
+// PROPERTY 6. Eligibility is never release state, and grants nothing.
+//
+// This is a STRUCTURAL property, not a behavioural one. A statement that could
+// be talked into granting a path would be mutation authority under a weaker
+// name, so the type is checked for the absence of any means to grant.
+func TestRecoveryEligibilityGrantsNothing(t *testing.T) {
+	f, digest, _ := eligibilityWorld(t)
+	eligibility := LoadRecoveryEligibility(f.eligibilityRequest(f.baseline, digest))
+	if !eligibility.Valid {
+		t.Fatalf("fixture eligibility invalid: %s", eligibility.Reason)
+	}
+
+	// It exposes no method at all: no path question, no authority question,
+	// nothing that could be mistaken for a grant.
+	typ := reflect.TypeOf(eligibility)
+	if n := typ.NumMethod(); n != 0 {
+		t.Errorf("RecoveryEligibility exposes %d method(s); it must expose none", n)
+	}
+	// And it carries no path set to grant FROM.
+	for i := 0; i < typ.NumField(); i++ {
+		field := typ.Field(i)
+		if field.Type.Kind() == reflect.Slice || field.Type.Kind() == reflect.Map {
+			t.Errorf("RecoveryEligibility carries collection field %q; it must carry only scalar facts", field.Name)
+		}
+		switch field.Name {
+		case "AllowedPaths", "ProtectedPaths", "BaselineCommit", "LifecycleState":
+			t.Errorf("RecoveryEligibility carries authority field %q", field.Name)
+		}
+	}
+
+	// A valid eligibility does not make the superseded chain loadable as a
+	// release. The four digests it names are labels for finding legacy
+	// evidence, and nothing accepts them as evidence of conformance.
+	audit := LoadAuditBinding(f.auditRequest(testCandidate, eligibility.SupersededAuditBindingDigest))
+	if audit.Valid {
+		t.Error("a digest named by eligibility loaded as a valid audit binding")
+	}
+	release := LoadReleaseAuthorization(f.bindingRequest(testCandidate, eligibility.SupersededReleaseAuthorizationDigest))
+	if release.Valid {
+		t.Error("a digest named by eligibility loaded as a valid release authorization")
+	}
+}
+
+// The object schema is exact, like every other governed object.
+func TestRecoveryEligibilitySchemaContract(t *testing.T) {
+	f := newFixture(t)
+
+	t.Run("an undeclared property is refused", func(t *testing.T) {
+		digest := f.issueEligibility(testStage, f.baseline, eligibilityOverrides{extraField: true}, f.priv)
+		got := LoadRecoveryEligibility(f.eligibilityRequest(f.baseline, digest))
+		if got.Valid {
+			t.Fatal("an eligibility with an undeclared property was accepted")
+		}
+	})
+
+	t.Run("a missing required property is refused", func(t *testing.T) {
+		for label, o := range map[string]eligibilityOverrides{
+			"reason":              {dropReason: true},
+			"supersededStageSlug": {dropSupersededSlug: true},
+		} {
+			digest := f.issueEligibility(testStage, f.baseline, o, f.priv)
+			if got := LoadRecoveryEligibility(f.eligibilityRequest(f.baseline, digest)); got.Valid {
+				t.Errorf("an eligibility missing %s was accepted", label)
+			}
+		}
+	})
+
+	t.Run("every scalar field is validated", func(t *testing.T) {
+		for label, o := range map[string]eligibilityOverrides{
+			"schemaVersion":     {schemaVersion: "gds-authority-lifecycle-v2"},
+			"objectType":        {objectType: "StageAuthorization"},
+			"repositoryId":      {repositoryID: "github.com-someone-else-other"},
+			"classification":    {classification: "TERMINAL"},
+			"namespace":         {namespace: "some-other-namespace"},
+			"issuedAt":          {issuedAt: "2026-08-13"},
+			"blank reason":      {reason: "   "},
+			"supersededStage":   {supersededStage: "not-a-slug"},
+			"legacy auth dig":   {authorizationDig: "not-a-digest"},
+			"legacy audit dig":  {auditDig: strings.Repeat("z", 64)},
+			"legacy rel dig":    {releaseDig: strings.ToLower(strings.Repeat("C", 64))},
+			"legacy commit dig": {commitDig: strings.Repeat("D", 63)},
+		} {
+			digest := f.issueEligibility(testStage, f.baseline, o, f.priv)
+			if got := LoadRecoveryEligibility(f.eligibilityRequest(f.baseline, digest)); got.Valid {
+				t.Errorf("an eligibility with an invalid %s was accepted", label)
+			}
+		}
+	})
+
+	t.Run("a wrong expected digest is refused", func(t *testing.T) {
+		f.issueEligibility(testStage, f.baseline, eligibilityOverrides{}, f.priv)
+		if got := LoadRecoveryEligibility(f.eligibilityRequest(f.baseline, strings.Repeat("F", 64))); got.Valid {
+			t.Fatal("an eligibility with the wrong expected digest was accepted")
+		}
+	})
+
+	t.Run("a tampered object is refused", func(t *testing.T) {
+		digest := f.issueEligibility(testStage, f.baseline, eligibilityOverrides{}, f.priv)
+		path := EligibilityPath(f.store, testStage, f.baseline)
+		raw, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		// One byte, inside the reason text, with the signature left in place.
+		tampered := strings.Replace(string(raw), "never achieved closure", "never Achieved closure", 1)
+		if tampered == string(raw) {
+			t.Fatal("the fixture text changed; this test tampered with nothing")
+		}
+		if err := os.WriteFile(path, []byte(tampered), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		if got := LoadRecoveryEligibility(f.eligibilityRequest(f.baseline, digest)); got.Valid {
+			t.Fatal("a tampered eligibility was accepted")
+		}
+	})
 }

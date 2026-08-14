@@ -653,3 +653,307 @@ candidate, so a stage cannot declare its own completion into existence.
 This is not a relaxation of the previous rule. It corrects one state the old
 rule wrongly refused, and refuses one state the old rule wrongly accepted. The
 terminal assertion is unchanged.
+### 13.10 Authority before lifecycle, and terminal-unclosed recovery
+
+Three rules, all established by Principal Architect arbitration after a verifier
+defect surfaced at a terminal release that had not yet closed.
+
+#### Authority precedes repository lifecycle mutation
+
+StageAuthorization issuance and repository stage opening are DISTINCT
+operations, and neither substitutes for the other.
+
+| | StageAuthorization | Stage opening |
+|---|---|---|
+| Lives | outside the repository | inside the repository |
+| Produced by | Product Authority signature | `tools/NEW-ROOT-STAGE.ps1` |
+| Establishes | which paths may change | the lifecycle records |
+| Governed by | GDS v1.1 | contract section 5 |
+
+The required order is: establish a clean baseline, construct the
+StageAuthorization outside the repository, sign it, verify it against the exact
+current HEAD, and only then invoke the canonical opener, which writes its
+records inside the already-authorized path boundary. **No repository byte may
+change before that verification succeeds.**
+
+Issuing the StageAuthorization before running the opener is REQUIRED
+SEQUENCING, not a bypass of section 5. The effective invariant is:
+
+	no repository lifecycle mutation without prior external authority
+	no stage opening by manual edit when canonical section 5 tooling exists
+
+	valid StageAuthorization + canonical opener = legitimately opened stage
+
+Section 5 governs the mutation; GDS v1.1 governs the authority to perform it.
+Neither supersedes the other.
+
+#### TERMINAL-UNCLOSED
+
+A release is TERMINAL-UNCLOSED when all of the following hold:
+
+1. `release-state` returns ACCEPT
+2. governance state is `terminal`
+3. the exact release commit and its ReleaseCommitBinding verify
+4. closure and publication have NOT occurred
+5. a required full repository verifier fails at that exact release HEAD
+
+Such a release keeps everything it has proved. Its release-state, its terminal
+governance state, and its signed AuditBinding, ReleaseAuthorization and
+ReleaseCommitBinding all remain valid, and its commit and tree remain
+immutable. What it does not have is closure. It must not be amended, must not
+be declared fully closed, and must not be tagged or published as the completed
+release. It may be superseded FOR CLOSURE ONLY by a bounded recovery release,
+which does not invalidate it.
+
+#### One hop
+
+A TERMINAL-UNCLOSED classification permits Product Authority to issue **at most
+one** bounded recovery StageAuthorization, baselined on the release commit
+itself. **The classification itself grants no repository mutation authority.**
+It creates eligibility, nothing more: no repository byte may change until a
+separate valid StageAuthorization exists and verifies at the exact current HEAD,
+exactly as section 3 requires of every other STOP condition and as section 13.10
+requires of every stage opening.
+
+If the recovery release in turn reaches terminal state and a required verifier
+still fails, execution stops and returns to Principal Architect arbitration. **No
+second recovery is implicitly authorized**, and this provision confers no
+general post-release repair authority.
+
+### 13.11 Terminal migration attribution
+
+Migration attribution has an in-flight form and a terminal form, for the same
+reason the active specification does.
+
+**In-flight**, a migration beyond the release set must be attributable to the
+active governed candidate, and under a signed authorization the question is
+answered by whether the CANDIDATE touches it.
+
+**Terminal**, that question cannot be asked of a development window. The
+anchored window is open only while HEAD is still a historical baseline, and a
+release moves HEAD by definition, so after terminalization it can attribute
+nothing at all. Asking it anyway made migration 020 - committed governed
+history from the 15A stage - read as ungoverned at the very release that
+shipped it.
+
+At terminal state the durable evidence is the RELEASE TREE ITSELF. A Product
+Authority ReleaseCommitBinding names the exact commit, its tree is the audited
+candidate tree, and a PASS audit and a Product Authority release authorization
+cover that candidate. A migration inside that tree was therefore inside a
+signed, independently audited candidate. Nothing else is accepted: not the
+manifest, not a completed record, not the filesystem.
+
+The terminal rule is not weaker than the window it replaces. It binds the BYTES
+of every migration in the released tree, including those that entered after the
+GDS release and are therefore outside the pinned release-set blob comparison.
+It refuses:
+
+| Attack | Detection |
+|---|---|
+| newly introduced ungoverned migration | absent from the bound release tree |
+| unauthorized mutation of a governed migration | blob differs from the bound release tree |
+| path substitution or rename | new name unattributable, old name missing |
+| deletion or replacement | missing from the bound release set |
+| unsigned migration introduction | not in any signed candidate, so not in the bound tree |
+| unreadable tree read as "nothing to check" | the bound set must be inspectable and non-trivial |
+### 13.12 Independent auditor authentication
+
+Section 2 requires that "the proposing, approving, and reviewing functions must
+be held by distinct actors." The implementation did not enforce it. An audit
+found that `auditorIdentity` was checked only for non-emptiness, so an
+AuditBinding could declare any auditor while verifying under the Product
+Authority key -- and every binding issued before this rule did exactly that,
+naming an auditor who had signed nothing.
+
+AuditBinding is the only signed object with no `signerKeyFingerprint` field, and
+deliberately so: the auditor is an independent party and the schema does not
+presume their key. That makes `auditorIdentity` the field which must carry the
+binding.
+
+**Two rules, enforced in two places.**
+
+`LoadAuditBinding` requires `auditorIdentity` to equal the principal the
+signature actually verified under. A label nothing authenticates is not an
+identity.
+
+`SeparationOfDuties`, called by every release chain, requires the audit and the
+release authorization to differ in **both** principal and key fingerprint.
+Comparing principals alone would let one key be registered under two names;
+comparing fingerprints alone would let one name cover two keys. It is checked in
+the chain rather than in either loader because a loader sees only the identity
+it was asked about, while the chain sees both at once.
+
+| Object | Authenticated as | Enforced by |
+|---|---|---|
+| StageAuthorization | Product Authority | declared fingerprint bound to signing key |
+| AuditBinding | **independent auditor** | `auditorIdentity` equals the verifying principal |
+| ReleaseAuthorization | Product Authority | declared fingerprint bound to signing key |
+| ReleaseCommitBinding | Product Authority | declared fingerprint bound to signing key |
+
+**There is no legacy or date exemption.** AuditBindings issued before this rule
+are preserved exactly as they are, immutable, and are not reissued. They simply
+do not satisfy it, and the system reports so rather than representing them as
+independently authenticated. Concretely, `release-state` refuses the releases at
+`ee327bdf` and `4d325d30` with the reason that the declared auditor did not sign
+them. That is the correct answer: those chains never met section 2, and
+discovering it is not the same as breaking something that did.
+
+The rule applies to the recovery release and every release after it.
+
+### 13.13 Role occupancy is configured, never asserted
+
+Section 13.12 corrected who must sign an audit. It did not correct who decides
+which principal holds which role, and an audit found that the answer was
+"whoever the caller says".
+
+`-signer-principal` and `-signer-fingerprint` are command-line flags. Every
+Product Authority loader therefore proved only:
+
+> this object was signed by the key registered in `allowed_signers` for the
+> principal the caller supplied
+
+Supply the auditor's own principal and its own fingerprint over an object the
+auditor genuinely signed, and the check passes. Every gate held; none of them
+was a role gate. Roles that the caller selects are not roles.
+
+**Occupancy is now configured.** A `roles` file sits beside `allowed_signers` at
+the same ACL-protected trust root, outside the repository:
+
+```
+# Role occupancy is configured here, never supplied by the caller.
+product-authority   <principal>
+independent-auditor <principal>
+```
+
+The trust core resolves `role -> principal -> registered key -> derived
+fingerprint` itself. Caller-supplied identity becomes an **assertion checked
+against that resolution**, and never the thing that defines it.
+
+The fingerprint is derived from the registered key and is deliberately NOT
+stated in the roles file. A role table that could name a fingerprint
+independently of the key would be a second place for the two to disagree.
+
+Everything fails closed. A missing file, an unreadable file, a malformed line,
+an unknown role name, a role assigned twice, a role naming a principal absent
+from `allowed_signers`, both roles resolving to one principal, or both
+principals resolving to one key -- each refuses every governed load outright.
+
+| Object | Role required | Resolved from |
+|---|---|---|
+| StageAuthorization | `product-authority` | roles file |
+| AuditBinding | `independent-auditor` | roles file |
+| ReleaseAuthorization | `product-authority` | roles file |
+| ReleaseCommitBinding | `product-authority` | roles file |
+| RecoveryEligibility | `product-authority` | roles file |
+
+Separation of duties (section 13.12) is unchanged and still checked in the
+release chain. The two rules answer different questions: the roles file says who
+MAY hold a role, and `SeparationOfDuties` says the two roles were not in fact
+held by the same actor.
+
+### 13.14 RecoveryEligibility, the sixth governed object
+
+Section 13.10 established that a TERMINAL-UNCLOSED release may be superseded for
+closure by exactly one bounded recovery. It did not say how that permission is
+RECORDED, and the answer mattered more than it looked.
+
+Eligibility by omission -- a verifier that skips, a control that does not run, a
+classification left blank -- records nothing. It is indistinguishable from
+having never looked, and it is exactly how an unaudited chain becomes a shipped
+one. A permission that is granted must be a signed object like every other.
+
+**RecoveryEligibility** is that object: the Product Authority's statement that
+one exact predecessor commit may be recovered from, exactly once, by one exact
+recovery stage.
+
+| | |
+|---|---|
+| Signed by | `product-authority`, by configured role (13.13) |
+| Filed at | `eligibility/<recovery-stage>.<superseded-commit>.eligibility.json` |
+| Answers | may this predecessor be recovered from? |
+| Never answers | is this predecessor released? may anything change? |
+
+It is keyed on disk by BOTH the recovery stage and the predecessor, and it
+re-states both inside its signed bytes. An object issued for one predecessor can
+therefore never answer a request about another, and moving the file does not
+move its meaning.
+
+**What it asserts, and what it refuses to assert.** It carries the four legacy
+evidence digests of the superseded chain -- its authorization, audit binding,
+release authorization and commit binding -- so that chain stays findable and
+auditable. Naming a digest is not endorsing it. The object says nothing whatever
+about whether the predecessor's audit chain conforms, and its own reason text
+says so out loud.
+
+**It grants nothing, structurally.** Every field is a scalar fact. It carries no
+path set, exposes no method, and has no way to answer a path question. Mutation
+authority comes only from a signed StageAuthorization, and the trust core
+additionally requires the eligibility to be BOUND to that authorization: same
+recovery stage, same repository, and a baseline commit equal to the predecessor
+the eligibility names. Detached from a real authorization, eligibility permits
+nothing at all.
+
+**`hopLimit` is exactly `1`, as an integer.** It is read from the parsed value
+rather than as text, so `"1"`, `"01"` and `"1 "` are refused along with `2`.
+
+**The verdict is its own word.** `recovery-eligibility` returns `ELIGIBLE`, never
+`ACCEPT`. The two share an exit code, so the PowerShell surface deliberately
+returns an object with an `Eligible` property and **no** `Accepted`, `Released`,
+`Authorized` or path field at all -- a caller that checks the wrong field gets
+nothing, rather than getting a `false` that could later become a `true`.
+
+### 13.15 Three-state terminal classification
+
+Terminal state used to be a boolean, and a boolean cannot describe a
+TERMINAL-UNCLOSED release. Forced to choose, it must either call a
+non-conforming chain "released", which launders the defect, or call it
+"invalid", which throws a real signed chain with one real flaw in with unsigned
+garbage and leaves no governed way forward. Both answers are false.
+
+The installer therefore classifies HEAD into exactly three states, each reached
+only by positive evidence:
+
+| State | Meaning | Requires |
+|---|---|---|
+| `CONFORMING-TERMINAL` | released truth | the full corrected release chain verifies |
+| `LEGACY-RECOVERY-ELIGIBLE` | non-conforming, recoverable | the chain does NOT verify, AND a signed RecoveryEligibility covers this exact commit and is bound to the recovery authorization |
+| `INVALID-UNTRUSTED` | nothing may be built on it | neither |
+
+**The order is not interchangeable.** Conformance is decided FIRST, from the
+release chain alone, before any eligibility object is loaded. Eligibility is
+therefore structurally incapable of promoting anything to `CONFORMING-TERMINAL`;
+it can only distinguish two flavours of "not conforming". This is asserted
+directly: dropping the eligibility context entirely must not change the
+conforming answer, and must make `LEGACY-RECOVERY-ELIGIBLE` unreachable.
+
+**Absence of context is not a fourth quiet state.** A subject that cannot be
+classified is reported `UNCLASSIFIED` and counted as a skip, because "we did not
+look" and "we looked and found nothing trustworthy" are different findings and
+only the second is `INVALID-UNTRUSTED`.
+
+**The classification is a decision, not a constant.** A classifier that returned
+one answer for every input would satisfy any single assertion forever, so each
+state is exercised against this repository's own signed objects with nothing
+fabricated: the same real chain is asked again with one input replaced by
+something that was never signed.
+
+For the predecessor `4d325d30`, the classification is `LEGACY-RECOVERY-ELIGIBLE`
+and it is reported positively. It is not reached by omitting predecessor context
+to produce a skip -- that would be eligibility by omission, which section 13.14
+exists to refuse.
+
+### 13.16 The negative-control RECOVERY family
+
+A released-stage context that is COMPLETE but does not establish terminal state
+is the case the recovery family exists for, and it used to be invisible: the
+terminal controls simply did not run and the harness said nothing, so a
+predecessor failing the corrected auditor model looked identical to a run where
+the terminal family held. That is the confusion the harness was written to make
+impossible, reproduced inside the harness itself.
+
+It is now stated out loud, and the honest positive fact is asserted in its
+place. The RECOVERY family requires that the predecessor is NOT released truth
+AND that a signed eligibility permits exactly one bounded recovery of it -- both
+halves, because eligibility that could not be refused would be a rubber stamp,
+and eligibility that quietly implied release state would be the laundering the
+corrected model exists to prevent.

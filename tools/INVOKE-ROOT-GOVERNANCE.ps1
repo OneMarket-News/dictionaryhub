@@ -38,7 +38,7 @@ pointer and NEVER a source of authority. Nothing here reads it.
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("status", "authority", "candidate", "paths", "lifecycle", "release-gate", "release-state")]
+    [ValidateSet("status", "authority", "candidate", "paths", "lifecycle", "release-gate", "release-state", "recovery-eligibility")]
     [string]$Action,
 
     [Parameter()][string]$RepositoryRoot,
@@ -64,6 +64,8 @@ param(
     [Parameter()][string]$AuditorPrincipal = $env:SRGDS_AUDITOR_PRINCIPAL,
     [Parameter()][string]$AuditorFingerprint = $env:SRGDS_AUDITOR_FINGERPRINT,
     [Parameter()][string]$CommitBindingDigest = $env:SRGDS_COMMIT_BINDING_DIGEST,
+    [Parameter()][string]$SupersededCommit = $env:SRGDS_SUPERSEDED_COMMIT,
+    [Parameter()][string]$EligibilityDigest = $env:SRGDS_ELIGIBILITY_DIGEST,
     [Parameter()][string]$ControlStoreRoot,
     [Parameter()][string]$CorePath
 )
@@ -232,6 +234,36 @@ switch ($Action) {
         Write-Output "bound commit     : $($Release.BoundReleaseCommit)"
         Write-Output "authority at HEAD: $($Release.CurrentAuthorityAtHead)"
         exit $(if ($Release.Released) { 0 } else { 3 })
+    }
+
+    "recovery-eligibility" {
+        # A real splat variable. An inline @(...)[0] would have been passed as a
+        # positional argument, not splatted.
+        $EligibilityExtra = @{}
+        if (-not [string]::IsNullOrWhiteSpace($ControlStoreRoot)) { $EligibilityExtra.ControlStoreRoot = $ControlStoreRoot }
+        if (-not [string]::IsNullOrWhiteSpace($CorePath)) { $EligibilityExtra.CorePath = $CorePath }
+        if ([string]::IsNullOrWhiteSpace($SupersededCommit) -or [string]::IsNullOrWhiteSpace($EligibilityDigest)) {
+            throw "Recovery eligibility requires -SupersededCommit and -EligibilityDigest (or SRGDS_SUPERSEDED_COMMIT / SRGDS_ELIGIBILITY_DIGEST). Neither is defaulted."
+        }
+        $E = Test-GdsRecoveryEligibility -RepositoryRoot $RepositoryRoot -RecoveryStageSlug $StageSlug `
+            -ExpectedAuthorizationId $AuthorizationId -ExpectedAuthorizationDigest $AuthorizationDigest `
+            -ExpectedSignerFingerprint $SignerFingerprint -SignerPrincipal $SignerPrincipal `
+            -SupersededCommit $SupersededCommit -EligibilityDigest $EligibilityDigest @EligibilityExtra
+        Write-Output "verdict                 : $($E.Verdict)"
+        Write-Output "eligible                : $($E.Eligible)"
+        Write-Output "reason                  : $($E.Reason)"
+        Write-Output "classification          : $($E.Classification)"
+        Write-Output "superseded commit       : $($E.SupersededCommit)"
+        Write-Output "superseded stage        : $($E.SupersededStageSlug)"
+        Write-Output "recovery stage          : $($E.RecoveryStageSlug)"
+        Write-Output "recovery baseline       : $($E.RecoveryBaseline)"
+        Write-Output "eligibility digest      : $($E.EligibilityDigest)"
+        Write-Output "predecessor conforming  : $($E.PredecessorConforming)"
+        Write-Output "grants mutation authority: $($E.GrantsMutationAuthority)"
+        Write-Output ""
+        Write-Output "This is NOT release state. The predecessor's audit chain remains"
+        Write-Output "non-conforming and this statement authorizes no repository change."
+        exit $(if ($E.Eligible) { 0 } else { 3 })
     }
 
     "authority" {

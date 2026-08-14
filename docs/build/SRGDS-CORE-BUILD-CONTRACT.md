@@ -619,3 +619,83 @@ means.
   absence.
 - No behaviour is added because a test is inconvenient. The bypass field removed
   in Wave G3 is the standing example.
+
+### The independent auditor is authenticated, not asserted
+
+`auditorIdentity` was once checked only for non-emptiness. An audit proved that
+let an AuditBinding declare one auditor while verifying under another key, and
+every binding issued before the rule did so.
+
+`LoadAuditBinding` now requires `auditorIdentity` to equal the principal whose
+registered key verified the signature. Since the object carries no
+`signerKeyFingerprint` -- the schema does not presume an independent party's key
+-- that field is the binding between the identity claimed and the key that
+signed.
+
+Role distinctness is separate and lives in `SeparationOfDuties`, which every
+release chain calls. It requires the audit and the release authorization to
+differ in BOTH principal and fingerprint, and refuses when either identity is
+unknown. It is enforced in the chain because only the chain holds both
+identities at once; neither loader can see the other role.
+
+Nothing new is plumbed to achieve this. `main.go` already supplies the auditor
+and Product Authority identities separately at both call sites, and both loaded
+objects already carry the principal and fingerprint that verified them.
+
+There is no legacy or date bypass. Objects predating the rule remain readable
+and immutable, and are reported as not satisfying it.
+
+### Role occupancy is resolved by the core, not received from the caller
+
+`-signer-principal` and `-signer-fingerprint` are caller-supplied flags, so for
+as long as they defined the role, the core proved only "signed by the key
+registered for the principal the caller named". An audit demonstrated the
+consequence: passing the auditor's own valid principal and fingerprint satisfied
+every Product Authority loader.
+
+`LoadRoles` reads a `roles` file beside `allowed_signers` and resolves
+`role -> principal -> registered key -> derived fingerprint`. `RequireRole` then
+checks the caller's asserted principal AND fingerprint against that resolution.
+The fingerprint is always derived from the registered key and never read from
+the roles file, so there is no second place for the two to disagree.
+
+`loadSignedAs` is `loadSigned` plus a role name. Every governed object loader in
+the package names its role; the empty role means "no constraint" and no caller
+uses it. The role is checked BEFORE the file is read, so an object filed under
+the wrong role never reaches parsing.
+
+Failure is closed in every direction: missing file, unreadable file, malformed
+line, unknown role, duplicate assignment, principal absent from
+`allowed_signers`, both roles on one principal, both principals on one key.
+
+### `recovery-eligibility` is a separate verb, deliberately
+
+`release-state` asks "is HEAD the governed released truth?" For a
+TERMINAL-UNCLOSED predecessor the honest answer is REJECT, permanently, and
+softening it would launder a non-conforming audit chain into a conforming one.
+`recovery-eligibility` asks a different question -- "may that predecessor be
+recovered from, once?" -- and the two must never be conflated.
+
+So it is a separate command that:
+
+- never loads or reports release-state
+- emits its own verdict word, `ELIGIBLE`, never `ACCEPT`
+- states in its own reason text that it does not make the predecessor conforming
+- reports `predecessorConforming: NO` and `grantsMutationAuthority: NO` in every
+  answer, including refusals
+
+`ELIGIBLE` shares `ACCEPT`'s exit code because both mean "the question was
+answered affirmatively", and the PowerShell surface handles the near-miss by
+exposing an `Eligible` property and no `Accepted` property at all. A caller that
+checks the wrong field gets nothing rather than a `false` that might later
+become a `true`.
+
+The command additionally loads the recovery stage's own StageAuthorization and
+requires the eligibility to be bound to it, so the answer cannot be read as a
+standalone permission detached from any stage.
+
+`RecoveryEligibility` carries no path set and exposes no method, in the same way
+and for the same reason as `HistoricalAuthorization` and `ReleaseCommitBinding`.
+An eligibility statement that could answer a path question would be mutation
+authority wearing a weaker name. A Go test asserts this structurally, over the
+type itself, rather than trusting the current field list to stay correct.

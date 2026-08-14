@@ -11,3 +11,9 @@ backend/data/**/source-docs/** -text
 ROOT-MANIFEST.json text eol=lf
 docs/stages/active/CURRENT-STAGE.md text eol=lf
 docs/stages/templates/ROOT-STAGE-TEMPLATE.md text eol=lf
+# Governed migration bytes are cryptographically bound by the audited candidate
+# and the released tree, so they must survive any clone unchanged. Without this,
+# a checkout under core.autocrlf=true rewrites them to CRLF and the raw byte
+# comparison in terminal migration attribution fails: measured 442 CRLF pairs
+# and hash a9d00c46 against bound blob ab146237.
+backend/db/migrations/*.sql -text

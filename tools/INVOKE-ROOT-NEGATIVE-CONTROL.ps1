@@ -7,7 +7,7 @@ A verifier that only ever passes proves nothing. Every control below asserts
 that the system REFUSES something, and the harness fails if any refusal does not
 happen. A control that cannot fail is not a control.
 
-Four families:
+Five families:
 
   SELECTION   authority is selected by explicit id AND digest, never by
               existence, recency, or sort order, and one issuance can never be
@@ -15,6 +15,9 @@ Four families:
   INTEGRITY   tampered bytes, wrong keys, wrong namespaces and non-canonical
               form are refused
   GRAMMAR     unsafe paths and unauthorized paths are refused
+  RECOVERY    a signed recovery eligibility covers exactly one predecessor and
+              one recovery stage, is issuable only by the configured Product
+              Authority, and never becomes release state or path authority
   STRUCTURE   the PowerShell module contains no trust-core implementation, and
               the trust core is present and answers
 
@@ -41,6 +44,8 @@ param(
     [Parameter()][string]$AuditorPrincipal = $env:SRGDS_AUDITOR_PRINCIPAL,
     [Parameter()][string]$AuditorFingerprint = $env:SRGDS_AUDITOR_FINGERPRINT,
     [Parameter()][string]$CommitBindingDigest = $env:SRGDS_COMMIT_BINDING_DIGEST,
+    [Parameter()][string]$SupersededCommit = $env:SRGDS_SUPERSEDED_COMMIT,
+    [Parameter()][string]$EligibilityDigest = $env:SRGDS_ELIGIBILITY_DIGEST,
     [Parameter()][string]$CorePath
 )
 
@@ -197,6 +202,32 @@ if ($TerminalHolds) {
 }
 
 # ---------------------------------------------------------------------------
+# AUDITOR SEPARATION.
+#
+# Contract section 2 requires the reviewing and approving functions to be held
+# by distinct actors. An audit found the implementation did not enforce it: the
+# Product Authority key authenticated every AuditBinding ever issued while the
+# object named someone else as the auditor.
+#
+# These controls run in EVERY mode, because the separation is a property of the
+# configured identities rather than of any particular release. The cryptographic
+# properties are proven exhaustively in the Go suite; what is checked here is
+# that the execution context this repository actually runs with keeps the two
+# roles apart, and that naming the Product Authority as the auditor is refused.
+Write-Output ""
+Write-Output "=== AUDITOR SEPARATION (reviewing and approving are distinct actors) ==="
+Test-Control -Id "A1" -Expectation "the auditor principal is not the Product Authority principal" `
+    -Held ($AuditorPrincipal -cne $SignerPrincipal) -Detail "$AuditorPrincipal vs $SignerPrincipal"
+Test-Control -Id "A2" -Expectation "the auditor key is not the Product Authority key" `
+    -Held ($AuditorFingerprint -cne $SignerFingerprint) -Detail "$AuditorFingerprint vs $SignerFingerprint"
+if ($ReleaseContextComplete) {
+    Test-Refusal -Id "A3" -Expectation "naming the Product Authority as the independent auditor is refused" -Attempt {
+        $AsSelf = Get-VariantRelease @{ AuditorPrincipal = $SignerPrincipal; AuditorFingerprint = $SignerFingerprint }
+        (Test-GdsReleaseState @AsSelf).Released
+    }
+}
+
+# ---------------------------------------------------------------------------
 if ($TerminalHolds) {
     Write-Output ""
     Write-Output "=== TERMINAL (a released state proves history and grants nothing) ==="
@@ -236,6 +267,128 @@ if ($TerminalHolds) {
         Test-Refusal -Id $Variant.Id -Expectation "release state is refused for $($Variant.What)" -Attempt {
             $ReleaseVariant = Get-VariantRelease $TerminalOverride; (Test-GdsReleaseState @ReleaseVariant).Released
         }
+    }
+}
+
+# ---------------------------------------------------------------------------
+# RECOVERY.
+#
+# A released-stage context that is COMPLETE but does not establish terminal
+# state is the case this family exists for, and it used to be invisible: the
+# terminal block simply did not run, and the harness said nothing, so a
+# predecessor whose audit chain fails the corrected auditor model looked exactly
+# like a run where the terminal family held. That is the confusion this harness
+# was written to make impossible, reproduced inside the harness itself.
+#
+# So it is now stated out loud, and the honest positive fact is asserted in its
+# place: the predecessor is NOT released truth, AND a signed Product Authority
+# eligibility permits exactly one bounded recovery of it. Both halves are
+# controls. Eligibility that could not be refused would be a rubber stamp, and
+# eligibility that quietly implied release state would be the laundering the
+# whole corrected model exists to prevent.
+$RecoveryContext = @{
+    RepositoryRoot              = $RepositoryRoot
+    RecoveryStageSlug           = $StageSlug
+    ExpectedAuthorizationId     = $AuthorizationId
+    ExpectedAuthorizationDigest = $AuthorizationDigest
+    ExpectedSignerFingerprint   = $SignerFingerprint
+    SignerPrincipal             = $SignerPrincipal
+    SupersededCommit            = $SupersededCommit
+    EligibilityDigest           = $EligibilityDigest
+}
+if (-not [string]::IsNullOrWhiteSpace($CorePath)) { $RecoveryContext.CorePath = $CorePath }
+$RecoveryContextComplete = (@(@($RecoveryContext.Values) | Where-Object { [string]::IsNullOrWhiteSpace($_) }).Count -eq 0)
+
+function Get-VariantRecovery {
+    param([hashtable]$Override)
+    $Copy = @{}
+    foreach ($Key in $RecoveryContext.Keys) { $Copy[$Key] = $RecoveryContext[$Key] }
+    foreach ($Key in $Override.Keys) { $Copy[$Key] = $Override[$Key] }
+    return $Copy
+}
+
+if ($ReleaseContextComplete -and -not $TerminalHolds) {
+    Write-Output ""
+    Write-Output "=== TERMINAL: DID NOT HOLD (stated, never silently skipped) ==="
+    Write-Output "The released-stage context was COMPLETE and terminal release state was"
+    Write-Output "still refused. The predecessor is not released truth:"
+    Write-Output "  $($Terminal.Reason)"
+    Write-Output "The terminal controls did not run because there is no terminal state for"
+    Write-Output "them to perturb. This is not a pass, and it is not a missing context."
+}
+
+if ($RecoveryContextComplete) {
+    Write-Output ""
+    Write-Output "=== RECOVERY (a non-conforming predecessor is eligible, and eligibility grants nothing) ==="
+
+    $Eligibility = Test-GdsRecoveryEligibility @RecoveryContext
+
+    # R0 is the positive baseline for this family. Without it every refusal
+    # below could be a refusal of everything.
+    Test-Control -Id "R0" -Expectation "the exact predecessor is ELIGIBLE for one bounded recovery" `
+        -Held $Eligibility.Eligible -Detail "$($Eligibility.Verdict): $($Eligibility.SupersededCommit)"
+
+    Test-Control -Id "R1" -Expectation "eligibility names the predecessor it was asked about" `
+        -Held ($Eligibility.SupersededCommit -ceq $SupersededCommit) -Detail $Eligibility.SupersededCommit
+    Test-Control -Id "R2" -Expectation "the recovery stage is baselined on that exact predecessor" `
+        -Held ($Eligibility.RecoveryBaseline -ceq $SupersededCommit) -Detail $Eligibility.RecoveryBaseline
+
+    $RecoveryVariants = @(
+        @{ Id = "R3"; What = "a predecessor the eligibility was not issued for"; Over = @{ SupersededCommit = ("a" * 40) } },
+        @{ Id = "R4"; What = "a recovery stage the eligibility does not name"; Over = @{ RecoveryStageSlug = "SOURCEROOT-NO-SUCH-RECOVERY-V1" } },
+        @{ Id = "R5"; What = "an eligibility digest that was never signed"; Over = @{ EligibilityDigest = ("0" * 64) } },
+        @{ Id = "R6"; What = "an eligibility digest that is not a SHA-256"; Over = @{ EligibilityDigest = "not-a-digest" } },
+        # Occupancy, not assertion. The auditor's principal and key are entirely
+        # valid; they simply do not hold the role that issues eligibility.
+        @{ Id = "R7"; What = "the independent auditor asserting its own valid identity"; Over = @{ SignerPrincipal = $AuditorPrincipal; ExpectedSignerFingerprint = $AuditorFingerprint } },
+        @{ Id = "R8"; What = "a principal that is in no role at all"; Over = @{ SignerPrincipal = "someone-else" } },
+        # Eligibility detached from a recovery authorization authorizes nothing.
+        @{ Id = "R9"; What = "a recovery authorization id that was never issued"; Over = @{ ExpectedAuthorizationId = "00000000-0000-4000-8000-000000000000" } },
+        @{ Id = "R10"; What = "a recovery authorization digest that is one byte wrong"; Over = @{ ExpectedAuthorizationDigest = ("0" * 64) } },
+        @{ Id = "R11"; What = "a malformed predecessor commit id"; Over = @{ SupersededCommit = "HEAD" } }
+    )
+    foreach ($Variant in $RecoveryVariants) {
+        $RecoveryOverride = $Variant.Over
+        Test-Refusal -Id $Variant.Id -Expectation "eligibility is refused for $($Variant.What)" -Attempt {
+            $RecoveryVariant = Get-VariantRecovery $RecoveryOverride; (Test-GdsRecoveryEligibility @RecoveryVariant).Eligible
+        }
+    }
+
+    # ELIGIBILITY IS NOT RELEASE STATE, STRUCTURALLY.
+    #
+    # ELIGIBLE shares an exit code with ACCEPT, which is exactly the kind of
+    # near-miss that becomes a defect the first time a caller checks the wrong
+    # field. The answer must therefore be unable to report release, acceptance,
+    # or any path grant - not merely report them as false.
+    $Fields = @($Eligibility.PSObject.Properties.Name)
+    foreach ($Forbidden in @("Accepted", "Released", "Authorized", "Valid", "AllowedPaths", "ProtectedPaths")) {
+        Test-Control -Id "R12.$Forbidden" -Expectation "the eligibility answer cannot report '$Forbidden'" `
+            -Held (-not ($Fields -ccontains $Forbidden)) -Detail $(if ($Fields -ccontains $Forbidden) { "FIELD PRESENT" } else { "absent" })
+    }
+    Test-Control -Id "R13" -Expectation "eligibility reports the predecessor as NOT conforming" `
+        -Held ($Eligibility.PredecessorConforming -ceq "NO") -Detail $Eligibility.PredecessorConforming
+    Test-Control -Id "R14" -Expectation "eligibility grants NO mutation authority" `
+        -Held ($Eligibility.GrantsMutationAuthority -ceq "NO") -Detail $Eligibility.GrantsMutationAuthority
+    Test-Control -Id "R15" -Expectation "the verdict is ELIGIBLE and never ACCEPT" `
+        -Held ($Eligibility.Verdict -ceq "ELIGIBLE") -Detail $Eligibility.Verdict
+
+    # And the predecessor really is still non-conforming. Eligibility having
+    # been granted must change nothing about the release question.
+    if ($ReleaseContextComplete) {
+        Test-Refusal -Id "R16" -Expectation "an eligible predecessor is still NOT released truth" -Attempt {
+            (Test-GdsReleaseState @ReleaseContext).Released
+        }
+    }
+} else {
+    Write-Output ""
+    Write-Output "=== RECOVERY: NOT EXERCISED IN THIS RUN ==="
+    Write-Output "No recovery context was supplied, so no eligibility was asked about and the"
+    Write-Output "recovery controls did NOT run. This is a SKIP, not a pass."
+    foreach ($Pair in @(
+        @{ Name = "SRGDS_SUPERSEDED_COMMIT"; Value = $SupersededCommit },
+        @{ Name = "SRGDS_ELIGIBILITY_DIGEST"; Value = $EligibilityDigest }
+    )) {
+        if ([string]::IsNullOrWhiteSpace($Pair.Value)) { Write-Output "  missing: $($Pair.Name)" }
     }
 }
 
@@ -322,10 +475,32 @@ foreach ($Entry in $Unsafe) {
 
 # A path that IS authorized must still be reported as authorized, or the
 # grammar controls above would pass because everything is refused.
-$Sample = "tools/srgds-core/main.go"
-Test-Control -Id "G0" -Expectation "an authorized path is still authorized: $Sample" `
-    -Held ((Test-GdsPathAuthorized @Context -Path @($Sample)).Authorized) `
-    -Detail "control that proves the grammar family is not refusing everything"
+#
+# The sample is drawn from the CURRENT signed authorization, not pinned. It used
+# to be the literal tools/srgds-core/main.go, which was an authorized path under
+# one earlier issuance and is deliberately PROTECTED under others - so a stage
+# that guards the trust core failed its own positive control while the grammar
+# was working perfectly. That is a stage-coupled assumption written down as a
+# durable invariant, the same defect class this harness exists to catch.
+#
+# Taking the first allowed path keeps the control honest for every issuance: a
+# valid authorization always has at least one, and if it somehow has none there
+# is nothing legitimate to accept and the control fails rather than being
+# skipped.
+# Taken in the signed object's own order. Re-sorting here would be
+# locale-dependent: PowerShell's Sort-Object is culture-aware even with
+# -CaseSensitive, so it can pick a different sample on a different machine. The
+# trust core has already verified that allowedPaths is in strict UTF-16 ordinal
+# order, so the first element is a deterministic, signature-derived choice.
+$Sample = @($Baseline.AllowedPaths)[0]
+if ([string]::IsNullOrWhiteSpace($Sample)) {
+    Test-Control -Id "G0" -Expectation "the current authorization declares at least one allowed path" `
+        -Held $false -Detail "no allowed path exists, so the grammar family cannot be shown to accept anything"
+} else {
+    Test-Control -Id "G0" -Expectation "an authorized path is still authorized: $Sample" `
+        -Held ((Test-GdsPathAuthorized @Context -Path @($Sample)).Authorized) `
+        -Detail "sample drawn from the current signed authorization, proving the grammar family is not refusing everything"
+}
 
 # ---------------------------------------------------------------------------
 Write-Output ""

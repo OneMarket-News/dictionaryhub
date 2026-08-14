@@ -135,11 +135,16 @@ function Invoke-SrgdsCore {
     }
     # The verdict and the exit code must agree. If they disagree, the binary is
     # not the one this contract describes.
+    # ELIGIBLE shares ACCEPT's exit code but is a DISTINCT verdict, and is listed
+    # explicitly so it can never be produced or read by accident. Callers that
+    # only understand ACCEPT keep working because .Accepted below stays false for
+    # ELIGIBLE: recovery eligibility must never be mistaken for release state.
     $Expected = switch ([string]$Verdict.verdict) {
-        "ACCEPT" { $script:SrgdsExitAccept }
-        "REJECT" { $script:SrgdsExitReject }
-        "ERROR"  { $script:SrgdsExitError }
-        default  { throw "srgds-core returned an unknown verdict '$($Verdict.verdict)'." }
+        "ACCEPT"   { $script:SrgdsExitAccept }
+        "ELIGIBLE" { $script:SrgdsExitAccept }
+        "REJECT"   { $script:SrgdsExitReject }
+        "ERROR"    { $script:SrgdsExitError }
+        default    { throw "srgds-core returned an unknown verdict '$($Verdict.verdict)'." }
     }
     if ($Code -ne $Expected) {
         throw "srgds-core returned verdict $($Verdict.verdict) with exit $Code; the two disagree."
@@ -418,6 +423,67 @@ function Test-GdsReleaseState {
     }
 }
 
+function Test-GdsRecoveryEligibility {
+    <#
+    .SYNOPSIS
+    Asks whether a TERMINAL-UNCLOSED predecessor may be recovered from, once.
+
+    .DESCRIPTION
+    This is NOT release state and must never be presented as it. The predecessor
+    remains non-conforming; eligibility only records that Product Authority
+    permitted exactly one bounded recovery stage, bound to that stage's own
+    signed authorization. It grants no repository path and no mutation authority.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$RepositoryRoot,
+        [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string]$RecoveryStageSlug,
+        [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string]$ExpectedAuthorizationId,
+        [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string]$ExpectedAuthorizationDigest,
+        [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string]$ExpectedSignerFingerprint,
+        [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string]$SignerPrincipal,
+        [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string]$SupersededCommit,
+        [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string]$EligibilityDigest,
+        [Parameter()][string]$ControlStoreRoot,
+        [Parameter()][string]$CorePath
+    )
+    $Arguments = @(
+        "recovery-eligibility",
+        "-repo", $RepositoryRoot,
+        "-stage", $RecoveryStageSlug,
+        "-authorization-id", $ExpectedAuthorizationId,
+        "-expected-digest", $ExpectedAuthorizationDigest,
+        "-signer-fingerprint", $ExpectedSignerFingerprint,
+        "-signer-principal", $SignerPrincipal,
+        "-superseded-commit", $SupersededCommit,
+        "-eligibility-digest", $EligibilityDigest
+    )
+    if (-not [string]::IsNullOrWhiteSpace($ControlStoreRoot)) { $Arguments += @("-control-store", $ControlStoreRoot) }
+
+    $Result = Invoke-SrgdsCore -Arguments $Arguments -CorePath $CorePath
+    $Payload = $Result.Payload
+    $Get = {
+        param($Name)
+        if ($Payload.PSObject.Properties.Name -contains $Name) { return [string]$Payload.$Name }
+        return ""
+    }
+    return [pscustomobject]@{
+        # Deliberately NOT named "Released" or "Accepted": eligibility is a
+        # different question and a different answer.
+        Eligible                = ($Result.Verdict -ceq "ELIGIBLE")
+        Verdict                 = $Result.Verdict
+        Reason                  = $Result.Reason
+        Classification          = (& $Get "classification")
+        SupersededCommit        = (& $Get "supersededCommit")
+        SupersededStageSlug     = (& $Get "supersededStageSlug")
+        RecoveryStageSlug       = (& $Get "recoveryStageSlug")
+        EligibilityDigest       = (& $Get "eligibilityDigest")
+        RecoveryBaseline        = (& $Get "recoveryBaseline")
+        PredecessorConforming   = (& $Get "predecessorConforming")
+        GrantsMutationAuthority = (& $Get "grantsMutationAuthority")
+    }
+}
+
 # Get-GdsGovernanceState is the ONE place that decides which of the three
 # governance modes a repository is in, so the verifiers cannot disagree with
 # each other about it.
@@ -426,6 +492,11 @@ function Test-GdsReleaseState {
 #               stage is being built
 #   terminal    HEAD is the governed release of an audited candidate
 #   ungoverned  neither; nothing may be asserted on the strength of authority
+#
+# Recovery eligibility is deliberately NOT a fourth mode. A mode answers "what
+# may be done now"; eligibility answers "may this past commit be recovered
+# from", which is a question about a different commit and grants nothing. They
+# are kept in separate functions so no caller can read one as the other.
 function Get-GdsGovernanceState {
     [CmdletBinding()]
     param(
@@ -514,5 +585,5 @@ Export-ModuleMember -Function `
     Get-SrgdsCorePath, Invoke-SrgdsCore, Get-SrgdsCoreVersion, `
     Get-GdsStageAuthorization, Test-GdsPathAuthorized, `
     Get-GdsCandidateManifest, `
-    Test-GdsLifecycleTransition, Test-GdsReleaseState, Get-GdsGovernanceState, `
+    Test-GdsLifecycleTransition, Test-GdsReleaseState, Test-GdsRecoveryEligibility, Get-GdsGovernanceState, `
     Test-GdsFileCanonical

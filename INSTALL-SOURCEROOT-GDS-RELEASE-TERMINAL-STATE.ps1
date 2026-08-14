@@ -21,6 +21,7 @@ Actions:
   install       build the trust core deterministically and install it
   verify        prove terminal release state from the historical chain alone
   authority     prove terminal state confers no mutation authority
+  classify      classify HEAD into exactly one of three terminal states
   controls      run the reusable negative-control harness
   tests         run the Go suite, including the terminal-state adversarial tests
   all           every action above
@@ -35,7 +36,7 @@ describe different commits; conflating them is the defect being removed.
 [CmdletBinding()]
 param(
     [Parameter()]
-    [ValidateSet("install", "verify", "authority", "controls", "tests", "all")]
+    [ValidateSet("install", "verify", "authority", "classify", "controls", "tests", "all")]
     [string]$Action = "all",
 
     [Parameter()][string]$GoExecutable,
@@ -160,8 +161,28 @@ $Released = @{
     AuditorFingerprint          = $env:SRGDS_AUDITOR_FINGERPRINT
     CommitBindingDigest         = $env:SRGDS_COMMIT_BINDING_DIGEST
 }
+
+# The recovery context is a THIRD, separate context. It describes neither the
+# commit being classified nor the authority to change it: it names the signed
+# Product Authority statement that one bounded recovery of that commit is
+# permitted, and the recovery stage's own authorization that statement is bound
+# to. It is kept apart from $Current and $Released for the same reason those two
+# are kept apart from each other - three different questions about three
+# different objects, and every past defect in this system began by merging two
+# of them.
+$Recovery = @{
+    RecoveryStageSlug           = $Current.StageSlug
+    ExpectedAuthorizationId     = $Current.ExpectedAuthorizationId
+    ExpectedAuthorizationDigest = $Current.ExpectedAuthorizationDigest
+    ExpectedSignerFingerprint   = $Current.ExpectedSignerFingerprint
+    SignerPrincipal             = $Current.SignerPrincipal
+    SupersededCommit            = $env:SRGDS_SUPERSEDED_COMMIT
+    EligibilityDigest           = $env:SRGDS_ELIGIBILITY_DIGEST
+}
+
 $CurrentComplete = (@(@($Current.Values) | Where-Object { [string]::IsNullOrWhiteSpace($_) }).Count -eq 0)
 $ReleasedComplete = (@(@($Released.Values) | Where-Object { [string]::IsNullOrWhiteSpace($_) }).Count -eq 0)
+$RecoveryComplete = (@(@($Recovery.Values) | Where-Object { [string]::IsNullOrWhiteSpace($_) }).Count -eq 0)
 
 Import-Module (Join-Path $RepositoryRoot "tools\SourceRoot.Governance.psm1") -Force
 
@@ -230,7 +251,43 @@ function Invoke-Verify {
         return
     }
 
-    $Release = Test-GdsReleaseState -RepositoryRoot $RepositoryRoot @Released @CoreArgs @StoreArgs
+    # CLASSIFY BEFORE ASSERTING.
+    #
+    # This action used to assert, unconditionally, that terminal release state
+    # holds. That was true of the commit it was written against and is not true
+    # of every commit it will ever run against - the same "a fact about one
+    # commit written down as an invariant" defect this stage exists to remove,
+    # committed by the verification code itself. Under the corrected auditor
+    # model the predecessor's chain is refused, and an installer that reports
+    # that as a FAILURE is claiming the repository is broken when what actually
+    # happened is that a real defect was correctly detected.
+    #
+    # So the classification decides which facts are the honest ones to assert,
+    # and every state still asserts something. Nothing is skipped, and no state
+    # passes by having no checks.
+    $Class = Get-HeadClassification
+    Write-Host "       classification: $($Class.Classification)"
+    $Release = $Class.Release
+
+    if ($Class.Classification -ceq $script:ClassLegacy) {
+        Assert-True (-not $Release.Released) `
+            "HEAD is NOT released truth, and terminal release state is not claimed for it"
+        Assert-True ($Release.Reason -like "*audit binding*") `
+            "The refusal is the audit binding itself, not an incidental error ($($Release.Reason))"
+        Assert-True ($Class.Eligibility.Eligible) `
+            "A signed Product Authority eligibility permits exactly one bounded recovery of this commit"
+        Assert-True ($Class.Eligibility.Classification -ceq "TERMINAL-UNCLOSED") `
+            "The predecessor is classified TERMINAL-UNCLOSED: it reached terminal state but never closed"
+        Assert-True ($Class.Eligibility.PredecessorConforming -ceq "NO") `
+            "Eligibility does not make the predecessor conforming"
+        return
+    }
+    if ($Class.Classification -ceq $script:ClassInvalid) {
+        Assert-True $false `
+            "HEAD is INVALID-UNTRUSTED: neither a conforming release chain nor a signed recovery eligibility ($($Class.Reason))"
+        return
+    }
+
     Assert-True $Release.Released "Terminal release state is established from the historical chain ($($Release.Reason))"
     if (-not $Release.Released) { return }
 
@@ -261,9 +318,21 @@ function Invoke-Authority {
         return
     }
 
-    $Release = Test-GdsReleaseState -RepositoryRoot $RepositoryRoot @Released @CoreArgs @StoreArgs
-    Assert-True ($Release.CurrentAuthorityAtHead -ceq "REJECTED") `
-        "The core proves, while establishing the release, that the historical authorization is REJECTED at HEAD"
+    # The classification decides which authority facts are true here. What does
+    # NOT vary with it is the thing this action exists to prove: nothing in the
+    # historical chain, conforming or not, confers authority over HEAD.
+    $Class = Get-HeadClassification
+    $Release = $Class.Release
+    if ($Class.Classification -ceq $script:ClassConforming) {
+        Assert-True ($Release.CurrentAuthorityAtHead -ceq "REJECTED") `
+            "The core proves, while establishing the release, that the historical authorization is REJECTED at HEAD"
+    } else {
+        # No release was established, so the core never reached the question.
+        # Saying so is the honest report; asserting REJECTED on a field the core
+        # never populated would be reading absence as a proof.
+        Assert-True ([string]::IsNullOrWhiteSpace($Release.CurrentAuthorityAtHead)) `
+            "No release was established, so the core asserts nothing about current authority at HEAD"
+    }
 
     # Asked independently rather than taken on the core's word.
     $AsCurrent = Get-GdsStageAuthorization -RepositoryRoot $RepositoryRoot `
@@ -311,10 +380,24 @@ function Invoke-Authority {
         $Unissued.ExpectedAuthorizationId = "00000000-0000-4000-8000-000000000000"
         $Forced = Get-GdsGovernanceState -RepositoryRoot $RepositoryRoot `
             -Context $Unissued -ReleaseContext $ReleasedContext @CoreArgs
-        Assert-True ($Forced.Mode -eq "terminal") `
-            "With no answerable current authority, the selector resolves to terminal rather than ungoverned"
-        Assert-True ($null -ne $Forced.Release -and $Forced.Release.CurrentAuthorityAtHead -ceq "REJECTED") `
-            "Terminal mode still reports that HEAD holds no current authority"
+        if ($Class.Classification -ceq $script:ClassConforming) {
+            Assert-True ($Forced.Mode -eq "terminal") `
+                "With no answerable current authority, the selector resolves to terminal rather than ungoverned"
+            Assert-True ($null -ne $Forced.Release -and $Forced.Release.CurrentAuthorityAtHead -ceq "REJECTED") `
+                "Terminal mode still reports that HEAD holds no current authority"
+        } else {
+            # THE STRONGER CONTROL, and the one that matters for this stage.
+            #
+            # A non-conforming chain must NOT be able to reach terminal mode by
+            # any route. Removing current authority is the most favourable
+            # possible condition for the selector to reach terminal - if it
+            # still refuses, terminal mode is genuinely gated on the release
+            # chain and not on the mere presence of released-stage context.
+            Assert-True ($Forced.Mode -eq "ungoverned") `
+                "A non-conforming chain cannot reach terminal mode even with current authority removed ($($Forced.Mode))"
+            Assert-True ($null -eq $Forced.Release -or -not $Forced.Release.Released) `
+                "The selector reports no established release for a non-conforming chain"
+        }
 
         # And it is a real decision, not a default: with NO released context the
         # same unanswerable authority must fall through to ungoverned.
@@ -323,6 +406,198 @@ function Invoke-Authority {
             "Without released-stage context the selector reports ungoverned, never terminal by default"
     } else {
         Write-Host "[SKIP] No current-authority context; governance mode was not resolved." -ForegroundColor Yellow
+    }
+}
+
+# ---------------------------------------------------------------------------
+# THREE-STATE TERMINAL CLASSIFICATION
+#
+# Terminal state used to be a boolean, and a boolean could not describe the
+# repository this stage found. HEAD reached terminal release state, yet its
+# AuditBinding was authenticated by the Product Authority key rather than an
+# independent auditor, so under the corrected auditor model it does not conform.
+# A boolean forces that commit into one of two lies: call it released, and the
+# non-conforming audit is laundered into a conforming one; call it invalid, and
+# a real signed chain with one real defect is thrown in with unsigned garbage,
+# leaving no governed way to move forward from it at all.
+#
+# So the answer has three states, and each is reached only by positive evidence:
+#
+#   CONFORMING-TERMINAL       the full corrected release chain verifies. This is
+#                             the ONLY state that means "released truth".
+#   LEGACY-RECOVERY-ELIGIBLE  the chain does NOT verify, AND a signed Product
+#                             Authority RecoveryEligibility covers this exact
+#                             commit and is bound to the recovery stage's own
+#                             authorization. Non-conforming, and recoverable.
+#   INVALID-UNTRUSTED         neither. Nothing may be built on it.
+#
+# The order is deliberate and not interchangeable. Conformance is tested FIRST,
+# from the release chain alone, with eligibility not yet loaded - so eligibility
+# is structurally incapable of promoting anything to CONFORMING-TERMINAL. It can
+# only distinguish two flavours of "not conforming".
+#
+# Absence of context is NOT a fourth quiet state. An unclassifiable subject is
+# reported as UNCLASSIFIED and counted as a skip, because "we did not look" and
+# "we looked and found nothing trustworthy" are different findings, and only one
+# of them is INVALID-UNTRUSTED.
+# ---------------------------------------------------------------------------
+$script:ClassConforming  = "CONFORMING-TERMINAL"
+$script:ClassLegacy      = "LEGACY-RECOVERY-ELIGIBLE"
+$script:ClassInvalid     = "INVALID-UNTRUSTED"
+$script:ClassUnknown     = "UNCLASSIFIED"
+
+function Get-TerminalClassification {
+    <#
+    .SYNOPSIS
+    Classifies the commit at HEAD into exactly one of three terminal states.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$ReleasedContext,
+        [Parameter()][hashtable]$RecoveryContext
+    )
+
+    $Verdict = {
+        param($Class, $Reason, $Release, $Eligibility)
+        [pscustomobject]@{
+            Classification = $Class
+            Reason         = $Reason
+            Commit         = $(if ($null -ne $Release) { $Release.Commit } else { "" })
+            Release        = $Release
+            Eligibility    = $Eligibility
+        }
+    }
+
+    # STATE 1. Conformance, from the release chain alone.
+    $Release = Test-GdsReleaseState -RepositoryRoot $RepositoryRoot @ReleasedContext @CoreArgs @StoreArgs
+    if ($Release.Released) {
+        return (& $Verdict $script:ClassConforming `
+            "the corrected release chain verifies at HEAD: $($Release.Reason)" $Release $null)
+    }
+
+    # Not conforming. Everything below can only choose between the two
+    # non-conforming states; none of it can reach CONFORMING-TERMINAL.
+    if ($null -eq $RecoveryContext -or $RecoveryContext.Count -eq 0) {
+        return (& $Verdict $script:ClassInvalid `
+            "the release chain does not verify ($($Release.Reason)) and no recovery eligibility was offered" $Release $null)
+    }
+
+    # The commit being classified must be identifiable. If the chain failed so
+    # early that the core never named a commit, there is nothing for an
+    # eligibility statement to be about, and pairing them would let eligibility
+    # for one commit excuse the failure of another.
+    if ([string]::IsNullOrWhiteSpace($Release.Commit)) {
+        return (& $Verdict $script:ClassInvalid `
+            "the release chain failed before identifying a commit ($($Release.Reason)), so no eligibility can be tied to it" $Release $null)
+    }
+
+    $Eligibility = Test-GdsRecoveryEligibility -RepositoryRoot $RepositoryRoot @RecoveryContext @CoreArgs @StoreArgs
+    if (-not $Eligibility.Eligible) {
+        return (& $Verdict $script:ClassInvalid `
+            "the release chain does not verify ($($Release.Reason)) and recovery eligibility was REFUSED: $($Eligibility.Reason)" $Release $Eligibility)
+    }
+
+    # STATE 2 requires the eligibility to be about the commit that actually
+    # failed. The trust core already binds the object to the superseded commit
+    # NAMED in the request; this binds that name to the commit under
+    # classification. Without both halves, an eligibility issued for some other
+    # predecessor would silently cover this one.
+    if ($Eligibility.SupersededCommit -cne $Release.Commit) {
+        return (& $Verdict $script:ClassInvalid `
+            "recovery eligibility covers $($Eligibility.SupersededCommit), which is not the commit under classification ($($Release.Commit))" $Release $Eligibility)
+    }
+    # Eligibility that claimed either of these would be release state or
+    # mutation authority under a weaker name, and must not classify anything.
+    if ($Eligibility.PredecessorConforming -cne "NO" -or $Eligibility.GrantsMutationAuthority -cne "NO") {
+        return (& $Verdict $script:ClassInvalid `
+            "the eligibility statement overreached: predecessorConforming=$($Eligibility.PredecessorConforming), grantsMutationAuthority=$($Eligibility.GrantsMutationAuthority)" $Release $Eligibility)
+    }
+
+    return (& $Verdict $script:ClassLegacy `
+        "the release chain does not verify ($($Release.Reason)), and a signed Product Authority eligibility permits exactly one bounded recovery of this commit" $Release $Eligibility)
+}
+
+# Get-HeadClassification is the ONE place the three actions below agree about
+# what HEAD is. Computed once and cached, so verify, authority and classify can
+# never disagree with each other about the same commit.
+$script:CachedClassification = $null
+function Get-HeadClassification {
+    if ($null -ne $script:CachedClassification) { return $script:CachedClassification }
+    $ReleasedContext = @{}
+    foreach ($Key in $Released.Keys) { $ReleasedContext[$Key] = $Released[$Key] }
+    $RecoveryContext = $null
+    if ($RecoveryComplete) {
+        $RecoveryContext = @{}
+        foreach ($Key in $Recovery.Keys) { $RecoveryContext[$Key] = $Recovery[$Key] }
+    }
+    $script:CachedClassification = Get-TerminalClassification `
+        -ReleasedContext $ReleasedContext -RecoveryContext $RecoveryContext
+    return $script:CachedClassification
+}
+
+function Invoke-Classify {
+    Write-Section "TERMINAL CLASSIFICATION"
+    if (-not $ReleasedComplete) {
+        Write-Host "[SKIP] No released-stage context supplied, so HEAD is $script:ClassUnknown." -ForegroundColor Yellow
+        Write-Host "       This is a SKIP, not INVALID-UNTRUSTED: not looking is not a finding."
+        return
+    }
+    if (-not $RecoveryComplete) {
+        Write-Host "       No recovery context supplied; only CONFORMING-TERMINAL and" -ForegroundColor Yellow
+        Write-Host "       INVALID-UNTRUSTED are reachable in this run." -ForegroundColor Yellow
+    }
+
+    $ReleasedContext = @{}
+    foreach ($Key in $Released.Keys) { $ReleasedContext[$Key] = $Released[$Key] }
+    $RecoveryContext = $null
+    if ($RecoveryComplete) {
+        $RecoveryContext = @{}
+        foreach ($Key in $Recovery.Keys) { $RecoveryContext[$Key] = $Recovery[$Key] }
+    }
+
+    $Class = Get-HeadClassification
+    Write-Host "       commit        : $($Class.Commit)"
+    Write-Host "       classification: $($Class.Classification)"
+    Write-Host "       reason        : $($Class.Reason)"
+
+    Assert-True ($Class.Classification -cin @($script:ClassConforming, $script:ClassLegacy, $script:ClassInvalid)) `
+        "HEAD classifies into exactly one of the three terminal states: $($Class.Classification)"
+
+    # THE CLASSIFICATION IS A REAL DECISION, NOT A CONSTANT.
+    #
+    # A classifier that returned the same answer for every input would pass the
+    # assertion above forever. Each state is therefore exercised against this
+    # repository's own signed objects, with nothing fabricated: the same real
+    # chain is asked with one input replaced by something that was never signed.
+    if ($RecoveryComplete) {
+        # INVALID-UNTRUSTED is reachable: an eligibility digest nobody signed.
+        $Unsigned = @{}
+        foreach ($Key in $RecoveryContext.Keys) { $Unsigned[$Key] = $RecoveryContext[$Key] }
+        $Unsigned.EligibilityDigest = ("0" * 64)
+        $Refused = Get-TerminalClassification -ReleasedContext $ReleasedContext -RecoveryContext $Unsigned
+        Assert-True ($Refused.Classification -ceq $script:ClassInvalid) `
+            "With an eligibility digest that was never signed, HEAD classifies $($Refused.Classification)"
+
+        # And eligibility cannot promote: dropping it entirely must not change a
+        # conforming answer into a non-conforming one, nor the reverse.
+        $Bare = Get-TerminalClassification -ReleasedContext $ReleasedContext
+        Assert-True ($Bare.Classification -cne $script:ClassLegacy) `
+            "Without any eligibility offered, LEGACY-RECOVERY-ELIGIBLE is unreachable ($($Bare.Classification))"
+        Assert-True (($Bare.Classification -ceq $script:ClassConforming) -eq ($Class.Classification -ceq $script:ClassConforming)) `
+            "Conformance is decided by the release chain alone; eligibility never changes it"
+    }
+
+    if ($Class.Classification -ceq $script:ClassLegacy) {
+        Assert-True (-not $Class.Release.Released) `
+            "A LEGACY-RECOVERY-ELIGIBLE commit is NOT released truth; the release chain still refuses it"
+        Assert-True ($Class.Eligibility.PredecessorConforming -ceq "NO") `
+            "The eligibility statement itself records the predecessor as non-conforming"
+        Assert-True ($Class.Eligibility.GrantsMutationAuthority -ceq "NO") `
+            "The eligibility statement grants no mutation authority"
+        Assert-True ($Class.Eligibility.RecoveryBaseline -ceq $Class.Commit) `
+            "The recovery stage is baselined on the exact classified commit ($($Class.Commit))"
+        Write-Host "       superseded stage: $($Class.Eligibility.SupersededStageSlug)"
+        Write-Host "       recovery stage  : $($Class.Eligibility.RecoveryStageSlug)"
     }
 }
 
@@ -352,6 +627,7 @@ switch ($Action) {
     "install"   { Invoke-Install }
     "verify"    { Invoke-Verify }
     "authority" { Invoke-Authority }
+    "classify"  { Invoke-Classify }
     "controls"  { Invoke-Controls }
     "tests"     { Invoke-Tests }
     "all" {
@@ -359,6 +635,7 @@ switch ($Action) {
         Invoke-Tests
         Invoke-Verify
         Invoke-Authority
+        Invoke-Classify
         Invoke-Controls
     }
 }

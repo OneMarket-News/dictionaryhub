@@ -588,16 +588,40 @@ if ($Manifest.PSObject.Properties.Name -contains "active_stage") { $ActiveStage 
 $AllowedPaths = @()
 $AllowlistSource = ""
 $AnchorReason = "not evaluated"
-# The fallback triggers on an EMPTY allowlist, not on a missing property.
+# SIGNED GOVERNANCE EVIDENCE DECIDES THE BASELINE, NOT MANIFEST PRESENCE.
+#
+# The manifest branch measures the changeset from $BaselineCommit, the 15A
+# canonical baseline. That is correct only for a stage whose governed baseline
+# IS that commit. For a stage opened from any later signed baseline it compares
+# a small allowlist against every path changed since 15A and fails all of them -
+# 43 failures were demonstrated for a legitimate recovery stage opened from a
+# signed release commit, and the same would happen to 15B.
+#
+# The manifest is also the weaker source in principle: ROOT-MANIFEST.json is a
+# repository file the stage itself may edit, while the StageAuthorization is
+# signed and external. So whenever signed evidence exists - a valid current
+# authorization, or a proven terminal release - the branches below own the
+# question and measure from the baseline that evidence names.
+#
+# This is a general precedence rule, not a carve-out: no stage is named, and the
+# legacy manifest path is unchanged for the pre-GDS case it was written for.
+#
+# The fallback also triggers on an EMPTY allowlist, not on a missing property.
 # COMPLETE-ROOT-STAGE.ps1 does not delete active_stage; it rewrites it with
 # allowed_files set to an empty array.
 if (
+    -not $script:GdsAuthorityValid -and
+    -not $script:GdsTerminalRelease -and
     $null -ne $ActiveStage -and
     $ActiveStage.PSObject.Properties.Name -contains "allowed_files" -and
     @($ActiveStage.allowed_files).Count -gt 0
 ) {
     $AllowedPaths = @($ActiveStage.allowed_files)
-    $AllowlistSource = "ROOT-MANIFEST.json active_stage"
+    $AllowlistSource = "ROOT-MANIFEST.json active_stage (no signed governance evidence)"
+} elseif ($script:GdsAuthorityValid -or $script:GdsTerminalRelease) {
+    # Deliberately left empty so the signed-authorization and terminal branches
+    # below decide. Setting an allowlist here would re-introduce the defect.
+    $AnchorReason = "superseded by signed governance evidence; the baseline comes from the signed authorization or the bound release"
 } else {
     # Completed-but-uncommitted audit window. Authority is determined entirely
     # by pinned machine facts and Git state. Human Markdown is not authority.
