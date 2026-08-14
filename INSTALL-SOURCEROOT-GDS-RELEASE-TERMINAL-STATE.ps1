@@ -566,19 +566,42 @@ function Invoke-Classify {
     # THE CLASSIFICATION IS A REAL DECISION, NOT A CONSTANT.
     #
     # A classifier that returned the same answer for every input would pass the
-    # assertion above forever. Each state is therefore exercised against this
-    # repository's own signed objects, with nothing fabricated: the same real
-    # chain is asked with one input replaced by something that was never signed.
-    if ($RecoveryComplete) {
-        # INVALID-UNTRUSTED is reachable: an eligibility digest nobody signed.
+    # assertion above forever. The same real chain is therefore asked again with
+    # one input replaced by something that was never signed, with nothing
+    # fabricated.
+    #
+    # WHICH ANSWER THAT PROBE SHOULD PRODUCE DEPENDS ON THE STATE, and gating it
+    # on $RecoveryComplete - "did the caller supply a recovery context?" - got
+    # that wrong. Context completeness is a fact about the CALLER; what governs
+    # here is the CLASSIFICATION. The two agreed until the recovery release
+    # landed, after which a complete context with a spent hop still demanded the
+    # non-conforming answer and reported a correct CONFORMING-TERMINAL as a
+    # failure. Gating on the classification removes the coupling and, better,
+    # turns one probe into two complementary controls:
+    #
+    #   LEGACY      eligibility must not PROMOTE a non-conforming chain
+    #   CONFORMING  eligibility must not DEMOTE a conforming one
+    #
+    # The second direction did not exist before and is the stronger of the two:
+    # it proves an unsigned eligibility cannot take a released truth away.
+    if ($RecoveryComplete -and $Class.Classification -ceq $script:ClassLegacy) {
         $Unsigned = @{}
         foreach ($Key in $RecoveryContext.Keys) { $Unsigned[$Key] = $RecoveryContext[$Key] }
         $Unsigned.EligibilityDigest = ("0" * 64)
         $Refused = Get-TerminalClassification -ReleasedContext $ReleasedContext -RecoveryContext $Unsigned
         Assert-True ($Refused.Classification -ceq $script:ClassInvalid) `
-            "With an eligibility digest that was never signed, HEAD classifies $($Refused.Classification)"
-
-        # And eligibility cannot promote: dropping it entirely must not change a
+            "PROMOTION RESISTANCE: an eligibility digest nobody signed cannot hold a commit above INVALID-UNTRUSTED ($($Refused.Classification))"
+    }
+    if ($RecoveryComplete -and $Class.Classification -ceq $script:ClassConforming) {
+        $Unsigned = @{}
+        foreach ($Key in $RecoveryContext.Keys) { $Unsigned[$Key] = $RecoveryContext[$Key] }
+        $Unsigned.EligibilityDigest = ("0" * 64)
+        $Refused = Get-TerminalClassification -ReleasedContext $ReleasedContext -RecoveryContext $Unsigned
+        Assert-True ($Refused.Classification -ceq $script:ClassConforming) `
+            "DEMOTION RESISTANCE: an eligibility digest nobody signed cannot take a conforming release away ($($Refused.Classification))"
+    }
+    if ($RecoveryComplete) {
+        # Applies in every state: dropping eligibility entirely must not change a
         # conforming answer into a non-conforming one, nor the reverse.
         $Bare = Get-TerminalClassification -ReleasedContext $ReleasedContext
         Assert-True ($Bare.Classification -cne $script:ClassLegacy) `
@@ -604,7 +627,14 @@ function Invoke-Classify {
 # ---------------------------------------------------------------------------
 function Invoke-Controls {
     Write-Section "NEGATIVE CONTROLS"
-    & (Join-Path $RepositoryRoot "tools\INVOKE-ROOT-NEGATIVE-CONTROL.ps1")
+    # -CorePath is FORWARDED. Without it the nested harness silently resolved its
+    # own core from SRGDS_CORE_PATH or the installed default, so an installer run
+    # pinned to a just-built candidate binary could report controls that a
+    # DIFFERENT binary had held. The two must be the same trust core or the
+    # evidence is about something other than what was tested.
+    $ControlArgs = @{}
+    if (-not [string]::IsNullOrWhiteSpace($CorePath)) { $ControlArgs.CorePath = $CorePath }
+    & (Join-Path $RepositoryRoot "tools\INVOKE-ROOT-NEGATIVE-CONTROL.ps1") @ControlArgs
     # The harness reports for itself which families ran. Claiming the terminal
     # family held when it was skipped would be this installer inventing evidence
     # the harness never produced.

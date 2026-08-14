@@ -14,6 +14,13 @@ docs/stages/templates/ROOT-STAGE-TEMPLATE.md text eol=lf
 # Governed migration bytes are cryptographically bound by the audited candidate
 # and the released tree, so they must survive any clone unchanged. Without this,
 # a checkout under core.autocrlf=true rewrites them to CRLF and the raw byte
-# comparison in terminal migration attribution fails: measured 442 CRLF pairs
-# and hash a9d00c46 against bound blob ab146237.
+# comparison in terminal migration attribution fails.
+#
+# Measured on the unfixed arm of a disposable core.autocrlf=true clone. The two
+# figures are different scopes and neither is a correction of the other:
+#   per file  migration 020 alone carried 442 CRLF pairs and hashed a9d00c46
+#             against bound blob ab146237
+#   total     all 21 migrations together carried 4446 CRLF pairs, and every one
+#             of the 21 diverged from the bound tree
+# With this rule applied the same clone measures 0 CRLF pairs and 0 divergences.
 backend/db/migrations/*.sql -text

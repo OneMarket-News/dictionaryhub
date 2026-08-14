@@ -957,3 +957,107 @@ AND that a signed eligibility permits exactly one bounded recovery of it -- both
 halves, because eligibility that could not be refused would be a rubber stamp,
 and eligibility that quietly implied release state would be the laundering the
 corrected model exists to prevent.
+
+#### Applicability, and why the family is three-state
+
+The paragraph above describes the family while a recovery is IN FLIGHT. Shipped
+as written, it was wrong the moment the recovery landed.
+
+The family gated on CONTEXT COMPLETENESS -- "did the caller supply a superseded
+commit and an eligibility digest?" That is a question about the caller. The
+question it needed to answer is APPLICABILITY: "is a recovery still in flight?"
+The two coincided before the recovery release and diverged after it. The context
+stayed complete while the one hop became spent, so the family went on demanding
+ELIGIBLE from an eligibility that is now correctly refused, and reported the
+right governance outcome as three failed controls.
+
+This is the same defect class the recovery stage existed to remove -- a fact
+true at one moment written down as a durable invariant -- committed by the
+checking code itself, two files from where three other instances of it had just
+been repaired.
+
+**The worse half.** In the spent state the nine refusal variants R3-R11 reported
+HELD for the wrong reason. Once the authorization is consumed every input is
+refused, including the inputs those controls exist to catch, so they could no
+longer tell a caught perturbation from a dead code path. A family whose positive
+baseline cannot hold proves nothing, and nine vacuous HELD lines are more
+dangerous than three honest failures: the failures get investigated.
+
+**Three applicability states**, each of which must name itself and its reason:
+
+| State | Meaning | Controls |
+|---|---|---|
+| IN-FLIGHT | a recovery is live | the full adversarial family R0-R16 |
+| SPENT | the exact hop bound into the released recovery chain is no longer exercisable | `R0'`, `R15'`, `R16'`, `R17`, `R18`; R3-R11 RETIRED |
+| NOT-SUPPLIED | no recovery context offered | explicit non-execution, missing variables named |
+
+Response-shape controls `R12.*`, `R13` and `R14` apply in EVERY state. They test
+the shape of the answer rather than the viability of a recovery, and shape does
+not change when the hop is spent. Gating them on applicability would have
+dropped six real controls the moment the recovery landed.
+
+**A name is not an authentication.** Two audits found the two halves of one
+rule. The first found the controls asking about CURRENT authority after a
+follow-up stage opened: no eligibility exists under that stage, so file absence
+was represented as a spent hop. Naming the historical recovery explicitly fixed
+that and exposed the second half. An older but validly signed authorization for
+the same recovery stage and the same baseline ALSO authenticates the eligibility
+and is ALSO refused at the baseline. Every control then held for it, even though
+it is not the authorization the released recovery chain is bound to.
+
+The lesson generalizes past this family: an identity the caller supplies is an
+assertion no matter how specific it is. Specificity is not authority.
+
+**The authoritative identity is therefore DERIVED, and the caller may only
+assert against it.**
+
+| State | Authoritative source |
+|---|---|
+| IN-FLIGHT | the current StageAuthorization, already verified by the positive baseline |
+| SPENT | the released recovery chain -- `release-state` accepts only after verifying the signed ReleaseCommitBinding AND finding the released authorization's id and digest equal to those named INSIDE that binding |
+
+Only one authorization is named inside that binding, which is exactly what
+separates "an authorization that would also be refused" from "the authorization
+this release actually consumed".
+
+`SRGDS_RECOVERY_STAGE`, `SRGDS_RECOVERY_AUTHORIZATION_ID` and
+`SRGDS_RECOVERY_AUTHORIZATION_DIGEST` remain REQUIRED so omission stays visible,
+but they drive nothing: the eligibility lookup uses the derived identity.
+
+**SPENT is proven in required parts.**
+
+| Part | Control | Proven by |
+|---|---|---|
+| EXACT AUTHORIZATION | `R19` | the caller's asserted identity equals the chain-authenticated one, field by field. An older signed same-stage, same-baseline authorization fails here and only here |
+| AUTHENTICATED | `R0'` | under the derived identity, the core reports the real object's classification, exact digest, predecessor and recovery stage back. A missing file yields none of these |
+| THEN REFUSED | `R0'`, `R18` | having authenticated it, the core still refuses, and the refusal names the consumed baseline rather than a missing or malformed object |
+| NOT REVIVABLE | `R17` | re-supplying the exact signed object is still refused, and still reaches the binding step |
+| NOT RELEASE STATE | `R15'`, `R16'` | the verdict is never ACCEPT or ELIGIBLE, and HEAD is the conforming recovery release |
+
+`RecoveryBaseline` is emitted only after the core has loaded the recovery
+StageAuthorization, so a non-empty value naming the predecessor distinguishes
+"refused at the binding" from "refused at the file open". `R19` distinguishes
+"the released recovery is spent" from "some other signed authorization is
+spent". Both distinctions are required; dropping either makes the result
+vacuous.
+
+### 13.17 Classification reachability is gated on the classification
+
+The installer proves its classifier is a decision rather than a constant by
+asking the same real chain again with one input replaced by something that was
+never signed. Which answer that probe should produce depends on the state, and
+gating it on whether a recovery context was supplied got that wrong in exactly
+the way section 13.16 describes.
+
+Gating on the CLASSIFICATION removes the coupling and turns one probe into two
+complementary controls:
+
+| Classification | Control | Proves |
+|---|---|---|
+| `LEGACY-RECOVERY-ELIGIBLE` | promotion resistance | an unsigned eligibility cannot hold a commit above `INVALID-UNTRUSTED` |
+| `CONFORMING-TERMINAL` | demotion resistance | an unsigned eligibility cannot take a released truth away |
+
+The second direction did not exist before and is the stronger of the two. The
+invariance checks -- that dropping eligibility entirely changes no conforming
+answer, and that `LEGACY-RECOVERY-ELIGIBLE` is unreachable without an
+eligibility -- apply in every state and stay ungated.

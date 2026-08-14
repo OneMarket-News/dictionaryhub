@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://sourceroot.local/schemas/gds-authority-lifecycle-v1.schema.json",
   "title": "SourceRoot GDS v1.1 authority and lifecycle objects",
-  "description": "Schema for the four separately bound governance objects. This file is TOOLING, not authority: it describes the shape of authoritative objects, which live in the ACL-protected external control store and are signed by the Product Authority. A repository file can be edited by the stage it governs and therefore can never be the trust root.",
+  "description": "Schema for the six separately bound governance objects. Exactly FOUR are signed by the Product Authority: StageAuthorization, ReleaseAuthorization, ReleaseCommitBinding and RecoveryEligibility. AuditBinding is signed by the configured INDEPENDENT AUDITOR, who must be a distinct principal holding a distinct key. CandidateManifest is DERIVED and is not signed at all. This file is TOOLING, not authority: it describes the shape of authoritative objects, which live in the ACL-protected external control store. A repository file can be edited by the stage it governs and therefore can never be the trust root, and role occupancy is resolved from the control store's roles table rather than from anything stated here.",
   "type": "object",
   "required": ["schemaVersion", "objectType"],
   "properties": {

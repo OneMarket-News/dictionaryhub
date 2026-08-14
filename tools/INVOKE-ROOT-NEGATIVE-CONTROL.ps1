@@ -17,7 +17,23 @@ Five families:
   GRAMMAR     unsafe paths and unauthorized paths are refused
   RECOVERY    a signed recovery eligibility covers exactly one predecessor and
               one recovery stage, is issuable only by the configured Product
-              Authority, and never becomes release state or path authority
+              Authority, and never becomes release state or path authority.
+              This family is APPLICABILITY-GATED and reports exactly one of
+              three states, because a completed recovery is a success and must
+              not be reported as a failure:
+                IN-FLIGHT     a recovery is live; the full adversarial family
+                              R0-R16 genuinely exercises
+                SPENT         the one hop is taken. The REAL signed eligibility
+                              must authenticate first and only then be refused,
+                              because a refusal earned by asking about a stage
+                              that never had an eligibility proves nothing.
+                              R0'/R15'/R16'/R17/R18 carry it; R3-R11 are RETIRED
+                              rather than counted, because they would refuse
+                              every input and so prove nothing
+                NOT-SUPPLIED  the historical recovery identity is incomplete;
+                              explicitly not exercised, never substituted from
+                              current authority
+              Response-shape controls R12.*, R13 and R14 apply in every state.
   STRUCTURE   the PowerShell module contains no trust-core implementation, and
               the trust core is present and answers
 
@@ -46,6 +62,27 @@ param(
     [Parameter()][string]$CommitBindingDigest = $env:SRGDS_COMMIT_BINDING_DIGEST,
     [Parameter()][string]$SupersededCommit = $env:SRGDS_SUPERSEDED_COMMIT,
     [Parameter()][string]$EligibilityDigest = $env:SRGDS_ELIGIBILITY_DIGEST,
+    # THE CALLER'S ASSERTION ABOUT THE HISTORICAL RECOVERY IDENTITY.
+    #
+    # Two audits found two halves of one rule here. The first found the controls
+    # building their context from CURRENT authority: after a follow-up stage
+    # opened they looked for an eligibility filed under that stage, found no such
+    # file, and reported the refusal as a spent hop. That proved only that a file
+    # which never existed does not exist.
+    #
+    # Naming the historical recovery explicitly fixed that, and introduced the
+    # second half of the defect: a NAME IS NOT AN AUTHENTICATION. An older but
+    # validly signed authorization for the same recovery stage and the same
+    # baseline also authenticates the eligibility and is also refused at the
+    # baseline, so it too could be presented as the spend - even though it is not
+    # the authorization the released recovery chain is bound to.
+    #
+    # These three values therefore remain REQUIRED, so omission stays visible,
+    # but they are an ASSERTION TO BE CHECKED and never the source of truth. The
+    # authoritative identity is derived below from something signed.
+    [Parameter()][string]$RecoveryStageSlug = $env:SRGDS_RECOVERY_STAGE,
+    [Parameter()][string]$RecoveryAuthorizationId = $env:SRGDS_RECOVERY_AUTHORIZATION_ID,
+    [Parameter()][string]$RecoveryAuthorizationDigest = $env:SRGDS_RECOVERY_AUTHORIZATION_DIGEST,
     [Parameter()][string]$CorePath
 )
 
@@ -286,18 +323,70 @@ if ($TerminalHolds) {
 # controls. Eligibility that could not be refused would be a rubber stamp, and
 # eligibility that quietly implied release state would be the laundering the
 # whole corrected model exists to prevent.
+# ===========================================================================
+# THE AUTHORITATIVE RECOVERY IDENTITY IS DERIVED, NOT ACCEPTED.
+#
+# The eligibility lookup below is driven by an identity this harness derives
+# from something SIGNED. The caller's assertion never selects it.
+#
+# Where the authority comes from depends on the state, and both sources are
+# already authenticated before this point:
+#
+#   IN-FLIGHT  the current StageAuthorization, which the positive baseline P0
+#              has already verified by id, digest, signature and schema.
+#   SPENT      the released recovery chain. `release-state` accepts only after
+#              it has verified the signed ReleaseCommitBinding AND found the
+#              released authorization's id and digest equal to the ones named
+#              INSIDE that binding. So once $TerminalHolds is true, the released
+#              authorization identity is a chain-authenticated fact.
+#
+# That second point is what closes the substitution hole. An older, validly
+# signed authorization for the same stage and baseline can authenticate an
+# eligibility and be refused at the baseline, which is why it could previously
+# masquerade as the spend. It cannot, however, be the authorization named inside
+# the signed ReleaseCommitBinding - only one authorization is. Deriving from the
+# binding therefore distinguishes "an authorization that would also be refused"
+# from "the authorization this release is actually bound to".
+# ===========================================================================
+$AuthoritativeRecovery = $null
+$AuthoritativeRecoverySource = ""
+if ($TerminalHolds) {
+    $AuthoritativeRecovery = @{
+        StageSlug           = $ReleasedStageSlug
+        AuthorizationId     = $ReleasedAuthorizationId
+        AuthorizationDigest = $ReleasedAuthorizationDigest
+    }
+    $AuthoritativeRecoverySource = "the signed ReleaseCommitBinding, authenticated by release-state"
+} elseif ($Baseline.Valid) {
+    $AuthoritativeRecovery = @{
+        StageSlug           = $Baseline.StageSlug
+        AuthorizationId     = $Baseline.AuthorizationId
+        AuthorizationDigest = $Baseline.Digest
+    }
+    $AuthoritativeRecoverySource = "the current StageAuthorization, authenticated by the positive baseline"
+}
+
+# The context is built from the DERIVED identity. Substituting the caller's
+# assertion here would reintroduce the defect no matter how it is later checked.
 $RecoveryContext = @{
     RepositoryRoot              = $RepositoryRoot
-    RecoveryStageSlug           = $StageSlug
-    ExpectedAuthorizationId     = $AuthorizationId
-    ExpectedAuthorizationDigest = $AuthorizationDigest
+    RecoveryStageSlug           = $(if ($null -ne $AuthoritativeRecovery) { $AuthoritativeRecovery.StageSlug } else { "" })
+    ExpectedAuthorizationId     = $(if ($null -ne $AuthoritativeRecovery) { $AuthoritativeRecovery.AuthorizationId } else { "" })
+    ExpectedAuthorizationDigest = $(if ($null -ne $AuthoritativeRecovery) { $AuthoritativeRecovery.AuthorizationDigest } else { "" })
     ExpectedSignerFingerprint   = $SignerFingerprint
     SignerPrincipal             = $SignerPrincipal
     SupersededCommit            = $SupersededCommit
     EligibilityDigest           = $EligibilityDigest
 }
 if (-not [string]::IsNullOrWhiteSpace($CorePath)) { $RecoveryContext.CorePath = $CorePath }
-$RecoveryContextComplete = (@(@($RecoveryContext.Values) | Where-Object { [string]::IsNullOrWhiteSpace($_) }).Count -eq 0)
+
+# The caller must still state which recovery it means, so that omission remains
+# an explicit NOT-SUPPLIED rather than a silent default.
+$RecoveryAssertionComplete = (@(@(
+    $RecoveryStageSlug, $RecoveryAuthorizationId, $RecoveryAuthorizationDigest,
+    $SupersededCommit, $EligibilityDigest
+) | Where-Object { [string]::IsNullOrWhiteSpace($_) }).Count -eq 0)
+$RecoveryContextComplete = $RecoveryAssertionComplete -and ($null -ne $AuthoritativeRecovery)
 
 function Get-VariantRecovery {
     param([hashtable]$Override)
@@ -318,10 +407,37 @@ if ($ReleaseContextComplete -and -not $TerminalHolds) {
 }
 
 if ($RecoveryContextComplete) {
-    Write-Output ""
-    Write-Output "=== RECOVERY (a non-conforming predecessor is eligible, and eligibility grants nothing) ==="
-
+    # ===================================================================
+    # APPLICABILITY, NOT CONTEXT COMPLETENESS.
+    #
+    # This family used to run whenever the caller supplied a superseded commit
+    # and an eligibility digest. That is a question about the CALLER, and it is
+    # the wrong one. The question is whether a recovery is still IN FLIGHT.
+    #
+    # The two coincided until the recovery release landed and then diverged: the
+    # context stayed complete while the one hop became spent, so the family kept
+    # demanding ELIGIBLE from an eligibility that is now correctly refused. It
+    # reported the right governance outcome as three failures - the same "a fact
+    # true at one moment written down as a durable invariant" defect the
+    # recovery stage existed to remove, committed by the checking code itself.
+    #
+    # Worse than the three red lines: in the spent state the nine refusal
+    # variants below hold for the WRONG REASON. Everything is refused because
+    # the authorization is consumed, not because the perturbation was caught. A
+    # family whose positive baseline cannot hold proves nothing, and nine
+    # vacuous HELD lines are more dangerous than three honest failures. So in
+    # the spent state they are RETIRED, not counted.
+    #
+    # The discriminator is structural and never matched against reason text: the
+    # recovery stage's own release is terminal at HEAD, and eligibility no
+    # longer verifies. Text is a message; state is evidence.
+    # ===================================================================
     $Eligibility = Test-GdsRecoveryEligibility @RecoveryContext
+    $RecoveryInFlight = [bool]$Eligibility.Eligible
+
+    if ($RecoveryInFlight) {
+    Write-Output ""
+    Write-Output "=== RECOVERY / IN-FLIGHT (a non-conforming predecessor is eligible, and eligibility grants nothing) ==="
 
     # R0 is the positive baseline for this family. Without it every refusal
     # below could be a refusal of everything.
@@ -354,21 +470,6 @@ if ($RecoveryContextComplete) {
         }
     }
 
-    # ELIGIBILITY IS NOT RELEASE STATE, STRUCTURALLY.
-    #
-    # ELIGIBLE shares an exit code with ACCEPT, which is exactly the kind of
-    # near-miss that becomes a defect the first time a caller checks the wrong
-    # field. The answer must therefore be unable to report release, acceptance,
-    # or any path grant - not merely report them as false.
-    $Fields = @($Eligibility.PSObject.Properties.Name)
-    foreach ($Forbidden in @("Accepted", "Released", "Authorized", "Valid", "AllowedPaths", "ProtectedPaths")) {
-        Test-Control -Id "R12.$Forbidden" -Expectation "the eligibility answer cannot report '$Forbidden'" `
-            -Held (-not ($Fields -ccontains $Forbidden)) -Detail $(if ($Fields -ccontains $Forbidden) { "FIELD PRESENT" } else { "absent" })
-    }
-    Test-Control -Id "R13" -Expectation "eligibility reports the predecessor as NOT conforming" `
-        -Held ($Eligibility.PredecessorConforming -ceq "NO") -Detail $Eligibility.PredecessorConforming
-    Test-Control -Id "R14" -Expectation "eligibility grants NO mutation authority" `
-        -Held ($Eligibility.GrantsMutationAuthority -ceq "NO") -Detail $Eligibility.GrantsMutationAuthority
     Test-Control -Id "R15" -Expectation "the verdict is ELIGIBLE and never ACCEPT" `
         -Held ($Eligibility.Verdict -ceq "ELIGIBLE") -Detail $Eligibility.Verdict
 
@@ -379,12 +480,167 @@ if ($RecoveryContextComplete) {
             (Test-GdsReleaseState @ReleaseContext).Released
         }
     }
+
+    } else {
+    # ===================================================================
+    # RECOVERY / SPENT.
+    #
+    # The one authorized hop has been taken. This is a SUCCESS state, and the
+    # controls here prove it positively rather than inferring it from an
+    # absence of failures. "We asked and the answer was no" and "we stopped
+    # asking" must never look alike.
+    # ===================================================================
+    Write-Output ""
+    Write-Output "=== RECOVERY / SPENT (the one authorized hop has been taken and cannot be replayed) ==="
+    Write-Output "Authoritative recovery identity derived from $AuthoritativeRecoverySource :"
+    Write-Output "  stage         $($AuthoritativeRecovery.StageSlug)"
+    Write-Output "  authorization $($AuthoritativeRecovery.AuthorizationId)"
+    Write-Output "  digest        $($AuthoritativeRecovery.AuthorizationDigest)"
+    Write-Output "The real signed eligibility authenticated under that identity, then was refused:"
+    Write-Output "  $($Eligibility.Reason)"
+
+    # R19 IS THE CONTROL THAT MAKES NAMING INSUFFICIENT.
+    #
+    # The caller's assertion is compared, field by field, against the identity
+    # derived from the signed chain. It cannot select the identity - the lookup
+    # above already used the derived one - so this control exists to refuse a
+    # caller who is talking about a DIFFERENT authorization than the one the
+    # release is bound to.
+    #
+    # This is what an older-but-valid authorization for the same stage and
+    # baseline fails. It would authenticate an eligibility and it would be
+    # refused at the baseline, so every other control here would hold for it.
+    # Only equality with the chain-authenticated identity separates it from the
+    # authorization this release actually consumed.
+    $AssertionMatches =
+        ($RecoveryStageSlug -ceq $AuthoritativeRecovery.StageSlug) -and
+        ($RecoveryAuthorizationId -ceq $AuthoritativeRecovery.AuthorizationId) -and
+        ($RecoveryAuthorizationDigest -ceq $AuthoritativeRecovery.AuthorizationDigest)
+    Test-Control -Id "R19" -Expectation "the asserted recovery identity IS the chain-authenticated one" `
+        -Held $AssertionMatches `
+        -Detail $(if ($AssertionMatches) { "asserted identity equals the authorization named in the signed ReleaseCommitBinding" } else { "ASSERTED $RecoveryStageSlug / $RecoveryAuthorizationId / $RecoveryAuthorizationDigest -- AUTHORITATIVE $($AuthoritativeRecovery.StageSlug) / $($AuthoritativeRecovery.AuthorizationId) / $($AuthoritativeRecovery.AuthorizationDigest)" })
+
+    # R0' IS THE POSITIVE BASELINE, AND IT MUST NOT BE SATISFIABLE BY ABSENCE.
+    #
+    # An audit rejected the first version of this control: it asked about the
+    # follow-up stage, no eligibility object exists under that name, and the
+    # resulting "REJECT" proved only that a nonexistent file is unreadable. A
+    # refusal earned by asking the wrong question is not evidence of anything.
+    #
+    # So the spend is proven in two parts, and BOTH are required:
+    #
+    #   AUTHENTICATED  the core read, verified and parsed the real object -
+    #                  proven by it reporting the object's own contents back:
+    #                  the classification, the exact expected digest, and the
+    #                  predecessor it names. A missing file yields none of these.
+    #   THEN REFUSED   and having authenticated it, the core still refused,
+    #                  because the recovery baseline it is bound to is no longer
+    #                  HEAD. That is the spend, and nothing weaker demonstrates
+    #                  it.
+    $Authenticated = ($Eligibility.Classification -ceq "TERMINAL-UNCLOSED") -and
+                     ($Eligibility.EligibilityDigest -ceq $EligibilityDigest) -and
+                     ($Eligibility.SupersededCommit -ceq $SupersededCommit) -and
+                     ($Eligibility.RecoveryStageSlug -ceq $RecoveryStageSlug)
+    # RecoveryBaseline is emitted only once the core has loaded the recovery
+    # StageAuthorization, so a non-empty value naming the predecessor proves the
+    # refusal happened at the binding step and not at the file-open step.
+    $RefusedAtTheSpend = ($Eligibility.RecoveryBaseline -ceq $SupersededCommit)
+    Test-Control -Id "R0'" -Expectation "the REAL eligibility authenticates, then is refused because the hop is spent" `
+        -Held ($Authenticated -and $RefusedAtTheSpend -and (-not $Eligibility.Eligible) -and ($Eligibility.Verdict -ceq "REJECT")) `
+        -Detail "authenticated=$Authenticated refusedAtBinding=$RefusedAtTheSpend verdict=$($Eligibility.Verdict) classification=$($Eligibility.Classification) baseline=$($Eligibility.RecoveryBaseline)"
+
+    Test-Control -Id "R15'" -Expectation "a spent eligibility never returns ACCEPT or ELIGIBLE" `
+        -Held (($Eligibility.Verdict -cne "ACCEPT") -and ($Eligibility.Verdict -cne "ELIGIBLE")) `
+        -Detail $Eligibility.Verdict
+
+    # R16' is the exact inverse of the in-flight R16, and it is the honest
+    # statement here: the recovery landed, so HEAD IS released truth.
+    if ($ReleaseContextComplete) {
+        $SpentRelease = Test-GdsReleaseState @ReleaseContext
+        Test-Control -Id "R16'" -Expectation "HEAD is the conforming recovery release" `
+            -Held $SpentRelease.Released -Detail $SpentRelease.Commit
+    }
+
+    # R17 makes the spend irreversible. Re-supplying the REAL eligibility with
+    # every field exactly correct - right stage, right authorization, right
+    # predecessor, right digest - must still be refused. If it were not, "one
+    # hop" would be a suggestion rather than a bound.
+    #
+    # Like R0', this is only meaningful because the object authenticates first.
+    # A refusal that never reached the object would satisfy a naive refusal
+    # check while proving nothing, so the replay attempt is required to reach
+    # the binding step too.
+    $Replay = Test-GdsRecoveryEligibility @RecoveryContext
+    Test-Control -Id "R17" -Expectation "re-supplying the exact signed eligibility does not revive the spent hop" `
+        -Held ((-not $Replay.Eligible) -and
+               ($Replay.EligibilityDigest -ceq $EligibilityDigest) -and
+               ($Replay.RecoveryBaseline -ceq $SupersededCommit)) `
+        -Detail "replayed the exact object: $($Replay.Verdict), still bound to baseline $($Replay.RecoveryBaseline)"
+
+    # And the spend is specifically a BASELINE fact, not an incidental error.
+    Test-Control -Id "R18" -Expectation "the refusal names the consumed baseline, not a missing or malformed object" `
+        -Held ($Eligibility.Reason -like "*not the authorized baseline*") `
+        -Detail $Eligibility.Reason
+
+    # R3-R11 ARE RETIRED, NOT HELD.
+    #
+    # Every one of them would "hold" here, because a consumed authorization
+    # refuses everything. That is a refusal for the wrong reason. Counting them
+    # would inflate the held total with nine controls that can no longer
+    # distinguish a caught perturbation from a dead code path, which is exactly
+    # the vacuous-green this harness exists to prevent.
+    Write-Output ""
+    Write-Output "  RETIRED IN THIS STATE (not counted as held, not counted as failed):"
+    Write-Output "    R3-R11 perturb an eligibility that no longer verifies at all. They would"
+    Write-Output "    refuse every input, including inputs they are supposed to catch, so they"
+    Write-Output "    can no longer tell a real refusal from a vacuous one. Their positive"
+    Write-Output "    baseline R0 is unsatisfiable here by design; R0' replaces it."
+    Write-Output "    They are exercised for real by the IN-FLIGHT state."
+    }
+
+    # ===================================================================
+    # RESPONSE SHAPE - APPLICABLE IN BOTH STATES.
+    #
+    # ELIGIBLE shares an exit code with ACCEPT, which is exactly the kind of
+    # near-miss that becomes a defect the first time a caller checks the wrong
+    # field. The answer must be unable to report release, acceptance, or any
+    # path grant - not merely report them as false.
+    #
+    # These test the SHAPE of the answer rather than the viability of a
+    # recovery, and shape does not change when the hop is spent. Gating them on
+    # applicability would have dropped six real controls the moment the recovery
+    # landed.
+    # ===================================================================
+    Write-Output ""
+    Write-Output "=== RECOVERY / RESPONSE SHAPE (applies in every applicability state) ==="
+    $Fields = @($Eligibility.PSObject.Properties.Name)
+    foreach ($Forbidden in @("Accepted", "Released", "Authorized", "Valid", "AllowedPaths", "ProtectedPaths")) {
+        Test-Control -Id "R12.$Forbidden" -Expectation "the eligibility answer cannot report '$Forbidden'" `
+            -Held (-not ($Fields -ccontains $Forbidden)) -Detail $(if ($Fields -ccontains $Forbidden) { "FIELD PRESENT" } else { "absent" })
+    }
+    Test-Control -Id "R13" -Expectation "eligibility reports the predecessor as NOT conforming" `
+        -Held ($Eligibility.PredecessorConforming -ceq "NO") -Detail $Eligibility.PredecessorConforming
+    Test-Control -Id "R14" -Expectation "eligibility grants NO mutation authority" `
+        -Held ($Eligibility.GrantsMutationAuthority -ceq "NO") -Detail $Eligibility.GrantsMutationAuthority
 } else {
     Write-Output ""
-    Write-Output "=== RECOVERY: NOT EXERCISED IN THIS RUN ==="
-    Write-Output "No recovery context was supplied, so no eligibility was asked about and the"
-    Write-Output "recovery controls did NOT run. This is a SKIP, not a pass."
+    Write-Output "=== RECOVERY / NOT-SUPPLIED: NOT EXERCISED IN THIS RUN ==="
+    Write-Output "The recovery controls did NOT run. This is a SKIP, not a pass."
+    if ($null -eq $AuthoritativeRecovery) {
+        Write-Output "No authoritative recovery identity could be DERIVED: neither a proven"
+        Write-Output "released recovery chain nor a valid current authority is available, so"
+        Write-Output "there is nothing signed to authenticate an identity against. The caller's"
+        Write-Output "assertion alone is never sufficient to proceed."
+    }
+    if (-not $RecoveryAssertionComplete) {
+        Write-Output "The caller's recovery assertion is incomplete. It is required even though"
+        Write-Output "it is not authoritative, so that omission stays visible instead of"
+        Write-Output "defaulting silently."
+    }
     foreach ($Pair in @(
+        @{ Name = "SRGDS_RECOVERY_STAGE"; Value = $RecoveryStageSlug },
+        @{ Name = "SRGDS_RECOVERY_AUTHORIZATION_ID"; Value = $RecoveryAuthorizationId },
+        @{ Name = "SRGDS_RECOVERY_AUTHORIZATION_DIGEST"; Value = $RecoveryAuthorizationDigest },
         @{ Name = "SRGDS_SUPERSEDED_COMMIT"; Value = $SupersededCommit },
         @{ Name = "SRGDS_ELIGIBILITY_DIGEST"; Value = $EligibilityDigest }
     )) {
